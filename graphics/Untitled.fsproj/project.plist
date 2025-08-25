@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Auto Encode</key>
+	<string>FALSE</string>
+	<key>Auto Open</key>
+	<string>FALSE</string>
+	<key>Background Image Path</key>
+	<string>InstallerBackground.jpg</string>
+	<key>Build Format</key>
+	<string>DMG (OS X only)</string>
+	<key>Custom Icon Path</key>
+	<string>/Applications/FileStorm.app/Contents/Resources/volumeIcon.icns</string>
+	<key>Disk Image Name</key>
+	<string>~/Documents/Untitled.dmg</string>
+	<key>Encode Format</key>
+	<string>None</string>
+	<key>Encryption Type</key>
+	<string>None</string>
+	<key>Finalize Format</key>
+	<string>Read-only with compression</string>
+	<key>Icon Size</key>
+	<string>128</string>
+	<key>Image Size Extra</key>
+	<string>0</string>
+	<key>Image Size Type</key>
+	<string>Automatic</string>
+	<key>Internet Enable</key>
+	<string>FALSE</string>
+	<key>Item List</key>
+	<array/>
+	<key>License List</key>
+	<array/>
+	<key>Lock Frame</key>
+	<string>FALSE</string>
+	<key>Project File Path</key>
+	<string>/Volumes/Macintosh HD/Users/Rob/projects/home/Ascent/graphics/</string>
+	<key>Show Toolbar</key>
+	<string>TRUE</string>
+	<key>Volume Name</key>
+	<string>Untitled</string>
+	<key>Window Frame</key>
+	<string>{{470, 149}, {540, 497}}</string>
+</dict>
+</plist>

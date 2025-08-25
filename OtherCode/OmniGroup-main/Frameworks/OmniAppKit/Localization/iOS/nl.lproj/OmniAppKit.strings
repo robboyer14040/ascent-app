@@ -1,0 +1,23 @@
+/* button title */
+"Cancel" = "Annuleer";
+
+/* style validation error message for expected {type} */
+"Expected value of type “%@”" = "Verwachte waarde van type “%@”";
+
+/* button title */
+"Feature not enabled for this demo" = "Functie niet beschikbaar in deze demo";
+
+/* button title */
+"Learn More" = "Meer informatie";
+
+/* error recovery option */
+"More Info <error recovery>" = "Meer info";
+
+/* button title */
+"OK" = "OK";
+
+/* button title */
+"Retry" = "Opnieuw";
+
+/* style validation error message for {key} */
+"Unexpected value for key “%@”" = "Onverwachte waarde voor sleutel “%@”.";

@@ -1,0 +1,279 @@
+/* error description */
+"%@ cannot open this type of file." = "%@은(는) 이 유형의 파일을 열 수 없습니다.";
+
+/* OmniPresence file list: status: items and size format */
+"%@ items, %@" = "%1$@개 항목, %2$@";
+
+/* OmniPresence file list: status: items and size with downloads format */
+"%@ items, %@ (%@ downloaded, %@)" = "%1$@개 항목, %2$@(%3$@ 다운로드됨, %4$@)";
+
+/* home screen detail label */
+"%d items" = "%d개 항목";
+
+/* replace document description */
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "“%@”(이)라는 이름의 도큐멘트가 이미 존재합니다. 바꾸시겠습니까? 이 작업은 실행 취소할 수 없습니다.";
+
+/* Omni Sync Server account info button title */
+"Account Info" = "계정 정보";
+
+/* Server Account Setup label: account name */
+"Account Name" = "계정 이름";
+
+/* home screen button label */
+"Add OmniPresence Account" = "OmniPresence  계정 추가";
+
+/* button title
+   cancel button title
+   delete confirmation cancel button
+   Discard unsynced edits dialog: cancel button label
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
+
+"Cancel" = "취소";
+
+/* email action description */
+"Choose a format for emailing \"%@\":" = "“%@” 전자 메일 전송 형식을 선택하십시오.";
+
+/* Cloud setup modal sheet title */
+"Choose Account Type" = "계정 유형 선택";
+
+/* export options title */
+"Choose Format" = "형식 선택";
+
+/* title view clear button accessibility label. */
+"Clear Title" = "제목 지우기";
+
+/* Close Document toolbar item accessibility label. */
+"Close Document" = "도큐멘트 닫기";
+
+/* demo mode disabled message */
+"Cloud storage is disabled in this demo version." = "이 데모 버전에서는 클라우드 저장소가 비활성화되어 있습니다.";
+
+/* Screen title for configuring OmniPresence accounts */
+"Configure OmniPresence Syncing" = "OmniPresence 동기화 구성";
+
+/* Success label when connecting to an OmniPresence or WebDAV server account */
+"Connected" = "연결됨";
+
+/* Update news: button title */
+"Continue" = "계속";
+
+/* Menu option in the document picker view */
+"Copy as Image" = "이미지로 복사";
+
+/* moved aside custom sample document name */
+"CustomizedSampleDocumentName" = "%@ 사용자 정의";
+
+/* Server account setup confirmation action label format */
+"Delete \"%@\"" = "“%@” 삭제";
+
+/* Server Account Setup button label */
+"Delete Account" = "계정 삭제";
+
+/* Discard unsynced edits dialog: discard button label */
+"Discard Edits" = "편집 항목 무시";
+
+/* Lose unsynced changes warning: title */
+"Discard unsynced edits?" = "동기화되지 않은 편집 항목을 무시하시겠습니까?";
+
+/* Toolbar button title for returning to list of documents. */
+"Documents <back button>" = "도큐멘트";
+
+/* OmniPresence sync status */
+"Downloading files" = "파일 다운로드";
+
+/* title view edit button item accessibility hint. */
+"Edits the document's title." = "도큐멘트 제목을 편집합니다.";
+
+/* webdav help */
+"Enter the location of your WebDAV space." = "WebDAV 공간 위치를 입력하십시오.";
+
+/* export button title
+   export options title
+   Export toolbar item accessibility label. */
+"Export" = "내보내기";
+
+/* export to description */
+"Export \"%@\" as:" = "“%@”을(를) 다음으로 내보내기:";
+
+/* OmniPresence file list: sort order option */
+"folder and name" = "폴더 및 이름";
+
+/* iCloud stencils folder name */
+"iCloud Drive" = "iCloud Drive";
+
+/* Info item accessibility label */
+"Info" = "정보";
+
+/* OmniPresence sync status: prefix for the 'last sync' status */
+"Last sync" = "마지막 동기화";
+
+/* Update news: button title */
+"Learn More" = "자세히 알아보기";
+
+/* Local Documents display name */
+"Local Documents" = "로컬 도큐멘트";
+
+/* Server Account Setup label: location */
+"Location" = "위치";
+
+/* OmniPresence file list: sort order option */
+"modification date" = "수정 날짜";
+
+/* Base name for newly created documents. This will have an number appended to it to make it unique. */
+"My Document" = "내 도큐멘트";
+
+/* OmniPresence file list: sort order option */
+"name" = "이름";
+
+/* New Document toolbar item accessibility label.
+   New Template button title */
+"New Document" = "새로운 도큐멘트";
+
+/* Update news: title */
+"New in iOS 13:\nFull Adoption of Apple's Document Browser" = "iOS 13의 새로운 기능:\nApple의 도큐멘트 브라우저 완전 채택";
+
+/* Server Account Setup label: nickname */
+"Nickname" = "별명";
+
+/* button title
+   When displaying a sync error, this is the option to ignore the error. */
+"OK" = "양호";
+
+/* demo disabled message */
+"OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device." = "OmniPresence에서는 저희가 제공하는 무료 동기화 서비스 또는 모든 호환되는 WebDAV 서버를 사용해서 사용자의 장치 간에 도큐멘트를 자동으로 공유하거나 장치 복원이 필요한 경우를 대비해서 클라우드에 도큐멘트 사본을 저장할 수 있습니다.";
+
+/* Update news: title */
+"OmniPresence Documents" = "OmniPresence 도큐멘트";
+
+/* demo disabled title */
+"OmniPresence is disabled in this demo version." = "이 데모 버전에서는 OmniPresence가 비활성화되어 있습니다.";
+
+/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad) */
+
+"On My iPad" = "나의 iPad";
+
+/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
+
+"On My iPhone" = "나의 iPhone";
+
+/* Open Document Shortcut Title */
+"Open %@" = "%@ 열기";
+
+/* Language section title */
+"ouiLanguagePicker.language" = "언어";
+
+/* Navigation bar title: Choose a Template */
+"ouiTemplatePicker.navigationTitle" = "템플릿 선택";
+
+/* Server Account Setup label: password */
+"Password" = "암호";
+
+/* Photo Library permisssions error description. */
+"Photo Library permission denied." = "사진 라이브러리 권한이 거부되었습니다.";
+
+/* Menu option in the document picker view */
+"Print" = "프린트";
+
+/* purchase now button title */
+"Purchase Now." = "지금 구입하십시오.";
+
+/* rename button title */
+"Rename" = "이름 변경";
+
+/* replace button title */
+"Replace" = "바꾸기";
+
+/* replace document title */
+"Replace document?" = "도큐멘트를 바꾸시겠습니까?";
+
+/* When displaying a sync error, this is the option to report the error. */
+"Report Error" = "보고서 오류";
+
+/* Restore Sample Documents Title */
+"Restore Sample Documents" = "샘플 도큐멘트 복원";
+
+/* When displaying a sync error, this is the option to retry syncing. */
+"Retry Sync" = "동기화 재시도";
+
+/* Account setup toolbar button title to save account settings */
+"Save" = "저장";
+
+/* send to app description */
+"Send \"%@\" to app as:" = "“%@”을(를) 앱에 다음으로 전송:";
+
+/* Menu option in the document picker view */
+"Send to Photos" = "사진으로 전송";
+
+/* export options title
+   Menu option in the document picker view */
+"Send via Mail" = "Mail을 통해 전송";
+
+/* Label format when setting up an OmniPresence or WebDAV server account */
+"Setting up \"%@\"" = "“%@” 설정";
+
+/* Share activity title */
+"Share As…" = "다른 이름으로 공유...";
+
+/* Omni Sync Server sign up button title */
+"Sign Up For a New Account" = "새 계정 등록";
+
+/* OmniPresence file list: sort order option */
+"size" = "크기";
+
+/* OmniPresence file list: sort order label */
+"Sort by:" = "정렬 기준:";
+
+/* Presence toolbar item accessibility label. */
+"Sync Now" = "지금 동기화";
+
+/* Discard unsynced edits dialog: message format */
+"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@” 계정에는 클라우드에 아직 동기화되지 않은 %2$ld개의 편집된 도큐멘트가 있습니다. 이러한 편집 항목을 무시하시겠습니까?";
+
+/* Discard unsynced edits dialog: message format */
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%@” 계정에는 클라우드에 아직 동기화되지 않은 편집된 도큐멘트가 있습니다. 이러한 편집 항목을 무시하시겠습니까?";
+
+/* Discard unsynced edits dialog: message format */
+"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "“%@” 계정에는 클라우드에 아직 동기화되지 않은 편집된 도큐멘트가 있을 수 있습니다. 모든 로컬 편집 항목을 무시하시겠습니까?";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document \"%@\" requires a password to open." = "“%@” 도큐멘트를 열려면 암호가 필요합니다.";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document requires a password to open." = "도큐멘트를 열려면 암호가 필요합니다.";
+
+/* Error description for a document operation failing due to a missing file. */
+"The operation couldn't be completed." = "작업을 완료할 수 없습니다.";
+
+/* linked folder preference view: header label */
+"The template picker will include any templates found in these locations." = "템플릿 선택기에 이 위치에서 발견된 모든 템플릿이 포함됩니다.";
+
+/* Photo Library permisssions error suggestion. */
+"This app does not have access to your Photo Library." = "이 앱은 사용자의 사진 라이브러리에 액세스할 수 없습니다.";
+
+/* Error reason for a document operation failing due to a missing file. */
+"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "이 도큐멘트에 액세스할 수 없습니다. 파일이 삭제되었거나, 이름이 바뀌었거나 iTunes 또는 외부 도큐멘트 공급자를 통해 이동되었을 수 있습니다. 파일을 제거해보고 다시 추가해보십시오.";
+
+/* error title */
+"Unable to open file." = "파일을 열 수 없습니다.";
+
+/* OmniPresence sync status */
+"Uploading and downloading files" = "파일 업로드 및 다운로드";
+
+/* OmniPresence sync status */
+"Uploading files" = "파일 업로드";
+
+/* Account validation status string. */
+"Validating account..." = "계정 검증 중...";
+
+/* Screen title for viewing OmniPresence documents */
+"View OmniPresence Documents" = "OmniPresence 도큐멘트 보기";
+
+/* Update news: description */
+"We've retired our custom document browser in favor of using Apple's built-in browser, making it easier than ever for you to choose where you want to keep your documents." = "Apple의 기본 제공 브라우저를 사용할 수 있도록 기존의 고유한 사용자 정의 도큐멘트 브라우저가 더 이상 사용되지 않습니다. 이제 도큐멘트 보관 위치를 훨씬 더 쉽게 선택할 수 있습니다.";
+
+/* error description */
+"While attempting to open %@, received an error from the system" = "%@ 열기를 시도할 때 시스템 오류 발생";
+
+/* Update news: description */
+"Your OmniPresence documents will only be visible in the new browser when they’ve been downloaded to this device.\n\nOmniPresence does not download larger synced files automatically. You can manually download larger files to this device now, or access the download manager later from the OmniPresence icon in the toolbar." = "OmniPresence 도큐멘트를 이 기기에 다운로드하면 이제 새로운 브라우저에서만 표시됩니다.\n\nOmniPresence는 더 큰 동기화된 파일을 자동으로 다운로드하지 않습니다. 이제 더 큰 파일을 이 기기에 수동으로 다운로드하거나 나중에 도구 모음에 있는 OmniPresence 아이콘을 이용해서 다운로드 관리자에 액세스할 수 있습니다.";

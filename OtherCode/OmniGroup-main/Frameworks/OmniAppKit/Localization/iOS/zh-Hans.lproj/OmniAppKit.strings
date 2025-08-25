@@ -1,0 +1,23 @@
+/* button title */
+"Cancel" = "取消";
+
+/* style validation error message for expected {type} */
+"Expected value of type “%@”" = "类型“%@”的期望值";
+
+/* button title */
+"Feature not enabled for this demo" = "演示版本不启用此功能";
+
+/* button title */
+"Learn More" = "了解更多";
+
+/* error recovery option */
+"More Info <error recovery>" = "更多信息";
+
+/* button title */
+"OK" = "好";
+
+/* button title */
+"Retry" = "重试";
+
+/* style validation error message for {key} */
+"Unexpected value for key “%@”" = "意外的键“%@”值";

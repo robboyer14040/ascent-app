@@ -1,0 +1,126 @@
+/* Software update report format for number of cores in the CPU */
+"%@ cores" = "Ядер: %@";
+
+/* Software update report entry string for multiple crashes */
+"%ld crashes" = "Сбоев: %ld";
+
+/* Software update report entry string for a multiple hours of use */
+"%ld hours" = "Часов: %ld";
+
+/* Software update report entry string for a single launch */
+"%ld launches" = "Запусков: %ld";
+
+/* Software update report entry string for a multiple minutes of use */
+"%ld minutes" = "%ld мин";
+
+/* Software update report entry name for information about the runs of all versions of the app */
+"All versions" = "Все версии";
+
+/* Software update report entry name */
+"App ID" = "ID программы";
+
+/* Software update report entry name */
+"App version" = "Версия программы";
+
+/* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
+"Check operation failed." = "Сбой операции проверки.";
+
+/* Software update report entry name */
+"CPU" = "ЦП";
+
+/* Software update report entry name */
+"Device" = "Устройство";
+
+/* software update settings section title
+   software update settings title */
+
+"Device Information" = "Данные об устройстве";
+
+/* error description */
+"Error fetching software update information." = "Ошибка получения данных об обновлении ПО.";
+
+/* error description */
+"Error while checking for updated version." = "Ошибка при проверке наличия обновленной версии.";
+
+/* error reason */
+"Exception raised: %@" = "Произошло исключение: %@";
+
+/* software update settings cell detail text */
+"Help The Omni Group decide which devices and iOS versions to support" = "Помогите компании Omni Group решить, какие устройства и версии iOS поддерживать";
+
+/* Settings preferences detail text */
+"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\n\nThis information is kept entirely anonymous." = "Если вы отправите эти данные, они помогут нам узнать, какие устройства и версии iOS мы должны поддерживать.\n\nЭти данные полностью анонимны.";
+
+/* Software update report entry name */
+"iOS version" = "Версия iOS";
+
+/* Software update report entry name */
+"Language" = "Язык";
+
+/* Software update report entry name */
+"Memory" = "Объем памяти";
+
+/* Software update report entry string for a single crash */
+"One crash" = "Один сбой";
+
+/* Software update report entry string for a single hour of use */
+"One hour" = "Один час";
+
+/* Software update report entry string for a single launch */
+"One launch" = "Один запуск";
+
+/* Software update report entry string for a single minute of use */
+"One minute" = "Одна минута";
+
+/* error reason */
+"Please try again later or contact us to let us know this is broken." = "Повторите попытку позже или свяжитесь с нами, чтобы сообщить о проблеме.";
+
+/* Software update report entry name */
+"Report ID" = "ID отчета";
+
+/* Software update report entry name */
+"Report version" = "Версия отчета";
+
+/* Settings option title
+   software update settings cell title */
+
+"Send Anonymous Data" = "Отправлять анонимные данные";
+
+/* software update settings menu title */
+"Settings" = "Настройки";
+
+/* Software update report entry name */
+"Storage" = "Память";
+
+/* error reason */
+"The background software update service failed." = "Сбой службы фонового обновления ПО.";
+
+/* error description */
+"The data returned from <%@> was not a valid XML document." = "Полученные из <%@> данные не являются допустимым документом XML.";
+
+/* Settings option title */
+"The following information will be sent:" = "Будут отправлены следующие данные:";
+
+/* error description - the update information wasn't signed at all, but we require it to be signed */
+"The update information is not signed." = "Данные обновления не подписаны.";
+
+/* error description - the checksum or signature didn't match - more info in underlying error */
+"There was a problem checking the signature." = "Возникла проблема при проверке подписи.";
+
+/* Software update report entry name for information about the runs of the current version of the app */
+"This version" = "Эта версия";
+
+/* error reason */
+"Timed out waiting for the software update service." = "Истекло время ожидания службы обновления ПО.";
+
+/* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
+"Tool returned no data" = "Средство не вернуло данные";
+
+/* error description - we have some update information but it doesn't look authentic */
+"Unable to authenticate the response from the software update server." = "Не удается выполнить проверку подлинности запроса от сервера обновления ПО.";
+
+/* error description - will be followed by more detailed error reason */
+"Unable to fetch software update information." = "Не удается собрать данные об обновлении ПО.";
+
+/* error description */
+"Unable to parse response from the software update server." = "Не удается проанализировать ответ от сервера обновления ПО.";

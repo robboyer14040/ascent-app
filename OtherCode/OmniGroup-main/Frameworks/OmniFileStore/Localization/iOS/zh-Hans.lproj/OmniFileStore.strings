@@ -1,0 +1,77 @@
+/* error title */
+"An error has occurred." = "发生错误。";
+
+/* error description */
+"Cannot create directory." = "无法创建目录。";
+
+/* error description */
+"Cannot delete file." = "无法删除文件。";
+
+/* error description */
+"Cannot move file." = "无法移动文件。";
+
+/* error description */
+"Cannot read file" = "无法读取文件";
+
+/* bad password error reason */
+"Could not decode encryption document key." = "无法解码加密文档密钥。";
+
+/* error description */
+"Could not decrypt file." = "无法解密文件。";
+
+/* error description */
+"Could not find \"%@\"." = "未发现“%@”。";
+
+/* error description */
+"Ensure that the address is correct and please try again." = "确保地址正确并请重试。";
+
+/* error description */
+"Ensure that the server address, user name, and password are correct and please try again." = "确保服务器地址、用户名和密码都正确，并请重试。";
+
+/* error reason */
+"Failed to delete \"%@\"." = "未能删除“%@”。";
+
+/* error reason */
+"Failed to move \"%@\" to \"%@\"." = "未能将“%1$@”移至“%2$@”。";
+
+/* bad password error description */
+"Incorrect encryption password." = "加密密码不正确。";
+
+/* error description */
+"Internal error updating keychain" = "更新密钥链时发生内部错误";
+
+/* error reason - listing a directory that doesn't exist */
+"No document exists at \"%@\"." = "“%@”无文稿。";
+
+/* error reason */
+"No such directory \"%@\"" = "没有目录“%@”";
+
+/* error reason */
+"No such file \"%@\"." = "没有文件“%@”。";
+
+/* encryption access method description - key derivation from password */
+"Password (%@; %@ rounds; %@)" = "密码（%1$@; %2$@ 圆角; %3$@）";
+
+/* error reason */
+"Please make sure that the destination folder exists." = "请确保目标文件夹存在。";
+
+/* error reason - token is filename */
+"Unable to decrypt contents of file “%@”." = "无法解密文件“%@”的内容。";
+
+/* error description */
+"Unable to delete file." = "无法删除文件。";
+
+/* error description */
+"Unable to move file." = "无法移动文件。";
+
+/* error description */
+"Unable to read document." = "不能读取文稿。";
+
+/* error description */
+"Unable to read file." = "无法读取文件。";
+
+/* error description */
+"Unable to write file." = "无法写入文件。";
+
+/* error detail */
+"Unrecognized settings in encryption header" = "加密标头中有无法识别的设置";

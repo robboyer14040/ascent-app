@@ -1,0 +1,279 @@
+/* error description */
+"%@ cannot open this type of file." = "%@ 无法打开此类型文件。";
+
+/* OmniPresence file list: status: items and size format */
+"%@ items, %@" = "%1$@ 个项，%2$@";
+
+/* OmniPresence file list: status: items and size with downloads format */
+"%@ items, %@ (%@ downloaded, %@)" = "%1$@ 个项，%2$@ (%3$@ 已下载，%4$@)";
+
+/* home screen detail label */
+"%d items" = "%d 个项";
+
+/* replace document description */
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "已存在名称为“%@”的附件。是否要予以替换？此操作无法撤销。";
+
+/* Omni Sync Server account info button title */
+"Account Info" = "帐户信息";
+
+/* Server Account Setup label: account name */
+"Account Name" = "帐户名";
+
+/* home screen button label */
+"Add OmniPresence Account" = "添加 OmniPresence 帐户";
+
+/* button title
+   cancel button title
+   delete confirmation cancel button
+   Discard unsynced edits dialog: cancel button label
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
+
+"Cancel" = "取消";
+
+/* email action description */
+"Choose a format for emailing \"%@\":" = "选择格式以邮寄“%@”：";
+
+/* Cloud setup modal sheet title */
+"Choose Account Type" = "选择帐户类型";
+
+/* export options title */
+"Choose Format" = "选择格式";
+
+/* title view clear button accessibility label. */
+"Clear Title" = "清除标题";
+
+/* Close Document toolbar item accessibility label. */
+"Close Document" = "关闭文稿";
+
+/* demo mode disabled message */
+"Cloud storage is disabled in this demo version." = "云存储已在此演示版本中禁用。";
+
+/* Screen title for configuring OmniPresence accounts */
+"Configure OmniPresence Syncing" = "配置 OmniPresence 同步";
+
+/* Success label when connecting to an OmniPresence or WebDAV server account */
+"Connected" = "已连接";
+
+/* Update news: button title */
+"Continue" = "继续";
+
+/* Menu option in the document picker view */
+"Copy as Image" = "复制为图像";
+
+/* moved aside custom sample document name */
+"CustomizedSampleDocumentName" = "%@ 自定义";
+
+/* Server account setup confirmation action label format */
+"Delete \"%@\"" = "删除“%@”";
+
+/* Server Account Setup button label */
+"Delete Account" = "删除帐户";
+
+/* Discard unsynced edits dialog: discard button label */
+"Discard Edits" = "放弃编辑";
+
+/* Lose unsynced changes warning: title */
+"Discard unsynced edits?" = "放弃未同步的编辑？";
+
+/* Toolbar button title for returning to list of documents. */
+"Documents <back button>" = "文档";
+
+/* OmniPresence sync status */
+"Downloading files" = "正在下载文件";
+
+/* title view edit button item accessibility hint. */
+"Edits the document's title." = "编辑文稿标题。";
+
+/* webdav help */
+"Enter the location of your WebDAV space." = "输入 WebDAV 空间的位置。";
+
+/* export button title
+   export options title
+   Export toolbar item accessibility label. */
+"Export" = "输出";
+
+/* export to description */
+"Export \"%@\" as:" = "将“%@”导出为:";
+
+/* OmniPresence file list: sort order option */
+"folder and name" = "文件夹和名称";
+
+/* iCloud stencils folder name */
+"iCloud Drive" = "iCloud Drive";
+
+/* Info item accessibility label */
+"Info" = "信息";
+
+/* OmniPresence sync status: prefix for the 'last sync' status */
+"Last sync" = "上次同步";
+
+/* Update news: button title */
+"Learn More" = "了解更多";
+
+/* Local Documents display name */
+"Local Documents" = "本地文稿";
+
+/* Server Account Setup label: location */
+"Location" = "位置";
+
+/* OmniPresence file list: sort order option */
+"modification date" = "修改日期";
+
+/* Base name for newly created documents. This will have an number appended to it to make it unique. */
+"My Document" = "我的文稿";
+
+/* OmniPresence file list: sort order option */
+"name" = "名称";
+
+/* New Document toolbar item accessibility label.
+   New Template button title */
+"New Document" = "新建文稿";
+
+/* Update news: title */
+"New in iOS 13:\nFull Adoption of Apple's Document Browser" = "iOS 13 新功能：\n全面采用苹果的文稿浏览器";
+
+/* Server Account Setup label: nickname */
+"Nickname" = "昵称";
+
+/* button title
+   When displaying a sync error, this is the option to ignore the error. */
+"OK" = "好";
+
+/* demo disabled message */
+"OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device." = "OmniPresence 允许您使用我们的免费同步服务或任何兼容的 WebDAV 服务器在设备之间自动共享文稿，或者将您的文稿的副本保存在云中，以防您需要复原设备。";
+
+/* Update news: title */
+"OmniPresence Documents" = "OmniPresence 文稿";
+
+/* demo disabled title */
+"OmniPresence is disabled in this demo version." = "OmniPresence 已在此演示版本中禁用。";
+
+/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad) */
+
+"On My iPad" = "我的 iPad";
+
+/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
+
+"On My iPhone" = "我的 iPhone";
+
+/* Open Document Shortcut Title */
+"Open %@" = "打开 %@";
+
+/* Language section title */
+"ouiLanguagePicker.language" = "语言";
+
+/* Navigation bar title: Choose a Template */
+"ouiTemplatePicker.navigationTitle" = "选择模板";
+
+/* Server Account Setup label: password */
+"Password" = "密码";
+
+/* Photo Library permisssions error description. */
+"Photo Library permission denied." = "图片库许可被拒绝。";
+
+/* Menu option in the document picker view */
+"Print" = "打印";
+
+/* purchase now button title */
+"Purchase Now." = "立即购买。";
+
+/* rename button title */
+"Rename" = "重命名";
+
+/* replace button title */
+"Replace" = "替换";
+
+/* replace document title */
+"Replace document?" = "替换文稿？";
+
+/* When displaying a sync error, this is the option to report the error. */
+"Report Error" = "报告错误";
+
+/* Restore Sample Documents Title */
+"Restore Sample Documents" = "恢复样本文稿";
+
+/* When displaying a sync error, this is the option to retry syncing. */
+"Retry Sync" = "重试同步";
+
+/* Account setup toolbar button title to save account settings */
+"Save" = "存储";
+
+/* send to app description */
+"Send \"%@\" to app as:" = "发送“%@”至应用程序作为：";
+
+/* Menu option in the document picker view */
+"Send to Photos" = "发送至“照片”";
+
+/* export options title
+   Menu option in the document picker view */
+"Send via Mail" = "通过邮件发送";
+
+/* Label format when setting up an OmniPresence or WebDAV server account */
+"Setting up \"%@\"" = "设置“%@”";
+
+/* Share activity title */
+"Share As…" = "共享为...";
+
+/* Omni Sync Server sign up button title */
+"Sign Up For a New Account" = "注册新帐户";
+
+/* OmniPresence file list: sort order option */
+"size" = "尺寸";
+
+/* OmniPresence file list: sort order label */
+"Sort by:" = "排序方式：";
+
+/* Presence toolbar item accessibility label. */
+"Sync Now" = "立即同步";
+
+/* Discard unsynced edits dialog: message format */
+"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@”帐户拥有 %2$ld 篇未同步至云的已编辑文稿。您是否希望放弃这些编辑？";
+
+/* Discard unsynced edits dialog: message format */
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%@”帐户拥有一篇未同步至云的已编辑文稿。您是否希望放弃这些编辑？";
+
+/* Discard unsynced edits dialog: message format */
+"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "“%@”帐户可能已编辑过未同步至云的文稿。您是否希望放弃所有本地编辑？";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document \"%@\" requires a password to open." = "文稿“%@”需要密码才能打开。";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document requires a password to open." = "此文稿需要密码才能打开。";
+
+/* Error description for a document operation failing due to a missing file. */
+"The operation couldn't be completed." = "此操作无法完成。";
+
+/* linked folder preference view: header label */
+"The template picker will include any templates found in these locations." = "模板选择器将包括在这些位置找到的任何模板。";
+
+/* Photo Library permisssions error suggestion. */
+"This app does not have access to your Photo Library." = "该应用程序不能访问您的图片库。";
+
+/* Error reason for a document operation failing due to a missing file. */
+"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "此文档不可访问。文件可能被删除、重命名或者通过 iTune 或外部文档提供者移动。请尝试再次删除文件并添加文件。";
+
+/* error title */
+"Unable to open file." = "无法打开文件。";
+
+/* OmniPresence sync status */
+"Uploading and downloading files" = "正在上传和下载文件";
+
+/* OmniPresence sync status */
+"Uploading files" = "正在上传文件";
+
+/* Account validation status string. */
+"Validating account..." = "正在验证帐户…";
+
+/* Screen title for viewing OmniPresence documents */
+"View OmniPresence Documents" = "查看 OmniPresence 文稿";
+
+/* Update news: description */
+"We've retired our custom document browser in favor of using Apple's built-in browser, making it easier than ever for you to choose where you want to keep your documents." = "我们停用了自定义的文稿浏览器，改用苹果的内建浏览器，这样您在选择保留文稿的位置时比以往更容易。";
+
+/* error description */
+"While attempting to open %@, received an error from the system" = "尝试打开 %@ 时，从系统收到错误";
+
+/* Update news: description */
+"Your OmniPresence documents will only be visible in the new browser when they’ve been downloaded to this device.\n\nOmniPresence does not download larger synced files automatically. You can manually download larger files to this device now, or access the download manager later from the OmniPresence icon in the toolbar." = "您的 OmniPresence 文稿在下载到本设备后，只能在新的浏览器中显示。\n\nOmniPresence 不会自动下载较大的已同步文件。您现在可以将较大的文件手动下载到本设备，或稍后从工具栏的 OmniPresence 图标访问下载管理器。";

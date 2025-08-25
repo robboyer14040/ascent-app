@@ -1,0 +1,555 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		D57553A11082D85C008B2348 /* Build */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = D57553B51082D8C2008B2348 /* Build configuration list for PBXAggregateTarget "Build" */;
+			buildPhases = (
+			);
+			dependencies = (
+				D57553FA1082DA38008B2348 /* PBXTargetDependency */,
+				D57553DE1082DA18008B2348 /* PBXTargetDependency */,
+				D57553A61082D863008B2348 /* PBXTargetDependency */,
+				D57553A81082D86A008B2348 /* PBXTargetDependency */,
+			);
+			name = Build;
+			productName = "Build for Sno";
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXContainerItemProxy section */
+		D57553051081D7DD008B2348 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0259C573FE90428111CA0C5A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D575526A1081C668008B2348;
+			remoteInfo = "Library(Sno)";
+		};
+		D57553A51082D863008B2348 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0259C573FE90428111CA0C5A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D575526A1081C668008B2348;
+			remoteInfo = "Library(Sno)";
+		};
+		D57553A71082D86A008B2348 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0259C573FE90428111CA0C5A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D57552A41081CB10008B2348;
+			remoteInfo = "SampleApp(Sno)";
+		};
+		D57553DD1082DA18008B2348 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0259C573FE90428111CA0C5A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D57553CE1082D9DA008B2348;
+			remoteInfo = "Framework(Sno)";
+		};
+		D57553F91082DA38008B2348 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0259C573FE90428111CA0C5A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D57553E21082DA31008B2348;
+			remoteInfo = "IBPlugin(Leo) copy";
+		};
+		D57554D610830FB3008B2348 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0259C573FE90428111CA0C5A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D57553CE1082D9DA008B2348;
+			remoteInfo = "Framework(Sno)";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D57554E110830FDB008B2348 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		D575526B1081C668008B2348 /* libRBSplitView(Sno).a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = "libRBSplitView(Sno).a"; path = "/Volumes/Lion2/projects/home/Ascent/OtherCode/RBSplitView12/build/Debug/libRBSplitView(Sno).a"; sourceTree = "<absolute>"; };
+		D57552A51081CB10008B2348 /* SampleApp(Sno).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "SampleApp(Sno).app"; path = "/Volumes/Lion2/projects/home/Ascent/OtherCode/RBSplitView12/build/Debug/SampleApp(Sno).app"; sourceTree = "<absolute>"; };
+		D57553D91082D9DA008B2348 /* RBSplitView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = RBSplitView.framework; path = /Volumes/Lion2/projects/home/Ascent/OtherCode/RBSplitView12/build/Debug/RBSplitView.framework; sourceTree = "<absolute>"; };
+		D57553F71082DA31008B2348 /* RBSplitView(Sno).ibplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = "RBSplitView(Sno).ibplugin"; path = "/Volumes/Lion2/projects/home/Ascent/OtherCode/RBSplitView12/build/Debug/RBSplitView(Sno).ibplugin"; sourceTree = "<absolute>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D57552691081C668008B2348 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D57552A31081CB10008B2348 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D57553D41082D9DA008B2348 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D57553F01082DA31008B2348 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0259C574FE90428111CA0C5A /* RBSplitView */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = RBSplitView;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D57552671081C668008B2348 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D57553CF1082D9DA008B2348 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D575526A1081C668008B2348 /* Library */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D575527A1081C711008B2348 /* Build configuration list for PBXNativeTarget "Library" */;
+			buildPhases = (
+				D57552671081C668008B2348 /* Headers */,
+				D57552681081C668008B2348 /* Sources */,
+				D57552691081C668008B2348 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Library;
+			productName = "Library(Sno)";
+			productReference = D575526B1081C668008B2348 /* libRBSplitView(Sno).a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		D57552A41081CB10008B2348 /* SampleApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D57552AB1081CB11008B2348 /* Build configuration list for PBXNativeTarget "SampleApp" */;
+			buildPhases = (
+				D57552A11081CB10008B2348 /* Resources */,
+				D57552A21081CB10008B2348 /* Sources */,
+				D57552A31081CB10008B2348 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D57553061081D7DD008B2348 /* PBXTargetDependency */,
+			);
+			name = SampleApp;
+			productName = "SampleApp(Sno)";
+			productReference = D57552A51081CB10008B2348 /* SampleApp(Sno).app */;
+			productType = "com.apple.product-type.application";
+		};
+		D57553CE1082D9DA008B2348 /* Framework */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D57553D61082D9DA008B2348 /* Build configuration list for PBXNativeTarget "Framework" */;
+			buildPhases = (
+				D57553CF1082D9DA008B2348 /* Headers */,
+				D57553D01082D9DA008B2348 /* Resources */,
+				D57553D11082D9DA008B2348 /* Sources */,
+				D57553D41082D9DA008B2348 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Framework;
+			productName = Framework;
+			productReference = D57553D91082D9DA008B2348 /* RBSplitView.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		D57553E21082DA31008B2348 /* IBPlugin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D57553F41082DA31008B2348 /* Build configuration list for PBXNativeTarget "IBPlugin" */;
+			buildPhases = (
+				D57553E51082DA31008B2348 /* Resources */,
+				D57554E110830FDB008B2348 /* CopyFiles */,
+				D57553EE1082DA31008B2348 /* Sources */,
+				D57553F01082DA31008B2348 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D57554D710830FB3008B2348 /* PBXTargetDependency */,
+			);
+			name = IBPlugin;
+			productInstallPath = "$(HOME)/Developer/Palettes";
+			productName = RBSplitView;
+			productReference = D57553F71082DA31008B2348 /* RBSplitView(Sno).ibplugin */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0259C573FE90428111CA0C5A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1010;
+				ORGANIZATIONNAME = "Rainer Brockerhoff";
+			};
+			buildConfigurationList = D50F206F08A01A630073A261 /* Build configuration list for PBXProject "RBSplitView" */;
+			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				en,
+			);
+			mainGroup = 0259C574FE90428111CA0C5A /* RBSplitView */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D57553A11082D85C008B2348 /* Build */,
+				D57553CE1082D9DA008B2348 /* Framework */,
+				D57553E21082DA31008B2348 /* IBPlugin */,
+				D575526A1081C668008B2348 /* Library */,
+				D57552A41081CB10008B2348 /* SampleApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D57552A11081CB10008B2348 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D57553D01082D9DA008B2348 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D57553E51082DA31008B2348 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D57552681081C668008B2348 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D57552A21081CB10008B2348 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D57553D11082D9DA008B2348 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D57553EE1082DA31008B2348 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D57553061081D7DD008B2348 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D575526A1081C668008B2348 /* Library */;
+			targetProxy = D57553051081D7DD008B2348 /* PBXContainerItemProxy */;
+		};
+		D57553A61082D863008B2348 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D575526A1081C668008B2348 /* Library */;
+			targetProxy = D57553A51082D863008B2348 /* PBXContainerItemProxy */;
+		};
+		D57553A81082D86A008B2348 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D57552A41081CB10008B2348 /* SampleApp */;
+			targetProxy = D57553A71082D86A008B2348 /* PBXContainerItemProxy */;
+		};
+		D57553DE1082DA18008B2348 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D57553CE1082D9DA008B2348 /* Framework */;
+			targetProxy = D57553DD1082DA18008B2348 /* PBXContainerItemProxy */;
+		};
+		D57553FA1082DA38008B2348 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D57553E21082DA31008B2348 /* IBPlugin */;
+			targetProxy = D57553F91082DA38008B2348 /* PBXContainerItemProxy */;
+		};
+		D57554D710830FB3008B2348 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D57553CE1082D9DA008B2348 /* Framework */;
+			targetProxy = D57554D610830FB3008B2348 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		D50F207008A01A630073A261 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_VERSION = "";
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = RBSplitView;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		D50F207108A01A630073A261 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_VERSION = "";
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = RBSplitView;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		D575526D1081C669008B2348 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				GCC_ENABLE_OBJC_GC = supported;
+				PRODUCT_NAME = "RBSplitView(Sno)";
+				SDKROOT = "";
+			};
+			name = Debug;
+		};
+		D575526E1081C669008B2348 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				GCC_ENABLE_OBJC_GC = supported;
+				PRODUCT_NAME = "RBSplitView(Sno)";
+				SDKROOT = "";
+			};
+			name = Release;
+		};
+		D57552A91081CB11008B2348 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				INFOPLIST_FILE = "Sample App/SampleApp-Info.plist";
+				PRODUCT_NAME = "SampleApp(Sno)";
+				SDKROOT = macosx10.6;
+			};
+			name = Debug;
+		};
+		D57552AA1081CB11008B2348 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				INFOPLIST_FILE = "Sample App/SampleApp-Info.plist";
+				PRODUCT_NAME = "SampleApp(Sno)";
+				SDKROOT = macosx10.6;
+			};
+			name = Release;
+		};
+		D57553A31082D85C008B2348 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = "Build for Sno";
+			};
+			name = Debug;
+		};
+		D57553A41082D85C008B2348 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				PRODUCT_NAME = "Build for Sno";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		D57553D71082D9DA008B2348 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_ENABLE_OBJC_GC = supported;
+				INFOPLIST_FILE = "Source/Framework-Info.plist";
+				INSTALL_PATH = "@loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = net.brockerhoff.RBSplitView.Framework;
+				PRODUCT_NAME = RBSplitView;
+				SDKROOT = macosx;
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Debug;
+		};
+		D57553D81082D9DA008B2348 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_ENABLE_OBJC_GC = supported;
+				INFOPLIST_FILE = "Source/Framework-Info.plist";
+				INSTALL_PATH = "@loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = net.brockerhoff.RBSplitView.Framework;
+				PRODUCT_NAME = RBSplitView;
+				SDKROOT = macosx;
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Release;
+		};
+		D57553F51082DA31008B2348 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(DEVELOPER_FRAMEWORKS_DIR)\"",
+				);
+				GCC_ENABLE_OBJC_GC = supported;
+				INFOPLIST_FILE = "Plugin/Plugin-Info.plist";
+				LIBRARY_STYLE = BUNDLE;
+				PRODUCT_NAME = "RBSplitView(Sno)";
+				SDKROOT = macosx10.6;
+				WRAPPER_EXTENSION = ibplugin;
+			};
+			name = Debug;
+		};
+		D57553F61082DA31008B2348 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(DEVELOPER_FRAMEWORKS_DIR)\"",
+				);
+				GCC_ENABLE_OBJC_GC = supported;
+				INFOPLIST_FILE = "Plugin/Plugin-Info.plist";
+				LIBRARY_STYLE = BUNDLE;
+				PRODUCT_NAME = "RBSplitView(Sno)";
+				SDKROOT = macosx10.6;
+				WRAPPER_EXTENSION = ibplugin;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D50F206F08A01A630073A261 /* Build configuration list for PBXProject "RBSplitView" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D50F207008A01A630073A261 /* Debug */,
+				D50F207108A01A630073A261 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D575527A1081C711008B2348 /* Build configuration list for PBXNativeTarget "Library" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D575526D1081C669008B2348 /* Debug */,
+				D575526E1081C669008B2348 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D57552AB1081CB11008B2348 /* Build configuration list for PBXNativeTarget "SampleApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D57552A91081CB11008B2348 /* Debug */,
+				D57552AA1081CB11008B2348 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D57553B51082D8C2008B2348 /* Build configuration list for PBXAggregateTarget "Build" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D57553A31082D85C008B2348 /* Debug */,
+				D57553A41082D85C008B2348 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D57553D61082D9DA008B2348 /* Build configuration list for PBXNativeTarget "Framework" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D57553D71082D9DA008B2348 /* Debug */,
+				D57553D81082D9DA008B2348 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D57553F41082DA31008B2348 /* Build configuration list for PBXNativeTarget "IBPlugin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D57553F51082DA31008B2348 /* Debug */,
+				D57553F61082DA31008B2348 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0259C573FE90428111CA0C5A /* Project object */;
+}

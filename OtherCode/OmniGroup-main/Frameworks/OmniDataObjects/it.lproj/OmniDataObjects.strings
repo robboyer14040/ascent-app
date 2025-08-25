@@ -1,0 +1,161 @@
+/* error reason */
+"Attempted to disconnect while not connected." = "Tentativo di disconnessione quando non connesso.";
+
+/* error reason */
+"Attribute %@.%@ has type %ld with unknown SQL column type." = "L'attributo %1$@.%2$@ possiede il tipo %3$ld con tipo di colonna SQL sconosciuto.";
+
+/* error reason */
+"Attribute has type unsupported type %ld." = "L'attributo possiede il tipo non supportato %ld.";
+
+/* error reason */
+"Cannot connect to '%@' since the database is already connected to '%@'." = "Impossibile connettere a '%1$@' poiché il database è già connesso a '%2$@'.";
+
+/* error reason */
+"Cannot open database at '%@'." = "Impossibile aprire il database in '%@'.";
+
+/* error reason */
+"Cannot prepare fetch for key %@ for query %@ while not connected to a database." = "Impossibile preparare la ricezione della chiave %1$@ per la query %2$@ se non sei connesso al database.";
+
+/* error description */
+"Error disconnecting from database." = "Errore durante la disconnessione dal database.";
+
+/* error reason */
+"Exception raised while saving: %@" = "Eccezione rilevata durante la registrazione: %@";
+
+/* error reason */
+"Exception raised while sending -willSave: %@" = "Eccezione rilevata durante l'invio di -willSave: %@";
+
+/* error reason */
+"Failed to convert '%@' to a property list data: %@." = "Conversione di '%1$@' in un dato di elenco di proprietà non riuscita: %2$@.";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@' and no such object was registered." = "Ricevi oggetto che ha restituito errore con ID '%@' e tale oggetto non era registrato.";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared." = "Ricevi oggetto che ha restituito errore con ID '%@', ma l'oggetto ha già chiarito l'errore.";
+
+/* Multiple Delete Errors */
+"Multiple Errors" = "Errori multipli";
+
+/* error reason */
+"Multiple validation errors occurred while saving." = "Durante la registrazione si sono verificati diversi errori di convalida.";
+
+/* error reason */
+"No object with id %@ exists." = "Non esiste alcun oggetto con ID %@.";
+
+/* error description */
+"Object is scheduled for deletion." = "È programmata l'eliminazione dell'oggetto.";
+
+/* error reason */
+"Object with ID '%@' is inaccessible." = "Impossibile accedere all'oggetto con ID '%@'.";
+
+/* error reason */
+"The cache database was removed while it was still open. Close and reopen the database to recover." = "Il database di cache è stato rimosso mentre era ancora aperto. Per ripristinare il database, chiudi e riapri.";
+
+/* error reason */
+"The object with id %@ is scheduled for deletion." = "È programmata l'eliminazione dell'oggetto con ID %@.";
+
+/* error reason */
+"Tried 100 times to settle -willSave, but edits kept being made." = "Tentativo di fissare -willSave ripetuto 100 volte, ma continuano ad essere apportate modifiche.";
+
+/* error reason */
+"Unable bind boolean to slot %d of statement with SQL '%@'." = "Impossibile vincolare il booleano allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable bind constant '%@' of unknown type to slot %d of statement with SQL '%@'." = "Impossibile vincolare la costante '%1$@' di tipo sconosciuto allo slot %2$d di istruzione con SQL '%3$@'.";
+
+/* error reason */
+"Unable bind data to slot %d of statement with SQL '%@'." = "Impossibile vincolare i dati allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable bind date to slot %d of statement with SQL '%@'." = "Impossibile vincolare i dati allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable bind float64 to slot %d of statement with SQL '%@'." = "Impossibile vincolare float64 allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable bind int16 to slot %d of statement with SQL '%@'." = "Impossibile vincolare int16 allo slot %1$d di istruzione con SQL \"%2$@\".";
+
+/* error reason */
+"Unable bind int32 to slot %d of statement with SQL '%@'." = "Impossibile vincolare int32 allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable bind int64 to slot %d of statement with SQL '%@'." = "Impossibile vincolare int64 allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable bind null to slot %d of statement with SQL '%@'." = "Impossibile vincolare NULL allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable bind number '%@' of type %ld to slot %d of statement with SQL '%@'." = "Impossibile vincolare il numero “%1$@” di tipo %2$ld allo slot %3$d di istruzione con SQL “%4$@”.";
+
+/* error reason */
+"Unable bind string to slot %d of statement with SQL '%@'." = "Impossibile vincolare la stringa allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable bind XML date/time to slot %d of statement with SQL '%@'." = "Impossibile vincolare data/ora XML allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable convert expression of type %lu (%@)." = "Impossibile convertire l’espressione del tipo %1$lu (%2$@).";
+
+/* error reason */
+"Unable convert IN expression with non-constant value; %@." = "Impossibile convertire l’espressione IN con valore non costante; %@.";
+
+/* error reason */
+"Unable convert predicate of type %lu (%@)." = "Impossibile convertire il predicato del tipo %1$lu (%2$@).";
+
+/* error reason */
+"Unable get value of type %ld for result column %d of '%@'." = "Impossibile ottenere il valore del tipo %1$ld per la colonna risultato %2$d di \"%3$@\".";
+
+/* error reason */
+"Unable prepare statement for SQL '%@'." = "Impossibile preparare l'istruzione per SQL '%@'.";
+
+/* error description */
+"Unable to bind attribute value to SQL." = "Impossibile vincolare il valore attributo a SQL.";
+
+/* error description */
+"Unable to bind constant to SQL statement." = "Impossibile vincolare la costante all'istruzione SQL.";
+
+/* error description */
+"Unable to bind null to SQL statement." = "Impossibile vincolare NULL all'istruzione SQL.";
+
+/* error description */
+"Unable to bind value to SQL statement." = "Impossibile vincolare il valore all'istruzione SQL.";
+
+/* error description */
+"Unable to connect to database." = "Impossibile connettere al database.";
+
+/* error description */
+"Unable to create schema." = "Impossibile creare schema.";
+
+/* error description */
+"Unable to create SQL query." = "Impossibile creare query SQL.";
+
+/* error description */
+"Unable to create SQL statement." = "Impossibile creare istruzione SQL.";
+
+/* error description */
+"Unable to execute SQL." = "Impossibile eseguire SQL.";
+
+/* error description */
+"Unable to find object." = "Impossibile trovare l’oggetto.";
+
+/* faulting exception */
+"Unable to fulfill fault: %@" = "Impossibile eseguire l'errore: %@";
+
+/* error description */
+"Unable to fulfill fault." = "Impossibile eseguire l'errore.";
+
+/* error description */
+"Unable to open database." = "Impossibile aprire il database.";
+
+/* error reason */
+"Unable to run SQL for statement '%@'." = "Impossibile eseguire SQL per l’istruzione “%@”.";
+
+/* error description */
+"Unable to save changes to database" = "Impossibile registrare le modifiche nel database.";
+
+/* error description */
+"Unable to save metadata to database." = "Impossibile registrare metadati sul database.";
+
+/* error description */
+"Unable to save." = "Impossibile registrare.";

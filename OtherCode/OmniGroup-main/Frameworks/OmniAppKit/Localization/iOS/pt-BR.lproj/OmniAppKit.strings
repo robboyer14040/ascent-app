@@ -1,0 +1,23 @@
+/* button title */
+"Cancel" = "Cancelar";
+
+/* style validation error message for expected {type} */
+"Expected value of type “%@”" = "Valor esperado do tipo “%@”";
+
+/* button title */
+"Feature not enabled for this demo" = "Recurso não habilitado para esta demonstração.";
+
+/* button title */
+"Learn More" = "Saiba Mais";
+
+/* error recovery option */
+"More Info <error recovery>" = "Mais Informações";
+
+/* button title */
+"OK" = "OK";
+
+/* button title */
+"Retry" = "Tentar de novo";
+
+/* style validation error message for {key} */
+"Unexpected value for key “%@”" = "Valor não esperado para tecla “%@”";

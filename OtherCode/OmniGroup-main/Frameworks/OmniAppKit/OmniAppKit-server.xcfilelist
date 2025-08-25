@@ -1,0 +1,15 @@
+$(SRCROOT)/OmniAppKit.xcodeproj/project.pbxproj
+Appearance/OAColorCatalog.m
+Colors/OAColor-Archiving.m
+Colors/OAColor.m
+OAImage.m
+OAMoreInfoErrorRecovery.m
+OAStrings.m
+OpenStepExtensions.subproj/NSAttributedString-OAExtensions.m
+OpenStepExtensions.subproj/NSString-OAExtensions.m
+OpenStepExtensions.subproj/OAFontDescriptor.m
+OpenStepExtensions.subproj/OAParagraphStyle.m
+OpenStepExtensions.subproj/OATextAttachment.m
+OpenStepExtensions.subproj/OATextAttributes.m
+OpenStepExtensions.subproj/OATextStorage.m
+Tools/OASignificantTimeChangeObserver.m

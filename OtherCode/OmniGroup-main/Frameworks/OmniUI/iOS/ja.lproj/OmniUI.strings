@@ -1,0 +1,194 @@
+/* Something open in another window alert title - the token is a short description of the activity open in the other window, for example: 'Account Setup' */
+"%@ is open in another window" = "%@ は別のウインドウで開いています";
+
+/* OUITabBar N of M accessibility value */
+"%@ of %@" = "%1$@／%2$@";
+
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
+"About %@" = "%@ について";
+
+/* Bold button accessibility label */
+"Bold" = "ボールド";
+
+/* button title
+   button title - password/passphrase prompt
+   cancel button title
+   Cancel button title
+   toolbar item title */
+
+
+
+"Cancel" = "キャンセル";
+
+/* alert title */
+"Cannot Email Diagnostics" = "診断をメールで送信できません";
+
+/* Center Text Align button accessibility label. */
+"Center text align" = "テキストの中央揃え";
+
+/* Certificate trust alert title */
+"Certificate Trust" = "証明書の信頼";
+
+/* alert message */
+"Changed the '%@' preference from '%@' to '%@'" = "'%1$@' 環境設定を '%2$@' から '%3$@' に変更しました";
+
+/* placeholder text - password/passphrase confirmation field in prompt */
+"confirm" = "確認";
+
+/* When displaying a generic error, this is the option to report the error. */
+"Contact Omni" = "Omni へのお問い合わせ";
+
+/* Certificate trust alert button title */
+"Continue" = "続ける";
+
+/* increment button accessibility label */
+"Decrement" = "減らす";
+
+/* Accessibility label for dismissing a sliding overlay pane */
+"Dismiss overlay" = "オーバーレイを閉じる";
+
+/* Done
+   toolbar item title */
+
+"Done" = "完了";
+
+/* toolbar item title */
+"Edit" = "編集";
+
+/* Edit note on a task button title */
+"Edit Note" = "メモを編集";
+
+/* End editing note on a task button title */
+"End Editing" = "編集を終了";
+
+/* password field placeholder text */
+"enter password" = "パスワードを入力";
+
+/* disabled for demo */
+"Feature not enabled for this demo" = "このデモでは機能が有効になっていません";
+
+/* Overlay text when zoomed to fit screen */
+"Fit" = "合わせる";
+
+/* button title - password/passphrase prompt */
+"Help" = "ヘルプ";
+
+/* Help and Settings toolbar item accessibility label. */
+"Help and Settings" = "ヘルプと設定";
+
+/* increment button accessibility label */
+"Increment" = "増やす";
+
+/* Feedback error reason */
+"Internal error: this app has no feedback address configured." = "内部エラー：このアプリには、フィードバック用アドレスが設定されていません。";
+
+/* default special URL confirm button title */
+"Invoke" = "起動";
+
+/* button title */
+"Invoke and Quit" = "起動して終了";
+
+/* Italic button accessibility label */
+"Italic" = "イタリック";
+
+/* Justified Text Align button accessibility label. */
+"Justified text align" = "テキストの両端揃え";
+
+/* Left Text Align button accessibility label. */
+"Left text align" = "テキストの左揃え";
+
+/* Web view error opening URL title. */
+"Link could not be opened. Please check Safari restrictions in Settings." = "リンクを開けませんでした。設定で Safari に関する制限を確認してください。";
+
+/* message format */
+"Mail has not been set up on this %@." = "この %@ では、メールがセットアップされていません。";
+
+/* News menu item
+   News view title */
+
+"News" = "ニュース";
+
+/* empty value cell placeholder */
+"None" = "なし";
+
+/* Full screen note editor title */
+"Note" = "メモ";
+
+/* Text letting the user know why nothing is showing in the inspector */
+"Nothing to Inspect" = "検査の対象がありません";
+
+/* button title
+   button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
+   Web view error opening URL cancel button. */
+
+
+"OK" = "OK";
+
+/* Default title for the Omni Account menu item */
+"Omni Account" = "Omni アカウント";
+
+/* Menu item to subscribe to Omni's newsletter */
+"Omni Newsletter Signup" = "Omni ニュースレターの登録";
+
+/* placeholder text - password/passphrase field of login/password prompt */
+"password" = "パスワード";
+
+/* alert title */
+"Preference changed" = "環境設定が変更されました";
+
+/* button title */
+"Quit" = "終了";
+
+/* Redo button title */
+"Redo" = "やり直し";
+
+/* App menu item title
+   release notes html screen title */
+
+"Release Notes" = "リリースノート";
+
+/* Right Text Align button accessibility label. */
+"Right text align" = "テキストの右揃え";
+
+/* Search field placeholder text */
+"Search" = "検索";
+
+/* Show hint label - password/passphrase prompt */
+"Show hint…" = "ヒントを表示...";
+
+/* Strike Through button accessibility label */
+"Strike Through" = "取り消し線";
+
+/* Certificate trust alert button title */
+"Trust Always" = "常に信頼する";
+
+/* Feedback error description */
+"Unable to send feedback" = "フィードバックを送信できません";
+
+/* Underline button accessibility label */
+"Underline" = "アンダーライン";
+
+/* Undo button title */
+"Undo" = "取り消し";
+
+/* placeholder text - username field of login/password prompt */
+"username" = "ユーザ名";
+
+/* about page app store review link text */
+"Write a Review" = "レビューを書く";
+
+/* alert message */
+"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "以下の環境設定を変更するリンクをタップしました：\n\n“%@”\n\n変更を承認しますか？";
+
+/* debug setting alert message */
+"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "以下のデバッグ用コマンドを実行するリンクをタップしました：\n\n“%@”\n\nこれが Omni サポートスタッフからの指示でない場合は、実行しないでください。\nこのコマンドを実行しますか？";
+
+/* default special URL alert message */
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Omni の特別な URL をタップしました：\n\n“%@”\n\nこのコマンドを実行しますか？";
+
+/* zoom label */
+"Zoom" = "拡大／縮小";

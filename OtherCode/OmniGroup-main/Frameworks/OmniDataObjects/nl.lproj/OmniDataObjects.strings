@@ -1,0 +1,161 @@
+/* error reason */
+"Attempted to disconnect while not connected." = "U wilt de verbinding verbreken, maar er is geen verbinding.";
+
+/* error reason */
+"Attribute %@.%@ has type %ld with unknown SQL column type." = "Kenmerk %1$@.%2$@ is van type %3$ld met onbekend type SQL-kolom.";
+
+/* error reason */
+"Attribute has type unsupported type %ld." = "Kenmerk is van niet-ondersteund type %ld.";
+
+/* error reason */
+"Cannot connect to '%@' since the database is already connected to '%@'." = "Kan geen verbinding maken met '%1$@' omdat de database al is verbonden met '%2$@'.";
+
+/* error reason */
+"Cannot open database at '%@'." = "Kan database op '%@' niet openen.";
+
+/* error reason */
+"Cannot prepare fetch for key %@ for query %@ while not connected to a database." = "Kan fetch niet voorbereiden voor sleutel %1$@ voor query %2$@ als er geen verbinding met een database is.";
+
+/* error description */
+"Error disconnecting from database." = "Fout bij verbreken van verbinding met database.";
+
+/* error reason */
+"Exception raised while saving: %@" = "Uitzondering opgetreden tijdens bewaren van: %@";
+
+/* error reason */
+"Exception raised while sending -willSave: %@" = "Uitzondering opgetreden tijdens verzenden van -willSave: %@";
+
+/* error reason */
+"Failed to convert '%@' to a property list data: %@." = "Omzetten van '%1$@' in een eigenschappenlijst is mislukt: %2$@.";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@' and no such object was registered." = "Fetch voor fout retourneert object met ID '%@', maar dit object is niet geregistreerd.";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared." = "Fetch voor fout retourneert object met ID '%@', maar de fout voor dat object is al opgelost.";
+
+/* Multiple Delete Errors */
+"Multiple Errors" = "Meerdere fouten";
+
+/* error reason */
+"Multiple validation errors occurred while saving." = "Er zijn verschillende validatiefouten opgetreden tijdens het bewaren.";
+
+/* error reason */
+"No object with id %@ exists." = "Er bestaat geen object met id %@.";
+
+/* error description */
+"Object is scheduled for deletion." = "Object is gepland voor verwijdering.";
+
+/* error reason */
+"Object with ID '%@' is inaccessible." = "Object met ID '%@' is niet toegankelijk.";
+
+/* error reason */
+"The cache database was removed while it was still open. Close and reopen the database to recover." = "De cache-database werd verwijderd terwijl deze open was. Sluit en open de database opnieuw voor herstel.";
+
+/* error reason */
+"The object with id %@ is scheduled for deletion." = "Het object met id %@ is gepland voor verwijdering.";
+
+/* error reason */
+"Tried 100 times to settle -willSave, but edits kept being made." = "100 keer geprobeerd -willSave uit te voeren, maar er worden steeds wijzigingen aangebracht.";
+
+/* error reason */
+"Unable bind boolean to slot %d of statement with SQL '%@'." = "Kan Booleaanse waarde niet binden aan slot %1$d van instructie met SQL '%2$@'.";
+
+/* error reason */
+"Unable bind constant '%@' of unknown type to slot %d of statement with SQL '%@'." = "Kan constante '%1$@' van onbekend type niet binden aan slot '%2$d' van instructie met SQL '%3$@'.";
+
+/* error reason */
+"Unable bind data to slot %d of statement with SQL '%@'." = "Kan gegevens niet binden aan slot %1$d van instructie met SQL '%2$@'.";
+
+/* error reason */
+"Unable bind date to slot %d of statement with SQL '%@'." = "Kan datum niet binden aan slot %1$d van instructie met SQL '%2$@'.";
+
+/* error reason */
+"Unable bind float64 to slot %d of statement with SQL '%@'." = "Kan float64 niet binden aan slot %1$d van instructie met SQL '%2$@'.";
+
+/* error reason */
+"Unable bind int16 to slot %d of statement with SQL '%@'." = "Kan int16 niet binden aan sleuf %1$d van instructie met SQL ‘%2$@’.";
+
+/* error reason */
+"Unable bind int32 to slot %d of statement with SQL '%@'." = "Kan int32 niet binden aan slot %1$d van instructie met SQL '%2$@'.";
+
+/* error reason */
+"Unable bind int64 to slot %d of statement with SQL '%@'." = "Kan int64 niet binden aan slot %1$d van instructie met SQL ‘%2$@’.";
+
+/* error reason */
+"Unable bind null to slot %d of statement with SQL '%@'." = "Kan null niet binden aan slot %1$d van instructie met SQL '%2$@'.";
+
+/* error reason */
+"Unable bind number '%@' of type %ld to slot %d of statement with SQL '%@'." = "Kan nummer '%1$@' van type %2$ld niet binden aan slot '%3$d' van instructie met SQL '%4$@'.";
+
+/* error reason */
+"Unable bind string to slot %d of statement with SQL '%@'." = "Kan tekenreeks niet binden aan slot %1$d van instructie met SQL '%2$@'.";
+
+/* error reason */
+"Unable bind XML date/time to slot %d of statement with SQL '%@'." = "Kan XML-datum/tijd niet binden aan slot %1$d van verklaring met SQL '%2$@'.";
+
+/* error reason */
+"Unable convert expression of type %lu (%@)." = "Kan uitdrukking van type %1$lu (%2$@) niet omzetten.";
+
+/* error reason */
+"Unable convert IN expression with non-constant value; %@." = "Kan IN-uitdrukking met niet-constante waarde niet omzetten; %@.";
+
+/* error reason */
+"Unable convert predicate of type %lu (%@)." = "Kan predicaat van type %1$lu (%2$@) niet omzetten.";
+
+/* error reason */
+"Unable get value of type %ld for result column %d of '%@'." = "Kan waarde van type %1$ld niet opvragen voor resultaatkolom %2$d van '%3$@'.";
+
+/* error reason */
+"Unable prepare statement for SQL '%@'." = "Kan instructie niet voorbereiden voor SQL '%@'.";
+
+/* error description */
+"Unable to bind attribute value to SQL." = "Kan kenmerkwaarde niet binden aan SQL.";
+
+/* error description */
+"Unable to bind constant to SQL statement." = "Kan constante niet binden aan SQL -instructie.";
+
+/* error description */
+"Unable to bind null to SQL statement." = "Kan null niet binden aan SQL -instructie.";
+
+/* error description */
+"Unable to bind value to SQL statement." = "Kan waarde niet binden aan SQL-instructie.";
+
+/* error description */
+"Unable to connect to database." = "Kan geen verbinding maken met database.";
+
+/* error description */
+"Unable to create schema." = "Schema kan niet worden aangemaakt.";
+
+/* error description */
+"Unable to create SQL query." = "SQL-query kan niet worden aangemaakt.";
+
+/* error description */
+"Unable to create SQL statement." = "SQL-instructie kan niet worden aangemaakt.";
+
+/* error description */
+"Unable to execute SQL." = "SQL kan niet worden uitgevoerd.";
+
+/* error description */
+"Unable to find object." = "Kan object niet vinden.";
+
+/* faulting exception */
+"Unable to fulfill fault: %@" = "Fout kan niet worden opgelost: %@";
+
+/* error description */
+"Unable to fulfill fault." = "Fout kan niet worden opgelost.";
+
+/* error description */
+"Unable to open database." = "Database kan niet worden geopend.";
+
+/* error reason */
+"Unable to run SQL for statement '%@'." = "Kan SQL niet uitvoeren voor instructie '%@'.";
+
+/* error description */
+"Unable to save changes to database" = "Wijzigingen kunnen niet worden bewaard in de database";
+
+/* error description */
+"Unable to save metadata to database." = "Metagegevens kunnen niet worden bewaard in de database.";
+
+/* error description */
+"Unable to save." = "Bewaren is niet mogelijk.";

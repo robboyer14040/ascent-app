@@ -1,0 +1,77 @@
+/* error title */
+"An error has occurred." = "Se ha producido un error.";
+
+/* error description */
+"Cannot create directory." = "No se ha podido crear el directorio.";
+
+/* error description */
+"Cannot delete file." = "No se ha podido eliminar el archivo.";
+
+/* error description */
+"Cannot move file." = "No se ha podido mover el archivo.";
+
+/* error description */
+"Cannot read file" = "No se puede leer el archivo";
+
+/* bad password error reason */
+"Could not decode encryption document key." = "No se ha podido descifrar la clave de documento de encriptación.";
+
+/* error description */
+"Could not decrypt file." = "No se ha podido descifrar el archivo.";
+
+/* error description */
+"Could not find \"%@\"." = "No se encuentra “%@”.";
+
+/* error description */
+"Ensure that the address is correct and please try again." = "Asegúrate de que la dirección sea correcta e inténtalo de nuevo.";
+
+/* error description */
+"Ensure that the server address, user name, and password are correct and please try again." = "Asegúrate de que la dirección del servidor, el nombre de usuario y la contraseña sean correctos e inténtalo de nuevo.";
+
+/* error reason */
+"Failed to delete \"%@\"." = "Error al borrar “%@”.";
+
+/* error reason */
+"Failed to move \"%@\" to \"%@\"." = "Error al trasladar “%1$@” a “%2$@”.";
+
+/* bad password error description */
+"Incorrect encryption password." = "Contraseña de encriptación incorrecta.";
+
+/* error description */
+"Internal error updating keychain" = "Error interno al actualizar el llavero";
+
+/* error reason - listing a directory that doesn't exist */
+"No document exists at \"%@\"." = "No hay ningún documento en “%@”.";
+
+/* error reason */
+"No such directory \"%@\"" = "No existe el directorio “%@”.";
+
+/* error reason */
+"No such file \"%@\"." = "No existe el archivo “%@”.";
+
+/* encryption access method description - key derivation from password */
+"Password (%@; %@ rounds; %@)" = "Contraseña (%1$@; %2$@ rondas; %3$@)";
+
+/* error reason */
+"Please make sure that the destination folder exists." = "Asegúrate de que existe la carpeta de destino.";
+
+/* error reason - token is filename */
+"Unable to decrypt contents of file “%@”." = "No se ha podido desencriptar el contenido del archivo “%@”.";
+
+/* error description */
+"Unable to delete file." = "No se ha podido eliminar el archivo.";
+
+/* error description */
+"Unable to move file." = "No se ha podido mover el archivo.";
+
+/* error description */
+"Unable to read document." = "No se ha podido leer el documento.";
+
+/* error description */
+"Unable to read file." = "No se ha podido leer el archivo.";
+
+/* error description */
+"Unable to write file." = "No se ha podido escribir el archivo.";
+
+/* error detail */
+"Unrecognized settings in encryption header" = "Ajustes desconocidos en la cabecera de cifrado";

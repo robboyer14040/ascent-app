@@ -1,0 +1,210 @@
+#!/bin/zsh -euf
+#
+# Copyright 2010-2011 Omni Development, Inc. All rights reserved.
+#
+# This software may only be used and reproduced according to the
+# terms in the file OmniSourceLicense.html, which should be
+# distributed with this project and can also be found at
+# <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+#
+# $Id$
+
+#
+# Xcode doesn't go out of its way to make it easy to figure out which source
+# files were a part of which target.
+#
+
+SCRIPTS_DIR=$0:h
+
+# Always build strings into en.lproj.
+DEVELOPMENT_REGION="en"
+
+# Build the strings file(s) into a separate directory so we can avoid mucking with timestamps in the build output unless needed (see below). Don’t move the file list into place unless building it succeeds.
+STRINGS_DIR="$DERIVED_FILES_DIR/BuildStringsFromTarget-$TARGET_NAME"
+TMP_OUTPUT="$STRINGS_DIR/$DEVELOPMENT_REGION".lproj
+
+if [ "${SCRIPT_INPUT_FILE_LIST_COUNT:-0}" != "1" ] && [ "$OMNI_BUILD_STRINGS_INPUT_MISSING" = "warn" ]; then
+    echo "** No inputs declared for BuildStringsFromTarget; running older version **"
+    exec "$SCRIPTS_DIR/BuildStringsFromTarget-Old" $*
+else
+    # If we are just switching from the old script to the new, there might be a stray file.
+    rm -f "$TMP_OUTPUT"/files
+fi
+
+# Require the caller to provide a list of expected string table names. This prevents cases where NSLocalizedStringXXX calls are moved from one framework to another without fixing the table name (and thus possibly resulting in collisions)
+# Localizable nib filenames should _not_ be passed on the command line; they will be determined automatically. (This means it is valid to have a BuildStringsFromTarget step that has no arguments if the only localizable resources are nibs.)
+typeset -a EXPECTED_STRINGS_FILES
+EXPECTED_STRINGS_FILES=($*)
+
+case "$PRODUCT_TYPE" in
+	com.apple.product-type.application)	;;
+	com.apple.product-type.app-extension) ;;
+	com.apple.product-type.watchkit2-extension) ;;
+
+	*)
+	for f in $EXPECTED_STRINGS_FILES; do
+		if [ "$f" = "Localizable" ]; then
+			# This helps ensure that frameworks and bundles don't use NSLocalizableString or NSLocalizedStringFromTable, which would emit a string into Localizable.strings in the bundle target, but at run time would look it up in the main bundle.
+	        echo "*** Error: Only application targets should use the \"Localizable\" strings table, but building a product of type $PRODUCT_TYPE"
+			exit 1
+		fi
+	done
+esac
+
+
+LOCALIZABLE_FILE_LIST="$TMP_OUTPUT"/localizable-files
+
+mkdir -p "$STRINGS_DIR"
+mkdir -p "$TMP_OUTPUT"
+
+# Gather the project file and source files from the target in symbolic form.
+echo "\$(SRCROOT)/"$("$SCRIPTS_DIR"/RelativePath "$PROJECT_FILE_PATH" "$SRCROOT")/project.pbxproj  > "$LOCALIZABLE_FILE_LIST"
+$SCRIPTS_DIR/ListSourceFilesInTarget --keep-variables "$TARGET_NAME" c,m,swift,xib,storyboard "$PROJECT_FILE_PATH" >> "$LOCALIZABLE_FILE_LIST" 
+
+# For Xcode 10's build system, we should have exactly one input file specified that is the list of source files in the target that have localizable strings.
+# Make sure that the list of input files we made matches what we were given (and if not, echo a command that can be copied to update the input file).
+SYMBOLIC_LOCALIZABLE_FILE_LIST="$SRCROOT/$TARGET_NAME.xcfilelist"
+
+if [ "${SCRIPT_INPUT_FILE_LIST_COUNT:-0}" != "1" ] || ! cmp --quiet "$LOCALIZABLE_FILE_LIST" "$SYMBOLIC_LOCALIZABLE_FILE_LIST"; then
+    
+    # Xcode copies the xcfilelist input to a temporary spot and rewrites it with all absolute paths (and variables replaced).
+    # We expect a particular naming scheme for these files to make the build phases easy to set up.
+    if [ "$SCRIPT_INPUT_FILE_LIST_COUNT" = "1" ]; then
+        echo "*** Error: Out of date localizable input file list:"
+        diff "$SYMBOLIC_LOCALIZABLE_FILE_LIST" "$LOCALIZABLE_FILE_LIST" || true
+    else
+        echo "*** Error: Missing localizable input file list"
+    fi
+
+    if [ "$CONFIGURATION" = "Debug" ]; then
+        echo
+        echo "Attempting automatic repair for this $CONFIGURATION build."
+        echo
+        cp "$LOCALIZABLE_FILE_LIST" "$SYMBOLIC_LOCALIZABLE_FILE_LIST"
+        echo
+        if [ "$SCRIPT_INPUT_FILE_LIST_COUNT" = "1" ]; then
+            echo "Updated \"$SYMBOLIC_LOCALIZABLE_FILE_LIST\". Please be sure to include this change in your next commit."
+            echo "You may now rebuild."
+        else
+            echo "Created \"$SYMBOLIC_LOCALIZABLE_FILE_LIST\". Please be sure to include this change in your next commit."
+            echo
+            echo "You must also update the Build String Files shell script phase of $TARGET_NAME to include this file as an input files item:"
+            echo
+            echo "  \$(SRCROOT)/\$(TARGET_NAME).xcfilelist"
+            echo
+            echo "and an output (single) file item of:"
+            echo
+            echo "  \$(DERIVED_FILE_DIR)/\$(TARGET_NAME)-BuildStringFiles"
+            echo
+        fi
+    fi
+    exit 1
+fi
+
+# Now that we know our symbolic list of input files matches, read the preprocessed version that Xcode built
+source_files=()
+cat "$SCRIPT_INPUT_FILE_LIST_0" | while read f; do
+    if [ "$f:e" = "xib" -o "$f:e" = "storyboard" ]; then
+        # Build English strings for every xib using base localizations
+        xib_basename=`basename $f`
+        if [[ "$f" =~ "Base.lproj/$xib_basename\$" ]]; then
+            string_table_name="${xib_basename%.*}"
+            echo "Creating string table '$string_table_name' from $f" # without this line here, zsh segfaults. (!?)
+		
+    		# Extract the strings
+            ibtool --output-format human-readable-text --export-strings-file "$TMP_OUTPUT/${string_table_name}.strings" "$f"
+		
+    		# ibtool writes UTF-16 and doesn't seem to have a switch to requested a string encoding. Also, when it emits 'empty' strings files, they have a single newline.
+    		echo "  -- converting to utf-8"
+    		$SCRIPTS_DIR/ChangeStringEncoding --input utf-16 --output utf-8 "$TMP_OUTPUT/${string_table_name}.strings"
+		
+    		# But only copy the strings file into the product if it is non-empty
+    		size=$(stat -n -f %z "$TMP_OUTPUT/${string_table_name}.strings")
+    		if [ $size -gt 1 ]; then
+    	        EXPECTED_STRINGS_FILES+=$string_table_name
+    		else
+    			rm "$TMP_OUTPUT/${string_table_name}.strings"
+    			echo "  -- ignoring since it is empty"
+    		fi
+        fi
+    else
+        source_files+=($f)
+    fi
+done
+
+# Generate strings from the other source files
+if [ $#source_files -gt 0 ]; then
+    # genstrings doesn't handle Swift files. Radar 22761905.
+	xcrun extractLocStrings -u -q -o "$TMP_OUTPUT" $source_files
+fi
+
+# FIX_STRINGS_FILE="$BUILD_DIR/$CONFIGURATION"/FixStringsFile
+TOOL_PATH="${SRCROOT}/../../Tools/FixStringsFile/build/${CONFIGURATION}/FixStringsFile"
+FIX_STRINGS_FILE="$TOOL_PATH"
+
+# If we are building a real bundle (Mac framework or app) sync the built files into that bundle.
+if [ -n "${UNLOCALIZED_RESOURCES_FOLDER_PATH-}" ]; then
+    RESOURCE_DIR="$CONFIGURATION_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/$DEVELOPMENT_REGION.lproj"
+else
+    # We're building a static library (for an iOS "framework", most likely)
+    # Publish the results for the app to pick up.
+    RESOURCE_DIR="$CONFIGURATION_BUILD_DIR/Resources/$PRODUCT_NAME/$DEVELOPMENT_REGION.lproj"
+fi
+mkdir -p "$RESOURCE_DIR"
+
+if [ -d "$RESOURCE_DIR" ]; then
+    echo "Created resource dir: $RESOURCE_DIR"
+else
+    echo "Failed to create resource dir: $RESOURCE_DIR"
+fi
+
+# Copy each expected string table
+while [ $#EXPECTED_STRINGS_FILES != 0 ]; do
+    table_name=${EXPECTED_STRINGS_FILES[1]}; shift 1 EXPECTED_STRINGS_FILES;
+    
+    table_file="$TMP_OUTPUT/${table_name}.strings"
+    if [ ! -f "$table_file" ]; then
+        echo "Expected a '${table_name}' string table to be generated!"
+        exit 1
+    fi
+    
+    # Sort and translate common ASCII sequences into Unicode.
+    if [ -x "$FIX_STRINGS_FILE" ]; then
+    	"$FIX_STRINGS_FILE" "$table_file"
+    else
+        # Probably a missing target dependency on the tool.
+        echo "error: *** FixStringsFile isn't built -- skipping (this would result in ASCII to Unicode conversions not happening) ***"
+        exit 1
+    fi
+    
+	if [ "${STRINGS_FILE_OUTPUT_ENCODING-}" = "binary" ]; then
+		# In the case that we are building on iOS and these strings are in the main app wrapper, they won't go through CopyLibraryResource (which does the binary-ification for those resources).
+		echo "We gonna try to plutil -convert $table_file now"
+		/usr/bin/plutil -convert binary1 "$table_file"
+		echo "one way or another, plutil exited"
+	fi
+	
+    # Make sure not to re-copy if only the source timestamp has changed. That will invalidate timestamps that may cause further copying into the app bundle. This in turn can invalidate signing, which is very annoying if we are doing incremental device builds.
+    rsync -v --recursive --checksum "$table_file" "$RESOURCE_DIR/${table_file:t}"
+    
+    # Remove the processed files (so that we can check for unexpected files)
+    echo "removing $table_file, having just copied it to $RESOURCE_DIR"
+    rm "$table_file"
+done
+
+
+unexpected="no"
+for x in "$TMP_OUTPUT"/*(N); do
+    echo "Checking $x against ${LOCALIZABLE_FILE_LIST}"
+    if [ "$x" != "$LOCALIZABLE_FILE_LIST" ]; then
+        echo >&2 "Unexpected string file emitted: $x"
+        unexpected="yes"
+    fi
+done
+
+if [ $unexpected = "yes" ]; then
+    exit 1
+fi
+
+# We should have exactly one output, which is a dummy marker file for us to touch on success.
+touch "$SCRIPT_OUTPUT_FILE_0"

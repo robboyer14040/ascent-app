@@ -1,0 +1,16 @@
+{
+	"document-controller" = (
+		(
+			"@n",
+			false,
+			"makeNewDocument:",
+			makeNewDocument,
+		),
+		(
+			"@w",
+			false,
+			"closeDocument:",
+			closeDocument,
+		),
+	);
+}

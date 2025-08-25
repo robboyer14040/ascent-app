@@ -1,0 +1,279 @@
+/* error description */
+"%@ cannot open this type of file." = "%@ no puede abrir este tipo de archivo.";
+
+/* OmniPresence file list: status: items and size format */
+"%@ items, %@" = "%1$@ ítems, %2$@";
+
+/* OmniPresence file list: status: items and size with downloads format */
+"%@ items, %@ (%@ downloaded, %@)" = "%1$@ ítems, %2$@ (%3$@ descargados, %4$@)";
+
+/* home screen detail label */
+"%d items" = "%d ítems";
+
+/* replace document description */
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Ya existe un documento con el nombre “%@”. ¿Deseas sustituirlo? Esta acción no se puede deshacer.";
+
+/* Omni Sync Server account info button title */
+"Account Info" = "Información de la cuenta";
+
+/* Server Account Setup label: account name */
+"Account Name" = "Nombre de cuenta";
+
+/* home screen button label */
+"Add OmniPresence Account" = "Añadir cuenta de OmniPresence";
+
+/* button title
+   cancel button title
+   delete confirmation cancel button
+   Discard unsynced edits dialog: cancel button label
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
+
+"Cancel" = "Cancelar";
+
+/* email action description */
+"Choose a format for emailing \"%@\":" = "Selecciona un formato para enviar “%@” por e-mail:";
+
+/* Cloud setup modal sheet title */
+"Choose Account Type" = "Elegir tipo de cuenta";
+
+/* export options title */
+"Choose Format" = "Selecciona un formato";
+
+/* title view clear button accessibility label. */
+"Clear Title" = "Borrar título";
+
+/* Close Document toolbar item accessibility label. */
+"Close Document" = "Cerrar documento";
+
+/* demo mode disabled message */
+"Cloud storage is disabled in this demo version." = "El almacenamiento en la nube está desactivado en esta versión demo.";
+
+/* Screen title for configuring OmniPresence accounts */
+"Configure OmniPresence Syncing" = "Configurar sincr. de OmniPresence";
+
+/* Success label when connecting to an OmniPresence or WebDAV server account */
+"Connected" = "Conectado";
+
+/* Update news: button title */
+"Continue" = "Continuar";
+
+/* Menu option in the document picker view */
+"Copy as Image" = "Copiar como imagen";
+
+/* moved aside custom sample document name */
+"CustomizedSampleDocumentName" = "%@ (personalizado)";
+
+/* Server account setup confirmation action label format */
+"Delete \"%@\"" = "Eliminar “%@”";
+
+/* Server Account Setup button label */
+"Delete Account" = "Eliminar cuenta";
+
+/* Discard unsynced edits dialog: discard button label */
+"Discard Edits" = "Descartar modificaciones";
+
+/* Lose unsynced changes warning: title */
+"Discard unsynced edits?" = "¿Descartar las modificaciones no sincronizadas?";
+
+/* Toolbar button title for returning to list of documents. */
+"Documents <back button>" = "Documentos";
+
+/* OmniPresence sync status */
+"Downloading files" = "Descargando archivos";
+
+/* title view edit button item accessibility hint. */
+"Edits the document's title." = "Modifica el título del documento.";
+
+/* webdav help */
+"Enter the location of your WebDAV space." = "Introduce la ubicación de tu espacio WebDAV.";
+
+/* export button title
+   export options title
+   Export toolbar item accessibility label. */
+"Export" = "Exportar";
+
+/* export to description */
+"Export \"%@\" as:" = "Exportar “%@” como:";
+
+/* OmniPresence file list: sort order option */
+"folder and name" = "carpeta y nombre";
+
+/* iCloud stencils folder name */
+"iCloud Drive" = "iCloud Drive";
+
+/* Info item accessibility label */
+"Info" = "Información";
+
+/* OmniPresence sync status: prefix for the 'last sync' status */
+"Last sync" = "Última sincronización";
+
+/* Update news: button title */
+"Learn More" = "Más información";
+
+/* Local Documents display name */
+"Local Documents" = "Documentos locales";
+
+/* Server Account Setup label: location */
+"Location" = "Ubicación";
+
+/* OmniPresence file list: sort order option */
+"modification date" = "fecha de modificación";
+
+/* Base name for newly created documents. This will have an number appended to it to make it unique. */
+"My Document" = "Mi documento";
+
+/* OmniPresence file list: sort order option */
+"name" = "nombre";
+
+/* New Document toolbar item accessibility label.
+   New Template button title */
+"New Document" = "Nuevo documento";
+
+/* Update news: title */
+"New in iOS 13:\nFull Adoption of Apple's Document Browser" = "Nuevo en iOS 13:\nAdopción completa del navegador de documentos de Apple";
+
+/* Server Account Setup label: nickname */
+"Nickname" = "Alias";
+
+/* button title
+   When displaying a sync error, this is the option to ignore the error. */
+"OK" = "Aceptar";
+
+/* demo disabled message */
+"OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device." = "OmniPresence permite usar nuestro servicio de sincronización gratuito (o cualquier servidor WebDAV compatible) para compartir documentos automáticamente entre dispositivos, o bien para guardar copias de los documentos en la nube por si necesitas restaurar tu dispositivo en algún momento.";
+
+/* Update news: title */
+"OmniPresence Documents" = "Documentos OmniPresence";
+
+/* demo disabled title */
+"OmniPresence is disabled in this demo version." = "OmniPresence está desactivado en esta versión demo.";
+
+/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad) */
+
+"On My iPad" = "iPad";
+
+/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
+
+"On My iPhone" = "iPhone";
+
+/* Open Document Shortcut Title */
+"Open %@" = "Abrir %@";
+
+/* Language section title */
+"ouiLanguagePicker.language" = "Idioma";
+
+/* Navigation bar title: Choose a Template */
+"ouiTemplatePicker.navigationTitle" = "Elegir una plantilla";
+
+/* Server Account Setup label: password */
+"Password" = "Contraseña";
+
+/* Photo Library permisssions error description. */
+"Photo Library permission denied." = "Permiso denegado a la fototeca.";
+
+/* Menu option in the document picker view */
+"Print" = "Imprimir";
+
+/* purchase now button title */
+"Purchase Now." = "Comprar ahora";
+
+/* rename button title */
+"Rename" = "Renombrar";
+
+/* replace button title */
+"Replace" = "Reemplazar";
+
+/* replace document title */
+"Replace document?" = "¿Deseas sustituir el documento?";
+
+/* When displaying a sync error, this is the option to report the error. */
+"Report Error" = "Comunicar error";
+
+/* Restore Sample Documents Title */
+"Restore Sample Documents" = "Restaurar ejemplos";
+
+/* When displaying a sync error, this is the option to retry syncing. */
+"Retry Sync" = "Reintentar sincronización";
+
+/* Account setup toolbar button title to save account settings */
+"Save" = "Guardar";
+
+/* send to app description */
+"Send \"%@\" to app as:" = "Enviar “%@” a una aplicación como:";
+
+/* Menu option in the document picker view */
+"Send to Photos" = "Enviar a Fotos";
+
+/* export options title
+   Menu option in the document picker view */
+"Send via Mail" = "Enviar por correo";
+
+/* Label format when setting up an OmniPresence or WebDAV server account */
+"Setting up \"%@\"" = "Configurando “%@”";
+
+/* Share activity title */
+"Share As…" = "Compartir como...";
+
+/* Omni Sync Server sign up button title */
+"Sign Up For a New Account" = "Abrir una cuenta nueva";
+
+/* OmniPresence file list: sort order option */
+"size" = "tamaño";
+
+/* OmniPresence file list: sort order label */
+"Sort by:" = "Ordenar por:";
+
+/* Presence toolbar item accessibility label. */
+"Sync Now" = "Sincronizar ahora";
+
+/* Discard unsynced edits dialog: message format */
+"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "La cuenta “%1$@” tiene %2$ld documentos editados que todavía no se han sincronizado en la nube. ¿Deseas descartar las modificaciones?";
+
+/* Discard unsynced edits dialog: message format */
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "La cuenta “%@” tiene un documento editado que no se ha sincronizado en la nube. ¿Deseas descartar las modificaciones?";
+
+/* Discard unsynced edits dialog: message format */
+"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "La cuenta “%@” podría tener documentos editados que aún no se han sincronizado en la nube. ¿Deseas descartar las modificaciones realizadas en local?";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document \"%@\" requires a password to open." = "El documento “%@” requiere una contraseña para abrirlo.";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document requires a password to open." = "El documento requiere una contraseña para abrirlo.";
+
+/* Error description for a document operation failing due to a missing file. */
+"The operation couldn't be completed." = "La operación no se ha podido completar.";
+
+/* linked folder preference view: header label */
+"The template picker will include any templates found in these locations." = "El selector incluirá todas las plantillas de estas ubicaciones.";
+
+/* Photo Library permisssions error suggestion. */
+"This app does not have access to your Photo Library." = "Esta aplicación no tiene acceso a tu fototeca.";
+
+/* Error reason for a document operation failing due to a missing file. */
+"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "Este documento no es accesible. Es posible que el archivo se haya eliminado, renombrado o desplazado vía iTunes u otro proveedor externo de documentos. Intenta eliminar al archivo y añadirlo de nuevo.";
+
+/* error title */
+"Unable to open file." = "No se ha podido abrir el archivo.";
+
+/* OmniPresence sync status */
+"Uploading and downloading files" = "Cargando y descargando archivos";
+
+/* OmniPresence sync status */
+"Uploading files" = "Cargando archivos";
+
+/* Account validation status string. */
+"Validating account..." = "Validando cuenta…";
+
+/* Screen title for viewing OmniPresence documents */
+"View OmniPresence Documents" = "Ver documentos OmniPresence";
+
+/* Update news: description */
+"We've retired our custom document browser in favor of using Apple's built-in browser, making it easier than ever for you to choose where you want to keep your documents." = "Hemos retirado nuestro navegador de documentos propio con el fin de incorporar el navegador integrado de Apple, facilitando así más que nunca la elección de dónde conservar tus documentos.";
+
+/* error description */
+"While attempting to open %@, received an error from the system" = "Se ha recibido un error del sistema al intentar abrir %@";
+
+/* Update news: description */
+"Your OmniPresence documents will only be visible in the new browser when they’ve been downloaded to this device.\n\nOmniPresence does not download larger synced files automatically. You can manually download larger files to this device now, or access the download manager later from the OmniPresence icon in the toolbar." = "Tus documentos de OmniPresence solo se verán en el nuevo navegador cuando se hayan descargado en este dispositivo.\n\nOmniPresence no descarga los archivos sincronizados más grandes automáticamente. Puedes descargar ahora los archivos más grandes manualmente a este dispositivo, o bien acceder al gestor de descargas más tarde desde el icono de OmniPresence de la barra de herramientas.";

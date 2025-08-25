@@ -1,0 +1,161 @@
+/* error reason */
+"Attempted to disconnect while not connected." = "尝试在未连接的情况下断开连接。";
+
+/* error reason */
+"Attribute %@.%@ has type %ld with unknown SQL column type." = "属性 %1$@.%2$@ 的类型 %3$ld 具有未知的 SQL 栏类型。";
+
+/* error reason */
+"Attribute has type unsupported type %ld." = "属性的类型不支持类型 %ld。";
+
+/* error reason */
+"Cannot connect to '%@' since the database is already connected to '%@'." = "无法连接到“%1$@”，因为数据库已连接到“%2$@”。";
+
+/* error reason */
+"Cannot open database at '%@'." = "无法打开位于“%@”的数据库。";
+
+/* error reason */
+"Cannot prepare fetch for key %@ for query %@ while not connected to a database." = "无法在未连接到数据库的情况下准备取回查询 %2$@ 的密钥 %1$@。";
+
+/* error description */
+"Error disconnecting from database." = "中断连接数据库时发生错误。";
+
+/* error reason */
+"Exception raised while saving: %@" = "在存储时发生例外：%@";
+
+/* error reason */
+"Exception raised while sending -willSave: %@" = "在发送 -willSave 时发生例外：%@";
+
+/* error reason */
+"Failed to convert '%@' to a property list data: %@." = "将“%1$@”转换为属性列表数据失败：%2$@。";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@' and no such object was registered." = "取回 ID 为“%@”的故障返回对象，而这样的对象都没有进行注册。";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared." = "取回 ID 为“%@”的故障返回对象，而此对象的故障已清除。";
+
+/* Multiple Delete Errors */
+"Multiple Errors" = "多个错误";
+
+/* error reason */
+"Multiple validation errors occurred while saving." = "存储时发生多个验证错误。";
+
+/* error reason */
+"No object with id %@ exists." = "不存在 ID 为 %@ 的对象。";
+
+/* error description */
+"Object is scheduled for deletion." = "对象已计划删除。";
+
+/* error reason */
+"Object with ID '%@' is inaccessible." = "带有 ID“%@”的对象无法访问。";
+
+/* error reason */
+"The cache database was removed while it was still open. Close and reopen the database to recover." = "高速缓存数据库在仍打开的状态下被移去。请关闭并重新打开数据库进行恢复。";
+
+/* error reason */
+"The object with id %@ is scheduled for deletion." = "ID 为 %@ 的对象已计划删除。";
+
+/* error reason */
+"Tried 100 times to settle -willSave, but edits kept being made." = "尝试了 100 次存放 -willSave，但编辑一直都在进行。";
+
+/* error reason */
+"Unable bind boolean to slot %d of statement with SQL '%@'." = "无法绑定布尔至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable bind constant '%@' of unknown type to slot %d of statement with SQL '%@'." = "无法绑定未知类型常量“%1$@”至具有 SQL“%3$@”的语句的插槽 %2$d。";
+
+/* error reason */
+"Unable bind data to slot %d of statement with SQL '%@'." = "无法绑定数据至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable bind date to slot %d of statement with SQL '%@'." = "无法绑定日期至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable bind float64 to slot %d of statement with SQL '%@'." = "无法绑定浮点 64 至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable bind int16 to slot %d of statement with SQL '%@'." = "无法绑定 int16 至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable bind int32 to slot %d of statement with SQL '%@'." = "无法绑定 int32 至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable bind int64 to slot %d of statement with SQL '%@'." = "无法绑定 int64 至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable bind null to slot %d of statement with SQL '%@'." = "无法绑定 Null 至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable bind number '%@' of type %ld to slot %d of statement with SQL '%@'." = "无法绑定类型为 %2$ld 的数字“%1$@”至具有 SQL“%4$@”的语句的插槽 %3$d。";
+
+/* error reason */
+"Unable bind string to slot %d of statement with SQL '%@'." = "无法绑定字符串至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable bind XML date/time to slot %d of statement with SQL '%@'." = "无法绑定 XML 日期/时间至具有 SQL“%2$@”语句的插槽 %1$d。";
+
+/* error reason */
+"Unable convert expression of type %lu (%@)." = "无法转换类型为 %1$lu (%2$@) 的表达式。";
+
+/* error reason */
+"Unable convert IN expression with non-constant value; %@." = "无法转换具有非常量值的 IN 表达式；%@。";
+
+/* error reason */
+"Unable convert predicate of type %lu (%@)." = "无法转换类型为 %1$lu (%2$@) 的谓词。";
+
+/* error reason */
+"Unable get value of type %ld for result column %d of '%@'." = "无法针对“%3$@”的结果栏 %2$d 获取类型为 %1$ld 的值。";
+
+/* error reason */
+"Unable prepare statement for SQL '%@'." = "无法准备 SQL“%@”的语句。";
+
+/* error description */
+"Unable to bind attribute value to SQL." = "无法绑定属性值至 SQL。";
+
+/* error description */
+"Unable to bind constant to SQL statement." = "无法绑定常量至 SQL 语句。";
+
+/* error description */
+"Unable to bind null to SQL statement." = "无法绑定 Null 至 SQL 语句。";
+
+/* error description */
+"Unable to bind value to SQL statement." = "无法绑定值至 SQL 语句。";
+
+/* error description */
+"Unable to connect to database." = "无法连接至数据库。";
+
+/* error description */
+"Unable to create schema." = "无法创建方案。";
+
+/* error description */
+"Unable to create SQL query." = "无法创建 SQL 查询。";
+
+/* error description */
+"Unable to create SQL statement." = "无法创建 SQL 语句。";
+
+/* error description */
+"Unable to execute SQL." = "无法执行 SQL。";
+
+/* error description */
+"Unable to find object." = "找不到对象。";
+
+/* faulting exception */
+"Unable to fulfill fault: %@" = "无法结束故障：%@";
+
+/* error description */
+"Unable to fulfill fault." = "无法结束故障。";
+
+/* error description */
+"Unable to open database." = "无法打开数据库。";
+
+/* error reason */
+"Unable to run SQL for statement '%@'." = "无法执行语句“%@”的 SQL。";
+
+/* error description */
+"Unable to save changes to database" = "无法将更改存储至数据库";
+
+/* error description */
+"Unable to save metadata to database." = "无法将元数据存储至数据库。";
+
+/* error description */
+"Unable to save." = "无法存储。";

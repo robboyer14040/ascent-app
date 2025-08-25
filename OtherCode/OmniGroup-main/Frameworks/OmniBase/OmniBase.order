@@ -1,0 +1,4 @@
+OBObject.o:+[OBObject initialize]
+OBUtilities.o:_OBReplaceMethodImplementation
+OBUtilities.o:_OBReplaceMethodImplementationWithSelector
+OBUtilities.o:_OBReplaceMethodImplementationWithSelectorOnClass

@@ -1,0 +1,28 @@
+// Copyright 2006-2019 Omni Development, Inc. All rights reserved.
+//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+
+#import <CoreImage/CIImage.h>
+
+@class NSAttributedString, NSColor, NSFont;
+
+extern const CGFloat OQMakeImageAsWideAsNeededToAvoidWrapping;
+
+@interface CIImage (OQExtensions)
+
++ (CIImage *)oci_imageWithColor:(CIColor *)color;
++ (CIImage *)oci_imageWithColor:(CIColor *)color extent:(CGRect)extent;
+
+- (CIImage *)imageByCroppingToExtent:(CGRect)extent;
+- (CIImage *)flippedImage;
+- (CIImage *)imageBySourceOverCompositingWithBackgroundImage:(CIImage *)backgroundImage;
+- (CIImage *)imageBySourceAtopCompositingWithBackgroundImage:(CIImage *)backgroundImage;
+- (CIImage *)imageByScalingToSize:(CGSize)size;
+- (CIImage *)imageByTranslating:(CGPoint)offset;
+- (CIImage *)imageByScaling:(CGSize)size;
+- (CIImage *)imageByRotatingByRadians:(CGFloat)radians;
+
+@end

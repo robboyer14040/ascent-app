@@ -1,0 +1,87 @@
+/* font size label format string in points */
+"%@ points" = "%@ points";
+
+/* title format for color component slider
+   title format for color component slider - alpha component, 0-100 */
+
+"<alpha title+value>" = "Opacité : %d %%";
+
+/* title format for color component slider - blue component in RGB model, 0-255 */
+"<blue title+value>" = "Bleu : %d";
+
+/* title format for color component slider - value/brightness component in HSV model, 0-100 */
+"<brightness title+value>" = "Luminosité : %d %%";
+
+/* title format for color component slider - green component in RGB model, 0-255 */
+"<green title+value>" = "Vert : %d";
+
+/* title format for color component slider - hue angle in HSV model, degrees */
+"<hue title+value>" = "Teinte : %d °";
+
+/* title format for color component slider - red component in RGB model, 0-255 */
+"<red title+value>" = "Rouge : %d";
+
+/* title format for color component slider - saturation component in HSV model, 0-100 */
+"<saturation title+value>" = "Saturation : %d %%";
+
+/* title format for color component slider */
+"<white title+value>" = "Blanc : %d %%";
+
+/* Title for section of font list */
+"All Fonts" = "Toutes les polices";
+
+/* Title above color swatch picker for the text color. */
+"Background color" = "Couleur d’arrière-plan";
+
+/* color inspector title */
+"Color" = "Couleur";
+
+/* done action title */
+"Done" = "Terminé";
+
+/* edit action title */
+"Edit" = "Modifier";
+
+/* Inspector slice title for font family
+   Title for the font family list in the inspector */
+
+"Font" = "Police";
+
+/* Increment font size button accessibility label */
+"Font bigger" = "Police plus grande";
+
+/* Font size description accessibility label */
+"Font size" = "Taille de police";
+
+/* Decrement font size button accessibility label */
+"Font smaller" = "Police plus petite";
+
+/* hide more rows button title */
+"Hide More Rows" = "Masquer plus de lignes";
+
+/* popover inspector label title for mulitple selection */
+"Multiple Selection" = "Sélection multiple";
+
+/* Descriptive text on the no color pane of the color picker */
+"No color selected" = "Aucune couleur sélectionnée";
+
+/* popover inspector label title for no selected objects */
+"No Selection" = "Aucune sélection";
+
+/* Title for section of font list */
+"Recommended Fonts" = "Polices recommandées";
+
+/* Name for the variant of a font with out any special attributes */
+"Regular" = "Regular";
+
+/* show more rows button title */
+"Show More Rows" = "Afficher plus de lignes";
+
+/* Label for font size controls */
+"Size" = "Taille";
+
+/* Title above color swatch picker for the text color. */
+"Text color" = "Couleur de texte";
+
+/* Inspector title */
+"Text Style" = "Style de texte";

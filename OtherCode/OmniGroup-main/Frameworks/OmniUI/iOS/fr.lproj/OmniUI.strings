@@ -1,0 +1,194 @@
+/* Something open in another window alert title - the token is a short description of the activity open in the other window, for example: 'Account Setup' */
+"%@ is open in another window" = "%@ est ouvert dans une autre fenêtre";
+
+/* OUITabBar N of M accessibility value */
+"%@ of %@" = "%1$@ sur %2$@";
+
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
+"About %@" = "À propos de %@";
+
+/* Bold button accessibility label */
+"Bold" = "Gras";
+
+/* button title
+   button title - password/passphrase prompt
+   cancel button title
+   Cancel button title
+   toolbar item title */
+
+
+
+"Cancel" = "Annuler";
+
+/* alert title */
+"Cannot Email Diagnostics" = "Impossible d’envoyer le diagnostic par e-mail";
+
+/* Center Text Align button accessibility label. */
+"Center text align" = "Texte centré";
+
+/* Certificate trust alert title */
+"Certificate Trust" = "Certificat de confiance";
+
+/* alert message */
+"Changed the '%@' preference from '%@' to '%@'" = "Préférence “%1$@” modifié de “%2$@” à “%3$@”";
+
+/* placeholder text - password/passphrase confirmation field in prompt */
+"confirm" = "confirmer";
+
+/* When displaying a generic error, this is the option to report the error. */
+"Contact Omni" = "Contacter Omni";
+
+/* Certificate trust alert button title */
+"Continue" = "Continuer";
+
+/* increment button accessibility label */
+"Decrement" = "Diminuer";
+
+/* Accessibility label for dismissing a sliding overlay pane */
+"Dismiss overlay" = "Annuler la superposition";
+
+/* Done
+   toolbar item title */
+
+"Done" = "Terminé";
+
+/* toolbar item title */
+"Edit" = "Modifier";
+
+/* Edit note on a task button title */
+"Edit Note" = "Modifier la note";
+
+/* End editing note on a task button title */
+"End Editing" = "Terminer les modifications";
+
+/* password field placeholder text */
+"enter password" = "taper le mot de passe";
+
+/* disabled for demo */
+"Feature not enabled for this demo" = "Fonctionnalité non disponible pour cette démo";
+
+/* Overlay text when zoomed to fit screen */
+"Fit" = "Ajuster";
+
+/* button title - password/passphrase prompt */
+"Help" = "Aide";
+
+/* Help and Settings toolbar item accessibility label. */
+"Help and Settings" = "Aide et réglages";
+
+/* increment button accessibility label */
+"Increment" = "Augmenter";
+
+/* Feedback error reason */
+"Internal error: this app has no feedback address configured." = "Erreur interne : cette application ne possède pas d’adresse de commentaires configurée.";
+
+/* default special URL confirm button title */
+"Invoke" = "Invoquer";
+
+/* button title */
+"Invoke and Quit" = "Invoquer et quitter";
+
+/* Italic button accessibility label */
+"Italic" = "Italique";
+
+/* Justified Text Align button accessibility label. */
+"Justified text align" = "Texte justifié";
+
+/* Left Text Align button accessibility label. */
+"Left text align" = "Texte aligné à gauche";
+
+/* Web view error opening URL title. */
+"Link could not be opened. Please check Safari restrictions in Settings." = "Impossible d’ouvrir le lien. Vérifiez les restrictions de Safari dans Réglages.";
+
+/* message format */
+"Mail has not been set up on this %@." = "Mail n'a pas été configuré sur cet %@.";
+
+/* News menu item
+   News view title */
+
+"News" = "Actualités";
+
+/* empty value cell placeholder */
+"None" = "Aucun";
+
+/* Full screen note editor title */
+"Note" = "Note";
+
+/* Text letting the user know why nothing is showing in the inspector */
+"Nothing to Inspect" = "Rien à inspecter";
+
+/* button title
+   button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
+   Web view error opening URL cancel button. */
+
+
+"OK" = "OK";
+
+/* Default title for the Omni Account menu item */
+"Omni Account" = "Compte Omni";
+
+/* Menu item to subscribe to Omni's newsletter */
+"Omni Newsletter Signup" = "Abonnement au bulletin Omni";
+
+/* placeholder text - password/passphrase field of login/password prompt */
+"password" = "mot de passe";
+
+/* alert title */
+"Preference changed" = "Préférence modifiée";
+
+/* button title */
+"Quit" = "Quitter";
+
+/* Redo button title */
+"Redo" = "Rétablir";
+
+/* App menu item title
+   release notes html screen title */
+
+"Release Notes" = "Notes sur la version";
+
+/* Right Text Align button accessibility label. */
+"Right text align" = "Texte aligné à droite";
+
+/* Search field placeholder text */
+"Search" = "Rechercher";
+
+/* Show hint label - password/passphrase prompt */
+"Show hint…" = "Afficher l’indice…";
+
+/* Strike Through button accessibility label */
+"Strike Through" = "Barré";
+
+/* Certificate trust alert button title */
+"Trust Always" = "Toujours faire confiance";
+
+/* Feedback error description */
+"Unable to send feedback" = "Impossible d’envoyer un commentaire";
+
+/* Underline button accessibility label */
+"Underline" = "Souligné";
+
+/* Undo button title */
+"Undo" = "Annuler";
+
+/* placeholder text - username field of login/password prompt */
+"username" = "nom d’utilisateur";
+
+/* about page app store review link text */
+"Write a Review" = "Rédiger un avis";
+
+/* alert message */
+"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Vous avez touché un lien qui modifiera les préférences suivantes :\n\n“%@”\n\nSouhaitez-vous accepter ces modifications ?";
+
+/* debug setting alert message */
+"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Vous avez touché un lien qui exécutera la commande de débogage suivante :\n\n“%@”\n\nSi cela ne vous a pas été recommandé par des techniciens d’assistance Omni, ne le faites pas.\nSouhaitez-vous exécuter cette commande ?";
+
+/* default special URL alert message */
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Vous avez touché une URL spéciale Omni :\n\n« %@ »\n\nVoulez-vous exécuter cette commande ?";
+
+/* zoom label */
+"Zoom" = "Réduire/agrandir";

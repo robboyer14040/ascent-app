@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SubclassFloat</key>
+	<real>2</real>
+	<key>OverriddenFloat</key>
+	<real>20</real>
+	<key>SpecialLeafyString</key>
+	<string>&quot;only on subclass 2&quot;</string>
+</dict>
+</plist>

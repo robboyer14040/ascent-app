@@ -1,0 +1,23 @@
+/* button title */
+"Cancel" = "キャンセル";
+
+/* style validation error message for expected {type} */
+"Expected value of type “%@”" = "“%@” タイプの予期された値";
+
+/* button title */
+"Feature not enabled for this demo" = "このデモでは機能が有効になっていません";
+
+/* button title */
+"Learn More" = "詳しい情報";
+
+/* error recovery option */
+"More Info <error recovery>" = "詳しい情報";
+
+/* button title */
+"OK" = "OK";
+
+/* button title */
+"Retry" = "再試行";
+
+/* style validation error message for {key} */
+"Unexpected value for key “%@”" = "“%@” キーに対して予期されていなかった値";

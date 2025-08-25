@@ -1,0 +1,120 @@
+#!/usr/bin/ruby
+#
+# Copyright 2010-2012 Omni Development, Inc. All rights reserved.
+#
+# This software may only be used and reproduced according to the
+# terms in the file OmniSourceLicense.html, which should be
+# distributed with this project and can also be found at
+# <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+#
+# $Id$
+
+require 'pathname'
+require 'getoptlong'
+
+$: << File.dirname(__FILE__) + "/rubylib"
+require 'xcodeproj'
+
+$prog = File.basename(__FILE__)
+def usage
+  msg = <<EOS
+usage: #{$prog} [--no-cache] [--ignore-derived] [--attribute attr1,attr2] target-name|ANY ext1,ext2 foo.xcodeproj
+EOS
+  STDERR.print msg
+  exit 1
+end
+
+$RequiredAttributes = []
+$NoCache = false
+$IgnoreDerived = false
+$KeepVariables = false
+
+GetoptLong.new(
+  [ "--attribute", "-A", GetoptLong::REQUIRED_ARGUMENT ],
+  [ "--ignore-derived", "-D", GetoptLong::NO_ARGUMENT ],
+  [ "--keep-variables", "-V", GetoptLong::NO_ARGUMENT ],
+  [ "--no-cache", "-I", GetoptLong::NO_ARGUMENT ]
+
+).each do |opt,arg|
+  case opt
+  when "--attribute"
+    $RequiredAttributes << arg
+  when "--ignore-derived"
+    $IgnoreDerived = arg
+  when "--keep-variables"
+    $KeepVariables = arg
+  when "--no-cache"
+    $NoCache = true
+  else
+    usage()
+  end
+end
+
+usage unless ARGV.length == 3
+$TargetName = ARGV[0]
+$Extensions = ARGV[1].split(",").map {|e| ".#{e}"} # We take 'h', but File.extname returns '.h'
+$ProjectPath = ARGV[2]
+
+$CachePath = nil
+unless $NoCache
+  cache_dir = ENV["PROJECT_DERIVED_FILE_DIR"]
+  if cache_dir.nil?
+    STDERR.print "Unable to cache results since PROJECT_DERIVED_FILE_DIR is unset\n"
+  else
+    cache_dir = "#{cache_dir}/#{File.basename($0)}"
+    project_stat = File.stat($ProjectPath + "/project.pbxproj")
+    $CachePath = "#{cache_dir}/#{File.basename($ProjectPath, ".xcodeproj")}-#{project_stat.ino}-#{$TargetName}-#{$Extensions.join(',')}-#{$RequiredAttributes.join(',')}"
+    if File.exist?($CachePath) && File.mtime($CachePath) >= project_stat.mtime
+      print File.read($CachePath)
+      exit
+    end
+  end
+end
+
+$Project = Xcode::Project.new($ProjectPath)
+
+
+$MatchingFiles = []
+def do_target(target)
+  return if Xcode::PBXAggregateTarget === target # No files.
+  
+  fail "Not a native target (#{target} #{target.name})" unless Xcode::PBXNativeTarget === target
+
+  cwd = Pathname.new(".").realpath
+  
+  $Project.each_file_in_target(target) {|buildFile, fileRef|
+      name = File.basename(fileRef.path)
+      ext = File.extname(name) # "foo.h" -> ".h"
+      next unless $Extensions.index(ext)
+
+      next unless $RequiredAttributes.all? {|attr| buildFile.has_attribute?(attr) }
+
+      next if $IgnoreDerived && fileRef.isDerived?
+      
+      fullpath = $Project.resolvepath(fileRef.identifier, !$KeepVariables)
+      if $KeepVariables && fullpath.index("$")
+        $MatchingFiles << "#{fullpath}\n"
+      else
+        $MatchingFiles << Pathname.new(fullpath).relative_path_from(cwd).cleanpath().to_s + "\n"
+      end
+  }
+end
+
+$Project.targets.each {|target|
+    if $TargetName == "ANY" || target.name == $TargetName
+      do_target(target)
+    end
+}
+
+$MatchingFiles.sort!
+$MatchingFiles.uniq!
+
+result = $MatchingFiles.join("") # These are already newline terminated
+if $CachePath
+  require 'fileutils'
+  FileUtils.mkdir_p(File.dirname($CachePath))
+  File.open($CachePath, "w") {|f|
+    f << result
+  }
+end
+print result

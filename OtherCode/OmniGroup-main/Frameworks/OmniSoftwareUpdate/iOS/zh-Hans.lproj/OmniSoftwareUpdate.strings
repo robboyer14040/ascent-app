@@ -1,0 +1,126 @@
+/* Software update report format for number of cores in the CPU */
+"%@ cores" = "%@ 个核心";
+
+/* Software update report entry string for multiple crashes */
+"%ld crashes" = "%ld 次崩溃";
+
+/* Software update report entry string for a multiple hours of use */
+"%ld hours" = "%ld 小时";
+
+/* Software update report entry string for a single launch */
+"%ld launches" = "%ld 次启动";
+
+/* Software update report entry string for a multiple minutes of use */
+"%ld minutes" = "%ld 分钟";
+
+/* Software update report entry name for information about the runs of all versions of the app */
+"All versions" = "所有版本";
+
+/* Software update report entry name */
+"App ID" = "App ID";
+
+/* Software update report entry name */
+"App version" = "App 版本";
+
+/* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
+"Check operation failed." = "检查操作失败。";
+
+/* Software update report entry name */
+"CPU" = "CPU";
+
+/* Software update report entry name */
+"Device" = "设备";
+
+/* software update settings section title
+   software update settings title */
+
+"Device Information" = "设备信息";
+
+/* error description */
+"Error fetching software update information." = "获取软件更新信息时出错。";
+
+/* error description */
+"Error while checking for updated version." = "检查更新版本时出错。";
+
+/* error reason */
+"Exception raised: %@" = "出现异常 : %@";
+
+/* software update settings cell detail text */
+"Help The Omni Group decide which devices and iOS versions to support" = "帮助 Omni 团队确定要支持哪些设备和 iOS 版本";
+
+/* Settings preferences detail text */
+"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\n\nThis information is kept entirely anonymous." = "如果选择共享该信息，您将帮助我们随时了解应该支持哪些设备和 iOS 版本。\n\n该信息完全保持匿名。";
+
+/* Software update report entry name */
+"iOS version" = "iOS 版本";
+
+/* Software update report entry name */
+"Language" = "语言";
+
+/* Software update report entry name */
+"Memory" = "内存";
+
+/* Software update report entry string for a single crash */
+"One crash" = "一次崩溃";
+
+/* Software update report entry string for a single hour of use */
+"One hour" = "一小时";
+
+/* Software update report entry string for a single launch */
+"One launch" = "一次启动";
+
+/* Software update report entry string for a single minute of use */
+"One minute" = "一分钟";
+
+/* error reason */
+"Please try again later or contact us to let us know this is broken." = "请稍后重试，或联系我们，告知此已损坏。";
+
+/* Software update report entry name */
+"Report ID" = "报告 ID";
+
+/* Software update report entry name */
+"Report version" = "报告版本";
+
+/* Settings option title
+   software update settings cell title */
+
+"Send Anonymous Data" = "发送匿名数据";
+
+/* software update settings menu title */
+"Settings" = "设置";
+
+/* Software update report entry name */
+"Storage" = "存储";
+
+/* error reason */
+"The background software update service failed." = "后台软件更新服务失败。";
+
+/* error description */
+"The data returned from <%@> was not a valid XML document." = "“%@”返回的数据不是有效的 XML 文稿。";
+
+/* Settings option title */
+"The following information will be sent:" = "将发送以下信息:";
+
+/* error description - the update information wasn't signed at all, but we require it to be signed */
+"The update information is not signed." = "更新信息未得到签名。";
+
+/* error description - the checksum or signature didn't match - more info in underlying error */
+"There was a problem checking the signature." = "检查签名时出现问题。";
+
+/* Software update report entry name for information about the runs of the current version of the app */
+"This version" = "该版本";
+
+/* error reason */
+"Timed out waiting for the software update service." = "等待软件更新服务超时。";
+
+/* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
+"Tool returned no data" = "工具没有返回任何数据";
+
+/* error description - we have some update information but it doesn't look authentic */
+"Unable to authenticate the response from the software update server." = "无法鉴定软件更新服务器发出的响应。";
+
+/* error description - will be followed by more detailed error reason */
+"Unable to fetch software update information." = "无法取回软件更新信息。";
+
+/* error description */
+"Unable to parse response from the software update server." = "无法解析软件更新服务器的响应。";

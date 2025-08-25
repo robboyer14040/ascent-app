@@ -1,0 +1,16 @@
+// Copyright 2005-2019 Omni Development, Inc. All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+
+// Common settings
+#include "Omni-Global-Common.xcconfig"
+
+// Common settings for Release configurations
+DSTROOT = /
+// INSTALL_PATH = $(OMNI_INSTALLED_PRODUCTS)
+
+// Xcode 10 recommends this, and Xcode 9.3+ recognize it. This leave SWIFT_OPTIMIZATION_LEVEL set to the default '-O'.
+SWIFT_COMPILATION_MODE = wholemodule
+
+// Support for build suffixes (see the use in Omni-Global-Common.xcconfig)
+OMNI_BUILD_FILE_SUFFIX =
+OMNI_BUILD_IDENTIFIER_SUFFIX =

@@ -1,0 +1,214 @@
+// !$*UTF8*$!
+{
+	0259C573FE90428111CA0C5A /* Project object */ = {
+		activeBuildConfigurationName = Debug;
+		activeExecutable = D4771D99111CE46300D8B8CD /* SampleApp(Leo) */;
+		activeTarget = D5E003C5073299CB00594182 /* Build for Leo */;
+		codeSenseManager = D4771DB1111CE48600D8B8CD /* Code sense */;
+		executables = (
+			D4771D99111CE46300D8B8CD /* SampleApp(Leo) */,
+			D4771D9A111CE46300D8B8CD /* SampleApp(LeoGC) */,
+			D4771D9B111CE46300D8B8CD /* SampleApp(Sno) */,
+			D4771D9C111CE46300D8B8CD /* SampleApp(SnoGC) */,
+		);
+		perUserDictionary = {
+			PBXConfiguration.PBXFileTableDataSource3.PBXFileTableDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					612,
+					20,
+					48,
+					43,
+					43,
+					20,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+					PBXFileDataSource_Target_ColumnID,
+				);
+			};
+			PBXPerProjectTemplateStateSaveDate = 288540472;
+			PBXWorkspaceStateSaveDate = 288540472;
+		};
+		sourceControlManager = D4771DB0111CE48600D8B8CD /* Source Control */;
+		userBuildSettings = {
+		};
+	};
+	8D1AC9600486D14A00FE50C9 /* IBPlugin(Leo) */ = {
+		activeExec = 0;
+	};
+	D4771D99111CE46300D8B8CD /* SampleApp(Leo) */ = {
+		isa = PBXExecutable;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		autoAttachOnCrash = 1;
+		breakpointsEnabled = 0;
+		configStateDict = {
+		};
+		customDataFormattersEnabled = 1;
+		dataTipCustomDataFormattersEnabled = 1;
+		dataTipShowTypeColumn = 1;
+		dataTipSortType = 0;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		libgmallocEnabled = 0;
+		name = "SampleApp(Leo)";
+		showTypeColumn = 0;
+		sourceDirectories = (
+		);
+	};
+	D4771D9A111CE46300D8B8CD /* SampleApp(LeoGC) */ = {
+		isa = PBXExecutable;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		autoAttachOnCrash = 1;
+		breakpointsEnabled = 0;
+		configStateDict = {
+		};
+		customDataFormattersEnabled = 1;
+		dataTipCustomDataFormattersEnabled = 1;
+		dataTipShowTypeColumn = 1;
+		dataTipSortType = 0;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		libgmallocEnabled = 0;
+		name = "SampleApp(LeoGC)";
+		showTypeColumn = 0;
+		sourceDirectories = (
+		);
+	};
+	D4771D9B111CE46300D8B8CD /* SampleApp(Sno) */ = {
+		isa = PBXExecutable;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		autoAttachOnCrash = 1;
+		breakpointsEnabled = 0;
+		configStateDict = {
+		};
+		customDataFormattersEnabled = 1;
+		dataTipCustomDataFormattersEnabled = 1;
+		dataTipShowTypeColumn = 1;
+		dataTipSortType = 0;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		libgmallocEnabled = 0;
+		name = "SampleApp(Sno)";
+		showTypeColumn = 0;
+		sourceDirectories = (
+		);
+	};
+	D4771D9C111CE46300D8B8CD /* SampleApp(SnoGC) */ = {
+		isa = PBXExecutable;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		autoAttachOnCrash = 1;
+		breakpointsEnabled = 0;
+		configStateDict = {
+		};
+		customDataFormattersEnabled = 1;
+		dataTipCustomDataFormattersEnabled = 1;
+		dataTipShowTypeColumn = 1;
+		dataTipSortType = 0;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		libgmallocEnabled = 0;
+		name = "SampleApp(SnoGC)";
+		showTypeColumn = 0;
+		sourceDirectories = (
+		);
+	};
+	D4771DB0111CE48600D8B8CD /* Source Control */ = {
+		isa = PBXSourceControlManager;
+		fallbackIsa = XCSourceControlManager;
+		isSCMEnabled = 0;
+		scmConfiguration = {
+			repositoryNamesForRoots = {
+				"" = "";
+			};
+		};
+	};
+	D4771DB1111CE48600D8B8CD /* Code sense */ = {
+		isa = PBXCodeSenseManager;
+		indexTemplatePath = "";
+	};
+	D575526A1081C668008B2348 /* Library(Sno) */ = {
+		activeExec = 0;
+	};
+	D57552A41081CB10008B2348 /* SampleApp(Sno) */ = {
+		activeExec = 0;
+		executables = (
+			D4771D9B111CE46300D8B8CD /* SampleApp(Sno) */,
+		);
+	};
+	D57552CA1081D325008B2348 /* SampleApp(SnoGC) */ = {
+		activeExec = 0;
+		executables = (
+			D4771D9C111CE46300D8B8CD /* SampleApp(SnoGC) */,
+		);
+	};
+	D57553891082D7BC008B2348 /* SampleApp(LeoGC) */ = {
+		activeExec = 0;
+		executables = (
+			D4771D9A111CE46300D8B8CD /* SampleApp(LeoGC) */,
+		);
+	};
+	D57553A11082D85C008B2348 /* Build for Sno */ = {
+		activeExec = 0;
+	};
+	D57553CE1082D9DA008B2348 /* Framework(Sno) */ = {
+		activeExec = 0;
+	};
+	D57553E21082DA31008B2348 /* IBPlugin(Sno) */ = {
+		activeExec = 0;
+	};
+	D5E002A007328E1100594182 /* Framework(Leo) */ = {
+		activeExec = 0;
+	};
+	D5E003B8073298FC00594182 /* Library(Leo) */ = {
+		activeExec = 0;
+	};
+	D5E003C5073299CB00594182 /* Build for Leo */ = {
+		activeExec = 0;
+	};
+	D5EA8A08074CF5AB00AE807E /* SampleApp(Leo) */ = {
+		activeExec = 0;
+		executables = (
+			D4771D99111CE46300D8B8CD /* SampleApp(Leo) */,
+		);
+	};
+}

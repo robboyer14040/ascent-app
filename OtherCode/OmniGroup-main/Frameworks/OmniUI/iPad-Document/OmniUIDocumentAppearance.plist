@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>serverAccountRowHeight</key>
+	<integer>100</integer>
+	<key>serverAccountAddRowHeight</key>
+	<integer>60</integer>
+	<key>documentPickerTintColorAgainstBackground</key>
+	<dict>
+		<key>w</key>
+		<integer>1</integer>
+		<key>a</key>
+		<integer>1</integer>
+	</dict>
+	<key>documentOpeningAnimationDuration</key>
+	<real>0.3</real>
+	<key>documentClosingAnimationDuration</key>
+	<real>0.5</real>
+	<key>documentSyncMinimumVisiblityFromActivityStartTimeInterval</key>
+	<real>0.45</real>
+	<key>documentSyncMinimumVisiblityFromLastActivityTimeInterval</key>
+	<real>0.3</real>
+	<key>maxFontSizeForRenameSession</key>
+	<integer>20</integer>
+</dict>
+</plist>

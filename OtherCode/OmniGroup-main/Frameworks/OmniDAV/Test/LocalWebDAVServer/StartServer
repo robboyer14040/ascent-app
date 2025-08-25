@@ -1,0 +1,132 @@
+#!/bin/zsh -euf
+
+set -x
+
+#
+# Runs a WebDAV server in a temporary directory. Primarily for testing support for self-signed certificates.
+#
+
+# Built my own apache 2.4.3, after downloading apr and apr-util into srclib/ with:
+#   CPP='cc -E' CC=clang ./configure --with-included-apr --prefix=/usr/local/apache2
+#   make; make install
+
+: ${ROOT:=/Users/Shared/$USER/LocalWebDAVServer}
+: ${REALM="My Test Realm"}
+
+if [[ -z "${HTTPD:+foo}" ]]; then
+    if [ -x /usr/local/apache2/bin/httpd ]; then
+        HTTPD=/usr/local/apache2/bin/httpd
+    else
+        HTTPD=`which httpd`
+    fi
+fi
+
+RUN_DIR="$ROOT/Run"
+DOC_DIR="$ROOT/Documents"
+CONFIG_DIR="$ROOT/Configuration"
+LOG_DIR="$ROOT/Logs"
+mkdir -p "$ROOT" "$RUN_DIR" "$DOC_DIR" "$CONFIG_DIR" "$LOG_DIR"
+
+openssl_conffile=`mktemp`
+
+function makereq () {
+  subjsection="$1"
+  shift
+  (
+    echo 'HOST = "'"$HOST"'"'
+    echo 'REALM = "'"$REALM"'"'
+    echo 'DATE = "'`date`'"'
+    echo
+    sed -e 's/distinguished_name = .*$/distinguished_name = '"$subjsection"'/' < template-openssl.conf
+  ) > "$openssl_conffile"
+  /usr/bin/openssl req -config "$openssl_conffile" -new "$@"
+}
+
+CA_KEY_PATH="$CONFIG_DIR/ca.key"
+CA_CRT_PATH="$CONFIG_DIR/ca.crt"
+CA_SERIAL_PATH="$CONFIG_DIR/ca-serial.txt"
+KEY_PATH="$CONFIG_DIR/server.key"
+CRT_PATH="$CONFIG_DIR/server.crt"
+
+if [ ! -f "$CA_KEY_PATH" -o ! -f "$CA_KEY_PATH" ]; then
+  makereq ca_subject -x509 -extensions ca_cert_extensions -keyout "$CA_KEY_PATH" -out "$CA_CRT_PATH"
+  if [ -f "$CRT_PATH" ]; then rm "$CRT_PATH"; fi
+  /usr/bin/openssl x509 -inform PEM -in "$CA_CRT_PATH" -outform DER -out "$CA_CRT_PATH.der"
+  security add-certificate "$CA_CRT_PATH.der"
+  security add-trusted-cert -p ssl "$CA_CRT_PATH.der"
+  rm "$CA_CRT_PATH.der"
+fi
+
+if [ ! -f "$KEY_PATH" -o ! -f "$CRT_PATH" ]; then
+  makereq leaf_subject -keyout "$KEY_PATH" -outform PEM | /usr/bin/openssl x509 -inform PEM -req -CA "$CA_CRT_PATH" -CAkey "$CA_KEY_PATH" -CAserial "$CA_SERIAL_PATH" -CAcreateserial -sha256 -extfile "$openssl_conffile" -extensions leaf_cert_extensions -out "$CRT_PATH"
+fi
+
+rm "$openssl_conffile"
+
+HTTPD_ROOT=`$HTTPD -V | perl -ne 'print "$1" if m|-D\s*HTTPD_ROOT="(/.*)"\s*$|;'`
+if [[ -z "$HTTPD_ROOT" ]]; then
+    echo "Cannot determine HTTPD_ROOT?" >&2
+    exit 1
+fi
+
+if [ -d "$HTTPD_ROOT/lib/httpd/modules" ]; then
+   MODULES='lib/httpd/modules'
+else
+   MODULES='modules'
+fi
+
+HTTPD_STATIC_MPM=`$HTTPD -l | egrep '(prefork|worker|event)' || true`
+if [[ -z "$HTTPD_STATIC_MPM" ]]; then
+    echo "No static MPM detected; loading prefork"
+    HTTPD_MPM_LOADMODULE="LoadModule mpm_prefork_module modules/mod_mpm_prefork.so"
+else
+    echo "Detected static MPM"
+    HTTPD_MPM_LOADMODULE="# Apache was compiled with static MPM module: $HTTPD_STATIC_MPM"
+fi
+
+< template-httpd.conf sed \
+    -e "s|HTTPD_ROOT|$HTTPD_ROOT|g;" \
+	-e "s|RUN_DIR|$RUN_DIR|g;" \
+	-e "s|DOC_DIR|$DOC_DIR|g;" \
+	-e "s|CONFIG_DIR|$CONFIG_DIR|g;" \
+	-e "s|LOG_DIR|$LOG_DIR|g;" \
+	-e "s|SERVER_NAME|$HOST|g;" \
+    -e "s|MPM_LOADMODULE|$HTTPD_MPM_LOADMODULE|g;" \
+	-e "s|LoadModule \([^ ]*\) modules/|LoadModule \1 $MODULES/|g;" \
+	-e "s|LOCAL_PORT|8001|g;" > "$CONFIG_DIR/httpd.conf"
+
+# Generate 100 test users (mostly so we don't hit NSURLConnection's credential cache)
+rm -f "$CONFIG_DIR/user.passwd"
+
+function append_user {
+    < template-user.conf sed \
+	-e "s|USER_NUMBER|$1|g;" \
+	-e "s|CONFIG_DIR|$CONFIG_DIR|g;" \
+	-e "s|DOC_DIR|$DOC_DIR|g;" >> "$CONFIG_DIR/httpd.conf"
+    mkdir -p "$DOC_DIR/test$1"
+    mkdir -p "$DOC_DIR/test$1/redirect-dst"
+
+    DIGEST=$(echo -n "test$1:$REALM:password" | /usr/bin/openssl dgst -md5)
+    echo test$1:$REALM:$DIGEST >> "$CONFIG_DIR/user.passwd"
+}
+
+unsetopt xtrace
+for n in {0..99}; do
+    append_user $n
+done
+
+# Also make a non-suffixed user for direct testing
+append_user ""
+setopt xtrace
+
+# We'll have a special user for testing password changes, starting with a default password
+mkdir -p "$DOC_DIR/test_pw"
+DIGEST=$(echo -n "test_pw:$REALM:password" | /usr/bin/openssl dgst -md5)
+echo test_pw:$REALM:$DIGEST >> "$CONFIG_DIR/test_pw.passwd"
+
+# Remove all locks when restarting the server
+rm -f "$RUN_DIR"/DavLock.dir
+rm -f "$RUN_DIR"/DavLock.pag
+
+# Run in foreground mode so that this won't detach from the console
+$HTTPD -D FOREGROUND -f "$CONFIG_DIR/httpd.conf"

@@ -1,0 +1,27 @@
+{
+    // Consult OUIKeyCommands for formatting options
+
+    "text" = (
+        ("up",true,"moveUpAtTop:"),
+        ("^p",false,"moveUpAtTop:"),
+        ("down",true,"moveDownAtBottom:"),
+        ("^n",false,"moveDownAtBottom:"),
+        ("right",true,"moveRightAtEnd:"),
+        ("^f",false,"moveRightAtEnd:"),
+        ("left",true,"moveLeftAtBeginning:"),
+        ("^b",false,"moveLeftAtBeginning:"),
+        
+        // 14357300: TextKit: Emacs key bindings only half implemented and sometimes buggy
+        ("^a",false,"moveToBeginningOfParagraph:"),
+        ("$^a",false,"moveToBeginningOfParagraphAndModifySelection:"),
+        ("^e",false,"moveToEndOfParagraph:"),
+        ("$^e",false,"moveToEndOfParagraphAndModifySelection:"),
+    );
+	
+	"webView" = (
+		("@r",false,"reload:", "reload"),
+		("@[",false,"goBack:", "goBack"),
+		("@]",false,"goForward:", "goForward"),
+		("@.",false,"stopLoading:", "stopLoading"),
+	);
+}

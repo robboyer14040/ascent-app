@@ -1,0 +1,194 @@
+/* Something open in another window alert title - the token is a short description of the activity open in the other window, for example: 'Account Setup' */
+"%@ is open in another window" = "%@ is open in een ander venster";
+
+/* OUITabBar N of M accessibility value */
+"%@ of %@" = "%1$@ van %2$@";
+
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
+"About %@" = "Over %@";
+
+/* Bold button accessibility label */
+"Bold" = "Vet";
+
+/* button title
+   button title - password/passphrase prompt
+   cancel button title
+   Cancel button title
+   toolbar item title */
+
+
+
+"Cancel" = "Annuleer";
+
+/* alert title */
+"Cannot Email Diagnostics" = "Kan geen diagnose via e-mail verzenden";
+
+/* Center Text Align button accessibility label. */
+"Center text align" = "Tekst centreren";
+
+/* Certificate trust alert title */
+"Certificate Trust" = "Certificaatvertrouwenslijst";
+
+/* alert message */
+"Changed the '%@' preference from '%@' to '%@'" = "De voorkeur '%1$@' is gewijzigd van '%2$@' naar '%3$@'";
+
+/* placeholder text - password/passphrase confirmation field in prompt */
+"confirm" = "bevestig";
+
+/* When displaying a generic error, this is the option to report the error. */
+"Contact Omni" = "Neem contact op met Omni";
+
+/* Certificate trust alert button title */
+"Continue" = "Ga door";
+
+/* increment button accessibility label */
+"Decrement" = "Vermindering";
+
+/* Accessibility label for dismissing a sliding overlay pane */
+"Dismiss overlay" = "Verwijder overlay";
+
+/* Done
+   toolbar item title */
+
+"Done" = "Gereed";
+
+/* toolbar item title */
+"Edit" = "Wijzig";
+
+/* Edit note on a task button title */
+"Edit Note" = "Wijzig notitie";
+
+/* End editing note on a task button title */
+"End Editing" = "Eindig wijzigen";
+
+/* password field placeholder text */
+"enter password" = "voer het wachtwoord in";
+
+/* disabled for demo */
+"Feature not enabled for this demo" = "Functie niet beschikbaar in deze demo";
+
+/* Overlay text when zoomed to fit screen */
+"Fit" = "Pas aan";
+
+/* button title - password/passphrase prompt */
+"Help" = "Help";
+
+/* Help and Settings toolbar item accessibility label. */
+"Help and Settings" = "Help en instellingen";
+
+/* increment button accessibility label */
+"Increment" = "Vermeerdering";
+
+/* Feedback error reason */
+"Internal error: this app has no feedback address configured." = "Interne fout: voor deze app is geen feedbackadres geconfigureerd.";
+
+/* default special URL confirm button title */
+"Invoke" = "Aanroepen";
+
+/* button title */
+"Invoke and Quit" = "Roep aan en stop";
+
+/* Italic button accessibility label */
+"Italic" = "Cursief";
+
+/* Justified Text Align button accessibility label. */
+"Justified text align" = "Tekst uitvullen";
+
+/* Left Text Align button accessibility label. */
+"Left text align" = "Tekst links uitlijnen";
+
+/* Web view error opening URL title. */
+"Link could not be opened. Please check Safari restrictions in Settings." = "Koppeling kan niet worden geopend. Controleer de Safari-beperkingen in Instellingen.";
+
+/* message format */
+"Mail has not been set up on this %@." = "E-mail is niet ingesteld op deze %@.";
+
+/* News menu item
+   News view title */
+
+"News" = "Nieuws";
+
+/* empty value cell placeholder */
+"None" = "Geen";
+
+/* Full screen note editor title */
+"Note" = "Notitie";
+
+/* Text letting the user know why nothing is showing in the inspector */
+"Nothing to Inspect" = "Niets te inspecteren";
+
+/* button title
+   button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
+   Web view error opening URL cancel button. */
+
+
+"OK" = "OK";
+
+/* Default title for the Omni Account menu item */
+"Omni Account" = "Omni-account";
+
+/* Menu item to subscribe to Omni's newsletter */
+"Omni Newsletter Signup" = "Abonneren op nieuwsbrief";
+
+/* placeholder text - password/passphrase field of login/password prompt */
+"password" = "wachtwoord";
+
+/* alert title */
+"Preference changed" = "Voorkeur gewijzigd";
+
+/* button title */
+"Quit" = "Stop";
+
+/* Redo button title */
+"Redo" = "Opnieuw";
+
+/* App menu item title
+   release notes html screen title */
+
+"Release Notes" = "Versiegegevens";
+
+/* Right Text Align button accessibility label. */
+"Right text align" = "Tekst rechts uitlijnen";
+
+/* Search field placeholder text */
+"Search" = "Zoek";
+
+/* Show hint label - password/passphrase prompt */
+"Show hint…" = "Toon tip...";
+
+/* Strike Through button accessibility label */
+"Strike Through" = "Doorhalen";
+
+/* Certificate trust alert button title */
+"Trust Always" = "Vertrouw altijd";
+
+/* Feedback error description */
+"Unable to send feedback" = "Kan geen feedback verzenden";
+
+/* Underline button accessibility label */
+"Underline" = "Onderstreping";
+
+/* Undo button title */
+"Undo" = "Herstel";
+
+/* placeholder text - username field of login/password prompt */
+"username" = "gebruikersnaam";
+
+/* about page app store review link text */
+"Write a Review" = "Schrijf een recensie";
+
+/* alert message */
+"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "U hebt op een koppeling getikt die de volgende voorkeuren zal wijzigen:\n\n“%@”\n\nWilt u deze wijzigingen accepteren?";
+
+/* debug setting alert message */
+"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "U hebt op een koppeling getikt die de volgende foutopsporingsopdracht zal uitvoeren:\n\n“%@”\n\nDoe dit niet als u dit niet bent gevraagd door de mensen van de Omni-ondersteuningsdienst.\nWilt u deze opdracht uitvoeren?";
+
+/* default special URL alert message */
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "U hebt op een speciale URL van Omni getikt:\n\n“%@”\n\nDeze opdracht uitvoeren?";
+
+/* zoom label */
+"Zoom" = "Zoom";

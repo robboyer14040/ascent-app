@@ -1,0 +1,5 @@
+CLANG_ENABLE_MODULES = YES
+EXPLICIT_PRECOMPILED_MODULES = NO
+OTHER_CFLAGS = $(inherited) -fmodules
+OTHER_CPLUSPLUSFLAGS = $(inherited) -fmodules
+OTHER_SWIFT_FLAGS = $(inherited) -Xcc -fmodules

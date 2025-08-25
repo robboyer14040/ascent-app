@@ -1,0 +1,126 @@
+/* Software update report format for number of cores in the CPU */
+"%@ cores" = "%@ núcleos";
+
+/* Software update report entry string for multiple crashes */
+"%ld crashes" = "%ld bloqueos";
+
+/* Software update report entry string for a multiple hours of use */
+"%ld hours" = "%ld horas";
+
+/* Software update report entry string for a single launch */
+"%ld launches" = "%ld inicios";
+
+/* Software update report entry string for a multiple minutes of use */
+"%ld minutes" = "%ld minutos";
+
+/* Software update report entry name for information about the runs of all versions of the app */
+"All versions" = "Todas las versiones";
+
+/* Software update report entry name */
+"App ID" = "ID de App";
+
+/* Software update report entry name */
+"App version" = "Versión de App";
+
+/* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
+"Check operation failed." = "Error en la operación de comprobación.";
+
+/* Software update report entry name */
+"CPU" = "CPU";
+
+/* Software update report entry name */
+"Device" = "Dispositivo";
+
+/* software update settings section title
+   software update settings title */
+
+"Device Information" = "Información del dispositivo";
+
+/* error description */
+"Error fetching software update information." = "Error al recoger información sobre la actualización de software.";
+
+/* error description */
+"Error while checking for updated version." = "Error al buscar una versión actualizada.";
+
+/* error reason */
+"Exception raised: %@" = "Excepción: %@";
+
+/* software update settings cell detail text */
+"Help The Omni Group decide which devices and iOS versions to support" = "Ayuda a The Omni Group a decidir qué dispositivos y versiones de iOS deben ser compatibles con tus productos";
+
+/* Settings preferences detail text */
+"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\n\nThis information is kept entirely anonymous." = "Si compartes esta información, nos ayudas con datos importantes sobre la compatibilidad de dispositivos y versiones de iOS con nuestro software.\n\nEsta información es totalmente anónima.";
+
+/* Software update report entry name */
+"iOS version" = "Versión de iOS";
+
+/* Software update report entry name */
+"Language" = "Idioma";
+
+/* Software update report entry name */
+"Memory" = "Memoria";
+
+/* Software update report entry string for a single crash */
+"One crash" = "Un bloqueo";
+
+/* Software update report entry string for a single hour of use */
+"One hour" = "Una hora";
+
+/* Software update report entry string for a single launch */
+"One launch" = "Una ejecución";
+
+/* Software update report entry string for a single minute of use */
+"One minute" = "Un minuto";
+
+/* error reason */
+"Please try again later or contact us to let us know this is broken." = "Inténtalo de nuevo más tarde o ponte en contacto con nosotros para informarnos del error.";
+
+/* Software update report entry name */
+"Report ID" = "ID de informe";
+
+/* Software update report entry name */
+"Report version" = "Versión del informe";
+
+/* Settings option title
+   software update settings cell title */
+
+"Send Anonymous Data" = "Enviar información anónima";
+
+/* software update settings menu title */
+"Settings" = "Ajustes";
+
+/* Software update report entry name */
+"Storage" = "Almacenamiento";
+
+/* error reason */
+"The background software update service failed." = "Error en el servicio de actualización de software en segundo plano.";
+
+/* error description */
+"The data returned from <%@> was not a valid XML document." = "Los datos devueltos por <%@> no eran un documento XML válido.";
+
+/* Settings option title */
+"The following information will be sent:" = "Se enviará la siguiente información:";
+
+/* error description - the update information wasn't signed at all, but we require it to be signed */
+"The update information is not signed." = "La información de la actualización no está firmada.";
+
+/* error description - the checksum or signature didn't match - more info in underlying error */
+"There was a problem checking the signature." = "Ha habido un problema al comprobar la firma.";
+
+/* Software update report entry name for information about the runs of the current version of the app */
+"This version" = "Esta versión";
+
+/* error reason */
+"Timed out waiting for the software update service." = "Se ha agotado el tiempo de espera del servicio de actualización de software.";
+
+/* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
+"Tool returned no data" = "La herramienta no ha devuelto datos";
+
+/* error description - we have some update information but it doesn't look authentic */
+"Unable to authenticate the response from the software update server." = "No se ha podido autenticar la respuesta del servidor de actualizaciones de software.";
+
+/* error description - will be followed by more detailed error reason */
+"Unable to fetch software update information." = "No se ha podido recoger información sobre la actualización de software.";
+
+/* error description */
+"Unable to parse response from the software update server." = "No se ha podido analizar la respuesta del servidor de actualizaciones de software.";

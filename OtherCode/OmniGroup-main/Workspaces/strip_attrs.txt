@@ -1,0 +1,11 @@
+# adjust SRC to your real resources root(s)
+SRC="Ascent/Ascent/Resources"
+
+# 1) remove AppleDouble sidecars and weird Icon files
+/usr/bin/find "$SRC" -type f -name '._*'    -delete
+/usr/bin/find "$SRC" -type f -name 'Icon?'  -delete
+/usr/bin/find "$SRC" -type f -name $'Icon\r' -delete
+/usr/bin/find "$SRC" -type f -name '.DS_Store' -delete
+
+# 2) strip all extended attributes (files & dirs)
+/usr/bin/xattr -rc "$SRC"

@@ -1,0 +1,47 @@
+// Copyright 2006-2021 Omni Development, Inc. All rights reserved.
+//
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+//
+// $Id$
+
+// We were setting this for all build types on iPhone/iPad. Necessary, or only do it for Debug like on the Mac?
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+
+// Use the latest iOS SDK with a specific deployment target. Setting this as a separate variable lets us pass OMNI_SDKROOT=iphonesimulator to xcodebuild. Using the -sdk flag on Xcode build will make it try to build Mac helper tools used during the build (FixStringsFile, etc) for iOS.
+// This also means that if you want a specific version rather than latest, you can't define it in your project (since that will break simulator builds). So, instead add OMNI_SDK_VERSION=8.3 or whatever.
+OMNI_SDK_VERSION =
+OMNI_SDKROOT = iphoneos
+SDKROOT = $(OMNI_SDKROOT)$(OMNI_SDK_VERSION)
+
+// This needs to be overridden in xcodebuild builds as well, to prevent a watchOS app from being built when building for the simulator (isn't needed in Xcode for some reason).
+OMNI_SUPPORTED_PLATFORMS = iphonesimulator iphoneos
+SUPPORTED_PLATFORMS = $(OMNI_SUPPORTED_PLATFORMS)
+
+IPHONEOS_DEPLOYMENT_TARGET = 14.0
+
+// Allow each project to override the deployment target
+#include "../Omni-Version-Info.xcconfig"
+
+// Bitcode makes crash reports unreadable since Apple builds a new binary with a new uuid
+ENABLE_BITCODE = NO
+STRIP_BITCODE_FROM_COPIED_FILES = NO
+
+GCC_THUMB_SUPPORT = NO
+
+// Don't install every single thing we build. Lots of bundles and tools, in particular, are included as resources of frameworks and apps.
+SKIP_INSTALL = YES
+
+// Unlike gcc and llvm-gcc, clang emits ObjC runtime info for class extensions conforming to protocols. Also, clang has more warning checks than gcc.
+GCC_VERSION = com.apple.compilers.llvm.clang.1_0
+
+// For Xcode builds, we sign our applications using our individual development certificates ("iPhone Developer: [Person]"). For distribution builds, our build scripts will re-sign as "iPhone Distribution: [Company]" (for App Store submissions).
+CODE_SIGN_IDENTITY = iPhone Developer
+
+// Output strings in UTF-8 format for Simulator builds; This is a more convenient format for the localizers to work with
+STRINGS_FILE_OUTPUT_ENCODING[sdk=iphonesimulator*] = UTF-8
+
+// Temporary while getting iOS 8 builds working
+WARNING_CFLAGS = $(value) -Wno-error=deprecated-declarations -Wno-error=deprecated-implementations -Wno-error=unreachable-code -Wno-error=objc-designated-initializers
+
+// For Info.plists in frameworks that are shared between Mac/iOS targets
+OMNI_TARGET_COMMON_INFOPLIST_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FOR_IOS

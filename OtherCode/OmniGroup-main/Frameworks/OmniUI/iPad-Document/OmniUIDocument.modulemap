@@ -1,0 +1,13 @@
+framework module OmniUIDocument {
+    umbrella header "OmniUIDocument.h"
+
+    export *
+    module * { export * }
+
+    explicit module Internal {
+        header "OUIAddCloudAccountViewController.h"
+        header "OUIServerAccountValidationViewController.h"
+        header "OUINewDocumentCreationRequest.h"
+        header "OUIExportOptionsController.h"
+    }
+}

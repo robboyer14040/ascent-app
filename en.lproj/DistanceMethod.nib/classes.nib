@@ -1,0 +1,24 @@
+{
+    IBClasses = (
+        {
+            ACTIONS = {cancel = id; done = id; setUseDistanceData = id; }; 
+            CLASS = DistanceMethodController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {useDistanceButton = NSButton; }; 
+            SUPERCLASS = NSWindowController; 
+        }, 
+        {
+            ACTIONS = {myAction = id; setDistanceMethod = id; }; 
+            CLASS = FirstResponder; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
+            ACTIONS = {myAction = id; }; 
+            CLASS = NSPanel; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSWindow; 
+        }
+    ); 
+    IBVersion = 1; 
+}

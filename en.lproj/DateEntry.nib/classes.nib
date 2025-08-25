@@ -1,0 +1,14 @@
+{
+    IBClasses = (
+        {
+            ACTIONS = {cancel = id; done = id; skip = id; }; 
+            CLASS = DateEntryController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {datePicker = NSDatePicker; trackNameField = NSTextField; }; 
+            SUPERCLASS = NSWindowController; 
+        }, 
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {CLASS = NSDatePicker; LANGUAGE = ObjC; SUPERCLASS = NSControl; }
+    ); 
+    IBVersion = 1; 
+}

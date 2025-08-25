@@ -1,0 +1,36 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {
+                play = id; 
+                reverse = id; 
+                rte = id; 
+                rtz = id; 
+                setLocation = id; 
+                setPanelOpacity = id; 
+                setSpeedFactor = id; 
+                stop = id; 
+            }; 
+            CLASS = TransportPanelController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                locationSlider = NSSlider; 
+                opacitySlider = NSSlider; 
+                playButton = NSButton; 
+                reverseButton = NSButton; 
+                rteButton = NSButton; 
+                rtzButton = NSButton; 
+                speedFactorSlider = NSSlider; 
+                speedFactorText = NSTextField; 
+                stopButton = NSButton; 
+                thePanel = NSPanel; 
+                theView = NSView; 
+                timecodeText = NSTextField; 
+            }; 
+            SUPERCLASS = NSWindowController; 
+        }, 
+        {CLASS = TransportPanelView; LANGUAGE = ObjC; SUPERCLASS = NSView; }
+    ); 
+    IBVersion = 1; 
+}

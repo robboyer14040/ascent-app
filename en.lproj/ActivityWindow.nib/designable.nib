@@ -1,0 +1,1128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="23727" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <deployment version="1050" identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23727"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="ADWindowController">
+            <connections>
+                <outlet property="activitySelectorPopup" destination="562" id="598"/>
+                <outlet property="addMarkerButton" destination="359" id="360"/>
+                <outlet property="dataHUDOpacitySlider" destination="584" id="602"/>
+                <outlet property="dataRectTypePopup" destination="370" id="376"/>
+                <outlet property="graphView" destination="560" id="606"/>
+                <outlet property="lapsPopup" destination="577" id="599"/>
+                <outlet property="numAvgPointsField" destination="388" id="392"/>
+                <outlet property="numAvgPointsStepper" destination="387" id="391"/>
+                <outlet property="numberOfPeaksField" destination="345" id="357"/>
+                <outlet property="numberOfPeaksStepper" destination="342" id="355"/>
+                <outlet property="peakTypePopup" destination="336" id="499"/>
+                <outlet property="settingsDrawer" destination="5" id="556"/>
+                <outlet property="showCrossHairsButton" destination="369" id="375"/>
+                <outlet property="showDataHudButton" destination="583" id="600"/>
+                <outlet property="showHeartrateZonesButton" destination="283" id="334"/>
+                <outlet property="showLapsButton" destination="119" id="332"/>
+                <outlet property="showMarkersButton" destination="129" id="333"/>
+                <outlet property="showPeaksButton" destination="335" id="353"/>
+                <outlet property="showStatsHudButton" destination="582" id="601"/>
+                <outlet property="speedPacePopup" destination="572" id="597"/>
+                <outlet property="statsHUDOpacitySlider" destination="585" id="603"/>
+                <outlet property="window" destination="558" id="968"/>
+                <outlet property="xAxisTypePopup" destination="567" id="596"/>
+                <outlet property="zoneTypePopup" destination="492" id="500"/>
+                <outlet property="zonesOpacitySlider" destination="502" id="503"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <drawer preferredEdge="minY" leadingOffset="15" trailingOffset="15" id="5" userLabel="Drawer">
+            <size key="contentSize" width="966" height="186"/>
+            <size key="minContentSize" width="966" height="186"/>
+            <size key="maxContentSize" width="966" height="186"/>
+            <connections>
+                <outlet property="contentView" destination="8" id="9"/>
+                <outlet property="delegate" destination="-2" id="555"/>
+                <outlet property="parentWindow" destination="558" id="608"/>
+            </connections>
+        </drawer>
+        <customView id="8" userLabel="DrawContentView">
+            <rect key="frame" x="0.0" y="0.0" width="1024" height="186"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <subviews>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="1220" translatesAutoresizingMaskIntoConstraints="NO" id="502">
+                    <rect key="frame" x="153" y="67" width="65" height="12"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="1220" minValue="0.20000000000000001" maxValue="0.75" doubleValue="0.75" tickMarkPosition="above" sliderType="linear" id="1116">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setZonesOpacity:" target="-2" id="504"/>
+                    </connections>
+                </slider>
+                <popUpButton imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="492">
+                    <rect key="frame" x="34" y="66" width="113" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="1115">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="493">
+                            <items>
+                                <menuItem title="HR Zones" id="495"/>
+                                <menuItem title="Speed Zones" tag="1" id="494"/>
+                                <menuItem title="Pace Zones" tag="2" id="496"/>
+                                <menuItem title="Gradient Zones" tag="3" id="497"/>
+                                <menuItem title="Cadence Zones" tag="4" id="498"/>
+                                <menuItem title="Altitude Zones" tag="5" id="688"/>
+                                <menuItem title="Power Zones" tag="6" id="881">
+                                    <modifierMask key="keyEquivalentModifierMask"/>
+                                </menuItem>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setZoneType:" target="-2" id="501"/>
+                    </connections>
+                </popUpButton>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="75" translatesAutoresizingMaskIntoConstraints="NO" id="389">
+                    <rect key="frame" x="637" y="163" width="79" height="11"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Num to average:" id="1114">
+                        <font key="font" metaFont="miniSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" tag="1215" translatesAutoresizingMaskIntoConstraints="NO" id="388">
+                    <rect key="frame" x="710" y="157" width="33" height="19"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" enabled="NO" sendsActionOnEndEditing="YES" state="on" tag="1215" id="1113">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" tag="1214" translatesAutoresizingMaskIntoConstraints="NO" id="387">
+                    <rect key="frame" x="745" y="157" width="15" height="22"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <stepperCell key="cell" controlSize="small" continuous="YES" alignment="left" tag="1214" minValue="1" maxValue="1000" doubleValue="1" id="1112"/>
+                    <connections>
+                        <action selector="setNumAvgPoints:" target="-2" id="390"/>
+                    </connections>
+                </stepper>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="92" translatesAutoresizingMaskIntoConstraints="NO" id="383">
+                    <rect key="frame" x="13" y="23" width="96" height="11"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Animation follows:" id="1111">
+                        <font key="font" metaFont="miniSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <popUpButton tag="1218" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="370">
+                    <rect key="frame" x="101" y="21" width="94" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" title="altitude" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="372" id="1110">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="371">
+                            <items>
+                                <menuItem title="altitude" state="on" id="372"/>
+                                <menuItem title="dashed" id="373"/>
+                                <menuItem title="dotted" id="374"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setDataRectType:" target="-2" id="378"/>
+                    </connections>
+                </popUpButton>
+                <button tag="1216" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="369">
+                    <rect key="frame" x="14" y="132" width="110" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Crosshairs" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="1216" inset="2" id="1109">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setShowCrossHairs:" target="-2" id="377"/>
+                    </connections>
+                </button>
+                <button imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="359">
+                    <rect key="frame" x="129" y="87" width="51" height="16"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="push" title="Edit..." bezelStyle="rounded" alignment="center" controlSize="mini" borderStyle="border" inset="2" id="1108">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="addMarker:" target="-2" id="361"/>
+                    </connections>
+                </button>
+                <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" tag="1209" translatesAutoresizingMaskIntoConstraints="NO" id="345">
+                    <rect key="frame" x="35" y="42" width="24" height="19"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" tag="1209" drawsBackground="YES" id="1107">
+                        <numberFormatter key="formatter" formatterBehavior="10_0" positiveFormat="0" negativeFormat="-0" hasThousandSeparators="NO" thousandSeparator="," id="346">
+                            <attributedString key="attributedStringForZero">
+                                <fragment content="0"/>
+                            </attributedString>
+                            <decimal key="minimum" value="NaN"/>
+                            <decimal key="maximum" value="NaN"/>
+                        </numberFormatter>
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" tag="1208" translatesAutoresizingMaskIntoConstraints="NO" id="342">
+                    <rect key="frame" x="60" y="40" width="15" height="22"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <stepperCell key="cell" controlSize="small" continuous="YES" alignment="left" tag="1208" minValue="1" maxValue="10" doubleValue="1" id="1106"/>
+                    <connections>
+                        <action selector="setNumberOfPeaks:" target="-2" id="351"/>
+                    </connections>
+                </stepper>
+                <popUpButton tag="1213" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="336">
+                    <rect key="frame" x="77" y="44" width="94" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" title="altitude" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="339" id="1105">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="337">
+                            <items>
+                                <menuItem title="altitude" state="on" id="339"/>
+                                <menuItem title="dashed" id="340"/>
+                                <menuItem title="dotted" id="338"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setPeakType:" target="-2" id="350"/>
+                    </connections>
+                </popUpButton>
+                <button tag="1207" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="335">
+                    <rect key="frame" x="14" y="43" width="22" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="1207" inset="2" id="1104">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setShowPeaks:" target="-2" id="349"/>
+                    </connections>
+                </button>
+                <button tag="1212" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="283">
+                    <rect key="frame" x="14" y="64" width="33" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="1212" inset="2" id="1103">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setShowHeartrateZones:" target="-2" id="328"/>
+                    </connections>
+                </button>
+                <popUpButton tag="1201" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="250">
+                    <rect key="frame" x="871" y="133" width="65" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" title="d" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="254" id="1102">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="251">
+                            <items>
+                                <menuItem title="solid" id="253"/>
+                                <menuItem title="d" id="252"/>
+                                <menuItem title="d" state="on" id="254"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setPlotLineStyle:" target="-2" id="258"/>
+                    </connections>
+                </popUpButton>
+                <box verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="243">
+                    <rect key="frame" x="498" y="154" width="262" height="5"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                </box>
+                <popUpButton tag="1001" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="184">
+                    <rect key="frame" x="598" y="18" width="65" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="1101">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="185">
+                            <items>
+                                <menuItem title="solid" id="186"/>
+                                <menuItem title="d" id="188"/>
+                                <menuItem title="d" id="187"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setPlotLineStyle:" target="-2" id="221"/>
+                    </connections>
+                </popUpButton>
+                <popUpButton tag="2401" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="774">
+                    <rect key="frame" x="597" y="64" width="65" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" title="d" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="778" id="1122">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="776">
+                            <items>
+                                <menuItem title="solid" id="777"/>
+                                <menuItem title="d" state="on" id="778"/>
+                                <menuItem title="d" id="779"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setPlotLineStyle:" target="-2" id="793"/>
+                    </connections>
+                </popUpButton>
+                <popUpButton tag="2301" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="773">
+                    <rect key="frame" x="320" y="64" width="65" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="1121">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="781">
+                            <items>
+                                <menuItem title="solid" id="782"/>
+                                <menuItem title="d" id="784"/>
+                                <menuItem title="d" id="783"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setPlotLineStyle:" target="-2" id="790"/>
+                    </connections>
+                </popUpButton>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="2302" translatesAutoresizingMaskIntoConstraints="NO" id="772">
+                    <rect key="frame" x="250" y="66" width="65" height="12"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="402" minValue="0.20000000000000001" maxValue="1" doubleValue="1" tickMarkPosition="above" sliderType="linear" id="1120">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setPlotOpacity:" target="-2" id="791"/>
+                    </connections>
+                </slider>
+                <button tag="2300" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="771">
+                    <rect key="frame" x="393" y="63" width="91" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Power" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="400" inset="2" id="1119">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPlotEnabled:" target="-2" id="789"/>
+                    </connections>
+                </button>
+                <button tag="2400" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="770">
+                    <rect key="frame" x="671" y="63" width="91" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Power" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="900" inset="2" id="1118">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPlotEnabled:" target="-2" id="792"/>
+                    </connections>
+                </button>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="2402" translatesAutoresizingMaskIntoConstraints="NO" id="769">
+                    <rect key="frame" x="525" y="66" width="65" height="12"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="902" minValue="0.20000000000000001" maxValue="1" doubleValue="1" tickMarkPosition="above" sliderType="linear" id="1117">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setPlotOpacity:" target="-2" id="794"/>
+                    </connections>
+                </slider>
+                <popUpButton tag="901" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="179">
+                    <rect key="frame" x="598" y="41" width="65" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" title="d" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="183" id="1100">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="180">
+                            <items>
+                                <menuItem title="solid" id="181"/>
+                                <menuItem title="d" id="182"/>
+                                <menuItem title="d" state="on" id="183"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setPlotLineStyle:" target="-2" id="222"/>
+                    </connections>
+                </popUpButton>
+                <popUpButton tag="701" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="174">
+                    <rect key="frame" x="598" y="87" width="65" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" title="d" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="177" id="1099">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="175">
+                            <items>
+                                <menuItem title="solid" id="176"/>
+                                <menuItem title="d" id="178"/>
+                                <menuItem title="d" state="on" id="177"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setPlotLineStyle:" target="-2" id="223"/>
+                    </connections>
+                </popUpButton>
+                <popUpButton tag="801" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="169">
+                    <rect key="frame" x="598" y="110" width="65" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" title="d" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="173" id="1098">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="170">
+                            <items>
+                                <menuItem title="solid" id="171"/>
+                                <menuItem title="d" id="172"/>
+                                <menuItem title="d" state="on" id="173"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setPlotLineStyle:" target="-2" id="224"/>
+                    </connections>
+                </popUpButton>
+                <popUpButton tag="601" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="164">
+                    <rect key="frame" x="598" y="133" width="65" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" title="d" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="166" id="1097">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="165">
+                            <items>
+                                <menuItem title="solid" id="167"/>
+                                <menuItem title="d" state="on" id="166"/>
+                                <menuItem title="d" id="168"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setPlotLineStyle:" target="-2" id="225"/>
+                    </connections>
+                </popUpButton>
+                <popUpButton tag="501" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="159">
+                    <rect key="frame" x="321" y="18" width="65" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" title="d" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="163" id="1096">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="160">
+                            <items>
+                                <menuItem title="solid" id="161"/>
+                                <menuItem title="d" id="162"/>
+                                <menuItem title="d" state="on" id="163"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setPlotLineStyle:" target="-2" id="226"/>
+                    </connections>
+                </popUpButton>
+                <popUpButton tag="401" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="154">
+                    <rect key="frame" x="321" y="41" width="65" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" title="d" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="157" id="1095">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="155">
+                            <items>
+                                <menuItem title="s" id="156"/>
+                                <menuItem title="d" id="158"/>
+                                <menuItem title="d" state="on" id="157"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setPlotLineStyle:" target="-2" id="227"/>
+                    </connections>
+                </popUpButton>
+                <popUpButton tag="201" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="149">
+                    <rect key="frame" x="321" y="87" width="65" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="1094">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="150">
+                            <items>
+                                <menuItem title="s" id="151"/>
+                                <menuItem title="d" id="152"/>
+                                <menuItem title="d" id="153"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setPlotLineStyle:" target="-2" id="228"/>
+                    </connections>
+                </popUpButton>
+                <popUpButton tag="301" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="144">
+                    <rect key="frame" x="321" y="110" width="65" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" title="s" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="148" id="1093">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="145">
+                            <items>
+                                <menuItem title="s" state="on" id="148"/>
+                                <menuItem title="d" id="147"/>
+                                <menuItem title=" " id="146"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setPlotLineStyle:" target="-2" id="229"/>
+                    </connections>
+                </popUpButton>
+                <popUpButton tag="101" imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="139">
+                    <rect key="frame" x="321" y="133" width="65" height="15"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" controlSize="mini" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="1092">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <menu key="menu" title="OtherViews" id="140">
+                            <items>
+                                <menuItem title=" " id="142"/>
+                                <menuItem title=" " id="143"/>
+                                <menuItem title=" " id="141"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                    <connections>
+                        <action selector="setPlotLineStyle:" target="-2" id="230"/>
+                    </connections>
+                </popUpButton>
+                <box verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="1058">
+                    <rect key="frame" x="771" y="154" width="205" height="5"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                </box>
+                <box verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="1172">
+                    <rect key="frame" x="794" y="94" width="180" height="5"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                </box>
+                <box verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="1054">
+                    <rect key="frame" x="16" y="155" width="185" height="5"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                </box>
+                <box verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="135">
+                    <rect key="frame" x="223" y="154" width="259" height="5"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                </box>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="114" translatesAutoresizingMaskIntoConstraints="NO" id="134">
+                    <rect key="frame" x="498" y="159" width="118" height="13"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Average Value Graphs" id="1091">
+                        <font key="font" metaFont="label"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="95" translatesAutoresizingMaskIntoConstraints="NO" id="1060">
+                    <rect key="frame" x="770" y="155" width="99" height="17"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Altitude Graph" id="1126">
+                        <font key="font" metaFont="label"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="37" translatesAutoresizingMaskIntoConstraints="NO" id="1062">
+                    <rect key="frame" x="171" y="44" width="41" height="14"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="peaks" id="1127">
+                        <font key="font" metaFont="label"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="62" translatesAutoresizingMaskIntoConstraints="NO" id="1056">
+                    <rect key="frame" x="14" y="159" width="66" height="13"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Display" id="1125">
+                        <font key="font" metaFont="label"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="165" translatesAutoresizingMaskIntoConstraints="NO" id="133">
+                    <rect key="frame" x="223" y="159" width="169" height="13"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Instantaneous Value Graphs" id="1090">
+                        <font key="font" metaFont="label"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="502" translatesAutoresizingMaskIntoConstraints="NO" id="42">
+                    <rect key="frame" x="251" y="20" width="65" height="12"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="502" minValue="0.20000000000000001" maxValue="1" doubleValue="1" tickMarkPosition="above" sliderType="linear" id="1076">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setPlotOpacity:" target="-2" id="200"/>
+                    </connections>
+                </slider>
+                <button tag="500" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="40">
+                    <rect key="frame" x="393" y="17" width="91" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Temperature" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="500" inset="2" id="1075">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPlotEnabled:" target="-2" id="205"/>
+                    </connections>
+                </button>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="402" translatesAutoresizingMaskIntoConstraints="NO" id="39">
+                    <rect key="frame" x="251" y="43" width="65" height="12"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="402" minValue="0.20000000000000001" maxValue="1" doubleValue="1" tickMarkPosition="above" sliderType="linear" id="1074">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setPlotOpacity:" target="-2" id="199"/>
+                    </connections>
+                </slider>
+                <button tag="200" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="34">
+                    <rect key="frame" x="393" y="86" width="73" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Cadence" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="200" inset="2" id="1071">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPlotEnabled:" target="-2" id="203"/>
+                    </connections>
+                </button>
+                <button tag="400" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="37">
+                    <rect key="frame" x="393" y="40" width="91" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Gradient" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="400" inset="2" id="1073">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPlotEnabled:" target="-2" id="204"/>
+                    </connections>
+                </button>
+                <button tag="300" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="31">
+                    <rect key="frame" x="393" y="109" width="84" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Speed/Pace" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="300" inset="2" id="1069">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPlotEnabled:" target="-2" id="202"/>
+                    </connections>
+                </button>
+                <button tag="100" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="28">
+                    <rect key="frame" x="393" y="132" width="78" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Heart Rate" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="100" inset="2" id="1067">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPlotEnabled:" target="-2" id="201"/>
+                    </connections>
+                </button>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="202" translatesAutoresizingMaskIntoConstraints="NO" id="36">
+                    <rect key="frame" x="251" y="89" width="65" height="12"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="202" minValue="0.20000000000000001" maxValue="1" doubleValue="1" tickMarkPosition="above" sliderType="linear" id="1072">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setPlotOpacity:" target="-2" id="198"/>
+                    </connections>
+                </slider>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="302" translatesAutoresizingMaskIntoConstraints="NO" id="33">
+                    <rect key="frame" x="251" y="112" width="65" height="12"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="302" minValue="0.20000000000000001" maxValue="1" doubleValue="0.35849055647850037" tickMarkPosition="above" sliderType="linear" id="1070">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setPlotOpacity:" target="-2" id="197"/>
+                    </connections>
+                </slider>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="102" translatesAutoresizingMaskIntoConstraints="NO" id="30">
+                    <rect key="frame" x="250" y="135" width="65" height="12"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="102" minValue="0.20000000000000001" maxValue="1" doubleValue="1" tickMarkPosition="above" sliderType="linear" id="1068">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setPlotOpacity:" target="-2" id="196"/>
+                    </connections>
+                </slider>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="1002" translatesAutoresizingMaskIntoConstraints="NO" id="104">
+                    <rect key="frame" x="526" y="20" width="65" height="12"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="1002" minValue="0.20000000000000001" maxValue="1" doubleValue="1" tickMarkPosition="above" sliderType="linear" id="1077">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setPlotOpacity:" target="-2" id="215"/>
+                    </connections>
+                </slider>
+                <button tag="1000" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="115">
+                    <rect key="frame" x="671" y="17" width="92" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Temperature" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="1000" inset="2" id="1084">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPlotEnabled:" target="-2" id="220"/>
+                    </connections>
+                </button>
+                <button tag="900" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="117">
+                    <rect key="frame" x="671" y="40" width="91" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Gradient" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="900" inset="2" id="1085">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPlotEnabled:" target="-2" id="219"/>
+                    </connections>
+                </button>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="902" translatesAutoresizingMaskIntoConstraints="NO" id="108">
+                    <rect key="frame" x="526" y="43" width="65" height="12"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="902" minValue="0.20000000000000001" maxValue="1" doubleValue="1" tickMarkPosition="above" sliderType="linear" id="1080">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setPlotOpacity:" target="-2" id="214"/>
+                    </connections>
+                </slider>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="702" translatesAutoresizingMaskIntoConstraints="NO" id="110">
+                    <rect key="frame" x="526" y="89" width="65" height="12"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="702" minValue="0.20000000000000001" maxValue="1" doubleValue="1" tickMarkPosition="above" sliderType="linear" id="1081">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setPlotOpacity:" target="-2" id="213"/>
+                    </connections>
+                </slider>
+                <button tag="700" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="118">
+                    <rect key="frame" x="671" y="86" width="96" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Cadence" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="700" inset="2" id="1086">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPlotEnabled:" target="-2" id="218"/>
+                    </connections>
+                </button>
+                <button tag="800" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="114">
+                    <rect key="frame" x="671" y="109" width="91" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Speed/Pace" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="800" inset="2" id="1083">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPlotEnabled:" target="-2" id="217"/>
+                    </connections>
+                </button>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="802" translatesAutoresizingMaskIntoConstraints="NO" id="113">
+                    <rect key="frame" x="526" y="112" width="65" height="12"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="802" minValue="0.20000000000000001" maxValue="1" doubleValue="1" tickMarkPosition="above" sliderType="linear" id="1082">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setPlotOpacity:" target="-2" id="212"/>
+                    </connections>
+                </slider>
+                <button tag="600" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="107">
+                    <rect key="frame" x="671" y="132" width="91" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Heart Rate" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="600" inset="2" id="1079">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPlotEnabled:" target="-2" id="216"/>
+                    </connections>
+                </button>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="602" translatesAutoresizingMaskIntoConstraints="NO" id="105">
+                    <rect key="frame" x="526" y="135" width="65" height="12"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="602" minValue="0.20000000000000001" maxValue="1" doubleValue="1" tickMarkPosition="above" sliderType="linear" id="1078">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setPlotOpacity:" target="-2" id="211"/>
+                    </connections>
+                </slider>
+                <button tag="1206" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="129">
+                    <rect key="frame" x="14" y="86" width="111" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Custom markers" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="1206" inset="2" id="1089">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setShowMarkers:" target="-2" id="236"/>
+                    </connections>
+                </button>
+                <button tag="1204" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="124">
+                    <rect key="frame" x="939" y="132" width="49" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Fill" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="1204" inset="2" id="1088">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPlotFillEnabled:" target="-2" id="235"/>
+                    </connections>
+                </button>
+                <button tag="1205" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="119">
+                    <rect key="frame" x="14" y="109" width="97" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="Lap markers" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="1205" inset="2" id="1087">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setShowLaps:" target="-2" id="237"/>
+                    </connections>
+                </button>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="1202" translatesAutoresizingMaskIntoConstraints="NO" id="26">
+                    <rect key="frame" x="799" y="135" width="65" height="12"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="1202" minValue="0.10000000000000001" maxValue="1" doubleValue="1" tickMarkPosition="above" sliderType="linear" id="1066">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setPlotOpacity:" target="-2" id="239"/>
+                    </connections>
+                </slider>
+                <button tag="10000" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1152">
+                    <rect key="frame" x="790" y="75" width="83" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="5 seconds" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" state="on" inset="2" id="1153">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPeakPowerIntervalEnabled:" target="-2" id="1183"/>
+                    </connections>
+                </button>
+                <button tag="10004" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1158">
+                    <rect key="frame" x="791" y="7" width="83" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="60 seconds" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" state="on" inset="2" id="1159">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPeakPowerIntervalEnabled:" target="-2" id="1186"/>
+                    </connections>
+                </button>
+                <button tag="10005" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1160">
+                    <rect key="frame" x="886" y="75" width="90" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="5 minutes" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" state="on" inset="2" id="1161">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPeakPowerIntervalEnabled:" target="-2" id="1187"/>
+                    </connections>
+                </button>
+                <button tag="10006" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1162">
+                    <rect key="frame" x="886" y="58" width="90" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="10 minutes" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" state="on" inset="2" id="1163">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPeakPowerIntervalEnabled:" target="-2" id="1188"/>
+                    </connections>
+                </button>
+                <button tag="10007" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1191">
+                    <rect key="frame" x="886" y="41" width="90" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="20 minutes" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" state="on" inset="2" id="1192">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPeakPowerIntervalEnabled:" target="-2" id="1193"/>
+                    </connections>
+                </button>
+                <button tag="10008" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1164">
+                    <rect key="frame" x="886" y="24" width="92" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="30 minutes" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" state="on" inset="2" id="1165">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPeakPowerIntervalEnabled:" target="-2" id="1189"/>
+                    </connections>
+                </button>
+                <button tag="10009" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1166">
+                    <rect key="frame" x="886" y="7" width="92" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="60 minutes" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" state="on" inset="2" id="1167">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPeakPowerIntervalEnabled:" target="-2" id="1190"/>
+                    </connections>
+                </button>
+                <button tag="10001" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1154">
+                    <rect key="frame" x="790" y="58" width="84" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="10 seconds" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" state="on" inset="2" id="1155">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPeakPowerIntervalEnabled:" target="-2" id="1184"/>
+                    </connections>
+                </button>
+                <button tag="10002" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1194">
+                    <rect key="frame" x="790" y="41" width="84" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="20 seconds" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" state="on" inset="2" id="1195">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPeakPowerIntervalEnabled:" target="-2" id="1196"/>
+                    </connections>
+                </button>
+                <button tag="10003" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1156">
+                    <rect key="frame" x="790" y="24" width="84" height="18"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <buttonCell key="cell" type="check" title="30 seconds" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" state="on" inset="2" id="1157">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setPeakPowerIntervalEnabled:" target="-2" id="1185"/>
+                    </connections>
+                </button>
+                <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1168">
+                    <rect key="frame" x="791" y="99" width="133" height="14"/>
+                    <autoresizingMask key="autoresizingMask"/>
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Peak Power Intervals" id="1169">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+            </subviews>
+            <point key="canvasLocation" x="55" y="113"/>
+        </customView>
+        <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="558" userLabel="Window">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="67" y="433" width="1024" height="416"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2240" height="1235"/>
+            <value key="minSize" type="size" width="1024" height="250"/>
+            <view key="contentView" id="559">
+                <rect key="frame" x="0.0" y="0.0" width="1024" height="416"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="560" customClass="ADView">
+                        <rect key="frame" x="0.0" y="35" width="1024" height="380"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                    </customView>
+                    <button imageHugsTitle="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="561">
+                        <rect key="frame" x="14" y="10" width="13" height="13"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="disclosureTriangle" bezelStyle="disclosure" imagePosition="above" alignment="left" borderStyle="border" inset="2" id="1128">
+                            <behavior key="behavior" pushIn="YES" changeBackground="YES" changeGray="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="openDrawer:" target="-2" id="595"/>
+                        </connections>
+                    </button>
+                    <popUpButton imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="562">
+                        <rect key="frame" x="343" y="6" width="352" height="22"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <popUpButtonCell key="cell" type="push" title="Item1" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="564" id="1129">
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                            <menu key="menu" title="OtherViews" id="563">
+                                <items>
+                                    <menuItem title="Item1" state="on" id="564"/>
+                                    <menuItem title="Item2" id="565"/>
+                                    <menuItem title="Item3" id="566"/>
+                                </items>
+                            </menu>
+                        </popUpButtonCell>
+                        <connections>
+                            <action selector="selectTrack:" target="-2" id="588"/>
+                        </connections>
+                    </popUpButton>
+                    <popUpButton imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="567">
+                        <rect key="frame" x="89" y="6" width="104" height="22"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <popUpButtonCell key="cell" type="push" title="active time" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="569" id="1130">
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                            <menu key="menu" title="OtherViews" id="568">
+                                <items>
+                                    <menuItem title="distance" id="570"/>
+                                    <menuItem title="active time" state="on" id="569"/>
+                                </items>
+                            </menu>
+                        </popUpButtonCell>
+                        <connections>
+                            <action selector="setXAxisType:" target="-2" id="587"/>
+                        </connections>
+                    </popUpButton>
+                    <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="45" translatesAutoresizingMaskIntoConstraints="NO" id="571">
+                        <rect key="frame" x="43" y="11" width="49" height="13"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="x axis is:" id="1131">
+                            <font key="font" metaFont="label"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <popUpButton imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="572">
+                        <rect key="frame" x="243" y="6" width="93" height="22"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <popUpButtonCell key="cell" type="push" title="speed" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="575" id="1132">
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                            <menu key="menu" title="OtherViews" id="573">
+                                <items>
+                                    <menuItem title="speed" state="on" id="575"/>
+                                    <menuItem title="pace" id="574"/>
+                                </items>
+                            </menu>
+                        </popUpButtonCell>
+                        <connections>
+                            <action selector="setSpeedPace:" target="-2" id="586"/>
+                        </connections>
+                    </popUpButton>
+                    <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="44" translatesAutoresizingMaskIntoConstraints="NO" id="576">
+                        <rect key="frame" x="199" y="7" width="48" height="18"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <textFieldCell key="cell" controlSize="small" sendsActionOnEndEditing="YES" title="display:" id="1133">
+                            <font key="font" metaFont="smallSystem"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <popUpButton imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="577">
+                        <rect key="frame" x="702" y="6" width="80" height="22"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <popUpButtonCell key="cell" type="push" title="all laps" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="581" id="1134">
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                            <menu key="menu" title="OtherViews" id="578">
+                                <items>
+                                    <menuItem title="all laps" state="on" id="581"/>
+                                    <menuItem title="Item2" id="580"/>
+                                    <menuItem title="Item3" id="579"/>
+                                </items>
+                            </menu>
+                        </popUpButtonCell>
+                        <connections>
+                            <action selector="selectLap:" target="-2" id="589"/>
+                        </connections>
+                    </popUpButton>
+                    <button imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="582">
+                        <rect key="frame" x="805" y="0.0" width="126" height="18"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="check" title="Lock Statistics HUD" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" inset="2" id="1135">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="setStatsHUDLocked:" target="-2" id="591"/>
+                        </connections>
+                    </button>
+                    <button imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="583">
+                        <rect key="frame" x="805" y="18" width="106" height="18"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="check" title="Show Data HUD" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" inset="2" id="1136">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="setShowDataHUD:" target="-2" id="590"/>
+                        </connections>
+                    </button>
+                    <slider verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="584">
+                        <rect key="frame" x="937" y="19" width="67" height="12"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" minValue="0.20000000000000001" maxValue="1" doubleValue="1" tickMarkPosition="above" sliderType="linear" id="1137">
+                            <font key="font" size="12" name="Helvetica"/>
+                        </sliderCell>
+                        <connections>
+                            <action selector="setDataHUDOpacity:" target="-2" id="592"/>
+                        </connections>
+                    </slider>
+                    <slider verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="585">
+                        <rect key="frame" x="937" y="1" width="67" height="12"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" minValue="0.20000000000000001" maxValue="1" doubleValue="1" tickMarkPosition="above" sliderType="linear" id="1138">
+                            <font key="font" size="12" name="Helvetica"/>
+                        </sliderCell>
+                        <connections>
+                            <action selector="setStatsHUDOpacity:" target="-2" id="593"/>
+                        </connections>
+                    </slider>
+                </subviews>
+            </view>
+            <connections>
+                <outlet property="delegate" destination="-2" id="605"/>
+            </connections>
+            <point key="canvasLocation" x="-112" y="-274"/>
+        </window>
+        <view id="136">
+            <rect key="frame" x="0.0" y="0.0" width="125" height="1"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <point key="canvasLocation" x="-761" y="-345"/>
+        </view>
+        <view id="244">
+            <rect key="frame" x="0.0" y="0.0" width="125" height="1"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <point key="canvasLocation" x="-291" y="-579"/>
+        </view>
+        <view id="1055">
+            <rect key="frame" x="0.0" y="0.0" width="125" height="1"/>
+            <autoresizingMask key="autoresizingMask"/>
+        </view>
+        <view id="1059">
+            <rect key="frame" x="0.0" y="0.0" width="125" height="1"/>
+            <autoresizingMask key="autoresizingMask"/>
+        </view>
+        <view id="1173">
+            <rect key="frame" x="0.0" y="0.0" width="125" height="1"/>
+            <autoresizingMask key="autoresizingMask"/>
+        </view>
+    </objects>
+</document>

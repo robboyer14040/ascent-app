@@ -1,0 +1,51 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {restoreDefaults = id; setValueForSender = id; }; 
+            CLASS = OAPreferenceClient; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {controlBox = NSView; initialFirstResponder = NSView; lastKeyView = NSView; }; 
+            SUPERCLASS = NSUserDefaultsController; 
+        }, 
+        {
+            ACTIONS = {setValueForSender = id; }; 
+            CLASS = PrefsHeartrate; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                ageField = NSTextField; 
+                applyDefaultRangesButton = NSButton; 
+                belowZoneColor = NSColorWell; 
+                belowZoneRangeField = NSTextField; 
+                calcMethodPopup = NSPopUpButton; 
+                estimateMaxHeartRateButton = NSButton; 
+                maxHeartRateField = NSTextField; 
+                maxHeartRateStepper = NSStepper; 
+                restingHeartRateField = NSTextField; 
+                restingHeartRateStepper = NSStepper; 
+                zone1RangeColor = NSColorWell; 
+                zone1RangeField = NSTextField; 
+                zone1ThresholdField = NSTextField; 
+                zone1ThresholdStepper = NSStepper; 
+                zone2RangeColor = NSColorWell; 
+                zone2RangeField = NSTextField; 
+                zone2ThresholdField = NSTextField; 
+                zone2ThresholdStepper = NSStepper; 
+                zone3RangeColor = NSColorWell; 
+                zone3RangeField = NSTextField; 
+                zone3ThresholdField = NSTextField; 
+                zone3ThresholdStepper = NSStepper; 
+                zone4RangeColor = NSColorWell; 
+                zone4RangeField = NSTextField; 
+                zone4ThresholdField = NSTextField; 
+                zone4ThresholdStepper = NSStepper; 
+                zone5RangeColor = NSColorWell; 
+                zone5RangeField = NSTextField; 
+                zone5ThresholdField = NSTextField; 
+                zone5ThresholdStepper = NSStepper; 
+            }; 
+            SUPERCLASS = OAPreferenceClient; 
+        }
+    ); 
+    IBVersion = 1; 
+}

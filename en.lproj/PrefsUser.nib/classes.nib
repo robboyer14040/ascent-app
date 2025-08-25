@@ -1,0 +1,32 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {CLASS = NSDatePicker; LANGUAGE = ObjC; SUPERCLASS = NSControl; }, 
+        {
+            ACTIONS = {restoreDefaults = id; setValueForSender = id; }; 
+            CLASS = OAPreferenceClient; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {controlBox = NSView; initialFirstResponder = NSView; lastKeyView = NSView; }; 
+            SUPERCLASS = NSUserDefaultsController; 
+        }, 
+        {
+            CLASS = PrefsUser; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                agePicker = NSDatePicker; 
+                bmiLabelField = NSTextField; 
+                bmiTextField = NSTextField; 
+                genderPopup = NSPopUpButton; 
+                heightLabelField = NSTextField; 
+                heightTextField = NSTextField; 
+                userImage = NSImageView; 
+                userNameField = NSTextField; 
+                vo2MaxTextField = NSTextField; 
+                weightLabelField = NSTextField; 
+                weightTextField = NSTextField; 
+            }; 
+            SUPERCLASS = OAPreferenceClient; 
+        }
+    ); 
+    IBVersion = 1; 
+}

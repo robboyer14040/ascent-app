@@ -1,0 +1,30 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {
+                buyIt = id; 
+                cancelEnteringInfo = id; 
+                doneEnteringInfo = id; 
+                enterCode = id; 
+                notYet = id; 
+            }; 
+            CLASS = RegController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                blurbText1 = NSTextField; 
+                blurbText2 = NSTextField; 
+                codeField = NSTextField; 
+                doneEnteringInfoButton = NSButton; 
+                emailAddressField = NSTextField; 
+                enterCodeButton = NSButton; 
+                enterCodePanel = NSWindow; 
+                notYetButton = NSButton; 
+                purchaseButton = NSButton; 
+                userNameField = NSTextField; 
+            }; 
+            SUPERCLASS = NSWindowController; 
+        }
+    ); 
+    IBVersion = 1; 
+}

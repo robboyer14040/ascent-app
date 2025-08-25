@@ -1,0 +1,26 @@
+{
+    IBClasses = (
+        {CLASS = EMCTableView; LANGUAGE = ObjC; SUPERCLASS = NSTableView; }, 
+        {
+            ACTIONS = {
+                cancel = id; 
+                deleteAllMarkers = id; 
+                deleteSelectedMarkers = id; 
+                done = id; 
+                newMarker = id; 
+                setPanelOpacity = id; 
+            }; 
+            CLASS = EditMarkersController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                activityText = NSTextField; 
+                markerTable = EMCTableView; 
+                opacitySlider = NSSlider; 
+                panel = NSPanel; 
+            }; 
+            SUPERCLASS = NSWindowController; 
+        }, 
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }
+    ); 
+    IBVersion = 1; 
+}

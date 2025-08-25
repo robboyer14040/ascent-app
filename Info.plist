@@ -1,0 +1,631 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>virtualearth.net</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>tlp</string>
+				<string>sql</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Ascent_Doc.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>ActivityGroup</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSTypeIsPackage</key>
+			<true/>
+			<key>NSDocumentClass</key>
+			<string>TrackBrowserDocument</string>
+			<key>NSPersistentStoreTypeKey</key>
+			<string>Binary</string>
+		</dict>
+	</array>
+	<key>CFBundleExecutable</key>
+	<string>${EXECUTABLE_NAME}</string>
+	<key>CFBundleGetInfoString</key>
+	<string>Ascent version ${APPLICATION_VERSION}, ©Montebello Software, 2011</string>
+	<key>CFBundleHelpBookFolder</key>
+	<string>Ascent Help</string>
+	<key>CFBundleHelpBookName</key>
+	<string>Ascent Help</string>
+	<key>CFBundleIconFile</key>
+	<string>Ascent Icon</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.montebellosoftware.ascent</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>${PRODUCT_NAME}</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>${APPLICATION_VERSION}</string>
+	<key>CFBundleSignature</key>
+	<string>mbsw</string>
+	<key>CFBundleURLTypes</key>
+	<array/>
+	<key>CFBundleVersion</key>
+	<string>${APPLICATION_VERSION}</string>
+	<key>NSMainNibFile</key>
+	<string>MainMenu</string>
+	<key>NSPrincipalClass</key>
+	<string>OAApplication</string>
+	<key>NSServices</key>
+	<array/>
+	<key>OFRegistrations</key>
+	<dict>
+		<key>OAPreferenceController</key>
+		<dict>
+			<key>PrefsAdvanced</key>
+			<dict>
+				<key>category</key>
+				<string>Basic</string>
+				<key>defaultsDictionary</key>
+				<dict>
+					<key>CalculatePowerIfAbsent</key>
+					<true/>
+					<key>DefaultAltitudeFilter</key>
+					<real>4.74</real>
+					<key>DefaultAltitudeSmoothingPercentage</key>
+					<real>50</real>
+					<key>DefaultAnimFrameRate</key>
+					<integer>0</integer>
+					<key>DefaultAutoSplitEnabled</key>
+					<true/>
+					<key>DefaultAutoSplitThresholdMinutes</key>
+					<integer>90</integer>
+					<key>DefaultCheckForUpdateAtStartup</key>
+					<true/>
+					<key>DefaultMapCacheEnabled</key>
+					<true/>
+					<key>DefaultMinDistance</key>
+					<real>10</real>
+					<key>DefaultMinSpeed</key>
+					<real>1</real>
+					<key>DefaultUseDistanceDataEnabled</key>
+					<true/>
+				</dict>
+				<key>icon</key>
+				<string>apps</string>
+				<key>nib</key>
+				<string>PrefsAdvanced</string>
+				<key>ordering</key>
+				<integer>80</integer>
+				<key>title</key>
+				<string>Advanced</string>
+				<key>identifier</key>
+				<string>com.mbs.Advanced</string>
+			</dict>
+			<key>PrefsAppearance</key>
+			<dict>
+				<key>category</key>
+				<string>Basic</string>
+				<key>defaultsDictionary</key>
+				<dict>
+					<key>DefaultAltitudeColor</key>
+					<string>0 0.238 1.0</string>
+					<key>DefaultAnimPanelTransparency</key>
+					<real>0.8</real>
+					<key>DefaultBackgroundColor</key>
+					<string>0.867 0.867 0.867</string>
+					<key>DefaultBrowserActivityColor</key>
+					<string>0.0 0.08 0.54</string>
+					<key>DefaultBrowserLapColor</key>
+					<string>0.03 0.25 0.04</string>
+					<key>DefaultBrowserMonthColor</key>
+					<string>0.4 0.2 0.0</string>
+					<key>DefaultBrowserWeekColor</key>
+					<string>0.59 0.0 0.04</string>
+					<key>DefaultBrowserYearColor</key>
+					<string>0.0 0.0 0.12</string>
+					<key>DefaultCadenceColor</key>
+					<string>.898 0 .898</string>
+					<key>DefaultCaloriesColor</key>
+					<string>.4 .0 .8</string>
+					<key>DefaultDistanceColor</key>
+					<string>.98 .52 0</string>
+					<key>DefaultDurationColor</key>
+					<string>.47 .47 .47</string>
+					<key>DefaultGradientColor</key>
+					<string>.39 .39 .19</string>
+					<key>DefaultHeartrateColor</key>
+					<string>.99 .238 0</string>
+					<key>DefaultLapColor</key>
+					<string>.898 .898 0</string>
+					<key>DefaultMapTransparency</key>
+					<real>0.85</real>
+					<key>DefaultMarkersPanelTransparency</key>
+					<real>0.8</real>
+					<key>DefaultMovingDurationColor</key>
+					<string>.50 .31 .31</string>
+					<key>DefaultMovingPaceColor</key>
+					<string>.125 .46 .46</string>
+					<key>DefaultMovingSpeedColor</key>
+					<string>.1 .50 .165</string>
+					<key>DefaultPaceColor</key>
+					<string>.07 .30 .35</string>
+					<key>DefaultPathColor</key>
+					<string>.98 0 0</string>
+					<key>DefaultPathTransparency</key>
+					<real>0.9</real>
+					<key>DefaultPowerColor</key>
+					<string>0.6 0.5 0.4</string>
+					<key>DefaultSpeedColor</key>
+					<string>0 .70 .165</string>
+					<key>DefaultSplitColor</key>
+					<string>0.415 0.99 0.35</string>
+					<key>DefaultTemperatureColor</key>
+					<string>0 0 1.0</string>
+					<key>DefaultWeightColor</key>
+					<string>0 1 1.0</string>
+				</dict>
+				<key>icon</key>
+				<string>ColorPreferences</string>
+				<key>nib</key>
+				<string>PrefsAppearance</string>
+				<key>ordering</key>
+				<integer>30</integer>
+				<key>title</key>
+				<string>Appearance</string>
+				<key>identifier</key>
+				<string>com.mbs.Appearance</string>
+			</dict>
+			<key>PrefsBackup</key>
+			<dict>
+				<key>category</key>
+				<string>Basic</string>
+				<key>defaultsDictionary</key>
+				<dict>
+					<key>DefaultDoLocalBackup</key>
+					<true/>
+					<key>DefaultDoMobileMeBackup</key>
+					<false/>
+					<key>DefaultLocalBackupFolder</key>
+					<string>~/Documents/AscentBackups</string>
+					<key>DefaultLocalBackupFrequency</key>
+					<integer>0</integer>
+					<key>DefaultLocalBackupRetainCount</key>
+					<integer>10</integer>
+					<key>DefaultMobileMeBackupFrequency</key>
+					<integer>2</integer>
+					<key>DefaultShowBackupNagDialog</key>
+					<true/>
+				</dict>
+				<key>icon</key>
+				<string>PrefsBackup</string>
+				<key>nib</key>
+				<string>PrefsBackup</string>
+				<key>ordering</key>
+				<integer>70</integer>
+				<key>title</key>
+				<string>Backup</string>
+				<key>identifier</key>
+				<string>com.mbs.Backup</string>
+			</dict>
+			<key>PrefsGeneral</key>
+			<dict>
+				<key>category</key>
+				<string>Basic</string>
+				<key>defaultsDictionary</key>
+				<dict>
+					<key>DefaultActivityAsString</key>
+					<string>Cycling</string>
+					<key>DefaultAnimationFollows</key>
+					<integer>12</integer>
+					<key>DefaultBrowserSortInReverse</key>
+					<false/>
+					<key>DefaultBrowserViewType</key>
+					<integer>0</integer>
+					<key>DefaultColorPathUsingZone</key>
+					<integer>0</integer>
+					<key>DefaultCustomFieldLabel</key>
+					<string>The Label</string>
+					<key>DefaultCustomSplitDistance</key>
+					<real>2.5</real>
+					<key>DefaultDataHUDTransparency</key>
+					<real>0.85</real>
+					<key>DefaultDateFormat</key>
+					<integer>0</integer>
+					<key>DefaultDisplayPace</key>
+					<false/>
+					<key>DefaultDoubleClickAction</key>
+					<integer>0</integer>
+					<key>DefaultEquipmentAsString</key>
+					<string>Road Bike</string>
+					<key>DefaultIntervalMarkerIncrement</key>
+					<integer>1</integer>
+					<key>DefaultKeyword1Label</key>
+					<string>Keyword 1</string>
+					<key>DefaultKeyword2Label</key>
+					<string>Keyword 2</string>
+					<key>DefaultMDHUDTransparency</key>
+					<real>0.6</real>
+					<key>DefaultMDMapTransparency</key>
+					<real>0.8</real>
+					<key>DefaultMDPathTransparency</key>
+					<real>0.8</real>
+					<key>DefaultMDShowLaps</key>
+					<true/>
+					<key>DefaultMDShowPath</key>
+					<true/>
+					<key>DefaultMapType</key>
+					<integer>0</integer>
+					<key>DefaultNumPeaks</key>
+					<integer>3</integer>
+					<key>DefaultNumPointsToAverage</key>
+					<integer>10</integer>
+					<key>DefaultPeakItem</key>
+					<integer>12</integer>
+					<key>DefaultPeakThreshold</key>
+					<integer>30</integer>
+					<key>DefaultScrollWheelSensitivity</key>
+					<real>3</real>
+					<key>DefaultSearchOptions</key>
+					<integer>7</integer>
+					<key>DefaultShowADHUD</key>
+					<true/>
+					<key>DefaultShowCrosshairs</key>
+					<true/>
+					<key>DefaultShowIntervalMarkers</key>
+					<false/>
+					<key>DefaultShowLaps</key>
+					<true/>
+					<key>DefaultShowMDHUD</key>
+					<true/>
+					<key>DefaultShowMarkers</key>
+					<true/>
+					<key>DefaultShowPeaks</key>
+					<false/>
+					<key>DefaultShowTransportPanel</key>
+					<true/>
+					<key>DefaultSplitGraphItem</key>
+					<integer>6</integer>
+					<key>DefaultSplitIndex</key>
+					<integer>2</integer>
+					<key>DefaultStatsHUDTransparency</key>
+					<real>1</real>
+					<key>DefaultSumPlotTypesEnabled</key>
+					<integer>561152</integer>
+					<key>DefaultSummaryGraphGranularity</key>
+					<integer>1</integer>
+					<key>DefaultSummaryGraphStyle</key>
+					<integer>1</integer>
+					<key>DefaultTimeFormat</key>
+					<integer>0</integer>
+					<key>DefaultUnitsAreEnglish</key>
+					<true/>
+					<key>DefaultWeekStartDay</key>
+					<integer>1</integer>
+					<key>DefaultXAxisType</key>
+					<integer>0</integer>
+					<key>DefaultZoneTypeForStatsHUD</key>
+					<integer>0</integer>
+					<key>DefaultZonesTransparency</key>
+					<real>0.6</real>
+				</dict>
+				<key>icon</key>
+				<string>GeneralPreferences</string>
+				<key>nib</key>
+				<string>PrefsGeneral</string>
+				<key>ordering</key>
+				<integer>20</integer>
+				<key>title</key>
+				<string>General</string>
+				<key>identifier</key>
+				<string>com.mbs.General</string>
+			</dict>
+			<key>PrefsHeartrate</key>
+			<dict>
+				<key>category</key>
+				<string>Basic</string>
+				<key>defaultsDictionary</key>
+				<dict>
+					<key>DefaultAge</key>
+					<integer>42</integer>
+					<key>DefaultBelowZoneColor</key>
+					<string>.10 .40 .50</string>
+					<key>DefaultHRZoneMethod</key>
+					<integer>1</integer>
+					<key>DefaultMaxHeartrate</key>
+					<integer>180</integer>
+					<key>DefaultRestingHeartrate</key>
+					<integer>60</integer>
+					<key>DefaultZone1Color</key>
+					<string>.43 .81 .99</string>
+					<key>DefaultZone1Threshold</key>
+					<integer>100</integer>
+					<key>DefaultZone2Color</key>
+					<string>.62 .93 .52</string>
+					<key>DefaultZone2Threshold</key>
+					<integer>117</integer>
+					<key>DefaultZone3Color</key>
+					<string>1 .847 .52</string>
+					<key>DefaultZone3Threshold</key>
+					<integer>153</integer>
+					<key>DefaultZone4Color</key>
+					<string>1 .59 .54</string>
+					<key>DefaultZone4Threshold</key>
+					<integer>162</integer>
+					<key>DefaultZone5Color</key>
+					<string>1 .09 .24</string>
+					<key>DefaultZone5Threshold</key>
+					<integer>171</integer>
+				</dict>
+				<key>icon</key>
+				<string>HAL-9000</string>
+				<key>nib</key>
+				<string>PrefsHeartrate</string>
+				<key>ordering</key>
+				<integer>50</integer>
+				<key>title</key>
+				<string>Heart Rate</string>
+				<key>identifier</key>
+				<string>com.mbs.HeartRate</string>
+			</dict>
+			<key>PrefsSync</key>
+			<dict>
+				<key>category</key>
+				<string>Basic</string>
+				<key>defaultsDictionary</key>
+				<dict>
+					<key>DefaultEnableWeeksOrMonthsSync</key>
+					<false/>
+					<key>DefaultEnableWiFiSync</key>
+					<false/>
+					<key>DefaultGarminANTSync</key>
+					<true/>
+					<key>DefaultGarminMassStorageSync</key>
+					<true/>
+					<key>DefaultGarminUSBSync</key>
+					<true/>
+					<key>DefaultNumWeeksOrMonthsToSync</key>
+					<integer>2</integer>
+					<key>DefaultWeeksOrMonthsSync</key>
+					<integer>0</integer>
+				</dict>
+				<key>icon</key>
+				<string>iphone</string>
+				<key>nib</key>
+				<string>PrefsSync</string>
+				<key>ordering</key>
+				<integer>95</integer>
+				<key>title</key>
+				<string>Sync</string>
+				<key>identifier</key>
+				<string>com.mbs.Sync</string>
+			</dict>
+			<key>PrefsUser</key>
+			<dict>
+				<key>category</key>
+				<string>Basic</string>
+				<key>defaultsDictionary</key>
+				<dict>
+					<key>DefaultGender</key>
+					<integer>1</integer>
+					<key>DefaultVO2Max</key>
+					<real>0</real>
+					<key>DefaultWeight</key>
+					<real>160</real>
+				</dict>
+				<key>icon</key>
+				<string>Albert Einstein</string>
+				<key>nib</key>
+				<string>PrefsUser</string>
+				<key>ordering</key>
+				<integer>40</integer>
+				<key>title</key>
+				<string>User</string>
+				<key>identifier</key>
+				<string>com.mbs.User</string>
+			</dict>
+			<key>PrefsZones</key>
+			<dict>
+				<key>category</key>
+				<string>Basic</string>
+				<key>defaultsDictionary</key>
+				<dict>
+					<key>DefaultAltitudeZones</key>
+					<dict>
+						<key>DefaultAboveZoneColor</key>
+						<string>.5 .85 .99</string>
+						<key>DefaultBelowZoneColor</key>
+						<string>.01 .0 .47</string>
+						<key>DefaultZone1Color</key>
+						<string>.01 .0 .70</string>
+						<key>DefaultZone1Threshold</key>
+						<real>0</real>
+						<key>DefaultZone2Color</key>
+						<string>.13 .26 .91</string>
+						<key>DefaultZone2Threshold</key>
+						<real>1000</real>
+						<key>DefaultZone3Color</key>
+						<string>.2 .51 .91</string>
+						<key>DefaultZone3Threshold</key>
+						<real>1500</real>
+						<key>DefaultZone4Color</key>
+						<string>.03 .74 .99</string>
+						<key>DefaultZone4Threshold</key>
+						<real>2000</real>
+						<key>DefaultZone5Color</key>
+						<string>.03 .85 .99</string>
+						<key>DefaultZone5Threshold</key>
+						<real>2500</real>
+					</dict>
+					<key>DefaultCadenceZones</key>
+					<dict>
+						<key>DefaultAboveZoneColor</key>
+						<string>.99 .00 .99</string>
+						<key>DefaultBelowZoneColor</key>
+						<string>.10 .00 .10</string>
+						<key>DefaultZone1Color</key>
+						<string>.20 .00 .20</string>
+						<key>DefaultZone1Threshold</key>
+						<real>40</real>
+						<key>DefaultZone2Color</key>
+						<string>.30 .00 .30</string>
+						<key>DefaultZone2Threshold</key>
+						<real>50</real>
+						<key>DefaultZone3Color</key>
+						<string>.50 .00 .50</string>
+						<key>DefaultZone3Threshold</key>
+						<real>60</real>
+						<key>DefaultZone4Color</key>
+						<string>.70 .00 .70</string>
+						<key>DefaultZone4Threshold</key>
+						<real>80</real>
+						<key>DefaultZone5Color</key>
+						<string>.80 .00 .80</string>
+						<key>DefaultZone5Threshold</key>
+						<real>90</real>
+					</dict>
+					<key>DefaultGradientZones</key>
+					<dict>
+						<key>DefaultAboveZoneColor</key>
+						<string>.99 .99 .0</string>
+						<key>DefaultBelowZoneColor</key>
+						<string>.10 .10 .0</string>
+						<key>DefaultZone1Color</key>
+						<string>.13 .13 .0</string>
+						<key>DefaultZone1Threshold</key>
+						<real>-6</real>
+						<key>DefaultZone2Color</key>
+						<string>.23 .23 .0</string>
+						<key>DefaultZone2Threshold</key>
+						<real>-3</real>
+						<key>DefaultZone3Color</key>
+						<string>.43 .43 .0</string>
+						<key>DefaultZone3Threshold</key>
+						<real>3</real>
+						<key>DefaultZone4Color</key>
+						<string>.63 .63 .0</string>
+						<key>DefaultZone4Threshold</key>
+						<real>6</real>
+						<key>DefaultZone5Color</key>
+						<string>.80 .80 .0</string>
+						<key>DefaultZone5Threshold</key>
+						<real>12</real>
+					</dict>
+					<key>DefaultPaceZones</key>
+					<dict>
+						<key>DefaultAboveZoneColor</key>
+						<string>.13 1.0 .19</string>
+						<key>DefaultBelowZoneColor</key>
+						<string>.10 .0 .12</string>
+						<key>DefaultZone1Color</key>
+						<string>.13 .11 .19</string>
+						<key>DefaultZone1Threshold</key>
+						<real>840</real>
+						<key>DefaultZone2Color</key>
+						<string>.13 .31 .19</string>
+						<key>DefaultZone2Threshold</key>
+						<real>720</real>
+						<key>DefaultZone3Color</key>
+						<string>.13 .51 .19</string>
+						<key>DefaultZone3Threshold</key>
+						<real>620</real>
+						<key>DefaultZone4Color</key>
+						<string>.13 .71 .19</string>
+						<key>DefaultZone4Threshold</key>
+						<real>540</real>
+						<key>DefaultZone5Color</key>
+						<string>.13 .85 .19</string>
+						<key>DefaultZone5Threshold</key>
+						<real>480</real>
+					</dict>
+					<key>DefaultPowerZones</key>
+					<dict>
+						<key>DefaultAboveZoneColor</key>
+						<string>.99 .00 .99</string>
+						<key>DefaultBelowZoneColor</key>
+						<string>.10 .00 .10</string>
+						<key>DefaultZone1Color</key>
+						<string>.20 .00 .20</string>
+						<key>DefaultZone1Threshold</key>
+						<real>100</real>
+						<key>DefaultZone2Color</key>
+						<string>.30 .00 .30</string>
+						<key>DefaultZone2Threshold</key>
+						<real>200</real>
+						<key>DefaultZone3Color</key>
+						<string>.50 .00 .50</string>
+						<key>DefaultZone3Threshold</key>
+						<real>300</real>
+						<key>DefaultZone4Color</key>
+						<string>.70 .00 .70</string>
+						<key>DefaultZone4Threshold</key>
+						<real>400</real>
+						<key>DefaultZone5Color</key>
+						<string>.80 .00 .80</string>
+						<key>DefaultZone5Threshold</key>
+						<real>500</real>
+					</dict>
+					<key>DefaultSpeedZones</key>
+					<dict>
+						<key>DefaultAboveZoneColor</key>
+						<string>.13 1.0 .19</string>
+						<key>DefaultBelowZoneColor</key>
+						<string>.10 .0 .12</string>
+						<key>DefaultZone1Color</key>
+						<string>.13 .11 .19</string>
+						<key>DefaultZone1Threshold</key>
+						<real>10</real>
+						<key>DefaultZone2Color</key>
+						<string>.13 .31 .19</string>
+						<key>DefaultZone2Threshold</key>
+						<real>15</real>
+						<key>DefaultZone3Color</key>
+						<string>.13 .51 .19</string>
+						<key>DefaultZone3Threshold</key>
+						<real>18</real>
+						<key>DefaultZone4Color</key>
+						<string>.13 .71 .19</string>
+						<key>DefaultZone4Threshold</key>
+						<real>22</real>
+						<key>DefaultZone5Color</key>
+						<string>.13 .85 .19</string>
+						<key>DefaultZone5Threshold</key>
+						<real>30</real>
+					</dict>
+					<key>DefaultZoneType</key>
+					<integer>0</integer>
+				</dict>
+				<key>icon</key>
+				<string>zones</string>
+				<key>nib</key>
+				<string>PrefsZones</string>
+				<key>ordering</key>
+				<integer>60</integer>
+				<key>title</key>
+				<string>Other Zones</string>
+				<key>identifier</key>
+				<string>com.mbs.Zones</string>
+			</dict>
+		</dict>
+	</dict>
+	<key>SUCheckAtStartup</key>
+	<false/>
+	<key>UTExportedTypeDeclarations</key>
+	<array/>
+	<key>UTImportedTypeDeclarations</key>
+	<array/>
+</dict>
+</plist>

@@ -1,0 +1,21 @@
+**/DerivedData/
+**/ModuleCache.noindex/
+**/build/
+*.xcuserstate
+*.xcuserdatad/
+*.dSYM/
+.DS_Store
+*.ipa
+
+# macOS cruft
+.DS_Store
+
+# Secrets/keys — don't commit these
+*.key
+*.pem
+*.p12
+rob.key
+rob.key.pub
+
+# Optional: local installers/bundles
+Installer Files/

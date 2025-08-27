@@ -41,48 +41,32 @@
 		D4D51B112E4E50A90003E47F /* OmniQuartz.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D451E8A32E4D89FA0060BA74 /* OmniQuartz.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D4EFE9F616B5D0BC00A5305B /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4EFE9F516B5D0BC00A5305B /* SenTestingKit.framework */; };
 		D4EFE9F716B5D0BC00A5305B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4EFE9D116B5D0BC00A5305B /* Cocoa.framework */; };
-		D4EFE9FF16B5D0BC00A5305B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D4EFE9FD16B5D0BC00A5305B /* InfoPlist.strings */; };
-		D4EFEA0216B5D0BC00A5305B /* AscentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D4EFEA0116B5D0BC00A5305B /* AscentTests.m */; };
-		D4F13BEF2E4EAE4600462944 /* GarminRemoteTransfer.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B642E4EAE4600462944 /* GarminRemoteTransfer.js */; };
 		D4F13BF02E4EAE4600462944 /* LCD-BOLD.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B832E4EAE4600462944 /* LCD-BOLD.TTF */; };
 		D4F13BF12E4EAE4600462944 /* Ascent_Doc.icns in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB12E4EAE4600462944 /* Ascent_Doc.icns */; };
 		D4F13BF22E4EAE4600462944 /* AppearancePreferences.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BAE2E4EAE4600462944 /* AppearancePreferences.tiff */; };
 		D4F13BF32E4EAE4600462944 /* bike shoes.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA52E4EAE4600462944 /* bike shoes.png */; };
-		D4F13BF42E4EAE4600462944 /* Util-Broadcaster.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B482E4EAE4600462944 /* Util-Broadcaster.js */; };
 		D4F13BF52E4EAE4600462944 /* Albert Einstein.icns in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BAC2E4EAE4600462944 /* Albert Einstein.icns */; };
 		D4F13BF72E4EAE4600462944 /* Desert.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BBE2E4EAE4600462944 /* Desert.png */; };
 		D4F13BF82E4EAE4600462944 /* DataGraph.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BBC2E4EAE4600462944 /* DataGraph.png */; };
-		D4F13BF92E4EAE4600462944 /* GarminDeviceControl.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B5B2E4EAE4600462944 /* GarminDeviceControl.js */; };
-		D4F13BFA2E4EAE4600462944 /* ajax-loader.gif in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B522E4EAE4600462944 /* ajax-loader.gif */; };
 		D4F13BFB2E4EAE4600462944 /* Ascent-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BEB2E4EAE4600462944 /* Ascent-Info.plist */; };
-		D4F13BFD2E4EAE4600462944 /* TcxActivityFactory.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B7F2E4EAE4600462944 /* TcxActivityFactory.js */; };
-		D4F13BFE2E4EAE4600462944 /* GarminObjectGenerator.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B602E4EAE4600462944 /* GarminObjectGenerator.js */; };
 		D4F13BFF2E4EAE4600462944 /* HAL-9000.icns in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC42E4EAE4600462944 /* HAL-9000.icns */; };
 		D4F13C002E4EAE4600462944 /* SplitActivity.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B392E4EAE4600462944 /* SplitActivity.nib */; };
 		D4F13C012E4EAE4600462944 /* SelectAndApplyAction.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B352E4EAE4600462944 /* SelectAndApplyAction.nib */; };
-		D4F13C022E4EAE4600462944 /* GarminSeries.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B7D2E4EAE4600462944 /* GarminSeries.js */; };
 		D4F13C042E4EAE4600462944 /* DistanceMethod.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B0D2E4EAE4600462944 /* DistanceMethod.nib */; };
 		D4F13C052E4EAE4600462944 /* LCDML___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B902E4EAE4600462944 /* LCDML___.TTF */; };
 		D4F13C062E4EAE4600462944 /* LCD2N___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B892E4EAE4600462944 /* LCD2N___.TTF */; };
-		D4F13C072E4EAE4600462944 /* garmin-white.gif in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B572E4EAE4600462944 /* garmin-white.gif */; };
 		D4F13C082E4EAE4600462944 /* DataListView.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B092E4EAE4600462944 /* DataListView.nib */; };
 		D4F13C092E4EAE4600462944 /* LeftArrowPressed.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BCA2E4EAE4600462944 /* LeftArrowPressed.png */; };
 		D4F13C0A2E4EAE4600462944 /* GMTOffset.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B192E4EAE4600462944 /* GMTOffset.nib */; };
 		D4F13C0B2E4EAE4600462944 /* Splits_Trans.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BE22E4EAE4600462944 /* Splits_Trans.png */; };
 		D4F13C0C2E4EAE4600462944 /* LCD2L___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B882E4EAE4600462944 /* LCD2L___.TTF */; };
 		D4F13C0D2E4EAE4600462944 /* browser1.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB52E4EAE4600462944 /* browser1.png */; };
-		D4F13C0E2E4EAE4600462944 /* icon_warning_sml.gif in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B752E4EAE4600462944 /* icon_warning_sml.gif */; };
 		D4F13C0F2E4EAE4600462944 /* RoundRTZ.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B9A2E4EAE4600462944 /* RoundRTZ.png */; };
 		D4F13C102E4EAE4600462944 /* send_activity.scpt in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B452E4EAE4600462944 /* send_activity.scpt */; };
 		D4F13C112E4EAE4600462944 /* ZoomOutButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B972E4EAE4600462944 /* ZoomOutButton.png */; };
 		D4F13C122E4EAE4600462944 /* mountain bike.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD22E4EAE4600462944 /* mountain bike.png */; };
-		D4F13C132E4EAE4600462944 /* GarminGeocode.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B5E2E4EAE4600462944 /* GarminGeocode.js */; };
-		D4F13C142E4EAE4600462944 /* GarminFile.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B502E4EAE4600462944 /* GarminFile.js */; };
-		D4F13C152E4EAE4600462944 /* communicator.css in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B552E4EAE4600462944 /* communicator.css */; };
 		D4F13C162E4EAE4600462944 /* zones.icns in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BE82E4EAE4600462944 /* zones.icns */; };
-		D4F13C172E4EAE4600462944 /* GarminDevicePlugin.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B5D2E4EAE4600462944 /* GarminDevicePlugin.js */; };
 		D4F13C182E4EAE4600462944 /* EquipmentSelector.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B132E4EAE4600462944 /* EquipmentSelector.xib */; };
-		D4F13C192E4EAE4600462944 /* GarminSample.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B7C2E4EAE4600462944 /* GarminSample.js */; };
 		D4F13C1A2E4EAE4600462944 /* LCDM2L__.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B8C2E4EAE4600462944 /* LCDM2L__.TTF */; };
 		D4F13C1B2E4EAE4600462944 /* TrackDataEntry.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B3F2E4EAE4600462944 /* TrackDataEntry.nib */; };
 		D4F13C1C2E4EAE4600462944 /* LCDM2B__.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B8B2E4EAE4600462944 /* LCDM2B__.TTF */; };
@@ -92,11 +76,9 @@
 		D4F13C212E4EAE4600462944 /* LCD-N___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B852E4EAE4600462944 /* LCD-N___.TTF */; };
 		D4F13C222E4EAE4600462944 /* reverse_off.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD82E4EAE4600462944 /* reverse_off.png */; };
 		D4F13C232E4EAE4600462944 /* GreenDot.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA32E4EAE4600462944 /* GreenDot.png */; };
-		D4F13C242E4EAE4600462944 /* GoogleMapController.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B622E4EAE4600462944 /* GoogleMapController.js */; };
 		D4F13C252E4EAE4600462944 /* bike tires.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB32E4EAE4600462944 /* bike tires.png */; };
 		D4F13C262E4EAE4600462944 /* ww.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BE72E4EAE4600462944 /* ww.jpg */; };
 		D4F13C272E4EAE4600462944 /* running shoes.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BDE2E4EAE4600462944 /* running shoes.jpg */; };
-		D4F13C282E4EAE4600462944 /* choose_bg.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B542E4EAE4600462944 /* choose_bg.png */; };
 		D4F13C292E4EAE4600462944 /* iphone.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC62E4EAE4600462944 /* iphone.png */; };
 		D4F13C2A2E4EAE4600462944 /* play_off.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD42E4EAE4600462944 /* play_off.png */; };
 		D4F13C2B2E4EAE4600462944 /* ImportDateEntry.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B1B2E4EAE4600462944 /* ImportDateEntry.nib */; };
@@ -106,19 +88,13 @@
 		D4F13C2F2E4EAE4600462944 /* RightArrowPressed.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BDB2E4EAE4600462944 /* RightArrowPressed.png */; };
 		D4F13C302E4EAE4600462944 /* RoundFF.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B992E4EAE4600462944 /* RoundFF.png */; };
 		D4F13C312E4EAE4600462944 /* prototype.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B462E4EAE4600462944 /* prototype.js */; };
-		D4F13C322E4EAE4600462944 /* Util-DateTimeFormat.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B4A2E4EAE4600462944 /* Util-DateTimeFormat.js */; };
 		D4F13C332E4EAE4600462944 /* DV_DC_2005_013.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC02E4EAE4600462944 /* DV_DC_2005_013.jpg */; };
 		D4F13C342E4EAE4600462944 /* ListEditor.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B1D2E4EAE4600462944 /* ListEditor.nib */; };
-		D4F13C352E4EAE4600462944 /* gpsbabel in Resources */ = {isa = PBXBuildFile; fileRef = D4F13AF92E4EAE4600462944 /* gpsbabel */; };
 		D4F13C362E4EAE4600462944 /* UnselectButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B952E4EAE4600462944 /* UnselectButton.png */; };
-		D4F13C372E4EAE4600462944 /* button_bg.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B532E4EAE4600462944 /* button_bg.jpg */; };
-		D4F13C382E4EAE4600462944 /* icon_info_sml.gif in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B732E4EAE4600462944 /* icon_info_sml.gif */; };
-		D4F13C392E4EAE4600462944 /* Util-PluginDetect.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B4C2E4EAE4600462944 /* Util-PluginDetect.js */; };
 		D4F13C3A2E4EAE4600462944 /* AdvancedPreferences.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA92E4EAE4600462944 /* AdvancedPreferences.tiff */; };
 		D4F13C3B2E4EAE4600462944 /* ABAction.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA72E4EAE4600462944 /* ABAction.tiff */; };
 		D4F13C3C2E4EAE4600462944 /* LCD2B___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B872E4EAE4600462944 /* LCD2B___.TTF */; };
 		D4F13C3D2E4EAE4600462944 /* AltSmoothingFactor.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B052E4EAE4600462944 /* AltSmoothingFactor.nib */; };
-		D4F13C3E2E4EAE4600462944 /* close.gif in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B6A2E4EAE4600462944 /* close.gif */; };
 		D4F13C3F2E4EAE4600462944 /* ActivityWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B032E4EAE4600462944 /* ActivityWindow.nib */; };
 		D4F13C402E4EAE4600462944 /* RightArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BDA2E4EAE4600462944 /* RightArrow.png */; };
 		D4F13C412E4EAE4600462944 /* skiis.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BDF2E4EAE4600462944 /* skiis.png */; };
@@ -129,103 +105,74 @@
 		D4F13C462E4EAE4600462944 /* EquipmentLogInitialValues.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13AFD2E4EAE4600462944 /* EquipmentLogInitialValues.xib */; };
 		D4F13C472E4EAE4600462944 /* RulerThumb.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B9E2E4EAE4600462944 /* RulerThumb.png */; };
 		D4F13C492E4EAE4600462944 /* kayak.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC72E4EAE4600462944 /* kayak.png */; };
-		D4F13C4A2E4EAE4600462944 /* communicator2.css in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B562E4EAE4600462944 /* communicator2.css */; };
 		D4F13C4B2E4EAE4600462944 /* SummaryWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B3B2E4EAE4600462944 /* SummaryWindow.nib */; };
 		D4F13C4C2E4EAE4600462944 /* rtz_off.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BDD2E4EAE4600462944 /* rtz_off.png */; };
 		D4F13C4D2E4EAE4600462944 /* canoe.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB92E4EAE4600462944 /* canoe.png */; };
 		D4F13C4E2E4EAE4600462944 /* LCD-L___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B842E4EAE4600462944 /* LCD-L___.TTF */; };
 		D4F13C4F2E4EAE4600462944 /* LeftArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC92E4EAE4600462944 /* LeftArrow.png */; };
-		D4F13C502E4EAE4600462944 /* GarminGpsDataStructures.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B5F2E4EAE4600462944 /* GarminGpsDataStructures.js */; };
 		D4F13C512E4EAE4600462944 /* bike wheels.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB42E4EAE4600462944 /* bike wheels.png */; };
 		D4F13C522E4EAE4600462944 /* LCD2U___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B8A2E4EAE4600462944 /* LCD2U___.TTF */; };
 		D4F13C532E4EAE4600462944 /* CompareButtonIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B9F2E4EAE4600462944 /* CompareButtonIcon.png */; };
-		D4F13C542E4EAE4600462944 /* external.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B6F2E4EAE4600462944 /* external.png */; };
-		D4F13C552E4EAE4600462944 /* GarminActivityMatcher.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B7A2E4EAE4600462944 /* GarminActivityMatcher.js */; };
 		D4F13C562E4EAE4600462944 /* BlueDot.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA22E4EAE4600462944 /* BlueDot.png */; };
 		D4F13C572E4EAE4600462944 /* PrefsBackup.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD72E4EAE4600462944 /* PrefsBackup.png */; };
 		D4F13C582E4EAE4600462944 /* AGButton_Trans.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BAA2E4EAE4600462944 /* AGButton_Trans.png */; };
-		D4F13C592E4EAE4600462944 /* GpxActivityFactory.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B7E2E4EAE4600462944 /* GpxActivityFactory.js */; };
 		D4F13C5A2E4EAE4600462944 /* FinishMarker.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC22E4EAE4600462944 /* FinishMarker.png */; };
 		D4F13C5B2E4EAE4600462944 /* CompareWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B012E4EAE4600462944 /* CompareWindow.xib */; };
 		D4F13C5C2E4EAE4600462944 /* TransparentMapWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B412E4EAE4600462944 /* TransparentMapWindow.nib */; };
 		D4F13C5D2E4EAE4600462944 /* TransportPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B432E4EAE4600462944 /* TransportPanel.nib */; };
 		D4F13C5F2E4EAE4600462944 /* DetailedMapWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B0B2E4EAE4600462944 /* DetailedMapWindow.nib */; };
 		D4F13C602E4EAE4600462944 /* line_solid.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BCD2E4EAE4600462944 /* line_solid.png */; };
-		D4F13C612E4EAE4600462944 /* GarminMeasurement.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B7B2E4EAE4600462944 /* GarminMeasurement.js */; };
-		D4F13C622E4EAE4600462944 /* garminlogo3.gif in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B712E4EAE4600462944 /* garminlogo3.gif */; };
-		D4F13C632E4EAE4600462944 /* collapsed.gif in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B6B2E4EAE4600462944 /* collapsed.gif */; };
 		D4F13C642E4EAE4600462944 /* LCDMU___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B922E4EAE4600462944 /* LCDMU___.TTF */; };
 		D4F13C652E4EAE4600462944 /* Ascent Icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB02E4EAE4600462944 /* Ascent Icon.icns */; };
 		D4F13C662E4EAE4600462944 /* PrefsBackup.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B252E4EAE4600462944 /* PrefsBackup.nib */; };
-		D4F13C672E4EAE4600462944 /* communicator_logo.gif in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B6C2E4EAE4600462944 /* communicator_logo.gif */; };
 		D4F13C682E4EAE4600462944 /* SplashPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B372E4EAE4600462944 /* SplashPanel.nib */; };
 		D4F13C692E4EAE4600462944 /* bike chain.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB22E4EAE4600462944 /* bike chain.png */; };
-		D4F13C6A2E4EAE4600462944 /* GarminActivity.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B772E4EAE4600462944 /* GarminActivity.js */; };
 		D4F13C6B2E4EAE4600462944 /* walking shoes.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BE62E4EAE4600462944 /* walking shoes.png */; };
 		D4F13C6C2E4EAE4600462944 /* GeneralPreferences.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC32E4EAE4600462944 /* GeneralPreferences.tiff */; };
 		D4F13C6D2E4EAE4600462944 /* ABAction_Trans.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA82E4EAE4600462944 /* ABAction_Trans.png */; };
 		D4F13C6E2E4EAE4600462944 /* Dot.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA12E4EAE4600462944 /* Dot.png */; };
 		D4F13C6F2E4EAE4600462944 /* line_solid_3.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD02E4EAE4600462944 /* line_solid_3.png */; };
 		D4F13C702E4EAE4600462944 /* LCDM2U__.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B8E2E4EAE4600462944 /* LCDM2U__.TTF */; };
-		D4F13C712E4EAE4600462944 /* icon_success_sml.gif in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B742E4EAE4600462944 /* icon_success_sml.gif */; };
-		D4F13C732E4EAE4600462944 /* GarminSync.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B152E4EAE4600462944 /* GarminSync.xib */; };
-		D4F13C742E4EAE4600462944 /* icon_error_sml.gif in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B722E4EAE4600462944 /* icon_error_sml.gif */; };
 		D4F13C752E4EAE4600462944 /* cyclocross bike.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BBB2E4EAE4600462944 /* cyclocross bike.png */; };
 		D4F13C762E4EAE4600462944 /* ABAction.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA62E4EAE4600462944 /* ABAction.png */; };
 		D4F13C772E4EAE4600462944 /* line_solid_2.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BCF2E4EAE4600462944 /* line_solid_2.png */; };
 		D4F13C782E4EAE4600462944 /* reverse_on.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD92E4EAE4600462944 /* reverse_on.png */; };
 		D4F13C792E4EAE4600462944 /* ZoomInButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B982E4EAE4600462944 /* ZoomInButton.png */; };
 		D4F13C7A2E4EAE4600462944 /* Calendar_Trans.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB82E4EAE4600462944 /* Calendar_Trans.png */; };
-		D4F13C7B2E4EAE4600462944 /* garmin.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B582E4EAE4600462944 /* garmin.jpg */; };
 		D4F13C7C2E4EAE4600462944 /* Reg.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B332E4EAE4600462944 /* Reg.nib */; };
-		D4F13C7D2E4EAE4600462944 /* build-by-maven-black.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B662E4EAE4600462944 /* build-by-maven-black.png */; };
 		D4F13C7E2E4EAE4600462944 /* stop_off.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BE52E4EAE4600462944 /* stop_off.png */; };
 		D4F13C7F2E4EAE4600462944 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D4F13AF62E4EAE4600462944 /* InfoPlist.strings */; };
-		D4F13C802E4EAE4600462944 /* Util-XmlConverter.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B4D2E4EAE4600462944 /* Util-XmlConverter.js */; };
 		D4F13C812E4EAE4600462944 /* line_dashed_2_1.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BCB2E4EAE4600462944 /* line_dashed_2_1.png */; };
 		D4F13C822E4EAE4600462944 /* EditMarkers.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B0F2E4EAE4600462944 /* EditMarkers.nib */; };
 		D4F13C832E4EAE4600462944 /* SelectLeftButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B962E4EAE4600462944 /* SelectLeftButton.png */; };
-		D4F13C842E4EAE4600462944 /* GarminActivityFilter.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B792E4EAE4600462944 /* GarminActivityFilter.js */; };
 		D4F13C852E4EAE4600462944 /* line_dotted_2.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BCC2E4EAE4600462944 /* line_dotted_2.png */; };
 		D4F13C862E4EAE4600462944 /* LapMarker.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC82E4EAE4600462944 /* LapMarker.png */; };
-		D4F13C872E4EAE4600462944 /* Util-Json2.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B4B2E4EAE4600462944 /* Util-Json2.js */; };
 		D4F13C882E4EAE4600462944 /* plus.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD62E4EAE4600462944 /* plus.png */; };
 		D4F13C892E4EAE4600462944 /* apps.icns in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BAF2E4EAE4600462944 /* apps.icns */; };
 		D4F13C8A2E4EAE4600462944 /* StartMarker.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BE42E4EAE4600462944 /* StartMarker.png */; };
 		D4F13C8B2E4EAE4600462944 /* PurpleDot.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA42E4EAE4600462944 /* PurpleDot.png */; };
-		D4F13C8C2E4EAE4600462944 /* developer-title.gif in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B6D2E4EAE4600462944 /* developer-title.gif */; };
-		D4F13C8D2E4EAE4600462944 /* GarminPluginUtils.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B612E4EAE4600462944 /* GarminPluginUtils.js */; };
 		D4F13C8E2E4EAE4600462944 /* EquipmentList.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B112E4EAE4600462944 /* EquipmentList.xib */; };
 		D4F13C8F2E4EAE4600462944 /* Browser_Trans.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB62E4EAE4600462944 /* Browser_Trans.png */; };
 		D4F13C902E4EAE4600462944 /* TrackDragImage.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA02E4EAE4600462944 /* TrackDragImage.png */; };
 		D4F13C912E4EAE4600462944 /* ff_off.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC12E4EAE4600462944 /* ff_off.png */; };
 		D4F13C922E4EAE4600462944 /* DataRect.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BBD2E4EAE4600462944 /* DataRect.png */; };
-		D4F13C932E4EAE4600462944 /* expanded.gif in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B6E2E4EAE4600462944 /* expanded.gif */; };
 		D4F13C942E4EAE4600462944 /* road bike.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BDC2E4EAE4600462944 /* road bike.png */; };
 		D4F13C972E4EAE4600462944 /* LCDM2N__.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B8D2E4EAE4600462944 /* LCDM2N__.TTF */; };
-		D4F13C982E4EAE4600462944 /* maven-feather.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B682E4EAE4600462944 /* maven-feather.png */; };
-		D4F13C992E4EAE4600462944 /* GarminDeviceDisplay.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B5C2E4EAE4600462944 /* GarminDeviceDisplay.js */; };
 		D4F13C9A2E4EAE4600462944 /* gs.html in Resources */ = {isa = PBXBuildFile; fileRef = D4F13A792E4EAE4600462944 /* gs.html */; };
-		D4F13C9B2E4EAE4600462944 /* Util-BrowserDetect.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B492E4EAE4600462944 /* Util-BrowserDetect.js */; };
 		D4F13C9C2E4EAE4600462944 /* LCD-U___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B862E4EAE4600462944 /* LCD-U___.TTF */; };
 		D4F13C9D2E4EAE4600462944 /* AHud.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BAB2E4EAE4600462944 /* AHud.png */; };
 		D4F13C9E2E4EAE4600462944 /* PrefsAppearance.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B232E4EAE4600462944 /* PrefsAppearance.nib */; };
 		D4F13C9F2E4EAE4600462944 /* hud_titlebar-close.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC52E4EAE4600462944 /* hud_titlebar-close.tiff */; };
-		D4F13CA02E4EAE4600462944 /* GarminDirectoryFactory.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B4F2E4EAE4600462944 /* GarminDirectoryFactory.js */; };
-		D4F13CA12E4EAE4600462944 /* GarminDevice.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B5A2E4EAE4600462944 /* GarminDevice.js */; };
 		D4F13CA22E4EAE4600462944 /* RulerBG.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B9D2E4EAE4600462944 /* RulerBG.png */; };
 		D4F13CA32E4EAE4600462944 /* SelectRightButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B942E4EAE4600462944 /* SelectRightButton.png */; };
-		D4F13CA42E4EAE4600462944 /* build-by-maven-white.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B672E4EAE4600462944 /* build-by-maven-white.png */; };
 		D4F13CA52E4EAE4600462944 /* line_solid_1.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BCE2E4EAE4600462944 /* line_solid_1.png */; };
 		D4F13CA62E4EAE4600462944 /* SplitsButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BE32E4EAE4600462944 /* SplitsButton.png */; };
-		D4F13CA72E4EAE4600462944 /* garminlogo2.gif in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B702E4EAE4600462944 /* garminlogo2.gif */; };
 		D4F13CA82E4EAE4600462944 /* PeakMarker.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD32E4EAE4600462944 /* PeakMarker.png */; };
 		D4F13CA92E4EAE4600462944 /* PrefsSync.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13AFF2E4EAE4600462944 /* PrefsSync.nib */; };
 		D4F13CAA2E4EAE4600462944 /* PrefsAdvanced.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B212E4EAE4600462944 /* PrefsAdvanced.nib */; };
 		D4F13CAB2E4EAE4600462944 /* ColorPreferences.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BBA2E4EAE4600462944 /* ColorPreferences.tiff */; };
 		D4F13CAC2E4EAE4600462944 /* play_on.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD52E4EAE4600462944 /* play_on.png */; };
 		D4F13CAD2E4EAE4600462944 /* RoundStop.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B9C2E4EAE4600462944 /* RoundStop.png */; };
-		D4F13CAE2E4EAE4600462944 /* GarminActivityDirectory.js in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B782E4EAE4600462944 /* GarminActivityDirectory.js */; };
 		D4F13CAF2E4EAE4600462944 /* LCDMN___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B912E4EAE4600462944 /* LCDMN___.TTF */; };
 		D4F13CB02E4EAE4600462944 /* BackupNag.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B072E4EAE4600462944 /* BackupNag.nib */; };
 		D4F13CB12E4EAE4600462944 /* NetReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A2C2E4EAE4600462944 /* NetReachability.m */; };
@@ -443,7 +390,6 @@
 		D4CCE9022E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/BackupNag.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9032E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/SummaryWindow.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9042E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/GarminSync.xib; sourceTree = SOURCE_ROOT; };
-		D4CCE9052E5048D300B46DB2 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		D4CCE9062E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/PrefsBackup.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9072E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/Reg.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9082E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/DetailedMapWindow.nib; sourceTree = SOURCE_ROOT; };
@@ -483,9 +429,6 @@
 		D4EFE9D616B5D0BC00A5305B /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D4EFE9F416B5D0BC00A5305B /* AscentTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AscentTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D4EFE9F516B5D0BC00A5305B /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
-		D4EFE9FC16B5D0BC00A5305B /* AscentTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "AscentTests-Info.plist"; sourceTree = "<group>"; };
-		D4EFEA0016B5D0BC00A5305B /* AscentTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AscentTests.h; sourceTree = "<group>"; };
-		D4EFEA0116B5D0BC00A5305B /* AscentTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AscentTests.m; sourceTree = "<group>"; };
 		D4F139E82E4EAE4600462944 /* DrawingUtilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DrawingUtilities.h; path = "My Code/DrawingUtilities.h"; sourceTree = SOURCE_ROOT; };
 		D4F139E92E4EAE4600462944 /* DrawingUtilities.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = DrawingUtilities.mm; path = "My Code/DrawingUtilities.mm"; sourceTree = SOURCE_ROOT; };
 		D4F139EA2E4EAE4600462944 /* ItemList.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ItemList.h; path = "My Code/ItemList.h"; sourceTree = SOURCE_ROOT; };
@@ -637,7 +580,6 @@
 		D4F13A872E4EAE4600462944 /* EquipmentTrackInfo.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = EquipmentTrackInfo.mm; path = "My Code/EquipmentTrackInfo.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13A882E4EAE4600462944 /* MaintenanceLog.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MaintenanceLog.h; path = "My Code/MaintenanceLog.h"; sourceTree = SOURCE_ROOT; };
 		D4F13A892E4EAE4600462944 /* MaintenanceLog.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = MaintenanceLog.mm; path = "My Code/MaintenanceLog.mm"; sourceTree = SOURCE_ROOT; };
-		D4F13A8B2E4EAE4600462944 /* SUUpdater.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SUUpdater.h; path = Sparkle.framework/Headers/SUUpdater.h; sourceTree = SOURCE_ROOT; };
 		D4F13A8C2E4EAE4600462944 /* TransparentWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TransparentWindowController.h; path = "My Code/TransparentWindowController.h"; sourceTree = SOURCE_ROOT; };
 		D4F13A8D2E4EAE4600462944 /* TransparentWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = TransparentWindowController.mm; path = "My Code/TransparentWindowController.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13A8E2E4EAE4600462944 /* TransportPanelController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TransportPanelController.h; path = "My Code/TransportPanelController.h"; sourceTree = SOURCE_ROOT; };
@@ -761,21 +703,6 @@
 		D4F13B612E4EAE4600462944 /* GarminPluginUtils.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = GarminPluginUtils.js; path = garmin/device/GarminPluginUtils.js; sourceTree = SOURCE_ROOT; };
 		D4F13B622E4EAE4600462944 /* GoogleMapController.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = GoogleMapController.js; path = garmin/device/GoogleMapController.js; sourceTree = SOURCE_ROOT; };
 		D4F13B642E4EAE4600462944 /* GarminRemoteTransfer.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = GarminRemoteTransfer.js; path = garmin/api/GarminRemoteTransfer.js; sourceTree = SOURCE_ROOT; };
-		D4F13B662E4EAE4600462944 /* build-by-maven-black.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "build-by-maven-black.png"; path = "garmin/images/logos/build-by-maven-black.png"; sourceTree = SOURCE_ROOT; };
-		D4F13B672E4EAE4600462944 /* build-by-maven-white.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "build-by-maven-white.png"; path = "garmin/images/logos/build-by-maven-white.png"; sourceTree = SOURCE_ROOT; };
-		D4F13B682E4EAE4600462944 /* maven-feather.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "maven-feather.png"; path = "garmin/images/logos/maven-feather.png"; sourceTree = SOURCE_ROOT; };
-		D4F13B6A2E4EAE4600462944 /* close.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = close.gif; path = garmin/images/close.gif; sourceTree = SOURCE_ROOT; };
-		D4F13B6B2E4EAE4600462944 /* collapsed.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = collapsed.gif; path = garmin/images/collapsed.gif; sourceTree = SOURCE_ROOT; };
-		D4F13B6C2E4EAE4600462944 /* communicator_logo.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = communicator_logo.gif; path = garmin/images/communicator_logo.gif; sourceTree = SOURCE_ROOT; };
-		D4F13B6D2E4EAE4600462944 /* developer-title.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = "developer-title.gif"; path = "garmin/images/developer-title.gif"; sourceTree = SOURCE_ROOT; };
-		D4F13B6E2E4EAE4600462944 /* expanded.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = expanded.gif; path = garmin/images/expanded.gif; sourceTree = SOURCE_ROOT; };
-		D4F13B6F2E4EAE4600462944 /* external.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = external.png; path = garmin/images/external.png; sourceTree = SOURCE_ROOT; };
-		D4F13B702E4EAE4600462944 /* garminlogo2.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = garminlogo2.gif; path = garmin/images/garminlogo2.gif; sourceTree = SOURCE_ROOT; };
-		D4F13B712E4EAE4600462944 /* garminlogo3.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = garminlogo3.gif; path = garmin/images/garminlogo3.gif; sourceTree = SOURCE_ROOT; };
-		D4F13B722E4EAE4600462944 /* icon_error_sml.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = icon_error_sml.gif; path = garmin/images/icon_error_sml.gif; sourceTree = SOURCE_ROOT; };
-		D4F13B732E4EAE4600462944 /* icon_info_sml.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = icon_info_sml.gif; path = garmin/images/icon_info_sml.gif; sourceTree = SOURCE_ROOT; };
-		D4F13B742E4EAE4600462944 /* icon_success_sml.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = icon_success_sml.gif; path = garmin/images/icon_success_sml.gif; sourceTree = SOURCE_ROOT; };
-		D4F13B752E4EAE4600462944 /* icon_warning_sml.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; name = icon_warning_sml.gif; path = garmin/images/icon_warning_sml.gif; sourceTree = SOURCE_ROOT; };
 		D4F13B772E4EAE4600462944 /* GarminActivity.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = GarminActivity.js; path = garmin/GarminActivity.js; sourceTree = SOURCE_ROOT; };
 		D4F13B782E4EAE4600462944 /* GarminActivityDirectory.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = GarminActivityDirectory.js; path = garmin/GarminActivityDirectory.js; sourceTree = SOURCE_ROOT; };
 		D4F13B792E4EAE4600462944 /* GarminActivityFilter.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = GarminActivityFilter.js; path = garmin/GarminActivityFilter.js; sourceTree = SOURCE_ROOT; };
@@ -951,7 +878,6 @@
 				D4F13D2A2E4EAF2D00462944 /* Other Code */,
 				D4F13BEA2E4EAE4600462944 /* Resources */,
 				D4F13BED2E4EAE4600462944 /* Supporting Files */,
-				D4EFE9FA16B5D0BC00A5305B /* AscentTests */,
 				D4D51A432E4E35220003E47F /* Other */,
 				D451E8632E4D640A0060BA74 /* RBSplitView.xcodeproj */,
 				D4EFE9D016B5D0BC00A5305B /* Frameworks */,
@@ -1000,25 +926,6 @@
 				D451E8A42E4D8A480060BA74 /* JSON.framework */,
 			);
 			name = "Other Frameworks";
-			sourceTree = "<group>";
-		};
-		D4EFE9FA16B5D0BC00A5305B /* AscentTests */ = {
-			isa = PBXGroup;
-			children = (
-				D4EFEA0016B5D0BC00A5305B /* AscentTests.h */,
-				D4EFEA0116B5D0BC00A5305B /* AscentTests.m */,
-				D4EFE9FB16B5D0BC00A5305B /* Supporting Files */,
-			);
-			path = AscentTests;
-			sourceTree = "<group>";
-		};
-		D4EFE9FB16B5D0BC00A5305B /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				D4EFE9FC16B5D0BC00A5305B /* AscentTests-Info.plist */,
-				D4EFE9FD16B5D0BC00A5305B /* InfoPlist.strings */,
-			);
-			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
 		D4F139F42E4EAE4600462944 /* Utilities */ = {
@@ -1264,7 +1171,6 @@
 		D4F13AA72E4EAE4600462944 /* Misc */ = {
 			isa = PBXGroup;
 			children = (
-				D4F13A8B2E4EAE4600462944 /* SUUpdater.h */,
 				D4F13A8C2E4EAE4600462944 /* TransparentWindowController.h */,
 				D4F13A8D2E4EAE4600462944 /* TransparentWindowController.mm */,
 				D4F13A8E2E4EAE4600462944 /* TransportPanelController.h */,
@@ -1557,32 +1463,9 @@
 			name = api;
 			sourceTree = "<group>";
 		};
-		D4F13B692E4EAE4600462944 /* logos */ = {
-			isa = PBXGroup;
-			children = (
-				D4F13B662E4EAE4600462944 /* build-by-maven-black.png */,
-				D4F13B672E4EAE4600462944 /* build-by-maven-white.png */,
-				D4F13B682E4EAE4600462944 /* maven-feather.png */,
-			);
-			name = logos;
-			sourceTree = "<group>";
-		};
 		D4F13B762E4EAE4600462944 /* images */ = {
 			isa = PBXGroup;
 			children = (
-				D4F13B692E4EAE4600462944 /* logos */,
-				D4F13B6A2E4EAE4600462944 /* close.gif */,
-				D4F13B6B2E4EAE4600462944 /* collapsed.gif */,
-				D4F13B6C2E4EAE4600462944 /* communicator_logo.gif */,
-				D4F13B6D2E4EAE4600462944 /* developer-title.gif */,
-				D4F13B6E2E4EAE4600462944 /* expanded.gif */,
-				D4F13B6F2E4EAE4600462944 /* external.png */,
-				D4F13B702E4EAE4600462944 /* garminlogo2.gif */,
-				D4F13B712E4EAE4600462944 /* garminlogo3.gif */,
-				D4F13B722E4EAE4600462944 /* icon_error_sml.gif */,
-				D4F13B732E4EAE4600462944 /* icon_info_sml.gif */,
-				D4F13B742E4EAE4600462944 /* icon_success_sml.gif */,
-				D4F13B752E4EAE4600462944 /* icon_warning_sml.gif */,
 			);
 			name = images;
 			sourceTree = "<group>";
@@ -1895,47 +1778,33 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D4F13BEF2E4EAE4600462944 /* GarminRemoteTransfer.js in Resources */,
 				D4F13BF02E4EAE4600462944 /* LCD-BOLD.TTF in Resources */,
 				D4F13BF12E4EAE4600462944 /* Ascent_Doc.icns in Resources */,
 				D4F13BF22E4EAE4600462944 /* AppearancePreferences.tiff in Resources */,
 				D4F13BF32E4EAE4600462944 /* bike shoes.png in Resources */,
-				D4F13BF42E4EAE4600462944 /* Util-Broadcaster.js in Resources */,
 				D4F13BF52E4EAE4600462944 /* Albert Einstein.icns in Resources */,
 				D4F13BF72E4EAE4600462944 /* Desert.png in Resources */,
 				D4F13BF82E4EAE4600462944 /* DataGraph.png in Resources */,
-				D4F13BF92E4EAE4600462944 /* GarminDeviceControl.js in Resources */,
-				D4F13BFA2E4EAE4600462944 /* ajax-loader.gif in Resources */,
 				D4F13BFB2E4EAE4600462944 /* Ascent-Info.plist in Resources */,
-				D4F13BFD2E4EAE4600462944 /* TcxActivityFactory.js in Resources */,
-				D4F13BFE2E4EAE4600462944 /* GarminObjectGenerator.js in Resources */,
 				D4F13BFF2E4EAE4600462944 /* HAL-9000.icns in Resources */,
 				D4F13C002E4EAE4600462944 /* SplitActivity.nib in Resources */,
 				D4F13C012E4EAE4600462944 /* SelectAndApplyAction.nib in Resources */,
-				D4F13C022E4EAE4600462944 /* GarminSeries.js in Resources */,
 				D4F13C042E4EAE4600462944 /* DistanceMethod.nib in Resources */,
 				D4F13C052E4EAE4600462944 /* LCDML___.TTF in Resources */,
 				D4F13C062E4EAE4600462944 /* LCD2N___.TTF in Resources */,
-				D4F13C072E4EAE4600462944 /* garmin-white.gif in Resources */,
 				D4F13C082E4EAE4600462944 /* DataListView.nib in Resources */,
 				D4F13C092E4EAE4600462944 /* LeftArrowPressed.png in Resources */,
 				D4F13C0A2E4EAE4600462944 /* GMTOffset.nib in Resources */,
 				D4F13C0B2E4EAE4600462944 /* Splits_Trans.png in Resources */,
 				D4F13C0C2E4EAE4600462944 /* LCD2L___.TTF in Resources */,
 				D4F13C0D2E4EAE4600462944 /* browser1.png in Resources */,
-				D4F13C0E2E4EAE4600462944 /* icon_warning_sml.gif in Resources */,
 				D4F13C0F2E4EAE4600462944 /* RoundRTZ.png in Resources */,
 				D4F13C102E4EAE4600462944 /* send_activity.scpt in Resources */,
 				D4F13C112E4EAE4600462944 /* ZoomOutButton.png in Resources */,
 				D4F13C122E4EAE4600462944 /* mountain bike.png in Resources */,
-				D4F13C132E4EAE4600462944 /* GarminGeocode.js in Resources */,
-				D4F13C142E4EAE4600462944 /* GarminFile.js in Resources */,
-				D4F13C152E4EAE4600462944 /* communicator.css in Resources */,
 				D4F13C162E4EAE4600462944 /* zones.icns in Resources */,
-				D4F13C172E4EAE4600462944 /* GarminDevicePlugin.js in Resources */,
 				D4F18D192E525DB20032E51D /* Info.plist in Resources */,
 				D4F13C182E4EAE4600462944 /* EquipmentSelector.xib in Resources */,
-				D4F13C192E4EAE4600462944 /* GarminSample.js in Resources */,
 				D4F13C1A2E4EAE4600462944 /* LCDM2L__.TTF in Resources */,
 				D4F13C1B2E4EAE4600462944 /* TrackDataEntry.nib in Resources */,
 				D4F13C1C2E4EAE4600462944 /* LCDM2B__.TTF in Resources */,
@@ -1945,11 +1814,9 @@
 				D4F13C212E4EAE4600462944 /* LCD-N___.TTF in Resources */,
 				D4F13C222E4EAE4600462944 /* reverse_off.png in Resources */,
 				D4F13C232E4EAE4600462944 /* GreenDot.png in Resources */,
-				D4F13C242E4EAE4600462944 /* GoogleMapController.js in Resources */,
 				D4F13C252E4EAE4600462944 /* bike tires.png in Resources */,
 				D4F13C262E4EAE4600462944 /* ww.jpg in Resources */,
 				D4F13C272E4EAE4600462944 /* running shoes.jpg in Resources */,
-				D4F13C282E4EAE4600462944 /* choose_bg.png in Resources */,
 				D4F13C292E4EAE4600462944 /* iphone.png in Resources */,
 				D4F13C2A2E4EAE4600462944 /* play_off.png in Resources */,
 				D4F13C2B2E4EAE4600462944 /* ImportDateEntry.nib in Resources */,
@@ -1959,7 +1826,6 @@
 				D4F13C2F2E4EAE4600462944 /* RightArrowPressed.png in Resources */,
 				D4F13C302E4EAE4600462944 /* RoundFF.png in Resources */,
 				D4F13C312E4EAE4600462944 /* prototype.js in Resources */,
-				D4F13C322E4EAE4600462944 /* Util-DateTimeFormat.js in Resources */,
 				D4450B542E5BD2CD00AB39C3 /* Ascent-Info.plist in Resources */,
 				D4F13C332E4EAE4600462944 /* DV_DC_2005_013.jpg in Resources */,
 				D4F18D0A2E5248980032E51D /* PrefsUser.xib in Resources */,
@@ -1968,16 +1834,11 @@
 				D4F18D0D2E5248980032E51D /* ProgressBar.xib in Resources */,
 				D4F18D0E2E5248980032E51D /* PrefsSharing.xib in Resources */,
 				D4F13C342E4EAE4600462944 /* ListEditor.nib in Resources */,
-				D4F13C352E4EAE4600462944 /* gpsbabel in Resources */,
 				D4F13C362E4EAE4600462944 /* UnselectButton.png in Resources */,
-				D4F13C372E4EAE4600462944 /* button_bg.jpg in Resources */,
-				D4F13C382E4EAE4600462944 /* icon_info_sml.gif in Resources */,
-				D4F13C392E4EAE4600462944 /* Util-PluginDetect.js in Resources */,
 				D4F13C3A2E4EAE4600462944 /* AdvancedPreferences.tiff in Resources */,
 				D4F13C3B2E4EAE4600462944 /* ABAction.tiff in Resources */,
 				D4F13C3C2E4EAE4600462944 /* LCD2B___.TTF in Resources */,
 				D4F13C3D2E4EAE4600462944 /* AltSmoothingFactor.nib in Resources */,
-				D4F13C3E2E4EAE4600462944 /* close.gif in Resources */,
 				D4F13C3F2E4EAE4600462944 /* ActivityWindow.nib in Resources */,
 				D4F13C402E4EAE4600462944 /* RightArrow.png in Resources */,
 				D4F13C412E4EAE4600462944 /* skiis.png in Resources */,
@@ -1988,22 +1849,17 @@
 				D4F13C462E4EAE4600462944 /* EquipmentLogInitialValues.xib in Resources */,
 				D4F13C472E4EAE4600462944 /* RulerThumb.png in Resources */,
 				D4F13C492E4EAE4600462944 /* kayak.png in Resources */,
-				D4F13C4A2E4EAE4600462944 /* communicator2.css in Resources */,
 				D4F13C4B2E4EAE4600462944 /* SummaryWindow.nib in Resources */,
 				D4F13C4C2E4EAE4600462944 /* rtz_off.png in Resources */,
 				D4F13C4D2E4EAE4600462944 /* canoe.png in Resources */,
 				D4F13C4E2E4EAE4600462944 /* LCD-L___.TTF in Resources */,
 				D4F13C4F2E4EAE4600462944 /* LeftArrow.png in Resources */,
-				D4F13C502E4EAE4600462944 /* GarminGpsDataStructures.js in Resources */,
 				D4F13C512E4EAE4600462944 /* bike wheels.png in Resources */,
 				D4F13C522E4EAE4600462944 /* LCD2U___.TTF in Resources */,
 				D4F13C532E4EAE4600462944 /* CompareButtonIcon.png in Resources */,
-				D4F13C542E4EAE4600462944 /* external.png in Resources */,
-				D4F13C552E4EAE4600462944 /* GarminActivityMatcher.js in Resources */,
 				D4F13C562E4EAE4600462944 /* BlueDot.png in Resources */,
 				D4F13C572E4EAE4600462944 /* PrefsBackup.png in Resources */,
 				D4F13C582E4EAE4600462944 /* AGButton_Trans.png in Resources */,
-				D4F13C592E4EAE4600462944 /* GpxActivityFactory.js in Resources */,
 				D4F13C5A2E4EAE4600462944 /* FinishMarker.png in Resources */,
 				D4F13C5B2E4EAE4600462944 /* CompareWindow.xib in Resources */,
 				D4F13C5C2E4EAE4600462944 /* TransparentMapWindow.nib in Resources */,
@@ -2011,25 +1867,17 @@
 				D4CCE92A2E5049B900B46DB2 /* MainMenu.nib in Resources */,
 				D4F13C5F2E4EAE4600462944 /* DetailedMapWindow.nib in Resources */,
 				D4F13C602E4EAE4600462944 /* line_solid.png in Resources */,
-				D4F13C612E4EAE4600462944 /* GarminMeasurement.js in Resources */,
-				D4F13C622E4EAE4600462944 /* garminlogo3.gif in Resources */,
-				D4F13C632E4EAE4600462944 /* collapsed.gif in Resources */,
 				D4F13C642E4EAE4600462944 /* LCDMU___.TTF in Resources */,
 				D4F13C652E4EAE4600462944 /* Ascent Icon.icns in Resources */,
 				D4F13C662E4EAE4600462944 /* PrefsBackup.nib in Resources */,
-				D4F13C672E4EAE4600462944 /* communicator_logo.gif in Resources */,
 				D4F13C682E4EAE4600462944 /* SplashPanel.nib in Resources */,
 				D4F13C692E4EAE4600462944 /* bike chain.png in Resources */,
-				D4F13C6A2E4EAE4600462944 /* GarminActivity.js in Resources */,
 				D4F13C6B2E4EAE4600462944 /* walking shoes.png in Resources */,
 				D4F13C6C2E4EAE4600462944 /* GeneralPreferences.tiff in Resources */,
 				D4F13C6D2E4EAE4600462944 /* ABAction_Trans.png in Resources */,
 				D4F13C6E2E4EAE4600462944 /* Dot.png in Resources */,
 				D4F13C6F2E4EAE4600462944 /* line_solid_3.png in Resources */,
 				D4F13C702E4EAE4600462944 /* LCDM2U__.TTF in Resources */,
-				D4F13C712E4EAE4600462944 /* icon_success_sml.gif in Resources */,
-				D4F13C732E4EAE4600462944 /* GarminSync.xib in Resources */,
-				D4F13C742E4EAE4600462944 /* icon_error_sml.gif in Resources */,
 				D4F13C752E4EAE4600462944 /* cyclocross bike.png in Resources */,
 				D4F13C762E4EAE4600462944 /* ABAction.png in Resources */,
 				D4F13C772E4EAE4600462944 /* line_solid_2.png in Resources */,
@@ -2037,56 +1885,40 @@
 				D4F13C792E4EAE4600462944 /* ZoomInButton.png in Resources */,
 				D4F13C7A2E4EAE4600462944 /* Calendar_Trans.png in Resources */,
 				D490A52E2E4F8E48005BAD01 /* TrackBrowserDocument.xib in Resources */,
-				D4F13C7B2E4EAE4600462944 /* garmin.jpg in Resources */,
 				D4F13C7C2E4EAE4600462944 /* Reg.nib in Resources */,
-				D4F13C7D2E4EAE4600462944 /* build-by-maven-black.png in Resources */,
 				D4F13C7E2E4EAE4600462944 /* stop_off.png in Resources */,
 				D4F13C7F2E4EAE4600462944 /* InfoPlist.strings in Resources */,
-				D4F13C802E4EAE4600462944 /* Util-XmlConverter.js in Resources */,
 				D4F13C812E4EAE4600462944 /* line_dashed_2_1.png in Resources */,
 				D4F13C822E4EAE4600462944 /* EditMarkers.nib in Resources */,
 				D4F13C832E4EAE4600462944 /* SelectLeftButton.png in Resources */,
-				D4F13C842E4EAE4600462944 /* GarminActivityFilter.js in Resources */,
 				D4F13C852E4EAE4600462944 /* line_dotted_2.png in Resources */,
 				D4F13C862E4EAE4600462944 /* LapMarker.png in Resources */,
-				D4F13C872E4EAE4600462944 /* Util-Json2.js in Resources */,
 				D4F13C882E4EAE4600462944 /* plus.png in Resources */,
 				D4F13C892E4EAE4600462944 /* apps.icns in Resources */,
 				D4F13C8A2E4EAE4600462944 /* StartMarker.png in Resources */,
 				D4F13C8B2E4EAE4600462944 /* PurpleDot.png in Resources */,
-				D4F13C8C2E4EAE4600462944 /* developer-title.gif in Resources */,
-				D4F13C8D2E4EAE4600462944 /* GarminPluginUtils.js in Resources */,
 				D4F13C8E2E4EAE4600462944 /* EquipmentList.xib in Resources */,
 				D4F13C8F2E4EAE4600462944 /* Browser_Trans.png in Resources */,
 				D4F13C902E4EAE4600462944 /* TrackDragImage.png in Resources */,
 				D4F13C912E4EAE4600462944 /* ff_off.png in Resources */,
 				D4F13C922E4EAE4600462944 /* DataRect.png in Resources */,
-				D4F13C932E4EAE4600462944 /* expanded.gif in Resources */,
 				D4F13C942E4EAE4600462944 /* road bike.png in Resources */,
 				D4F13C972E4EAE4600462944 /* LCDM2N__.TTF in Resources */,
-				D4F13C982E4EAE4600462944 /* maven-feather.png in Resources */,
-				D4F13C992E4EAE4600462944 /* GarminDeviceDisplay.js in Resources */,
 				D4F13C9A2E4EAE4600462944 /* gs.html in Resources */,
-				D4F13C9B2E4EAE4600462944 /* Util-BrowserDetect.js in Resources */,
 				D4F13C9C2E4EAE4600462944 /* LCD-U___.TTF in Resources */,
 				D4F13C9D2E4EAE4600462944 /* AHud.png in Resources */,
 				D4F13C9E2E4EAE4600462944 /* PrefsAppearance.nib in Resources */,
 				D4F13C9F2E4EAE4600462944 /* hud_titlebar-close.tiff in Resources */,
-				D4F13CA02E4EAE4600462944 /* GarminDirectoryFactory.js in Resources */,
-				D4F13CA12E4EAE4600462944 /* GarminDevice.js in Resources */,
 				D4F13CA22E4EAE4600462944 /* RulerBG.png in Resources */,
 				D4F13CA32E4EAE4600462944 /* SelectRightButton.png in Resources */,
-				D4F13CA42E4EAE4600462944 /* build-by-maven-white.png in Resources */,
 				D4F13CA52E4EAE4600462944 /* line_solid_1.png in Resources */,
 				D4F13CA62E4EAE4600462944 /* SplitsButton.png in Resources */,
-				D4F13CA72E4EAE4600462944 /* garminlogo2.gif in Resources */,
 				D4F13CA82E4EAE4600462944 /* PeakMarker.png in Resources */,
 				D4F13CA92E4EAE4600462944 /* PrefsSync.nib in Resources */,
 				D4F13CAA2E4EAE4600462944 /* PrefsAdvanced.nib in Resources */,
 				D4F13CAB2E4EAE4600462944 /* ColorPreferences.tiff in Resources */,
 				D4F13CAC2E4EAE4600462944 /* play_on.png in Resources */,
 				D4F13CAD2E4EAE4600462944 /* RoundStop.png in Resources */,
-				D4F13CAE2E4EAE4600462944 /* GarminActivityDirectory.js in Resources */,
 				D4F13CAF2E4EAE4600462944 /* LCDMN___.TTF in Resources */,
 				D4F13CB02E4EAE4600462944 /* BackupNag.nib in Resources */,
 			);
@@ -2096,7 +1928,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D4EFE9FF16B5D0BC00A5305B /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2257,7 +2088,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D4EFEA0216B5D0BC00A5305B /* AscentTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2278,14 +2108,6 @@
 				D4CCE9292E5049B900B46DB2 /* en */,
 			);
 			name = MainMenu.nib;
-			sourceTree = "<group>";
-		};
-		D4EFE9FD16B5D0BC00A5305B /* InfoPlist.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				D4CCE9052E5048D300B46DB2 /* English */,
-			);
-			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
 		D4F13AF62E4EAE4600462944 /* InfoPlist.strings */ = {

@@ -14,6 +14,8 @@
 #import "TrackPoint.h"
 #import "PathMarker.h"
 #import "OverrideData.h"
+#import "ColumnInfo.h"
+
 
 #import <objc/runtime.h>
 
@@ -191,8 +193,8 @@
         " uuid_s TEXT,"
         " tableInfo_json TEXT,"
         " splitsTableInfo_json TEXT,"
-        " startTime_s INTEGER,"
-        " endTime_s INTEGER,"
+        " startDate_s INTEGER,"
+        " endDate_s INTEGER,"
         " flags INTEGER,"
         " int2 INTEGER,"
         " int3 INTEGER,"
@@ -207,8 +209,8 @@
     run("ALTER TABLE meta ADD COLUMN uuid_s TEXT;", NO);
     run("ALTER TABLE meta ADD COLUMN tableInfo_json TEXT;", NO);
     run("ALTER TABLE meta ADD COLUMN splitsTableInfo_json TEXT;", NO);
-    run("ALTER TABLE meta ADD COLUMN startTime_s INTEGER;", NO);
-    run("ALTER TABLE meta ADD COLUMN endTime_s INTEGER;", NO);
+    run("ALTER TABLE meta ADD COLUMN startDate_s INTEGER;", NO);
+    run("ALTER TABLE meta ADD COLUMN endDate_s INTEGER;", NO);
     run("ALTER TABLE meta ADD COLUMN flags INTEGER;", NO);
     run("ALTER TABLE meta ADD COLUMN int2 INTEGER;", NO);
     run("ALTER TABLE meta ADD COLUMN int3 INTEGER;", NO);
@@ -493,24 +495,74 @@ static inline NSDate *DateFromEpoch(sqlite3_int64 s) { return s ? [NSDate dateWi
 
 
 
+// Serialize dictionary <NSString*, ColumnInfo*> to JSON text
+static NSString *JSONStringFromColumnInfoDict(NSDictionary<NSString*, ColumnInfo*> *dict) {
+    if (!dict) return nil;
+
+    // Convert ColumnInfo objects into plain JSON-safe dictionaries
+    NSMutableDictionary *jsonDict = [NSMutableDictionary dictionaryWithCapacity:dict.count];
+    [dict enumerateKeysAndObjectsUsingBlock:^(NSString *key, ColumnInfo *info, BOOL *stop) {
+        if (info) {
+            jsonDict[key] = @{@"width": @(info.width),
+                              @"order": @(info.order)};
+        }
+    }];
+
+    NSError *err = nil;
+    NSData *d = [NSJSONSerialization dataWithJSONObject:jsonDict options:0 error:&err];
+    if (!d) return nil;
+    return [[NSString alloc] initWithData:d encoding:NSUTF8StringEncoding];
+}
+
+
+// Deserialize JSON text back into <NSString*, ColumnInfo*> dictionary
+static NSDictionary<NSString*, ColumnInfo*> *ColumnInfoDictFromJSONText(const unsigned char *txt) {
+    if (!txt) return nil;
+    NSData *d = [NSData dataWithBytes:txt length:strlen((const char *)txt)];
+    id obj = [NSJSONSerialization JSONObjectWithData:d options:0 error:NULL];
+    if (![obj isKindOfClass:[NSDictionary class]]) return nil;
+
+    NSDictionary *jsonDict = (NSDictionary *)obj;
+    NSMutableDictionary<NSString*, ColumnInfo*> *result =
+        [NSMutableDictionary dictionaryWithCapacity:jsonDict.count];
+
+    [jsonDict enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSDictionary *entry, BOOL *stop) {
+        if ([entry isKindOfClass:[NSDictionary class]]) {
+            NSNumber *width = entry[@"width"];
+            NSNumber *order = entry[@"order"];
+            if (width && order) {
+                ColumnInfo *info = [ColumnInfo new];
+                info.width = width.floatValue;
+                info.order = order.intValue;
+                result[key] = info;
+            }
+        }
+    }];
+
+    return result;
+}
+
+
+
+
 #pragma mark - Save
 
 
-- (BOOL)saveMetaWithDict1:(NSDictionary<NSString*,NSNumber*> *)tableInfoDict
-                    dict2:(NSDictionary<NSString*,NSNumber*> *)splitsTableInfoDict
-                    uuid:(NSString*)uuid
-                    date2:(NSDate *)startTime
-                    date3:(NSDate *)endTime
-                     int1:(NSInteger)flags
-                     int2:(NSInteger)i2
-                     int3:(NSInteger)i3
-                     int4:(NSInteger)i4
-                    error:(NSError **)error
+- (BOOL)saveMetaWithTableInfo:(NSDictionary<NSString*,ColumnInfo*> *)tableInfoDict
+              splitsTableInfo:(NSDictionary<NSString*,ColumnInfo*> *)splitsTableInfoDict
+                         uuid:(NSString*)uuid
+                    startDate:(NSDate *)startDate
+                      endDate:(NSDate *)endDate
+                        flags:(NSInteger)flags
+                         int2:(NSInteger)i2
+                         int3:(NSInteger)i3
+                         int4:(NSInteger)i4
+                        error:(NSError **)error
 {
     const char *sql =
       "UPDATE meta SET "
       " uuid_s=?, tableInfo_json=?, splitsTableInfo_json=?, "
-      " startTime=?, endTime_s=?, "
+      " startDate_s=?, endDate_s=?, "
       " flags=?, int2=?, int3=?, int4=? "
       " WHERE id=1;";
 
@@ -518,14 +570,14 @@ static inline NSDate *DateFromEpoch(sqlite3_int64 s) { return s ? [NSDate dateWi
     int rc = sqlite3_prepare_v2(_db, sql, -1, &st, NULL);
     if (rc != SQLITE_OK) { if (error) *error = [NSError errorWithDomain:@"ActivityStore" code:rc userInfo:@{NSLocalizedDescriptionKey:@(sqlite3_errmsg(_db))}]; return NO; }
 
-    NSString *d1 = JSONStringFromStringIntDict(tableInfoDict);
-    NSString *d2 = JSONStringFromStringIntDict(splitsTableInfoDict);
+    NSString *d1 = JSONStringFromColumnInfoDict(tableInfoDict);
+    NSString *d2 = JSONStringFromColumnInfoDict(splitsTableInfoDict);
 
     sqlite3_bind_text(st, 1,  uuid.UTF8String, -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(st, 2,  (d1?:@"").UTF8String, -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(st, 3,  (d2?:@"").UTF8String, -1, SQLITE_TRANSIENT);
-    sqlite3_bind_int64(st, 4, EpochFromDate(startTime));
-    sqlite3_bind_int64(st, 5, EpochFromDate(endTime));
+    sqlite3_bind_int64(st, 4, EpochFromDate(startDate));
+    sqlite3_bind_int64(st, 5, EpochFromDate(endDate));
     sqlite3_bind_int  (st, 6, (int)flags);
     sqlite3_bind_int  (st, 7, (int)i2);
     sqlite3_bind_int  (st, 8, (int)i3);
@@ -955,16 +1007,16 @@ fail:
 
 #pragma mark - Load
 
-- (BOOL)loadMetaDict1:(NSDictionary<NSString*,NSNumber*> * __autoreleasing *)outTableInfo
-                dict2:(NSDictionary<NSString*,NSNumber*> * __autoreleasing *)outSplitsTableInfo
-                uuid:(NSString* __autoreleasing *)outUuid
-                date1:(NSDate * __autoreleasing *)outStartTime
-                date2:(NSDate * __autoreleasing *)outEndTime
-                 int1:(NSInteger *)outFlags
-                 int2:(NSInteger *)outI2
-                 int3:(NSInteger *)outI3
-                 int4:(NSInteger *)outI4
-                error:(NSError **)error
+- (BOOL)loadMetaToTableInfo:(NSDictionary<NSString*,ColumnInfo*> * *)outTableInfo
+            splitsTableInfo:(NSDictionary<NSString*,ColumnInfo*> * *)outSplitsTableInfo
+                       uuid:(NSString* *)outUuid
+                  startDate:(NSDate * *)outStartTime
+                    endDate:(NSDate * *)outEndTime
+                      flags:(NSInteger *)outFlags
+                       int2:(NSInteger *)outI2
+                       int3:(NSInteger *)outI3
+                       int4:(NSInteger *)outI4
+                      error:(NSError **)error
 {
     // fixme - move to common place
     // Helper: run SQL, optionally strict (fail) vs tolerant (ignore errors like "duplicate column")
@@ -999,8 +1051,8 @@ fail:
     BOOL ok = NO;
     if (sqlite3_step(st) == SQLITE_ROW) {
         if (outUuid) *outUuid = [NSString stringWithUTF8String:(const char *)sqlite3_column_text(st,1)];
-        if (outTableInfo) *outTableInfo = StringIntDictFromJSONText(sqlite3_column_text(st, 2));
-        if (outSplitsTableInfo) *outSplitsTableInfo = StringIntDictFromJSONText(sqlite3_column_text(st, 3));
+        if (outTableInfo) *outTableInfo = ColumnInfoDictFromJSONText(sqlite3_column_text(st, 2));
+        if (outSplitsTableInfo) *outSplitsTableInfo = ColumnInfoDictFromJSONText(sqlite3_column_text(st, 3));
 
         if (outStartTime) *outStartTime = DateFromEpoch(sqlite3_column_int64(st, 4));
         if (outEndTime) *outEndTime = DateFromEpoch(sqlite3_column_int64(st, 5));

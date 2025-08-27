@@ -95,6 +95,7 @@ enum
 -(void)setNumberOfSavesSinceMobileMeBackup:(int)n;
 -(int)flags;
 -(void)setFlags:(int)flgs;
+-(void)storeMetaData:(ActivityStore*)store;
 @end
 
 
@@ -142,9 +143,6 @@ enum
 
 - (id)initWithCoder:(NSCoder *)coder
 {
-#if DEBUG_DECODE
-	printf("decoding TrackBrowserDocument\n");
-#endif
 	[super init];
 	trackArray = [[NSMutableArray alloc] init];
 	if ( [coder allowsKeyedCoding] )
@@ -312,6 +310,28 @@ enum
 		[coder encodeObject:initialEquipmentLogData];
 		
 	}
+}
+
+
+-(void)storeMetaData:(ActivityStore*)store
+{
+    if (store) {
+        NSError* err;
+        BOOL worked = [store saveMetaWithTableInfo:tableInfoDict
+                                   splitsTableInfo:splitsTableInfoDict
+                                              uuid:uuid
+                                         startDate:(NSDate *)startEndDateArray[0]
+                                           endDate:(NSDate *)startEndDateArray[1]
+                                             flags:flags
+                                              int2:0
+                                              int3:0
+                                              int4:0
+                                             error:&err];
+        if (!worked)
+        {
+            NSLog(@"Metadata store FAILED");
+        }
+    }
 }
 
 
@@ -2043,6 +2063,7 @@ deviceIsPluggedIn:YES];
         NSError *err = nil;
         [store open:&err];
         [store createSchema:&err];
+        [browserData storeMetaData:store];
         [store saveAllTracks:[browserData trackArray]  error:&err];
         [store close];
    }

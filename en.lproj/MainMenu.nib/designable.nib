@@ -533,8 +533,6 @@ CA
         </menu>
         <customObject id="216" userLabel="AppController" customClass="AppController">
             <connections>
-                <outlet property="aboutContentView" destination="257" id="i1P-BY-RP6"/>
-                <outlet property="aboutView" destination="257" id="259"/>
                 <outlet property="copyKeyword1MenuItem" destination="382" id="390"/>
                 <outlet property="copyKeyword2MenuItem" destination="388" id="389"/>
             </connections>

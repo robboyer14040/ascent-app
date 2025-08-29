@@ -82,6 +82,8 @@ enum tImportFlag
 - (void)setHeartrate:(float)h;
 - (float)cadence;
 - (void)setCadence:(float)c;
+- (int)flags;
+- (void)setFlags:(int)f;
 - (float)temperature;
 - (void)setTemperature:(float)t;
 - (float)speed;

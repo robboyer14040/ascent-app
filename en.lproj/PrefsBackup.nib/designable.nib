@@ -217,7 +217,7 @@
                     </connections>
                 </button>
                 <button imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="264">
-                    <rect key="frame" x="101" y="179" width="31" height="18"/>
+                    <rect key="frame" x="100" y="178" width="33" height="20"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="squareTextured" title="..." bezelStyle="texturedSquare" imagePosition="overlaps" alignment="center" controlSize="small" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="411">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>

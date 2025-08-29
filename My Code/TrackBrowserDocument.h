@@ -18,6 +18,7 @@
 @class BackupDelegate;
 @class EquipmentLog;
 @class EquipmentListWindowController;
+@class ProgressBarController;
 
 extern int kSearchTitles;
 extern int kSearchNotes;
@@ -25,6 +26,9 @@ extern int kSearchKeywords;
 extern int kSearchActivityType;
 extern int kSearchEquipment;
 extern int kSearchEventType;
+
+NSString * const AscentUTIDatabaseOLD   = @"com.montebellosoftware.ascent.tlp";
+NSString * const AscentUTIDatabase      = @"com.montebellosoftware.ascent.db";
 
 @interface TrackBrowserDocument : NSDocument
 {
@@ -36,6 +40,7 @@ extern int kSearchEventType;
 	BackupDelegate*					backupDelegate;
 	EquipmentLog*					equipmentLog;
 	NSMutableDictionary*			equipmentLogDataDict;	// per-document equipment log totals
+    NSURL*                          databaseFileURL;
 	BOOL							equipmentTotalsNeedUpdate;
 }
 @property (nonatomic) BOOL equipmentTotalsNeedUpdate;
@@ -88,6 +93,8 @@ extern int kSearchEventType;
 -(NSMutableDictionary*)initialEquipmentLogData;
 -(void)setDocumentDateRange:(NSArray*)datesArray;	// array of earliest and latest dates for doc
 -(NSArray*)documentDateRange;
-
 -(NSString*)uuid;
+-(void)setDatabaseFileURL:(NSURL*) url;
+- (void)_presentProgress:(ProgressBarController *)pbc total:(int)total;
+- (void)_dismissProgress;
 @end

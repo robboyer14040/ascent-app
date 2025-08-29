@@ -51,9 +51,22 @@ static BOOL (*originalLockWhenConditionBeforeDate)(id self, SEL _cmd, CONDITION_
     } while (1);
 }
 
+#if 0
 OBPerformPosing(^{
     Class self = objc_getClass("NSConditionLock");
     originalLockWhenConditionBeforeDate = (typeof(originalLockWhenConditionBeforeDate))OBReplaceMethodImplementationWithSelector(self, @selector(lockWhenCondition:beforeDate:), @selector(replacement_lockWhenCondition:beforeDate:));
 });
+#endif
 
+OBPerformPosing(^{
+    if (@available(macOS 10.13, *)) {
+        return; // Do NOT swizzle on modern systems
+    }
+    Class self = objc_getClass("NSConditionLock");
+    originalLockWhenConditionBeforeDate =
+      (typeof(originalLockWhenConditionBeforeDate))
+      OBReplaceMethodImplementationWithSelector(self,
+          @selector(lockWhenCondition:beforeDate:),
+          @selector(replacement_lockWhenCondition:beforeDate:));
+});
 @end

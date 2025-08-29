@@ -28,6 +28,8 @@
 #import "StringAdditions.h"
 #import "EquipmentLog.h"
 #import "ActivityStore.h"
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+
 
 #include <unistd.h>        // for sleep()
 
@@ -55,6 +57,29 @@
 @end
 
 
+@interface TrackBrowserDocument ()
+{
+    TrackBrowserData *_stagedBrowserData;   // parsed off-main, consumed by readFromURL:
+}
+@property (nonatomic, strong) NSURL *stagedExportURL; // temp file we built
+- (TrackBrowserData *)_parseDocumentAtURL:(NSURL *)url
+                                   ofType:(NSString *)typeName
+                                 progress:(ASProgress)progress
+                                    error:(NSError **)outError
+                                              error:(NSError **)outError;
+- (NSURL *)_exportDocumentToTemporaryURLWithProgress:(ASProgress)progress;
+- (void)revertToContentsOfURL:(NSURL *)url
+                       ofType:(NSString *)typeName
+            completionHandler:(void (^)(NSError * _Nullable error))handler;
+-(BOOL)loadDatabaseFile:(NSURL*)url progress:(ASProgress)progress;
+// Shim so this compiles even if your SDK doesn’t declare the async read yet
+@end
+
+@interface NSDocument (ReadCompletionShim)
+- (void)readFromURL:(NSURL *)url
+             ofType:(NSString *)typeName
+  completionHandler:(void (^)(NSError * _Nullable error))handler;
+@end
 
 // values for the TrackBrowserData 'flags' field
 enum
@@ -86,6 +111,7 @@ enum
 -(NSMutableDictionary *)splitsTableInfoDict;
 -(NSMutableArray*) userDeletedTrackTimes;
 -(void)setLastSyncTime:(NSDate*)d;
+-(void)setUuid:(NSString*) uid;
 -(void)setTableInfoDict:(NSMutableDictionary *)value;
 -(void)setSplitsTableInfoDict:(NSMutableDictionary *)value;
 -(void)setUserDeletedTrackTimes:(NSMutableArray*)arr;
@@ -95,9 +121,10 @@ enum
 -(void)setNumberOfSavesSinceMobileMeBackup:(int)n;
 -(int)flags;
 -(void)setFlags:(int)flgs;
+-(void)setStartEndDateArray:(NSArray*)arr;
 -(void)storeMetaData:(ActivityStore*)store;
+-(void)loadMetaStuffUsingStore:(ActivityStore*) store;
 @end
-
 
 @implementation TrackBrowserData
 
@@ -201,7 +228,7 @@ enum
 				}
 				else
 				{
-					self.startEndDateArray = [NSArray arrayWithObjects:[NSDate distantPast], [NSDate distantFuture], nil];
+					self.startEndDateArray = [[NSArray arrayWithObjects:[NSDate distantPast], [NSDate distantFuture], nil] retain];
 					spareString = [coder decodeObject];      // spare
 				}
 				spareString = [coder decodeObject];      // spare
@@ -269,6 +296,8 @@ enum
 }
 
 
+
+
 - (void)encodeWithCoder:(NSCoder *)coder
 {
 	if ( [coder allowsKeyedCoding] )
@@ -323,7 +352,7 @@ enum
                                          startDate:(NSDate *)startEndDateArray[0]
                                            endDate:(NSDate *)startEndDateArray[1]
                                              flags:flags
-                                              int2:0
+                                       totalTracks:[trackArray count]
                                               int3:0
                                               int4:0
                                              error:&err];
@@ -372,6 +401,16 @@ enum
 		lastSyncTime = d;
 		[lastSyncTime retain];
 	}
+}
+
+
+-(void)setUuid:(NSString*) uid
+{
+    if (uid != uuid)
+    {
+        [uuid release];
+        uuid = [uid retain];
+    }
 }
 
 
@@ -456,6 +495,15 @@ enum
 	numberOfSavesSinceMobileMeBackup = n;
 }
 
+-(void)setStartEndDateArray:(NSArray*)arr
+{
+    if (startEndDateArray != arr)
+    {
+        [startEndDateArray release];
+        startEndDateArray = [arr retain];
+    }
+
+}
 
 
 
@@ -506,6 +554,33 @@ int kSearchEventType		= 0x0020;
 @synthesize equipmentTotalsNeedUpdate;
 
 
+
++ (NSArray<UTType *> *)readableContentTypes {
+    return @[
+        [UTType typeWithIdentifier:@"com.montebellosoftware.ascent.tlp"],
+        [UTType typeWithIdentifier:@"com.montebellosoftware.ascent.db"]
+    ];
+}
+
++ (NSArray<UTType *> *)writableContentTypes {
+    return @[
+        [UTType typeWithIdentifier:@"com.montebellosoftware.ascent.db"]
+    ];
+}
+
+// Legacy APIs (pre-11) — harmless to keep alongside the new ones
++ (NSArray<NSString *> *)readableTypes {
+    return @[@"com.montebellosoftware.ascent.tlp",
+             @"com.montebellosoftware.ascent.db"];
+}
+
++ (NSArray<NSString *> *)writableTypes {
+    return @[@"com.montebellosoftware.ascent.db"];
+}
+
+
+
+
 - (id) init
 {
 	self = [super init];
@@ -517,6 +592,7 @@ int kSearchEventType		= 0x0020;
 		browserData = [[TrackBrowserData alloc] init];
 		backupDelegate = [[BackupDelegate alloc] initWithDocument:self];
 		tbWindowController = nil;
+        databaseFileURL = nil;
 		///FIXME equipmentLog = [EquipmentLog sharedInstance];
 		///FIXME equipmentLogDataDict = [[NSMutableDictionary alloc] initWithCapacity:16];
 	}
@@ -532,25 +608,26 @@ int kSearchEventType		= 0x0020;
 	return self;
 }
 
-
+#if 0
 - (id)initWithContentsOfURL:(NSURL *)absoluteURL ofType:(NSString *)typeName error:(NSError **)outError
 {
-   [[[NSUserDefaultsController sharedUserDefaultsController] values]  
-   setValue:[NSArchiver archivedDataWithRootObject:absoluteURL] 
-     forKey:@"lastFileURL"];
-#if _DEBUG
-	NSLog(@"opened url:%@\n", absoluteURL);
+    [[[NSUserDefaultsController sharedUserDefaultsController] values]
+     setValue:[NSArchiver archivedDataWithRootObject:absoluteURL] 
+        forKey:@"lastFileURL"];
+#if 1
+	NSLog(@"opening url:%@\n", absoluteURL);
 #endif
-	id ret = [super initWithContentsOfURL:absoluteURL
+    id ret = [super initWithContentsOfURL:absoluteURL
 								   ofType:typeName
 									error:outError];
 
 	if (ret)
 	{
-		//[equipmentLog buildEquipmentListFromDefaultAttributes:tb];
 	}
-	return ret;
+    
+    return ret;
 }
+#endif
 
 
 - (void) dealloc
@@ -558,6 +635,7 @@ int kSearchEventType		= 0x0020;
 #if DEBUG_LEAKS
 	NSLog(@"doc DEALLOC %x rc: %d", self, [self retainCount]);
 #endif
+    [databaseFileURL release];
 	[backupDelegate release];
 	[browserData release];
 	[selectedLap release];
@@ -1927,83 +2005,451 @@ deviceIsPluggedIn:YES];
 	[[[pb controller] window] orderOut:nil];
 }
 
-#if 0
-- (BOOL)loadDataRepresentation:(NSData *)data ofType:(NSString *)aType
+
+- (void)setDatabaseFileURL:(NSURL*)url
 {
-	BOOL ret = YES;
-	[self startProgressIndicator:[NSString stringWithFormat:@"opening activity document \"%@\"...", [self displayName]]];
-
-	// Insert code here to read your document from the given data.  You can also choose to override -loadFileWrapperRepresentation:ofType: or -readFromFile:ofType: instead.
-
-	// For applications targeted for Tiger or later systems, you should use the new Tiger API readFromData:ofType:error:.  In this case you can also choose to override -readFromURL:ofType:error: or -readFromFileWrapper:ofType:error: instead.
-	browserData = nil;
-	@try
-	{
-		browserData = [NSUnarchiver unarchiveObjectWithData:data];
-		if (![browserData isKindOfClass:[TrackBrowserData class]])
-		{
-			browserData = [[TrackBrowserData alloc] init];
-			NSMutableArray* ta = [NSUnarchiver unarchiveObjectWithData:data];
-			[browserData setTrackArray:ta];
-		}
-		else
-		{
-			[browserData retain];
-		}
-	}
-	@catch (NSException* ex)
-	{
-	}
-
-	if (browserData == nil)
-	{
-	  ret =  NO;
-	}
-	else
-	{
-		if (tbWindowController == nil)
-		{
-			tbWindowController = [[[TBWindowController alloc] initWithDocument:self] autorelease];     // does this go here?
-			[self addWindowController:tbWindowController];
-		}
-		[self updateProgressIndicator:@"updating main browser and equipment log..."];
-		//[tbWindowController buildBrowser:YES];
-		[equipmentLog buildEquipmentListFromDefaultAttributes:self];
-	}
-	[self endProgressIndicator];
-	return YES;
+    [databaseFileURL release];
+    databaseFileURL = [url retain];
 }
-#else
-// NSDocument subclass
-- (BOOL)readFromData:(NSData *)data
-              ofType:(NSString *)typeName
-               error:(NSError * _Nullable *)outError
+
+
+-(BOOL)loadDatabaseFile:(NSURL*)url progress:(ASProgress)prog
 {
-    BOOL ret = YES;
-    [self startProgressIndicator:[NSString stringWithFormat:@"opening activity document \"%@\"...", [self displayName]]];
-
-    // Insert code here to read your document from the given data.  You can also choose to override -loadFileWrapperRepresentation:ofType: or -readFromFile:ofType: instead.
-
-    // For applications targeted for Tiger or later systems, you should use the new Tiger API readFromData:ofType:error:.  In this case you can also choose to override -readFromURL:ofType:error: or -readFromFileWrapper:ofType:error: instead.
-    browserData = nil;
+    ActivityStore *store = [[[ActivityStore alloc] initWithURL:url] autorelease];
+    NSError* err;
+    BOOL worked = NO;
+    NSInteger iflags = 0;
+    NSDate *startDate = nil;
+    NSDate *endDate = nil;
+    NSDictionary* d1 = nil;
+    NSDictionary* d2 = nil;
+    NSString* sid = nil;
+    NSInteger numTracks = 0;
     @try
     {
-        browserData = [NSUnarchiver unarchiveObjectWithData:data];
-        if (![browserData isKindOfClass:[TrackBrowserData class]])
+        [store open:&err];
+        NSInteger i4, i3;
+        worked = [store loadMetaTableInfo:&d1
+                          splitsTableInfo:&d2
+                                     uuid:&sid
+                                startDate:&startDate
+                                  endDate:&endDate
+                                    flags:&iflags
+                              totalTracks:&numTracks
+                                     int3:&i3
+                                     int4:&i4
+                                    error:&err];
+    }
+    @catch (NSException* ex)
+    {
+        
+    }
+    
+    if (worked)
+    {
+        if (d1)
         {
-            browserData = [[TrackBrowserData alloc] init];
-            NSMutableArray* ta = [NSUnarchiver unarchiveObjectWithData:data];
-            [browserData setTrackArray:ta];
+            [browserData setTableInfoDict:[NSMutableDictionary dictionaryWithDictionary:d1]];
+        }
+        if (d2)
+        {
+            [browserData setSplitsTableInfoDict:[NSMutableDictionary dictionaryWithDictionary:d2]];
+        }
+        if (sid)
+        {
+            [browserData setUuid:sid];
+        }
+        if (startDate && endDate)
+        {
+            [browserData setStartEndDateArray:[NSArray arrayWithObjects:startDate, endDate, nil]];
+        }
+        
+        [browserData setFlags:(int)iflags];
+        NSArray *trackArray = nil;
+        trackArray = [store loadAllTracks:&err totalTracks:numTracks progressBlock:prog];
+        if (trackArray)
+        {
+            [browserData setTrackArray:[NSMutableArray arrayWithArray:trackArray]];
         }
         else
         {
-            [browserData retain];
+            NSLog(@"...NO TRACKS LOADED!...");
+        }
+    }
+    else
+    {
+        NSLog(@"Failed to load META info");
+    }
+    [store close];
+    return worked;
+}
+
+
+
+#pragma mark - Async Read (preferred)
+- (BOOL)canAsynchronouslyReadFromURL:(NSURL *)url ofType:(NSString *)typeName {
+    return YES;
+}
+
+- (BOOL)canAsynchronouslyReadFromData:(NSData *)data ofType:(NSString *)typeName {
+    return YES;
+}
+
+
+- (void)readFromURL:(NSURL *)url
+             ofType:(NSString *)typeName
+  completionHandler:(void (^)(NSError * _Nullable error))handler
+{
+    // --- Present progress on MAIN ---
+    ProgressBarController *pbc = [[SharedProgressBar sharedInstance] controller];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSWindow *docWin = self.windowForSheet ?: self.windowControllers.firstObject.window;
+        NSWindow *pbWin  = pbc.window; // loads nib
+
+        // Start indeterminate; you can restart as determinate later if you learn a total
+        [pbc begin:[NSString stringWithFormat:@"Opening activity document “%@”…",
+                    self.displayName ?: url.lastPathComponent]
+           divisions:0];
+
+        if (docWin) {
+            NSRect fr = docWin.frame, pfr = pbWin.frame;
+            NSPoint origin = NSMakePoint(NSMidX(fr) - pfr.size.width/2.0,
+                                         NSMidY(fr) - pfr.size.height/2.0);
+            [pbWin setFrameOrigin:origin];
+        }
+        [pbc showWindow:self];
+        [pbWin displayIfNeeded];
+    });
+
+    // --- Heavy work on BACKGROUND queue ---
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        NSError *err = nil;
+
+        @try {
+            if ([typeName isEqualToString:AscentUTIDatabase]) {
+
+                // If your loader can report a total, have it call back with (done,total)
+                // and on first tick, restart the bar as determinate:
+                __block BOOL madeDeterminate = NO;
+
+                [self loadDatabaseFile:url
+                              progress:^(NSInteger done, NSInteger total) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (!madeDeterminate && total > 0) {
+                            madeDeterminate = YES;
+                            [[ [SharedProgressBar sharedInstance] controller]
+                                begin:@"Opening activity document…"
+                                divisions:(int)total];
+                        }
+                        [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                        if (done >= total)
+                        {
+                            [[[SharedProgressBar sharedInstance] controller] updateMessage:@"building browser..."];
+                      }
+                    });
+                }];
+
+                [[[NSUserDefaultsController sharedUserDefaultsController] values]
+                 setValue:[NSArchiver archivedDataWithRootObject:url]
+                    forKey:@"lastFileURL"];
+
+                // loadDatabaseFile should set up/return the model; if not, pull it here
+                // e.g., browserData = [self builtBrowserData]; (adjust if needed)
+
+            } else if ([typeName isEqualToString:AscentUTIDatabaseOLD]) {
+
+                NSData *data = [NSData dataWithContentsOfURL:url];
+                if (!data) {
+                    err = [NSError errorWithDomain:NSCocoaErrorDomain
+                                              code:-2
+                                          userInfo:@{NSLocalizedDescriptionKey:
+                                                     @"Unable to read legacy file"}];
+                } else {
+                    id obj = [NSUnarchiver unarchiveObjectWithData:data];
+                    if ([obj isKindOfClass:[TrackBrowserData class]]) {
+                        if (browserData) [browserData release];
+                        browserData = [obj retain];
+                    } else {
+                        TrackBrowserData *bd = [[TrackBrowserData alloc] init];
+                        [bd setTrackArray:obj];
+                        if (browserData) [browserData release];
+                        browserData = bd; // retained
+                    }
+                    // A couple of UI ticks so the user sees motion
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                        [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                    });
+                }
+
+            } else {
+                err = [NSError errorWithDomain:NSCocoaErrorDomain
+                                          code:NSFileReadUnknownError
+                                      userInfo:@{NSLocalizedDescriptionKey:
+                                                 @"Unsupported document type"}];
+            }
+        }
+        @catch (NSException *ex) {
+            err = [NSError errorWithDomain:NSCocoaErrorDomain
+                                      code:-3
+                                  userInfo:@{NSLocalizedDescriptionKey:
+                                             @"Exception while reading document",
+                                             @"exception": ex.reason ?: @""}];
+        }
+
+        // --- Commit model & finish on MAIN ---
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // If your `loadDatabaseFile:` created/filled a new model object,
+            // assign it to `browserData` ivar here as needed.
+
+            // Hide progress
+            ProgressBarController *pbcm = [[SharedProgressBar sharedInstance] controller];
+            [[pbcm window] orderOut:self];
+            [pbcm end];
+
+            if (handler) handler(err);
+        });
+    });
+}
+
+
+- (BOOL)readFromURL:(NSURL *)url
+             ofType:(NSString *)typeName
+              error:(NSError **)outError
+{
+    // Show progress on MAIN right away
+    ProgressBarController *pbc = [[[SharedProgressBar sharedInstance] controller] retain];
+    NSWindow *docWin = self.windowForSheet ?: self.windowControllers.firstObject.window;
+    NSWindow *pbWin  = pbc.window; // load nib
+    [pbc begin:[NSString stringWithFormat:@"Opening activity document “%@”…",
+                self.displayName ?: url.lastPathComponent]
+       divisions:0]; // start indeterminate; you can switch to determinate later
+    if (docWin) {
+        NSRect fr = docWin.frame, pfr = pbWin.frame;
+        [pbWin setFrameOrigin:NSMakePoint(NSMidX(fr)-pfr.size.width/2.0,
+                                          NSMidY(fr)-pfr.size.height/2.0)];
+    }
+    [pbc showWindow:self];
+    [pbWin displayIfNeeded];
+
+    __block NSError *bgErr = nil;
+    __block BOOL      ok   = NO;
+
+    // Use a semaphore to block this sync method while work happens off-main
+    dispatch_semaphore_t done = dispatch_semaphore_create(0);
+
+    // PHASE A: do the heavy parse off-main
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        @autoreleasepool {
+            @try {
+                if ([typeName isEqualToString:AscentUTIDatabase]) {
+                    // If your loader can report total, flip bar to determinate on first tick
+                    __block BOOL madeDeterminate = NO;
+                    ok = [self loadDatabaseFile:url
+                                       progress:^(NSInteger done, NSInteger total) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            if (!madeDeterminate && total > 0) {
+                                madeDeterminate = YES;
+                                [[ [SharedProgressBar sharedInstance] controller]
+                                    begin:@"Opening activity document…" divisions:(int)total];
+                            }
+                            [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                        });
+                    }];
+                } else if ([typeName isEqualToString:AscentUTIDatabaseOLD]) {
+                    NSData *data = [NSData dataWithContentsOfURL:url options:0 error:&bgErr];
+                    if (data) {
+                        id obj = [NSUnarchiver unarchiveObjectWithData:data];
+                        TrackBrowserData *bd = nil;
+                        if ([obj isKindOfClass:[TrackBrowserData class]]) {
+                            bd = [obj retain];
+                        } else {
+                            bd = [[TrackBrowserData alloc] init];
+                            [bd setTrackArray:obj];
+                        }
+                        if (browserData) [browserData release];
+                        browserData = bd; // retained
+                        ok = YES;
+
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                            [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                        });
+                    }
+                } else {
+                    bgErr = [NSError errorWithDomain:NSCocoaErrorDomain
+                                                code:NSFileReadUnknownError
+                                            userInfo:@{NSLocalizedDescriptionKey:@"Unsupported document type"}];
+                }
+            } @catch (NSException *ex) {
+                bgErr = [NSError errorWithDomain:NSCocoaErrorDomain
+                                            code:-3
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Exception while reading document",
+                                                   @"exception": ex.reason ?: @""}];
+            }
+            dispatch_semaphore_signal(done);
+        }
+    });
+
+    // Keep the progress window alive & responsive while we wait
+    while (dispatch_semaphore_wait(done, dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_MSEC))) {
+        [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode
+                              beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.005]];
+    }
+
+    // Hide progress
+    [[pbc window] orderOut:self];
+    [pbc end];
+    [pbc autorelease];
+    
+    if (!ok && outError) *outError = bgErr ?: [NSError errorWithDomain:NSCocoaErrorDomain
+                                                                  code:NSFileReadUnknownError
+                                                              userInfo:nil];
+    return ok;
+}
+
+    
+    
+#if 0
+- (BOOL)readFromURL:(NSURL *)url
+             ofType:(NSString *)typeName
+              error:(NSError **)outError
+{
+    __block ProgressBarController *pbc = nil;
+
+    // Present the progress window on the MAIN thread
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        pbc = [[SharedProgressBar sharedInstance] controller];
+        NSWindow *docWin = self.windowForSheet ?: self.windowControllers.firstObject.window;
+        NSWindow *pbWin  = pbc.window; // forces nib load
+
+        // If you know an exact count, pass it; otherwise 0 = indeterminate spinner
+        [pbc begin:[NSString stringWithFormat:@"Opening activity document “%@”…", self.displayName ?: url.lastPathComponent]
+           divisions:0];
+
+        // Center over document window if available
+        if (docWin) {
+            NSRect fr = docWin.frame, pfr = pbWin.frame;
+            NSPoint origin = NSMakePoint(NSMidX(fr) - pfr.size.width/2.0,
+                                         NSMidY(fr) - pfr.size.height/2.0);
+            [pbWin setFrameOrigin:origin];
+        }
+        [pbc showWindow:self];
+        [pbWin displayIfNeeded];
+    });
+
+    // We are on a BACKGROUND thread here (because canAsynchronouslyRead... returned YES)
+    NSError *err = nil;
+
+    // Do the heavy work; tick progress back to MAIN
+ 
+    @try {
+        if ([typeName isEqualToString:AscentUTIDatabase]) {
+            [self loadDatabaseFile:url
+                          progress:^(NSInteger done, NSInteger total) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    // Tick progress safely on main
+                    // If you know 'total', call [pbc setDivs:(int)done]; else just increment
+                    [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                });
+            }];
+        } else if ([typeName isEqualToString:AscentUTIDatabaseOLD]) {
+            NSData *data = [NSData dataWithContentsOfURL:url];
+            if (!data) {
+                err = [NSError errorWithDomain:NSCocoaErrorDomain code:-2
+                                      userInfo:@{NSLocalizedDescriptionKey:@"Unable to read legacy file"}];
+                goto done;
+            }
+            browserData = [NSUnarchiver unarchiveObjectWithData:data];  /// fixme, create setBrowserData
+            if (![browserData isKindOfClass:[TrackBrowserData class]])
+            {
+                // old school, before TrackBrowserData
+                browserData = [[TrackBrowserData alloc] init];
+                NSMutableArray* ta = [NSUnarchiver unarchiveObjectWithData:data];
+                [browserData setTrackArray:ta];
+            }
+            else
+            {
+                [browserData retain];
+            }
+            // Give a couple of visible ticks for legacy loads
+            dispatch_async(dispatch_get_main_queue(), ^{ [pbc incrementDiv]; });
+            dispatch_async(dispatch_get_main_queue(), ^{ [pbc incrementDiv]; });
+        } else {
+            err = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileReadUnknownError
+                                  userInfo:@{NSLocalizedDescriptionKey:@"Unsupported document type"}];
+            goto done;
+        }
+    }
+    @catch (NSException *ex) {
+        err = [NSError errorWithDomain:NSCocoaErrorDomain code:-3
+                              userInfo:@{NSLocalizedDescriptionKey:@"Exception while reading document",
+                                         @"exception": ex.reason ?: @""}];
+    }
+
+done:
+
+    // Hide progress on MAIN
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[pbc window] orderOut:self];
+        [pbc end];
+    });
+
+    if (err && outError) *outError = err;
+    return (err == nil);
+}
+#endif
+    
+    
+
+#if 0
+// NSDocument subclass
+- (BOOL) readFromURL:(NSURL *) url
+              ofType:(NSString *) typeName
+               error:(NSError * *) outError;
+{
+    BOOL ret = YES;
+    browserData = nil;
+    [self setDatabaseFileURL:url];
+    [self startProgressIndicator:[NSString stringWithFormat:@"opening activity document \"%@\"...", [self displayName]]];
+
+    @try
+    {
+        if ([typeName isEqualToString:AscentUTIDatabase])
+        {
+            if (databaseFileURL)
+            {
+                ActivityStore *store = [[ActivityStore alloc] initWithURL:databaseFileURL];
+                if (store)
+                {
+                    browserData = [[TrackBrowserData alloc] init];
+                    [browserData loadMetaStuffUsingStore:store];
+                }
+            }
+            
+        } else if ([typeName isEqualToString:AscentUTIDatabaseOLD])
+        {
+            NSData *data = [NSData dataWithContentsOfURL:url];
+            if (data)
+            {
+                browserData = [NSUnarchiver unarchiveObjectWithData:data];  /// fixme, create setBrowserData
+                if (![browserData isKindOfClass:[TrackBrowserData class]])
+                {
+                    browserData = [[TrackBrowserData alloc] init];
+                    NSMutableArray* ta = [NSUnarchiver unarchiveObjectWithData:data];
+                    [browserData setTrackArray:ta];
+                }
+                else
+                {
+                    [browserData retain];
+                }
+            }
         }
     }
     @catch (NSException* ex)
     {
     }
-
+    
     if (browserData == nil)
     {
       ret =  NO;
@@ -2022,86 +2468,141 @@ deviceIsPluggedIn:YES];
     [self endProgressIndicator];
     return YES;
 }
-
-//- (NSData *)dataOfType:(NSString *)typeName
-//                 error:(NSError * _Nullable *)outError
-//{
-//    // ✳︎ Put your old "dataRepresentationOfType" logic here
-//    return [NSKeyedArchiver archivedDataWithRootObject:self.model
-//                                requiringSecureCoding:YES
-//                                                error:outError];
-//}
 #endif
+
 
 - (BOOL)keepBackupFile
 {
-	return NO;
+    return NO;
+}
+
+- (void)_presentProgress:(ProgressBarController *)pbc total:(int)total {
+    NSWindow *docWin = self.windowForSheet ?: self.windowControllers.firstObject.window;
+    NSWindow *pbWin  = pbc.window;
+    [pbc begin:@"Saving activity document…" divisions:total];
+    NSRect fr = docWin.frame, pfr = pbWin.frame;
+    [pbWin setFrameOrigin:NSMakePoint(NSMidX(fr)-pfr.size.width/2.0, NSMidY(fr)-pfr.size.height/2.0)];
+    [pbc showWindow:self];
+    [pbWin displayIfNeeded];
+}
+- (void)_dismissProgress {
+    ProgressBarController *pbc = [[SharedProgressBar sharedInstance] controller];
+    [[pbc window] orderOut:self];
+    [pbc end];
 }
 
 
-- (BOOL)writeSafelyToURL:(NSURL *)absoluteURL ofType:(NSString *)typeName forSaveOperation:(NSSaveOperationType)saveOperation error:(NSError **)outError
+- (void)saveToURL:(NSURL *)url
+           ofType:(NSString *)type
+ forSaveOperation:(NSSaveOperationType)op
+completionHandler:(void (^)(NSError * _Nullable error))handler
 {
-#if 1
-//    NSURL *urlWithoutExt = [absoluteURL URLByDeletingPathExtension];
-//    NSURL* newURL = [urlWithoutExt URLByAppendingPathExtension:@"sql"];
-   
-    
-    NSError *err = nil;
-    NSURL *downloadsURL =
-        [[NSFileManager defaultManager] URLForDirectory:NSDownloadsDirectory
-                                               inDomain:NSUserDomainMask
-                                      appropriateForURL:nil
-                                                 create:NO
-                                                  error:&err];
-    if (!downloadsURL) {
-        NSLog(@"Downloads URL error: %@", err);
-    } else {
-        NSURL* newURL = [downloadsURL URLByAppendingPathComponent:[absoluteURL lastPathComponent]];
-        newURL = [newURL URLByDeletingPathExtension];
-        newURL = [newURL URLByAppendingPathExtension:@"sql"];
-        ActivityStore *store = [[ActivityStore alloc] initWithURL:newURL];
-        NSError *err = nil;
-        [store open:&err];
-        [store createSchema:&err];
-        [browserData storeMetaData:store];
-        [store saveAllTracks:[browserData trackArray]  error:&err];
-        [store close];
-   }
-#endif
-    
-    
-	SharedProgressBar* pb = [SharedProgressBar sharedInstance];
-	NSRect fr = [[tbWindowController window] frame];
-	NSRect pbfr = [[[pb controller] window] frame];    // must call window method for NIB to load, needs to be done before 'begin' is called
-	[[pb controller] begin:@"Saving activity document..."
-				 divisions:(int)[[browserData trackArray] count]];
-	NSPoint origin;
-	origin.x = fr.origin.x + fr.size.width/2.0 - pbfr.size.width/2.0;
-	origin.y = fr.origin.y + fr.size.height/2.0 - pbfr.size.height/2.0;  
-	[[[pb controller] window] setFrameOrigin:origin];
-	[[pb controller] showWindow:self];
-	BOOL couldBeWritten = [super writeSafelyToURL:absoluteURL 
-										   ofType:typeName 
-								 forSaveOperation:saveOperation 
-											error:outError];
-	
-	// if the above worked, then we should have a backup file in the same directory as original file.
-	// based on backup options, we may copy this file elsewhere...
-	if (couldBeWritten)
-	{
-		NSData* archivedData = [NSArchiver archivedDataWithRootObject:absoluteURL];
-		[[[NSUserDefaultsController sharedUserDefaultsController] values] setValue:archivedData
-																			forKey:@"lastFileURL"];
-		BOOL isFinished = [backupDelegate doBackupsIfRequired:absoluteURL];
-		while (!isFinished)
-		{
-			isFinished = [backupDelegate isFinished];
-			[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.5]];
-		}
-	}
-	[[[pb controller] window] orderOut:[tbWindowController window]];
-	return couldBeWritten;
+    // 0) Show progress now
+    ProgressBarController *pbc = [[SharedProgressBar sharedInstance] controller];
+    [self _presentProgress:pbc total:(int)browserData.trackArray.count];
+
+    // 1) Phase A: export to a temp file on a background queue
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        NSError *exportErr = nil;
+        NSURL *tmp = [self _exportDocumentToTemporaryURLWithProgress:^(NSInteger done, NSInteger total){
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [pbc setDivs:(int)done];
+            });
+        } error:&exportErr];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (!tmp || exportErr) {
+                // Hide progress and finish with error
+                [self _dismissProgress];
+                if (handler) handler(exportErr);
+                return;
+            }
+
+            // 2) Phase B: tell NSDocument to perform the (short) coordinated commit.
+            self.stagedExportURL = tmp;
+
+            [super saveToURL:url ofType:type forSaveOperation:op completionHandler:^(NSError *err) {
+                // Clean up temp & UI
+                if (self.stagedExportURL) {
+                    [[NSFileManager defaultManager] removeItemAtURL:self.stagedExportURL error:NULL];
+                    self.stagedExportURL = nil;
+                }
+                [self _dismissProgress];
+                if (handler) handler(err);
+            }];
+        });
+    });
 }
+
+- (NSURL *)_exportDocumentToTemporaryURLWithProgress:(ASProgress)progress
+                                              error:(NSError **)outError
+{
+    NSURL *tmpDir = [NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES];
+    NSURL *tmpURL = [tmpDir URLByAppendingPathComponent:[[NSUUID UUID].UUIDString stringByAppendingPathExtension:@"ascentdb"]];
+
+    NSError *err = nil;
+    ActivityStore *store = [[ActivityStore alloc] initWithURL:tmpURL];
+    [store open:&err];
+    if (!err) [store createSchema:&err];
+    if (!err) [browserData storeMetaData:store];
+    if (!err) {
+        NSArray *tracks = browserData.trackArray;
+        [store saveAllTracks:tracks error:&err progressBlock:^(NSInteger done, NSInteger total){
+            if (progress) progress(done, total);
+        }];
+    }
+    [store close];
+
+    if (err) {
+        if (outError) *outError = err;
+        return nil;
+    }
+    return tmpURL;
+}
+
+
+- (BOOL)canAsynchronouslyWriteToURL:(NSURL *)url
+                             ofType:(NSString *)typeName
+                   forSaveOperation:(NSSaveOperationType)saveOperation
+{
+    return YES; // AppKit will call write… on a background thread/queue
+}
+
+
+- (BOOL)writeSafelyToURL:(NSURL *)destURL
+                  ofType:(NSString *)type
+        forSaveOperation:(NSSaveOperationType)op
+                   error:(NSError **)outError
+{
+    // Just move/copy the prebuilt file into place.
+    if (!self.stagedExportURL) {
+        if (outError) *outError = [NSError errorWithDomain:NSCocoaErrorDomain
+                                                      code:NSFileWriteUnknownError
+                                                  userInfo:@{NSLocalizedDescriptionKey:@"No staged export found"}];
+        return NO;
+    }
+
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSError *err = nil;
+
+    // Use atomic replace to preserve attributes when applicable
+    NSURL *resultURL = nil;
+    if (![fm replaceItemAtURL:destURL
+                 withItemAtURL:self.stagedExportURL
+                backupItemName:nil
+                       options:0
+              resultingItemURL:&resultURL
+                         error:&err]) {
+        // Fall back to copy
+        [fm removeItemAtURL:destURL error:NULL];
+        if (![fm copyItemAtURL:self.stagedExportURL toURL:destURL error:&err]) {
+            if (outError) *outError = err;
+            return NO;
+        }
+    }
+    return YES;
+}
+
 
 
 #if 1

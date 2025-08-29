@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D437641D2E5FA01A008AE5E4 /* Ascent.icns in Resources */ = {isa = PBXBuildFile; fileRef = D437641C2E5FA01A008AE5E4 /* Ascent.icns */; };
 		D4450B3C2E5BCF1700AB39C3 /* HUDWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B392E5BCF1700AB39C3 /* HUDWindow.m */; };
 		D4450B3D2E5BCF1700AB39C3 /* interp.c in Sources */ = {isa = PBXBuildFile; fileRef = D4450B3B2E5BCF1700AB39C3 /* interp.c */; };
-		D4450B542E5BD2CD00AB39C3 /* Ascent-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D4450B532E5BD2CD00AB39C3 /* Ascent-Info.plist */; };
 		D4450B5B2E5BD33A00AB39C3 /* NDRunLoopMessenger.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B582E5BD33A00AB39C3 /* NDRunLoopMessenger.m */; };
 		D4450B5C2E5BD33A00AB39C3 /* SingletonBase.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4450B5A2E5BD33A00AB39C3 /* SingletonBase.mm */; };
 		D4450B5D2E5BD33A00AB39C3 /* LatLong-UTMconversion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4450B562E5BD33A00AB39C3 /* LatLong-UTMconversion.cpp */; };
@@ -48,7 +48,6 @@
 		D4F13BF52E4EAE4600462944 /* Albert Einstein.icns in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BAC2E4EAE4600462944 /* Albert Einstein.icns */; };
 		D4F13BF72E4EAE4600462944 /* Desert.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BBE2E4EAE4600462944 /* Desert.png */; };
 		D4F13BF82E4EAE4600462944 /* DataGraph.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BBC2E4EAE4600462944 /* DataGraph.png */; };
-		D4F13BFB2E4EAE4600462944 /* Ascent-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BEB2E4EAE4600462944 /* Ascent-Info.plist */; };
 		D4F13BFF2E4EAE4600462944 /* HAL-9000.icns in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC42E4EAE4600462944 /* HAL-9000.icns */; };
 		D4F13C002E4EAE4600462944 /* SplitActivity.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B392E4EAE4600462944 /* SplitActivity.nib */; };
 		D4F13C012E4EAE4600462944 /* SelectAndApplyAction.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B352E4EAE4600462944 /* SelectAndApplyAction.nib */; };
@@ -123,7 +122,6 @@
 		D4F13C5F2E4EAE4600462944 /* DetailedMapWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B0B2E4EAE4600462944 /* DetailedMapWindow.nib */; };
 		D4F13C602E4EAE4600462944 /* line_solid.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BCD2E4EAE4600462944 /* line_solid.png */; };
 		D4F13C642E4EAE4600462944 /* LCDMU___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B922E4EAE4600462944 /* LCDMU___.TTF */; };
-		D4F13C652E4EAE4600462944 /* Ascent Icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB02E4EAE4600462944 /* Ascent Icon.icns */; };
 		D4F13C662E4EAE4600462944 /* PrefsBackup.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B252E4EAE4600462944 /* PrefsBackup.nib */; };
 		D4F13C682E4EAE4600462944 /* SplashPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B372E4EAE4600462944 /* SplashPanel.nib */; };
 		D4F13C692E4EAE4600462944 /* bike chain.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB22E4EAE4600462944 /* bike chain.png */; };
@@ -298,7 +296,6 @@
 		D4F18D0C2E5248980032E51D /* PrefsZones.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F18D032E5248980032E51D /* PrefsZones.xib */; };
 		D4F18D0D2E5248980032E51D /* ProgressBar.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F18D042E5248980032E51D /* ProgressBar.xib */; };
 		D4F18D0E2E5248980032E51D /* PrefsSharing.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F18D012E5248980032E51D /* PrefsSharing.xib */; };
-		D4F18D192E525DB20032E51D /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D4F18D182E525DB20032E51D /* Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -353,11 +350,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D437641C2E5FA01A008AE5E4 /* Ascent.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Ascent.icns; path = graphics/Ascent.icns; sourceTree = "<group>"; };
 		D4450B382E5BCF1700AB39C3 /* HUDWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HUDWindow.h; path = OtherCode/HUDWindow.h; sourceTree = SOURCE_ROOT; };
 		D4450B392E5BCF1700AB39C3 /* HUDWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = HUDWindow.m; path = OtherCode/HUDWindow.m; sourceTree = SOURCE_ROOT; };
 		D4450B3A2E5BCF1700AB39C3 /* interp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = interp.h; path = OtherCode/interp.h; sourceTree = SOURCE_ROOT; };
 		D4450B3B2E5BCF1700AB39C3 /* interp.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = interp.c; path = OtherCode/interp.c; sourceTree = SOURCE_ROOT; };
-		D4450B532E5BD2CD00AB39C3 /* Ascent-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Ascent-Info.plist"; sourceTree = "<group>"; };
 		D4450B552E5BD33A00AB39C3 /* LatLong-UTMconversion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "LatLong-UTMconversion.h"; path = "OtherCode/LatLong-UTMconversion.h"; sourceTree = SOURCE_ROOT; };
 		D4450B562E5BD33A00AB39C3 /* LatLong-UTMconversion.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "LatLong-UTMconversion.cpp"; path = "OtherCode/LatLong-UTMconversion.cpp"; sourceTree = SOURCE_ROOT; };
 		D4450B572E5BD33A00AB39C3 /* NDRunLoopMessenger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = NDRunLoopMessenger.h; path = OtherCode/NDRunLoopMessenger.h; sourceTree = SOURCE_ROOT; };
@@ -411,7 +408,6 @@
 		D4CCE91B2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TrackBrowserDocument.xib; sourceTree = "<group>"; };
 		D4CCE91C2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/EquipmentSelector.xib; sourceTree = SOURCE_ROOT; };
 		D4CCE91D2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/PrefsAppearance.nib; sourceTree = SOURCE_ROOT; };
-		D4CCE91F2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = "video.quartz-composer"; name = en; path = en.lproj/AboutBox.qtz; sourceTree = SOURCE_ROOT; };
 		D4CCE9202E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/PrefsSync.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9212E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/TransparentMapWindow.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9222E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/GMTOffset.nib; sourceTree = SOURCE_ROOT; };
@@ -546,7 +542,7 @@
 		D4F13A612E4EAE4600462944 /* Lap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Lap.h; path = "My Code/Lap.h"; sourceTree = SOURCE_ROOT; };
 		D4F13A622E4EAE4600462944 /* Lap.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Lap.m; path = "My Code/Lap.m"; sourceTree = SOURCE_ROOT; };
 		D4F13A632E4EAE4600462944 /* TrackPoint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TrackPoint.h; path = "My Code/TrackPoint.h"; sourceTree = SOURCE_ROOT; };
-		D4F13A642E4EAE4600462944 /* TrackPoint.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = TrackPoint.m; path = "My Code/TrackPoint.m"; sourceTree = SOURCE_ROOT; };
+		D4F13A642E4EAE4600462944 /* TrackPoint.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = TrackPoint.m; path = "My Code/TrackPoint.m"; sourceTree = SOURCE_ROOT; };
 		D4F13A652E4EAE4600462944 /* Track.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Track.h; path = "My Code/Track.h"; sourceTree = SOURCE_ROOT; };
 		D4F13A662E4EAE4600462944 /* Track.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = Track.mm; path = "My Code/Track.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13A682E4EAE4600462944 /* MiniProfileView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MiniProfileView.h; path = "My Code/MiniProfileView.h"; sourceTree = SOURCE_ROOT; };
@@ -756,7 +752,6 @@
 		D4F13BAD2E4EAE4600462944 /* AltitudeSign.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = AltitudeSign.png; path = graphics/AltitudeSign.png; sourceTree = SOURCE_ROOT; };
 		D4F13BAE2E4EAE4600462944 /* AppearancePreferences.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = AppearancePreferences.tiff; path = graphics/AppearancePreferences.tiff; sourceTree = SOURCE_ROOT; };
 		D4F13BAF2E4EAE4600462944 /* apps.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = apps.icns; path = graphics/apps.icns; sourceTree = SOURCE_ROOT; };
-		D4F13BB02E4EAE4600462944 /* Ascent Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = "Ascent Icon.icns"; path = "graphics/Ascent Icon.icns"; sourceTree = SOURCE_ROOT; };
 		D4F13BB12E4EAE4600462944 /* Ascent_Doc.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Ascent_Doc.icns; path = graphics/Ascent_Doc.icns; sourceTree = SOURCE_ROOT; };
 		D4F13BB22E4EAE4600462944 /* bike chain.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "bike chain.png"; path = "graphics/bike chain.png"; sourceTree = SOURCE_ROOT; };
 		D4F13BB32E4EAE4600462944 /* bike tires.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "bike tires.png"; path = "graphics/bike tires.png"; sourceTree = SOURCE_ROOT; };
@@ -875,7 +870,7 @@
 			isa = PBXGroup;
 			children = (
 				D4F13AF42E4EAE4600462944 /* Mainline Code */,
-				D4F13D2A2E4EAF2D00462944 /* Other Code */,
+				D4F13D2A2E4EAF2D00462944 /* OtherCode */,
 				D4F13BEA2E4EAE4600462944 /* Resources */,
 				D4F13BED2E4EAE4600462944 /* Supporting Files */,
 				D4D51A432E4E35220003E47F /* Other */,
@@ -1525,24 +1520,6 @@
 		D4F13BE92E4EAE4600462944 /* Graphics */ = {
 			isa = PBXGroup;
 			children = (
-				D4F13B942E4EAE4600462944 /* SelectRightButton.png */,
-				D4F13B952E4EAE4600462944 /* UnselectButton.png */,
-				D4F13B962E4EAE4600462944 /* SelectLeftButton.png */,
-				D4F13B972E4EAE4600462944 /* ZoomOutButton.png */,
-				D4F13B982E4EAE4600462944 /* ZoomInButton.png */,
-				D4F13B992E4EAE4600462944 /* RoundFF.png */,
-				D4F13B9A2E4EAE4600462944 /* RoundRTZ.png */,
-				D4F13B9B2E4EAE4600462944 /* RoundPlay.png */,
-				D4F13B9C2E4EAE4600462944 /* RoundStop.png */,
-				D4F13B9D2E4EAE4600462944 /* RulerBG.png */,
-				D4F13B9E2E4EAE4600462944 /* RulerThumb.png */,
-				D4F13B9F2E4EAE4600462944 /* CompareButtonIcon.png */,
-				D4F13BA02E4EAE4600462944 /* TrackDragImage.png */,
-				D4F13BA12E4EAE4600462944 /* Dot.png */,
-				D4F13BA22E4EAE4600462944 /* BlueDot.png */,
-				D4F13BA32E4EAE4600462944 /* GreenDot.png */,
-				D4F13BA42E4EAE4600462944 /* PurpleDot.png */,
-				D4F13BA52E4EAE4600462944 /* bike shoes.png */,
 				D4F13BA62E4EAE4600462944 /* ABAction.png */,
 				D4F13BA72E4EAE4600462944 /* ABAction.tiff */,
 				D4F13BA82E4EAE4600462944 /* ABAction_Trans.png */,
@@ -1553,26 +1530,31 @@
 				D4F13BAD2E4EAE4600462944 /* AltitudeSign.png */,
 				D4F13BAE2E4EAE4600462944 /* AppearancePreferences.tiff */,
 				D4F13BAF2E4EAE4600462944 /* apps.icns */,
-				D4F13BB02E4EAE4600462944 /* Ascent Icon.icns */,
+				D437641C2E5FA01A008AE5E4 /* Ascent.icns */,
 				D4F13BB12E4EAE4600462944 /* Ascent_Doc.icns */,
 				D4F13BB22E4EAE4600462944 /* bike chain.png */,
+				D4F13BA52E4EAE4600462944 /* bike shoes.png */,
 				D4F13BB32E4EAE4600462944 /* bike tires.png */,
 				D4F13BB42E4EAE4600462944 /* bike wheels.png */,
-				D4F13BB52E4EAE4600462944 /* browser1.png */,
+				D4F13BA22E4EAE4600462944 /* BlueDot.png */,
 				D4F13BB62E4EAE4600462944 /* Browser_Trans.png */,
+				D4F13BB52E4EAE4600462944 /* browser1.png */,
 				D4F13BB72E4EAE4600462944 /* calendar.png */,
 				D4F13BB82E4EAE4600462944 /* Calendar_Trans.png */,
 				D4F13BB92E4EAE4600462944 /* canoe.png */,
 				D4F13BBA2E4EAE4600462944 /* ColorPreferences.tiff */,
+				D4F13B9F2E4EAE4600462944 /* CompareButtonIcon.png */,
 				D4F13BBB2E4EAE4600462944 /* cyclocross bike.png */,
 				D4F13BBC2E4EAE4600462944 /* DataGraph.png */,
 				D4F13BBD2E4EAE4600462944 /* DataRect.png */,
 				D4F13BBE2E4EAE4600462944 /* Desert.png */,
+				D4F13BA12E4EAE4600462944 /* Dot.png */,
 				D4F13BBF2E4EAE4600462944 /* dt.jpg */,
 				D4F13BC02E4EAE4600462944 /* DV_DC_2005_013.jpg */,
 				D4F13BC12E4EAE4600462944 /* ff_off.png */,
 				D4F13BC22E4EAE4600462944 /* FinishMarker.png */,
 				D4F13BC32E4EAE4600462944 /* GeneralPreferences.tiff */,
+				D4F13BA32E4EAE4600462944 /* GreenDot.png */,
 				D4F13BC42E4EAE4600462944 /* HAL-9000.icns */,
 				D4F13BC52E4EAE4600462944 /* hud_titlebar-close.tiff */,
 				D4F13BC62E4EAE4600462944 /* iphone.png */,
@@ -1593,13 +1575,22 @@
 				D4F13BD52E4EAE4600462944 /* play_on.png */,
 				D4F13BD62E4EAE4600462944 /* plus.png */,
 				D4F13BD72E4EAE4600462944 /* PrefsBackup.png */,
+				D4F13BA42E4EAE4600462944 /* PurpleDot.png */,
 				D4F13BD82E4EAE4600462944 /* reverse_off.png */,
 				D4F13BD92E4EAE4600462944 /* reverse_on.png */,
 				D4F13BDA2E4EAE4600462944 /* RightArrow.png */,
 				D4F13BDB2E4EAE4600462944 /* RightArrowPressed.png */,
 				D4F13BDC2E4EAE4600462944 /* road bike.png */,
+				D4F13B992E4EAE4600462944 /* RoundFF.png */,
+				D4F13B9B2E4EAE4600462944 /* RoundPlay.png */,
+				D4F13B9A2E4EAE4600462944 /* RoundRTZ.png */,
+				D4F13B9C2E4EAE4600462944 /* RoundStop.png */,
 				D4F13BDD2E4EAE4600462944 /* rtz_off.png */,
+				D4F13B9D2E4EAE4600462944 /* RulerBG.png */,
+				D4F13B9E2E4EAE4600462944 /* RulerThumb.png */,
 				D4F13BDE2E4EAE4600462944 /* running shoes.jpg */,
+				D4F13B962E4EAE4600462944 /* SelectLeftButton.png */,
+				D4F13B942E4EAE4600462944 /* SelectRightButton.png */,
 				D4F13BDF2E4EAE4600462944 /* skiis.png */,
 				D4F13BE02E4EAE4600462944 /* Splash.png */,
 				D4F13BE12E4EAE4600462944 /* splits.png */,
@@ -1607,9 +1598,13 @@
 				D4F13BE32E4EAE4600462944 /* SplitsButton.png */,
 				D4F13BE42E4EAE4600462944 /* StartMarker.png */,
 				D4F13BE52E4EAE4600462944 /* stop_off.png */,
+				D4F13BA02E4EAE4600462944 /* TrackDragImage.png */,
+				D4F13B952E4EAE4600462944 /* UnselectButton.png */,
 				D4F13BE62E4EAE4600462944 /* walking shoes.png */,
 				D4F13BE72E4EAE4600462944 /* ww.jpg */,
 				D4F13BE82E4EAE4600462944 /* zones.icns */,
+				D4F13B982E4EAE4600462944 /* ZoomInButton.png */,
+				D4F13B972E4EAE4600462944 /* ZoomOutButton.png */,
 			);
 			name = Graphics;
 			sourceTree = "<group>";
@@ -1617,10 +1612,8 @@
 		D4F13BEA2E4EAE4600462944 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				D4450B532E5BD2CD00AB39C3 /* Ascent-Info.plist */,
 				D4F18D182E525DB20032E51D /* Info.plist */,
 				D4F13AF62E4EAE4600462944 /* InfoPlist.strings */,
-				D4F13AF82E4EAE4600462944 /* AboutBox.qtz */,
 				D4F13AFB2E4EAE4600462944 /* utilities */,
 				D4F13B442E4EAE4600462944 /* nibs */,
 				D4F13B452E4EAE4600462944 /* send_activity.scpt */,
@@ -1641,7 +1634,7 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		D4F13D2A2E4EAF2D00462944 /* Other Code */ = {
+		D4F13D2A2E4EAF2D00462944 /* OtherCode */ = {
 			isa = PBXGroup;
 			children = (
 				D4450B382E5BCF1700AB39C3 /* HUDWindow.h */,
@@ -1655,7 +1648,7 @@
 				D4450B592E5BD33A00AB39C3 /* SingletonBase.h */,
 				D4450B5A2E5BD33A00AB39C3 /* SingletonBase.mm */,
 			);
-			path = "Other Code";
+			path = OtherCode;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1785,7 +1778,6 @@
 				D4F13BF52E4EAE4600462944 /* Albert Einstein.icns in Resources */,
 				D4F13BF72E4EAE4600462944 /* Desert.png in Resources */,
 				D4F13BF82E4EAE4600462944 /* DataGraph.png in Resources */,
-				D4F13BFB2E4EAE4600462944 /* Ascent-Info.plist in Resources */,
 				D4F13BFF2E4EAE4600462944 /* HAL-9000.icns in Resources */,
 				D4F13C002E4EAE4600462944 /* SplitActivity.nib in Resources */,
 				D4F13C012E4EAE4600462944 /* SelectAndApplyAction.nib in Resources */,
@@ -1803,7 +1795,6 @@
 				D4F13C112E4EAE4600462944 /* ZoomOutButton.png in Resources */,
 				D4F13C122E4EAE4600462944 /* mountain bike.png in Resources */,
 				D4F13C162E4EAE4600462944 /* zones.icns in Resources */,
-				D4F18D192E525DB20032E51D /* Info.plist in Resources */,
 				D4F13C182E4EAE4600462944 /* EquipmentSelector.xib in Resources */,
 				D4F13C1A2E4EAE4600462944 /* LCDM2L__.TTF in Resources */,
 				D4F13C1B2E4EAE4600462944 /* TrackDataEntry.nib in Resources */,
@@ -1811,6 +1802,7 @@
 				D4F13C1D2E4EAE4600462944 /* PrefsGeneral.nib in Resources */,
 				D4F13C1E2E4EAE4600462944 /* GetPassword.nib in Resources */,
 				D4F13C1F2E4EAE4600462944 /* calendar.png in Resources */,
+				D437641D2E5FA01A008AE5E4 /* Ascent.icns in Resources */,
 				D4F13C212E4EAE4600462944 /* LCD-N___.TTF in Resources */,
 				D4F13C222E4EAE4600462944 /* reverse_off.png in Resources */,
 				D4F13C232E4EAE4600462944 /* GreenDot.png in Resources */,
@@ -1826,7 +1818,6 @@
 				D4F13C2F2E4EAE4600462944 /* RightArrowPressed.png in Resources */,
 				D4F13C302E4EAE4600462944 /* RoundFF.png in Resources */,
 				D4F13C312E4EAE4600462944 /* prototype.js in Resources */,
-				D4450B542E5BD2CD00AB39C3 /* Ascent-Info.plist in Resources */,
 				D4F13C332E4EAE4600462944 /* DV_DC_2005_013.jpg in Resources */,
 				D4F18D0A2E5248980032E51D /* PrefsUser.xib in Resources */,
 				D4F18D0B2E5248980032E51D /* PrefsHeartrate.xib in Resources */,
@@ -1868,7 +1859,6 @@
 				D4F13C5F2E4EAE4600462944 /* DetailedMapWindow.nib in Resources */,
 				D4F13C602E4EAE4600462944 /* line_solid.png in Resources */,
 				D4F13C642E4EAE4600462944 /* LCDMU___.TTF in Resources */,
-				D4F13C652E4EAE4600462944 /* Ascent Icon.icns in Resources */,
 				D4F13C662E4EAE4600462944 /* PrefsBackup.nib in Resources */,
 				D4F13C682E4EAE4600462944 /* SplashPanel.nib in Resources */,
 				D4F13C692E4EAE4600462944 /* bike chain.png in Resources */,
@@ -2116,14 +2106,6 @@
 				D4CCE9262E5048D300B46DB2 /* en */,
 			);
 			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
-		D4F13AF82E4EAE4600462944 /* AboutBox.qtz */ = {
-			isa = PBXVariantGroup;
-			children = (
-				D4CCE91F2E5048D300B46DB2 /* en */,
-			);
-			name = AboutBox.qtz;
 			sourceTree = "<group>";
 		};
 		D4F13AFD2E4EAE4600462944 /* EquipmentLogInitialValues.xib */ = {
@@ -2437,7 +2419,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = F3GH78PJ2M;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2527,7 +2509,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = F3GH78PJ2M;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;

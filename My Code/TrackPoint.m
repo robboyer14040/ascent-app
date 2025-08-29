@@ -502,6 +502,18 @@ typedef float (*tAcc)(id, SEL);
 }
 
 
+- (int)flags
+{
+   return flags;
+}
+
+
+- (void)setFlags:(int)f
+{
+    flags = f;
+}
+
+
 - (float)temperature
 {
    return temperature;

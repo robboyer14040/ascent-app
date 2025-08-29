@@ -15,7 +15,7 @@
 #import "PathMarker.h"
 #import "OverrideData.h"
 #import "ColumnInfo.h"
-
+#import "ProgressBarController.h"
 
 #import <objc/runtime.h>
 
@@ -31,17 +31,79 @@
 
 - (BOOL)open:(NSError **)error {
     if (_db) return YES;
-    int rc = sqlite3_open(_url.path.UTF8String, &_db);
-    if (rc != SQLITE_OK) {
-        if (error) *error = [NSError errorWithDomain:@"ActivityStore" code:rc
-            userInfo:@{NSLocalizedDescriptionKey: @(sqlite3_errmsg(_db) ?: "sqlite open failed")}];
+
+    // Sanity checks
+    NSURL *url = _url;
+    if (!url.isFileURL) {
+        if (error) *error = [NSError errorWithDomain:@"ActivityStore"
+                                                code:EINVAL
+                                            userInfo:@{NSLocalizedDescriptionKey:@"URL is not a file URL"}];
         return NO;
     }
-    sqlite3_exec(_db, "PRAGMA journal_mode=WAL;", NULL, NULL, NULL);
+
+    // Preflight: if a WAL exists, opening will try to read it immediately.
+    NSString *path = url.path;
+    NSString *wal  = [path stringByAppendingString:@"-wal"];
+    NSString *shm  = [path stringByAppendingString:@"-shm"];
+    NSFileManager *fm = NSFileManager.defaultManager;
+    BOOL hasWAL = [fm fileExistsAtPath:wal] || [fm fileExistsAtPath:shm];
+
+    // If you have a security-scoped bookmark to the directory, start it here.
+    // (Optional, only if you store one)
+    // [dirURL startAccessingSecurityScopedResource];
+
+    // Open read-write (create if needed)
+    int rc = sqlite3_open_v2(path.UTF8String, &_db,
+                             SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    if (rc != SQLITE_OK) {
+        int xrc = sqlite3_extended_errcode(_db);
+        int sys = sqlite3_system_errno(_db);
+        const char *msg = sqlite3_errmsg(_db);
+        if (error) *error = [NSError errorWithDomain:@"ActivityStore"
+                                                code:rc
+                                            userInfo:@{NSLocalizedDescriptionKey:
+                                                       [NSString stringWithFormat:@"sqlite3_open_v2 failed (%d/%d): %s (errno=%d)",
+                                                       rc, xrc, msg ?: "(null)", sys]}];
+        if (_db) { sqlite3_close(_db); _db = NULL; }
+        return NO;
+    }
+
+    // If there is a WAL and we likely lack folder permission, explain early.
+    if (hasWAL) {
+        // Try a no-op pragma that would touch WAL paths; if it fails with 14/EPERM, report clearly.
+        char *errmsg = NULL;
+        rc = sqlite3_exec(_db, "PRAGMA journal_mode;", NULL, NULL, &errmsg);
+        if (rc != SQLITE_OK) {
+            int xrc = sqlite3_extended_errcode(_db);
+            int sys = sqlite3_system_errno(_db);
+            if (error) *error = [NSError errorWithDomain:@"ActivityStore"
+                                                    code:rc
+                                                userInfo:@{NSLocalizedDescriptionKey:
+                                                           [NSString stringWithFormat:
+                        @"Cannot access WAL sidecar next to database. "
+                        @"Folder permission is required to read '%@' and its '-wal'/'-shm' files. "
+                        @"(rc=%d/%d errno=%d: %s)", path, rc, xrc, sys, errmsg?: "(null)"]}];
+            if (errmsg) sqlite3_free(errmsg);
+            sqlite3_close(_db); _db = NULL;
+            return NO;
+        }
+    }
+
+    // Disable WAL so future opens don’t need sidecars outside your container.
+    // (If a WAL exists and we *do* have permission, this switches it back cleanly.)
+    char *errmsg = NULL;
+    rc = sqlite3_exec(_db, "PRAGMA journal_mode=DELETE;", NULL, NULL, &errmsg);
+    if (rc != SQLITE_OK) {
+        NSLog(@"PRAGMA journal_mode=DELETE failed %d: %s", rc, errmsg ?: "(null)");
+        if (errmsg) sqlite3_free(errmsg);
+        // Not fatal; continue if you want, or fail here.
+    }
     sqlite3_exec(_db, "PRAGMA synchronous=NORMAL;", NULL, NULL, NULL);
     sqlite3_exec(_db, "PRAGMA foreign_keys=ON;", NULL, NULL, NULL);
+
     return YES;
 }
+
 
 - (void)close {
     if (_db) { sqlite3_close(_db); _db = NULL; }
@@ -49,7 +111,6 @@
 
 #pragma mark - Schema
 
-#if 1
 
 
 - (BOOL)createSchema:(NSError **)error
@@ -79,7 +140,7 @@
 
     // Pragmas (safe defaults)
     if (!run("PRAGMA foreign_keys = ON;", YES)) return NO;
-    run("PRAGMA journal_mode = WAL;", NO);
+    run("PRAGMA journal_mode = DELETE;", NO);
     run("PRAGMA synchronous = NORMAL;", NO);
 
     // ---- Tables -------------------------------------------------------------
@@ -196,7 +257,7 @@
         " startDate_s INTEGER,"
         " endDate_s INTEGER,"
         " flags INTEGER,"
-        " int2 INTEGER,"
+        " totalTracks INTEGER,"
         " int3 INTEGER,"
         " int4 INTEGER"
         ");";
@@ -212,108 +273,13 @@
     run("ALTER TABLE meta ADD COLUMN startDate_s INTEGER;", NO);
     run("ALTER TABLE meta ADD COLUMN endDate_s INTEGER;", NO);
     run("ALTER TABLE meta ADD COLUMN flags INTEGER;", NO);
-    run("ALTER TABLE meta ADD COLUMN int2 INTEGER;", NO);
+    run("ALTER TABLE meta ADD COLUMN totalTracks INTEGER;", NO);
     run("ALTER TABLE meta ADD COLUMN int3 INTEGER;", NO);
     run("ALTER TABLE meta ADD COLUMN int4 INTEGER;", NO);
    return YES;
 }
 
-#else
 
-
-- (BOOL)createSchema:(NSError **)error {
-    const char *sql =
-    "BEGIN;"
-
-    // Activity row (stores arrays + overrides as JSON TEXT so it's portable)
-    "CREATE TABLE IF NOT EXISTS activities ("
-    " id INTEGER PRIMARY KEY,"
-    " uuid TEXT UNIQUE NOT NULL,"
-    " name TEXT,"
-    " creation_time_s INTEGER,"
-    " creation_time_override_s INTEGER,"
-    " distance_mi REAL,"
-    " weight_lb REAL,"
-    " altitude_smooth_factor REAL,"
-    " equipment_weight_lb REAL,"
-    " device_total_time_s REAL,"
-    " moving_speed_only INTEGER,"
-    " has_distance_data INTEGER,"
-    " attributes_json TEXT,"   // <-- attributes array as JSON
-    " markers_json TEXT,"      // <-- PathMarker array as JSON
-    " override_json TEXT"      // <-- OverrideData as JSON
-    ");"
-
-    // Laps
-    "CREATE TABLE IF NOT EXISTS laps ("
-    " id INTEGER PRIMARY KEY,"
-    " track_id INTEGER NOT NULL REFERENCES activities(id) ON DELETE CASCADE,"
-    " lap_index INTEGER NOT NULL,"
-    " orig_start_time_s INTEGER,"
-    " start_time_delta_s REAL,"
-    " total_time_s REAL,"
-    " distance_mi REAL,"
-    " max_speed_mph REAL,"
-    " avg_speed_mph REAL,"
-    " begin_lat REAL,"
-    " begin_lon REAL,"
-    " end_lat REAL,"
-    " end_lon REAL,"
-    " device_total_time_s REAL,"
-    " average_hr INTEGER,"
-    " max_hr INTEGER,"
-    " average_cad INTEGER,"
-    " max_cad INTEGER,"
-    " calories INTEGER,"
-    " intensity INTEGER,"
-    " trigger_method INTEGER,"
-    " selected INTEGER,"
-    " stats_calculated INTEGER"
-    ");"
-    "CREATE INDEX IF NOT EXISTS idx_laps_track ON laps(track_id, lap_index);"
-
-    // Points (ordered by seq)
-    "CREATE TABLE IF NOT EXISTS points ("
-    " track_id INTEGER NOT NULL REFERENCES activities(id) ON DELETE CASCADE,"
-    " seq INTEGER NOT NULL,"
-    " wall_clock_delta_s REAL,"
-    " active_time_delta_s REAL,"
-    " latitude REAL,"
-    " longitude REAL,"
-    " altitude_m REAL,"
-    " orig_altitude_m REAL,"
-    " heartrate_bpm REAL,"
-    " cadence_rpm REAL,"
-    " temperature_c REAL,"
-    " speed_mps REAL,"
-    " power_w REAL,"
-    " distance_mi REAL,"
-    " orig_distance_mi REAL,"
-    " gradient REAL,"
-    " climb_so_far_m REAL,"
-    " descent_so_far_m REAL,"
-    " flags INTEGER,"
-    " valid_lat_lon INTEGER,"
-    " PRIMARY KEY (track_id, seq)"
-    ");"
-    "CREATE INDEX IF NOT EXISTS idx_points_track ON points(track_id);"
-
-    "COMMIT;";
-
-    int rc = sqlite3_exec(_db, sql, NULL, NULL, NULL);
-    if (rc != SQLITE_OK) {
-        if (error) *error = [NSError errorWithDomain:@"ActivityStore" code:rc
-            userInfo:@{NSLocalizedDescriptionKey: @(sqlite3_errmsg(_db) ?: "schema creation failed")}];
-        return NO;
-    }
-
-    // Tolerant migrations (ignored if already present)
-    sqlite3_exec(_db, "ALTER TABLE activities ADD COLUMN attributes_json TEXT;", NULL, NULL, NULL);
-    sqlite3_exec(_db, "ALTER TABLE activities ADD COLUMN markers_json TEXT;",    NULL, NULL, NULL);
-    sqlite3_exec(_db, "ALTER TABLE activities ADD COLUMN override_json TEXT;",   NULL, NULL, NULL);
-    return YES;
-}
-#endif
 
 #pragma mark - Helpers
 
@@ -554,7 +520,7 @@ static NSDictionary<NSString*, ColumnInfo*> *ColumnInfoDictFromJSONText(const un
                     startDate:(NSDate *)startDate
                       endDate:(NSDate *)endDate
                         flags:(NSInteger)flags
-                         int2:(NSInteger)i2
+                  totalTracks:(NSInteger)i2
                          int3:(NSInteger)i3
                          int4:(NSInteger)i4
                         error:(NSError **)error
@@ -563,7 +529,7 @@ static NSDictionary<NSString*, ColumnInfo*> *ColumnInfoDictFromJSONText(const un
       "UPDATE meta SET "
       " uuid_s=?, tableInfo_json=?, splitsTableInfo_json=?, "
       " startDate_s=?, endDate_s=?, "
-      " flags=?, int2=?, int3=?, int4=? "
+      " flags=?, totalTracks=?, int3=?, int4=? "
       " WHERE id=1;";
 
     sqlite3_stmt *st = NULL;
@@ -591,7 +557,6 @@ static NSDictionary<NSString*, ColumnInfo*> *ColumnInfoDictFromJSONText(const un
 }
 
 
-#if 1
 - (BOOL)saveTrack:(Track *)track error:(NSError **)error
 {
     // ---- Gather core activity fields ----
@@ -767,8 +732,8 @@ static NSDictionary<NSString*, ColumnInfo*> *ColumnInfoDictFromJSONText(const un
             sqlite3_bind_double(ptStmt,10,  [p respondsToSelector:@selector(temperature)] ? [p temperature] : [[p valueForKey:@"temperature"] doubleValue]);
             sqlite3_bind_double(ptStmt,11,  [p respondsToSelector:@selector(speed)] ? [p speed] : [[p valueForKey:@"speed"] doubleValue]);
             sqlite3_bind_double(ptStmt,12,  [p respondsToSelector:@selector(power)] ? [p power] : [[p valueForKey:@"power"] doubleValue]);
-                sqlite3_bind_double(ptStmt,13,  [p respondsToSelector:@selector(origDistance)] ? [p origDistance] : [[p valueForKey:@"origDistance"] doubleValue]);
-            int pflags = [[p valueForKey:@"flags"] intValue];
+            sqlite3_bind_double(ptStmt,13,  [p respondsToSelector:@selector(origDistance)] ? [p origDistance] : [[p valueForKey:@"origDistance"] doubleValue]);
+            int pflags = [p flags];
             sqlite3_bind_int   (ptStmt,14,  pflags);
 
             if (sqlite3_step(ptStmt) != SQLITE_DONE) { /* ignore one bad point or handle */ }
@@ -789,198 +754,18 @@ fail:
 }
 
 
-#else
-
-- (BOOL)saveTrack:(Track *)track error:(NSError **)error {
-    // Gather activity fields
-    NSString *uuid = [track respondsToSelector:@selector(uuid)] ? [track uuid] : [track valueForKey:@"uuid"];
-    if (uuid.length == 0) {
-        if (error) *error = [NSError errorWithDomain:@"ActivityStore" code:-1
-            userInfo:@{NSLocalizedDescriptionKey:@"Track uuid is required"}];
-        return NO;
-    }
-    NSString *name = [track respondsToSelector:@selector(name)] ? [track name] : [track valueForKey:@"name"];
-    NSDate   *ct   = [track respondsToSelector:@selector(creationTime)] ? [track creationTime] : [track valueForKey:@"creationTime"];
-    NSDate   *cto  = [track respondsToSelector:@selector(creationTimeOverride)] ? [track creationTimeOverride] : [track valueForKey:@"creationTimeOverride"];
-    double    dist = [track respondsToSelector:@selector(distance)] ? [track distance] : [[track valueForKey:@"distance"] doubleValue];
-    double    wt   = [track respondsToSelector:@selector(weight)] ? [track weight] : [[track valueForKey:@"weight"] doubleValue];
-    double    asf  = [track respondsToSelector:@selector(altitudeSmoothingFactor)] ? [track altitudeSmoothingFactor] : [[track valueForKey:@"altitudeSmoothingFactor"] doubleValue];
-    double    eqw  = [track respondsToSelector:@selector(equipmentWeight)] ? [track equipmentWeight] : [[track valueForKey:@"equipmentWeight"] doubleValue];
-    double    devT = [track respondsToSelector:@selector(deviceTotalTime)] ? [track deviceTotalTime] : [[track valueForKey:@"deviceTotalTime"] doubleValue];
-    BOOL   moving  = [track respondsToSelector:@selector(movingSpeedOnly)] ? [track movingSpeedOnly] : [[track valueForKey:@"movingSpeedOnly"] boolValue];
-    BOOL   hasDist = [track respondsToSelector:@selector(hasDistanceData)] ? [track hasDistanceData] : [[track valueForKey:@"hasDistanceData"] boolValue];
-
-    NSArray *attrs   = [track respondsToSelector:@selector(attributes)] ? [track attributes] : [track valueForKey:@"attributes"];
-    NSArray *markers = [track respondsToSelector:@selector(markers)]    ? [track markers]    : [track valueForKey:@"markers"];
-    NSArray *points  = [track respondsToSelector:@selector(points)]     ? [track points]     : [track valueForKey:@"points"];
-    id      od       = nil;
-    if ([track respondsToSelector:@selector(overrideData)]) od = [track performSelector:@selector(overrideData)];
-    else @try { od = [track valueForKey:@"overrideData"]; } @catch (__unused id e) {}
-
-    NSString *attrsJSON    = AttributesToJSON(attrs);
-    NSString *markersJSON  = MarkersToJSON(markers);
-    NSString *overrideJSON = OverrideToJSON(od);
-
-    // Upsert activity row
-    sqlite3_stmt *act = NULL;
-    const char *upsert =
-      "INSERT INTO activities ("
-      " uuid,name,creation_time_s,creation_time_override_s,"
-      " distance_mi,weight_lb,altitude_smooth_factor,equipment_weight_lb,"
-      " device_total_time_s,moving_speed_only,has_distance_data,"
-      " attributes_json,markers_json,override_json)"
-      " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-      " ON CONFLICT(uuid) DO UPDATE SET "
-      " name=excluded.name,"
-      " creation_time_s=excluded.creation_time_s,"
-      " creation_time_override_s=excluded.creation_time_override_s,"
-      " distance_mi=excluded.distance_mi,"
-      " weight_lb=excluded.weight_lb,"
-      " altitude_smooth_factor=excluded.altitude_smooth_factor,"
-      " equipment_weight_lb=excluded.equipment_weight_lb,"
-      " device_total_time_s=excluded.device_total_time_s,"
-      " moving_speed_only=excluded.moving_speed_only,"
-      " has_distance_data=excluded.has_distance_data,"
-      " attributes_json=excluded.attributes_json,"
-      " markers_json=excluded.markers_json,"
-      " override_json=excluded.override_json;";
-
-    if (sqlite3_prepare_v2(_db, upsert, -1, &act, NULL) != SQLITE_OK) return NO;
-
-    sqlite3_bind_text  (act, 1,  uuid.UTF8String, -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text  (act, 2,  (name?:@"").UTF8String, -1, SQLITE_TRANSIENT);
-    sqlite3_bind_int64 (act, 3,  dateToEpoch(ct));
-    sqlite3_bind_int64 (act, 4,  dateToEpoch(cto));
-    sqlite3_bind_double(act, 5,  dist);
-    sqlite3_bind_double(act, 6,  wt);
-    sqlite3_bind_double(act, 7,  asf);
-    sqlite3_bind_double(act, 8,  eqw);
-    sqlite3_bind_double(act, 9,  devT);
-    sqlite3_bind_int   (act,10,  b(moving));
-    sqlite3_bind_int   (act,11,  b(hasDist));
-    sqlite3_bind_text  (act,12,  (attrsJSON    ?: @"").UTF8String,   -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text  (act,13,  (markersJSON  ?: @"").UTF8String,   -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text  (act,14,  (overrideJSON ?: @"").UTF8String,   -1, SQLITE_TRANSIENT);
-
-    if (sqlite3_step(act) != SQLITE_DONE) return NO;
-    sqlite3_finalize(act); act = NULL;
-
-    // Resolve id
-    sqlite3_stmt *sel = NULL;
-    if (sqlite3_prepare_v2(_db, "SELECT id FROM activities WHERE uuid=?", -1, &sel, NULL) != SQLITE_OK) return NO;
-    sqlite3_bind_text(sel, 1, uuid.UTF8String, -1, SQLITE_TRANSIENT);
-    sqlite3_int64 trackID = 0;
-    if (sqlite3_step(sel) == SQLITE_ROW) trackID = sqlite3_column_int64(sel, 0);
-    sqlite3_finalize(sel); sel = NULL;
-    if (!trackID)  return NO;
-
-    // Replace children
-    sqlite3_exec(_db, "BEGIN IMMEDIATE;", NULL, NULL, NULL);
-
-    const char *del1="DELETE FROM laps WHERE track_id=?;";
-    const char *del2="DELETE FROM points WHERE track_id=?;";
-    for (const char *sql : (const char*[]){del1,del2}) {
-        sqlite3_stmt *st=NULL; sqlite3_prepare_v2(_db, sql, -1, &st, NULL);
-        sqlite3_bind_int64(st, 1, trackID); sqlite3_step(st); sqlite3_finalize(st);
-    }
-
-    // Insert laps
-    NSArray *laps = [track respondsToSelector:@selector(laps)] ? [track laps] : [track valueForKey:@"laps"];
-    if ([laps isKindOfClass:[NSArray class]] && laps.count) {
-        const char *insLap =
-          "INSERT INTO laps (track_id,lap_index,orig_start_time_s,start_time_delta_s,total_time_s,"
-          " distance_mi,max_speed_mph,avg_speed_mph,begin_lat,begin_lon,end_lat,end_lon,device_total_time_s,"
-          " average_hr,max_hr,average_cad,max_cad,calories,intensity,trigger_method,selected,stats_calculated)"
-          " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
-        sqlite3_stmt *lapStmt = NULL;
-        sqlite3_prepare_v2(_db, insLap, -1, &lapStmt, NULL);
-        for (Lap* lap in laps) {
-            sqlite3_bind_int64 (lapStmt, 1, trackID);
-            sqlite3_bind_int   (lapStmt, 2, [lap respondsToSelector:@selector(index)] ? [lap index] : [[lap valueForKey:@"index"] intValue]);
-            sqlite3_bind_int64 (lapStmt, 3, dateToEpoch([lap respondsToSelector:@selector(origStartTime)] ? [lap origStartTime] : [lap valueForKey:@"origStartTime"]));
-            sqlite3_bind_double(lapStmt, 4, [lap respondsToSelector:@selector(startTimeDelta)] ? [lap startTimeDelta] : [[lap valueForKey:@"startTimeDelta"] doubleValue]);
-            sqlite3_bind_double(lapStmt, 5, [lap respondsToSelector:@selector(totalTime)] ? [lap totalTime] : [[lap valueForKey:@"totalTime"] doubleValue]);
-            sqlite3_bind_double(lapStmt, 6, [lap respondsToSelector:@selector(distance)] ? [lap distance] : [[lap valueForKey:@"distance"] doubleValue]);
-            sqlite3_bind_double(lapStmt, 7, [lap respondsToSelector:@selector(maxSpeed)] ? [lap maxSpeed] : [[lap valueForKey:@"maxSpeed"] doubleValue]);
-            sqlite3_bind_double(lapStmt, 8, [lap respondsToSelector:@selector(avgSpeed)] ? [lap avgSpeed] : [[lap valueForKey:@"avgSpeed"] doubleValue]);
-            sqlite3_bind_double(lapStmt, 9, [lap respondsToSelector:@selector(beginLatitude)] ? [lap beginLatitude] : [[lap valueForKey:@"beginLatitude"] doubleValue]);
-            sqlite3_bind_double(lapStmt,10, [lap respondsToSelector:@selector(beginLongitude)] ? [lap beginLongitude] : [[lap valueForKey:@"beginLongitude"] doubleValue]);
-            sqlite3_bind_double(lapStmt,11, [lap respondsToSelector:@selector(endLatitude)] ? [lap endLatitude] : [[lap valueForKey:@"endLatitude"] doubleValue]);
-            sqlite3_bind_double(lapStmt,12, [lap respondsToSelector:@selector(endLongitude)] ? [lap endLongitude] : [[lap valueForKey:@"endLongitude"] doubleValue]);
-            sqlite3_bind_double(lapStmt,13, [lap respondsToSelector:@selector(deviceTotalTime)] ? [lap deviceTotalTime] : [[lap valueForKey:@"deviceTotalTime"] doubleValue]);
-            sqlite3_bind_int   (lapStmt,14, [lap respondsToSelector:@selector(averageHeartRate)] ? [lap averageHeartRate] : [[lap valueForKey:@"averageHeartRate"] intValue]);
-            sqlite3_bind_int   (lapStmt,15, [lap respondsToSelector:@selector(maxHeartRate)] ? [lap maxHeartRate] : [[lap valueForKey:@"maxHeartRate"] intValue]);
-            sqlite3_bind_int   (lapStmt,16, [lap respondsToSelector:@selector(averageCadence)] ? [lap averageCadence] : [[lap valueForKey:@"averageCadence"] intValue]);
-            sqlite3_bind_int   (lapStmt,17, [lap respondsToSelector:@selector(maxCadence)] ? [lap maxCadence] : [[lap valueForKey:@"maxCadence"] intValue]);
-            sqlite3_bind_int   (lapStmt,18, [lap respondsToSelector:@selector(calories)] ? [lap calories] : [[lap valueForKey:@"calories"] intValue]);
-            sqlite3_bind_int   (lapStmt,19, [lap respondsToSelector:@selector(intensity)] ? [lap intensity] : [[lap valueForKey:@"intensity"] intValue]);
-            sqlite3_bind_int   (lapStmt,20, [lap respondsToSelector:@selector(triggerMethod)] ? [lap triggerMethod] : [[lap valueForKey:@"triggerMethod"] intValue]);
-            sqlite3_bind_int   (lapStmt,21, [lap respondsToSelector:@selector(selected)] ? [lap selected] : [[lap valueForKey:@"selected"] boolValue]);
-            sqlite3_bind_int   (lapStmt,22, [lap respondsToSelector:@selector(statsCalculated)] ? [lap statsCalculated] : [[lap valueForKey:@"statsCalculated"] boolValue]);
-            if (sqlite3_step(lapStmt) != SQLITE_DONE) { /* handle or continue */ }
-            sqlite3_reset(lapStmt);
-        }
-        sqlite3_finalize(lapStmt);
-    }
-
-    // Insert points (ordered)
-    if ([points isKindOfClass:[NSArray class]] && points.count) {
-        const char *insPt =
-          "INSERT INTO points (track_id,seq,wall_clock_delta_s,active_time_delta_s,latitude,longitude,"
-          " altitude_m,orig_altitude_m,heartrate_bpm,cadence_rpm,temperature_c,speed_mps,power_w,"
-          " distance_mi,orig_distance_mi,gradient,climb_so_far_m,descent_so_far_m,flags,valid_lat_lon)"
-          " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
-        sqlite3_stmt *ptStmt = NULL;
-        sqlite3_prepare_v2(_db, insPt, -1, &ptStmt, NULL);
-        NSInteger seq = 0;
-        for (TrackPoint* p in points) {
-            sqlite3_bind_int64 (ptStmt, 1, trackID);
-            sqlite3_bind_int   (ptStmt, 2, (int)seq++);
-
-            sqlite3_bind_double(ptStmt, 3, [p respondsToSelector:@selector(wallClockDelta)] ? [p wallClockDelta] : [[p valueForKey:@"wallClockDelta"] doubleValue]);
-            sqlite3_bind_double(ptStmt, 4, [p respondsToSelector:@selector(activeTimeDelta)] ? [p activeTimeDelta] : [[p valueForKey:@"activeTimeDelta"] doubleValue]);
-            sqlite3_bind_double(ptStmt, 5, [p respondsToSelector:@selector(latitude)] ? [p latitude] : [[p valueForKey:@"latitude"] doubleValue]);
-            sqlite3_bind_double(ptStmt, 6, [p respondsToSelector:@selector(longitude)] ? [p longitude] : [[p valueForKey:@"longitude"] doubleValue]);
-            sqlite3_bind_double(ptStmt, 7, [p respondsToSelector:@selector(altitude)] ? [p altitude] : [[p valueForKey:@"altitude"] doubleValue]);
-            sqlite3_bind_double(ptStmt, 8, [p respondsToSelector:@selector(origAltitude)] ? [p origAltitude] : [[p valueForKey:@"origAltitude"] doubleValue]);
-            sqlite3_bind_double(ptStmt, 9, [p respondsToSelector:@selector(heartrate)] ? [p heartrate] : [[p valueForKey:@"heartrate"] doubleValue]);
-            sqlite3_bind_double(ptStmt,10, [p respondsToSelector:@selector(cadence)] ? [p cadence] : [[p valueForKey:@"cadence"] doubleValue]);
-            sqlite3_bind_double(ptStmt,11, [p respondsToSelector:@selector(temperature)] ? [p temperature] : [[p valueForKey:@"temperature"] doubleValue]);
-            sqlite3_bind_double(ptStmt,12, [p respondsToSelector:@selector(speed)] ? [p speed] : [[p valueForKey:@"speed"] doubleValue]);
-            sqlite3_bind_double(ptStmt,13, [p respondsToSelector:@selector(power)] ? [p power] : [[p valueForKey:@"power"] doubleValue]);
-            sqlite3_bind_double(ptStmt,14, [p respondsToSelector:@selector(distance)] ? [p distance] : [[p valueForKey:@"distance"] doubleValue]);
-            sqlite3_bind_double(ptStmt,15, [p respondsToSelector:@selector(origDistance)] ? [p origDistance] : [[p valueForKey:@"origDistance"] doubleValue]);
-            sqlite3_bind_double(ptStmt,16, [p respondsToSelector:@selector(gradient)] ? [p gradient] : [[p valueForKey:@"gradient"] doubleValue]);
-            sqlite3_bind_double(ptStmt,17, [p respondsToSelector:@selector(climbSoFar)] ? [p climbSoFar] : [[p valueForKey:@"climbSoFar"] doubleValue]);
-            sqlite3_bind_double(ptStmt,18, [p respondsToSelector:@selector(descentSoFar)] ? [p descentSoFar] : [[p valueForKey:@"descentSoFar"] doubleValue]);
-            int flags = [[p valueForKey:@"flags"] intValue];
-            sqlite3_bind_int   (ptStmt,19, flags);
-            int vll = [p respondsToSelector:@selector(validLatLon)] ? ([p validLatLon] ? 1 : 0) : ([[p valueForKey:@"validLatLon"] boolValue] ? 1 : 0);
-            sqlite3_bind_int   (ptStmt,20, vll);
-
-            if (sqlite3_step(ptStmt) != SQLITE_DONE) { /* handle or continue */ }
-            sqlite3_reset(ptStmt);
-        }
-        sqlite3_finalize(ptStmt);
-    }
-
-    sqlite3_exec(_db, "COMMIT;", NULL, NULL, NULL);
-    return YES;
-
-//fail:
-//    if (act) sqlite3_finalize(act);
-//    if (error) *error = [NSError errorWithDomain:@"ActivityStore" code:sqlite3_errcode(_db)
-//        userInfo:@{NSLocalizedDescriptionKey: @(sqlite3_errmsg(_db) ?: "saveTrack failed")}];
-//    return NO;
-}
-
-#endif
-
-- (BOOL)saveAllTracks:(NSArray<Track *> *)tracks error:(NSError **)error {
+- (BOOL)saveAllTracks:(NSArray *)tracks
+                error:(NSError **)error
+        progressBlock:(ASProgress)progress
+{
     if (tracks.count == 0) return YES;
-
+    NSUInteger numTracks = tracks.count;
+    
     NSUInteger idx = 0;
     for (Track *t in tracks) {
+        if (progress)
+            progress(idx, numTracks);
+        
         NSError *err = nil;
         if (![self saveTrack:t error:&err]) {
             if (error) {
@@ -1006,17 +791,16 @@ fail:
 
 
 #pragma mark - Load
-
-- (BOOL)loadMetaToTableInfo:(NSDictionary<NSString*,ColumnInfo*> * *)outTableInfo
-            splitsTableInfo:(NSDictionary<NSString*,ColumnInfo*> * *)outSplitsTableInfo
-                       uuid:(NSString* *)outUuid
-                  startDate:(NSDate * *)outStartTime
-                    endDate:(NSDate * *)outEndTime
-                      flags:(NSInteger *)outFlags
-                       int2:(NSInteger *)outI2
-                       int3:(NSInteger *)outI3
-                       int4:(NSInteger *)outI4
-                      error:(NSError **)error
+- (BOOL)loadMetaTableInfo:(NSDictionary<NSString*, ColumnInfo*> * _Nullable __autoreleasing * _Nullable)outTableInfo
+          splitsTableInfo:(NSDictionary<NSString*, ColumnInfo*> * _Nullable __autoreleasing * _Nullable)outSplitsTableInfo
+                     uuid:(NSString * _Nullable __autoreleasing * _Nullable)outUuid
+                startDate:(NSDate * _Nullable __autoreleasing * _Nullable)outStartTime
+                  endDate:(NSDate * _Nullable __autoreleasing * _Nullable)outEndTime
+                    flags:(NSInteger * _Nullable)outFlags
+              totalTracks:(NSInteger * _Nullable)outTotalTracks
+                     int3:(NSInteger * _Nullable)outI3
+                     int4:(NSInteger * _Nullable)outI4
+                    error:(NSError * _Nullable __autoreleasing * _Nullable)error;
 {
     // fixme - move to common place
     // Helper: run SQL, optionally strict (fail) vs tolerant (ignore errors like "duplicate column")
@@ -1041,7 +825,7 @@ fail:
     };
 
     const char *sql =
-      "SELECT uuid_s, tableInfo_json, splitsTableInfo_json, startTime_s, endTime_s, flags, int2, int3, int4 "
+      "SELECT id, uuid_s, tableInfo_json, splitsTableInfo_json, startDate_s, endDate_s, flags, totalTracks, int3, int4 "
       "FROM meta WHERE id=1;";
 
     sqlite3_stmt *st = NULL;
@@ -1050,15 +834,25 @@ fail:
 
     BOOL ok = NO;
     if (sqlite3_step(st) == SQLITE_ROW) {
+        
+        int n = sqlite3_column_count(st);
+        for (int i = 0; i < n; i++) {
+            const char *name = sqlite3_column_name(st, i);
+            const unsigned char *txt = sqlite3_column_text(st, i);
+            NSLog(@"col[%d] name=%s value(sample)=%s",
+                  i, name ? name : "(null)", txt ? (const char*)txt : "(NULL)");
+        }
+        
+        
         if (outUuid) *outUuid = [NSString stringWithUTF8String:(const char *)sqlite3_column_text(st,1)];
+        const unsigned char *txt1 = sqlite3_column_text(st, 2);
         if (outTableInfo) *outTableInfo = ColumnInfoDictFromJSONText(sqlite3_column_text(st, 2));
+        const unsigned char *txt2 = sqlite3_column_text(st, 3);
         if (outSplitsTableInfo) *outSplitsTableInfo = ColumnInfoDictFromJSONText(sqlite3_column_text(st, 3));
-
         if (outStartTime) *outStartTime = DateFromEpoch(sqlite3_column_int64(st, 4));
         if (outEndTime) *outEndTime = DateFromEpoch(sqlite3_column_int64(st, 5));
-
         if (outFlags) *outFlags = sqlite3_column_int(st, 6);
-        if (outI2) *outI2 = sqlite3_column_int(st, 7);
+        if (outTotalTracks) *outTotalTracks = sqlite3_column_int(st, 7);
         if (outI3) *outI3 = sqlite3_column_int(st, 8);
         if (outI4) *outI4 = sqlite3_column_int(st, 9);
 
@@ -1073,7 +867,7 @@ fail:
         if (outStartTime) *outStartTime = nil;
         if (outEndTime) *outEndTime = nil;
         if (outFlags) *outFlags = 0;
-        if (outI2) *outI2 = 0;
+        if (outTotalTracks) *outTotalTracks = 0;
         if (outI3) *outI3 = 0;
         if (outI4) *outI4 = 0;
         return YES;
@@ -1085,15 +879,17 @@ fail:
 
 
 
-- (NSArray<Track *> *)loadAllTracks:(NSError **)error {
+- (NSArray<Track *> *)loadAllTracks:(NSError **)error totalTracks:(NSInteger) tt progressBlock:(ASProgress)progress
+{
     NSMutableArray *out = [NSMutableArray array];
 
     const char *selA =
       "SELECT id,uuid,name,creation_time_s,creation_time_override_s,"
       " distance_mi,weight_lb,altitude_smooth_factor,equipment_weight_lb,"
       " device_total_time_s,moving_speed_only,has_distance_data,"
-      " attributes_json, markers_json, override_json "
-      "FROM activities ORDER BY creation_time_s;";
+      " attributes_json, markers_json, override_json,"
+      " seconds_from_gmt_at_sync, flags, device_id, firmware_version"
+      " FROM activities ORDER BY creation_time_s;";
 
     sqlite3_stmt *a = NULL;
     if (sqlite3_prepare_v2(_db, selA, -1, &a, NULL) != SQLITE_OK) {
@@ -1101,8 +897,12 @@ fail:
             userInfo:@{NSLocalizedDescriptionKey: @(sqlite3_errmsg(_db) ?: "load prepare failed")}];
         return out;
     }
-
+    int idx = 0;
+    NSInteger total = tt;
     while (sqlite3_step(a) == SQLITE_ROW) {
+        if (progress)
+            progress(idx++, total);
+        
         sqlite3_int64 trackID = sqlite3_column_int64(a, 0);
 
         Track *t = [Track new];
@@ -1124,6 +924,7 @@ fail:
         if ([t respondsToSelector:@selector(setCreationTime:)]) [t setCreationTime:ct]; else [t setValue:ct forKey:@"creationTime"];
         if ([t respondsToSelector:@selector(setCreationTimeOverride:)]) [t setCreationTimeOverride:cto]; else [t setValue:cto forKey:@"creationTimeOverride"];
         if ([t respondsToSelector:@selector(setDistance:)]) [t setDistance:dist]; else [t setValue:@(dist) forKey:@"distance"];
+        if ([t respondsToSelector:@selector(setOrigDistance:)]) [t setOrigDistance:dist]; else [t setValue:@(dist) forKey:@"distance"];
         if ([t respondsToSelector:@selector(setWeight:)]) [t setWeight:wt]; else [t setValue:@(wt) forKey:@"weight"];
         if ([t respondsToSelector:@selector(setAltitudeSmoothingFactor:)]) [t setAltitudeSmoothingFactor:asf];
         if ([t respondsToSelector:@selector(setEquipmentWeight:)])       [t setEquipmentWeight:eqw];
@@ -1150,7 +951,16 @@ fail:
                 @try { [t setValue:od forKey:@"overrideData"]; } @catch (__unused id e) {}
             }
         }
-
+        
+        //" seconds_from_gmt_at_sync INTEGER,"   /* NEW */
+        //" flags INTEGER,"                      /* NEW */
+        //" device_id INTEGER,"                  /* NEW */
+        //" firmware_version INTEGER"            /* NEW */
+        NSInteger secs = sqlite3_column_int(a,15)!=0;
+        NSInteger flags = sqlite3_column_int(a,16)!=0;
+        if ([t respondsToSelector:@selector(setSecondsFromGMTAtSync:)] )    [t setSecondsFromGMTAtSync:(int)secs];
+        if ([t respondsToSelector:@selector(setFlags:)])   [t setFlags:(int)flags];
+            
         // Laps
         NSMutableArray *laps = [NSMutableArray array];
         sqlite3_stmt *l = NULL;
@@ -1203,20 +1013,19 @@ fail:
                 [tp setActiveTimeDelta:sqlite3_column_double(p,1)];
                 [tp setLatitude:sqlite3_column_double(p,2)];
                 [tp setLongitude:sqlite3_column_double(p,3)];
-                //[tp setAltitude:sqlite3_column_double(p,4)];
-                [tp setOrigAltitude:sqlite3_column_double(p,5)];
-                [tp setHeartrate:sqlite3_column_double(p,6)];
-                [tp setCadence:sqlite3_column_double(p,7)];
-                [tp setTemperature:sqlite3_column_double(p,8)];
-                [tp setSpeed:sqlite3_column_double(p,9)];
-                [tp setPower:sqlite3_column_double(p,10)];
-                //[tp setDistance:sqlite3_column_double(p,11)];
-                [tp setOrigDistance:sqlite3_column_double(p,12)];
-                //[tp setGradient:sqlite3_column_double(p,13)];
-                //[tp setClimbSoFar:sqlite3_column_double(p,14)];
-                //[tp setDescentSoFar:sqlite3_column_double(p,15)];
-                [tp setValue:@(sqlite3_column_int(p,16)) forKey:@"flags"];
-                [tp setValidLatLon:(sqlite3_column_int(p,17)!=0)];
+                double alt = sqlite3_column_double(p,4);
+                [tp setAltitude:alt];
+                [tp setOrigAltitude:alt];
+                [tp setHeartrate:sqlite3_column_double(p,5)];
+                [tp setCadence:sqlite3_column_double(p,6)];
+                [tp setTemperature:sqlite3_column_double(p,7)];
+                [tp setSpeed:sqlite3_column_double(p,8)];
+                [tp setPower:sqlite3_column_double(p,9)];
+                double dist = sqlite3_column_double(p,10);
+                [tp setDistance:dist];
+                [tp setOrigDistance:dist];
+                int flags = sqlite3_column_int(p,11);
+                [tp setFlags:flags];
                 [points addObject:tp];
             }
             sqlite3_finalize(p);
@@ -1225,8 +1034,10 @@ fail:
         [t setValue:laps   forKey:@"laps"];
         [t setValue:points forKey:@"points"];
         [out addObject:t];
+        [t fixupTrack];
     }
     sqlite3_finalize(a);
+ 
     return out;
 }
 

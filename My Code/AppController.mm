@@ -310,6 +310,7 @@ void setColorDefault(NSMutableDictionary* dict,
 
 // AppDelegate.m
 - (IBAction)openTheDocument:(id)sender {
+    NSLog(@"DocTypes = %@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDocumentTypes"]);
     [[NSDocumentController sharedDocumentController] openDocument:sender];
 }
 
@@ -335,6 +336,12 @@ void setColorDefault(NSMutableDictionary* dict,
    NSDocumentController *dc;
    dc = [NSDocumentController sharedDocumentController];
    [dc newDocument:self];
+}
+
+-(IBAction)saveADocument:(id)sender
+{
+    
+    
 }
 
 
@@ -510,16 +517,27 @@ void setColorDefault(NSMutableDictionary* dict,
 	{
 	   @try
 	   {
-			NSURL *fileURL=[NSUnarchiver unarchiveObjectWithData:  fileURLData];
+			NSURL *fileURL = [NSUnarchiver unarchiveObjectWithData:  fileURLData];
 			[fileURLData autorelease];
 			fileURLData = nil;
 #ifdef _DEBUG
 		   NSLog(@"OPENING LAST FILE...");
 #endif
-		   initialDocument = [[NSDocumentController sharedDocumentController]  
-								openDocumentWithContentsOfURL:fileURL
-														display:YES
-														error:&error];
+           // NEW (async, preferred)
+           [[NSDocumentController sharedDocumentController]
+               openDocumentWithContentsOfURL:fileURL
+                                     display:YES
+                           completionHandler:^(NSDocument *doc,
+                                               BOOL documentWasAlreadyOpen,
+                                               NSError *error)
+           {
+               if (error) {
+                   // present the error
+                   [[NSApplication sharedApplication] presentError:error];
+                   return;
+               }
+               // success: doc is opened; do any post-open work here
+           }];
 #ifdef _DEBUG
 		   NSLog(@"DONE");
 #endif

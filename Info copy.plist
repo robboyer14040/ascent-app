@@ -2,30 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>English</string>
-	<key>CFBundleExecutable</key>
-	<string>${EXECUTABLE_NAME}</string>
-	<key>CFBundleGetInfoString</key>
-	<string>Ascent version ${APPLICATION_VERSION}</string>
-	<key>CFBundleIconFile</key>
-	<string>Ascent.icns</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.montebellosoftware.ascent</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>Ascent</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>${APPLICATION_VERSION}</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>${CURRENT_PROJECT_VERSION}</string>
-	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>
@@ -39,80 +15,62 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
-			<key>CFBundleTypeName</key>
-			<string>Ascent Activity Group</string>
-			<key>LSItemContentTypes</key>
+			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>com.montebellosoftware.ascent.tlp</string>
+				<string>tlp</string>
+				<string>sql</string>
 			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Ascent_Doc.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>ActivityGroup</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
-			<key>LSHandlerRank</key>
-			<string>Owner</string>
+			<key>LSTypeIsPackage</key>
+			<true/>
 			<key>NSDocumentClass</key>
 			<string>TrackBrowserDocument</string>
-		</dict>
-		<dict>
-			<key>CFBundleTypeName</key>
-			<string>Ascent Database</string>
-			<key>LSItemContentTypes</key>
-			<array>
-				<string>com.montebellosoftware.ascent.ascentdb</string>
-			</array>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>LSHandlerRank</key>
-			<string>Owner</string>
-			<key>NSDocumentClass</key>
-			<string>TrackBrowserDocument</string>
+			<key>NSPersistentStoreTypeKey</key>
+			<string>Binary</string>
 		</dict>
 	</array>
-	<key>UTExportedTypeDeclarations</key>
-	<array>
-		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>com.montebellosoftware.ascent.tlp</string>
-			<key>UTTypeDescription</key>
-			<string>Ascent Activity Group</string>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>tlp</string>
-				</array>
-				<key>public.mime-type</key>
-				<string>application/vnd.ascent.tlp</string>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>com.montebellosoftware.ascent.db</string>
-			<key>UTTypeDescription</key>
-			<string>Ascent Database</string>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>ascentdb</string>
-				</array>
-				<key>public.mime-type</key>
-				<string>application/vnd.ascent.ascentdb</string>
-			</dict>
-		</dict>
-	</array>
-	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<true/>
+	<key>CFBundleExecutable</key>
+	<string>${EXECUTABLE_NAME}</string>
+	<key>CFBundleGetInfoString</key>
+	<string>Ascent version ${APPLICATION_VERSION}, ©Montebello Software, 2011</string>
+	<key>CFBundleHelpBookFolder</key>
+	<string>Ascent Help</string>
+	<key>CFBundleHelpBookName</key>
+	<string>Ascent Help</string>
+	<key>CFBundleIconFile</key>
+	<string>Ascent Icon</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.montebellosoftware.ascent</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>${PRODUCT_NAME}</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>${APPLICATION_VERSION}</string>
+	<key>CFBundleSignature</key>
+	<string>mbsw</string>
+	<key>CFBundleURLTypes</key>
+	<array/>
+	<key>CFBundleVersion</key>
+	<string>${APPLICATION_VERSION}</string>
+	<key>NSMainNibFile</key>
+	<string>MainMenu</string>
+	<key>NSPrincipalClass</key>
+	<string>OAApplication</string>
+	<key>NSServices</key>
+	<array/>
 	<key>OFRegistrations</key>
 	<dict>
 		<key>OAPreferenceController</key>
@@ -663,5 +621,11 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>SUCheckAtStartup</key>
+	<false/>
+	<key>UTExportedTypeDeclarations</key>
+	<array/>
+	<key>UTImportedTypeDeclarations</key>
+	<array/>
 </dict>
 </plist>

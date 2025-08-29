@@ -32,6 +32,7 @@ struct tORData
 	numStats = 0;
 	data = 0;
 	overrideBits = 0;
+    data = (struct tORData*)calloc(kST_NumStats, sizeof(struct tORData));
 	return self;
 }
 
@@ -56,8 +57,10 @@ struct tORData
 	// CODE HERE ASSUMES that we always add new stats, never remove old ones!!
 	//if (IS_BETWEEN(1, numStats, kST_NumStats))
 	{
-		data = (struct tORData*)calloc(kST_NumStats, sizeof(struct tORData));
-		for (int i=0; i<numStats; i++)
+        if (!data)
+            data = (struct tORData*)calloc(kST_NumStats, sizeof(struct tORData));
+		
+        for (int i=0; i<numStats; i++)
 		{
 			for (int j=0; j<kNumValsPerOverrideEntry; j++)
 			{
@@ -123,18 +126,27 @@ struct tORData
 
 -(void) setValue:(int)stat index:(int)idx value:(float)v
 {
-	if (numStats <= 0)
+    if (!data)
+        data = (struct tORData*)calloc(kST_NumStats, sizeof(struct tORData));
+
+    if (numStats <= 0)
 	{
 		numStats = kST_NumStats;
-		data = (struct tORData*)calloc(kST_NumStats, sizeof(struct tORData));
 	}
 	if (idx < kST_NumStats) 
 	{
-		assert(stat < kST_NumStats);		
-		assert(idx < kNumValsPerOverrideEntry);		
-		data[stat].vals[idx] = v;
-		assert(stat < (sizeof(int)*8));		// can only override up to 31 fields!
-		SET_FLAG(overrideBits, (1<<stat));
+        if (data)
+        {
+            assert(stat < kST_NumStats);
+            assert(idx < kNumValsPerOverrideEntry);
+            data[stat].vals[idx] = v;
+            assert(stat < (sizeof(int)*8));		// can only override up to 31 fields!
+            SET_FLAG(overrideBits, (1<<stat));
+        }
+        else
+        {
+            NSLog(@"OverrideData has NULL data");
+        }
 	}
 }
 

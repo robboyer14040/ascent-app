@@ -35,7 +35,7 @@
 @class SGWindowController;
 @class EquipmentBoxView;
 @class TextViewWithPlaceholder;
-
+@class EditNotesController;
 
 enum
 {
@@ -166,7 +166,7 @@ enum
 
 	IBOutlet BrowserColumnsWindowController*  browserColumnsWC;
 	IBOutlet CustomSplitDistanceController*	  customSplitDistanceWC;
-	//IBOutlet EditNotesController*    editNotesWC;
+	IBOutlet EditNotesController*    editNotesWC;
 	  
 	IBOutlet NSTabView*             mainBrowserTabView;
 	IBOutlet NSTabView*             infoStatsTabView;

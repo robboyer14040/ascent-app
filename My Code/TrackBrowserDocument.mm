@@ -62,15 +62,7 @@
     TrackBrowserData *_stagedBrowserData;   // parsed off-main, consumed by readFromURL:
 }
 @property (nonatomic, strong) NSURL *stagedExportURL; // temp file we built
-- (TrackBrowserData *)_parseDocumentAtURL:(NSURL *)url
-                                   ofType:(NSString *)typeName
-                                 progress:(ASProgress)progress
-                                    error:(NSError **)outError
-                                              error:(NSError **)outError;
-- (NSURL *)_exportDocumentToTemporaryURLWithProgress:(ASProgress)progress;
-- (void)revertToContentsOfURL:(NSURL *)url
-                       ofType:(NSString *)typeName
-            completionHandler:(void (^)(NSError * _Nullable error))handler;
+- (NSURL *)_exportDocumentToTemporaryURLWithProgress:(ASProgress)progress error:(NSError **)outError;
 -(BOOL)loadDatabaseFile:(NSURL*)url progress:(ASProgress)progress;
 // Shim so this compiles even if your SDK doesn’t declare the async read yet
 @end
@@ -123,7 +115,6 @@ enum
 -(void)setFlags:(int)flgs;
 -(void)setStartEndDateArray:(NSArray*)arr;
 -(void)storeMetaData:(ActivityStore*)store;
--(void)loadMetaStuffUsingStore:(ActivityStore*) store;
 @end
 
 @implementation TrackBrowserData
@@ -2086,7 +2077,9 @@ deviceIsPluggedIn:YES];
 
 
 
-#pragma mark - Async Read (preferred)
+#pragma mark - Async Read (preferred) doesn't seem to work, the'completionHandler' version below is never called
+
+// these 'canAsynchronouslyRead' methods are also never called currently.
 - (BOOL)canAsynchronouslyReadFromURL:(NSURL *)url ofType:(NSString *)typeName {
     return YES;
 }
@@ -2535,7 +2528,7 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
 }
 
 - (NSURL *)_exportDocumentToTemporaryURLWithProgress:(ASProgress)progress
-                                              error:(NSError **)outError
+                                               error:(NSError **)outError
 {
     NSURL *tmpDir = [NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES];
     NSURL *tmpURL = [tmpDir URLByAppendingPathComponent:[[NSUUID UUID].UUIDString stringByAppendingPathExtension:@"ascentdb"]];
@@ -3665,5 +3658,8 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 	return [browserData startEndDateArray];
 }
 
++ (BOOL)autosavesInPlace {
+    return YES;  // opt in
+}
 
 @end

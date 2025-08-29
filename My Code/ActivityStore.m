@@ -835,6 +835,7 @@ fail:
     BOOL ok = NO;
     if (sqlite3_step(st) == SQLITE_ROW) {
         
+#if 0
         int n = sqlite3_column_count(st);
         for (int i = 0; i < n; i++) {
             const char *name = sqlite3_column_name(st, i);
@@ -842,7 +843,7 @@ fail:
             NSLog(@"col[%d] name=%s value(sample)=%s",
                   i, name ? name : "(null)", txt ? (const char*)txt : "(NULL)");
         }
-        
+#endif
         
         if (outUuid) *outUuid = [NSString stringWithUTF8String:(const char *)sqlite3_column_text(st,1)];
         const unsigned char *txt1 = sqlite3_column_text(st, 2);

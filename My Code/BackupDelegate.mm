@@ -256,26 +256,50 @@ static int compress(NSString* sourcePath, NSString* destPath)
 
 -(void)dealloc
 {
+    [super dealloc];
 }
 
 
 
-- (void)fileManager:(NSFileManager *)manager willProcessPath:(NSString *)path
+- (BOOL)fileManager:(NSFileManager *)fm
+shouldProceedAfterError:(NSError *)error
+ copyingItemAtURL:(NSURL *)srcURL
+             toURL:(NSURL *)dstURL
 {
+    NSLog(@"Copy error %@ → %@: %@", srcURL, dstURL, error);
+    // return YES to keep going, NO to abort the operation
+    return NO;
 }
 
 
-- (BOOL)fileManager:(NSFileManager *)manager shouldProceedAfterError:(NSDictionary *)errorInfo
+// Move
+- (BOOL)fileManager:(NSFileManager *)fm
+shouldProceedAfterError:(NSError *)error
+  movingItemAtURL:(NSURL *)srcURL
+            toURL:(NSURL *)dstURL
 {
-#if ENABLE_LOGGING
-	NSLog(@"BACKUP failed, error: %@  path: %@  toPath: %@", 
-		  [errorInfo objectForKey:@"Error"],
-		  [errorInfo objectForKey:@"Path"],
-		  [errorInfo objectForKey:@"ToPath"]);
-#endif
-	return NO;
+    NSLog(@"Move error %@ → %@: %@", srcURL, dstURL, error);
+    return NO;
 }
 
+// Remove
+- (BOOL)fileManager:(NSFileManager *)fm
+shouldProceedAfterError:(NSError *)error
+ removingItemAtURL:(NSURL *)url
+{
+    NSLog(@"Remove error %@: %@", url, error);
+    return NO;
+}
+
+// Link (if you use it)
+- (BOOL)fileManager:(NSFileManager *)fm
+shouldProceedAfterError:(NSError *)error
+  linkingItemAtURL:(NSURL *)srcURL
+             toURL:(NSURL *)dstURL
+{
+    NSLog(@"Link error %@ → %@: %@", srcURL, dstURL, error);
+    return NO;
+}
 
 
 -(void)trimBackups:(NSString*)folder baseFileName:(NSString*)baseFileName retainCount:(int)retainCount
@@ -283,7 +307,7 @@ static int compress(NSString* sourcePath, NSString* destPath)
 	NSFileManager* fm = [NSFileManager defaultManager];
 	NSArray* fileArray = [fm contentsOfDirectoryAtPath:folder
 												 error:NULL];
-	int count = [fileArray count];
+    NSUInteger count = [fileArray count];
 	NSMutableArray* marr = [NSMutableArray arrayWithCapacity:count];
 	for (int i=0; i<count; i++)
 	{

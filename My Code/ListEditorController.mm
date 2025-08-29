@@ -50,10 +50,11 @@
 
 - (void) dealloc
 {
+    [super dealloc];
 }
 
 
-- (void)editColumn:(int)column row:(int)row withEvent:(NSEvent *)theEvent
+- (void)editColumn:(NSInteger)column row:(NSInteger)row withEvent:(NSEvent *)theEvent
             select:(BOOL)select
 {
    //    Extend the life....

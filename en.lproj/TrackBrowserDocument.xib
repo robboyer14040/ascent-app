@@ -24,7 +24,7 @@
                 <outlet property="detailedMapButtonView" destination="1948" id="1951"/>
                 <outlet property="dispositionPopup" destination="2439" id="2473"/>
                 <outlet property="editActivityName" destination="2326" id="2330"/>
-                <outlet property="editNotesWC" destination="926" id="1840"/>
+                <outlet property="editNotesWC" destination="926" id="wGN-Uk-7el"/>
                 <outlet property="editWeightField" destination="2486" id="2518"/>
                 <outlet property="effortPopup" destination="2440" id="2474"/>
                 <outlet property="equipmentBox" destination="2396" id="2397"/>
@@ -195,12 +195,6 @@ DQ
             </connections>
             <point key="canvasLocation" x="-92" y="614"/>
         </window>
-        <customObject id="926" userLabel="EditNotesController" customClass="EditNotesController">
-            <connections>
-                <outlet property="textView" destination="923" id="929"/>
-                <outlet property="window" destination="920" id="930"/>
-            </connections>
-        </customObject>
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" visibleAtLaunch="NO" animationBehavior="default" id="1245" userLabel="Window" customClass="TBWindow">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" texturedBackground="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
@@ -550,7 +544,7 @@ DQ
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                                                             <clipView key="contentView" id="Ua7-Pe-iQ3">
                                                                                 <rect key="frame" x="2" y="2" width="410" height="67"/>
-                                                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                                <autoresizingMask key="autoresizingMask"/>
                                                                                 <subviews>
                                                                                     <textView importsGraphics="NO" horizontallyResizable="YES" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" linkDetection="YES" spellingCorrection="YES" smartInsertDelete="YES" id="2403" customClass="TextViewWithPlaceholder">
                                                                                         <rect key="frame" x="0.0" y="0.0" width="410" height="67"/>
@@ -1118,6 +1112,12 @@ DQ
             </subviews>
             <point key="canvasLocation" x="-509" y="197"/>
         </customView>
+        <customObject id="926" userLabel="EditNotesController" customClass="EditNotesController">
+            <connections>
+                <outlet property="textView" destination="923" id="929"/>
+                <outlet property="window" destination="920" id="930"/>
+            </connections>
+        </customObject>
         <menu title="Menu" id="1959" userLabel="Template2">
             <items>
                 <menuItem title="Item" tag="1001" id="1960"/>

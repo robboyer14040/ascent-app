@@ -10,7 +10,7 @@
 #import "Defs.h"
 
 @implementation TransparentMapWindow
-- (id)initWithContentRect:(NSRect)contentRect styleMask:(unsigned int)aStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag 
+- (id)initWithContentRect:(NSRect)contentRect styleMask:(NSWindowStyleMask)aStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag 
 {
 	//Call NSWindow's version of this function, but pass in the all-important value of NSBorderlessWindowMask
 	//for the styleMask so that the window doesn't have a title bar

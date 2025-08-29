@@ -2,30 +2,43 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>English</string>
-	<key>CFBundleExecutable</key>
-	<string>${EXECUTABLE_NAME}</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Ascent Database</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.montebellosoftware.ascent.db</string>
+			</array>
+			<key>NSDocumentClass</key>
+			<string>TrackBrowserDocument</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Ascent Activity Group</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.montebellosoftware.ascent.tlp</string>
+			</array>
+			<key>NSDocumentClass</key>
+			<string>TrackBrowserDocument</string>
+		</dict>
+	</array>
 	<key>CFBundleGetInfoString</key>
 	<string>Ascent version ${APPLICATION_VERSION}</string>
 	<key>CFBundleIconFile</key>
 	<string>Ascent.icns</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.montebellosoftware.ascent</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>Ascent</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>${APPLICATION_VERSION}</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>${CURRENT_PROJECT_VERSION}</string>
-	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>
@@ -39,80 +52,6 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>CFBundleDocumentTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeName</key>
-			<string>Ascent Activity Group</string>
-			<key>LSItemContentTypes</key>
-			<array>
-				<string>com.montebellosoftware.ascent.tlp</string>
-			</array>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>LSHandlerRank</key>
-			<string>Owner</string>
-			<key>NSDocumentClass</key>
-			<string>TrackBrowserDocument</string>
-		</dict>
-		<dict>
-			<key>CFBundleTypeName</key>
-			<string>Ascent Database</string>
-			<key>LSItemContentTypes</key>
-			<array>
-				<string>com.montebellosoftware.ascent.ascentdb</string>
-			</array>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>LSHandlerRank</key>
-			<string>Owner</string>
-			<key>NSDocumentClass</key>
-			<string>TrackBrowserDocument</string>
-		</dict>
-	</array>
-	<key>UTExportedTypeDeclarations</key>
-	<array>
-		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>com.montebellosoftware.ascent.tlp</string>
-			<key>UTTypeDescription</key>
-			<string>Ascent Activity Group</string>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>tlp</string>
-				</array>
-				<key>public.mime-type</key>
-				<string>application/vnd.ascent.tlp</string>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>com.montebellosoftware.ascent.db</string>
-			<key>UTTypeDescription</key>
-			<string>Ascent Database</string>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>ascentdb</string>
-				</array>
-				<key>public.mime-type</key>
-				<string>application/vnd.ascent.ascentdb</string>
-			</dict>
-		</dict>
-	</array>
-	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<true/>
 	<key>OFRegistrations</key>
 	<dict>
 		<key>OAPreferenceController</key>
@@ -126,7 +65,7 @@
 					<key>CalculatePowerIfAbsent</key>
 					<true/>
 					<key>DefaultAltitudeFilter</key>
-					<real>4.74</real>
+					<real>4.7400000000000002</real>
 					<key>DefaultAltitudeSmoothingPercentage</key>
 					<real>50</real>
 					<key>DefaultAnimFrameRate</key>
@@ -148,14 +87,14 @@
 				</dict>
 				<key>icon</key>
 				<string>apps</string>
+				<key>identifier</key>
+				<string>com.mbs.Advanced</string>
 				<key>nib</key>
 				<string>PrefsAdvanced</string>
 				<key>ordering</key>
 				<integer>80</integer>
 				<key>title</key>
 				<string>Advanced</string>
-				<key>identifier</key>
-				<string>com.mbs.Advanced</string>
 			</dict>
 			<key>PrefsAppearance</key>
 			<dict>
@@ -166,7 +105,7 @@
 					<key>DefaultAltitudeColor</key>
 					<string>0 0.238 1.0</string>
 					<key>DefaultAnimPanelTransparency</key>
-					<real>0.8</real>
+					<real>0.80000000000000004</real>
 					<key>DefaultBackgroundColor</key>
 					<string>0.867 0.867 0.867</string>
 					<key>DefaultBrowserActivityColor</key>
@@ -194,9 +133,9 @@
 					<key>DefaultLapColor</key>
 					<string>.898 .898 0</string>
 					<key>DefaultMapTransparency</key>
-					<real>0.85</real>
+					<real>0.84999999999999998</real>
 					<key>DefaultMarkersPanelTransparency</key>
-					<real>0.8</real>
+					<real>0.80000000000000004</real>
 					<key>DefaultMovingDurationColor</key>
 					<string>.50 .31 .31</string>
 					<key>DefaultMovingPaceColor</key>
@@ -208,7 +147,7 @@
 					<key>DefaultPathColor</key>
 					<string>.98 0 0</string>
 					<key>DefaultPathTransparency</key>
-					<real>0.9</real>
+					<real>0.90000000000000002</real>
 					<key>DefaultPowerColor</key>
 					<string>0.6 0.5 0.4</string>
 					<key>DefaultSpeedColor</key>
@@ -222,14 +161,14 @@
 				</dict>
 				<key>icon</key>
 				<string>ColorPreferences</string>
+				<key>identifier</key>
+				<string>com.mbs.Appearance</string>
 				<key>nib</key>
 				<string>PrefsAppearance</string>
 				<key>ordering</key>
 				<integer>30</integer>
 				<key>title</key>
 				<string>Appearance</string>
-				<key>identifier</key>
-				<string>com.mbs.Appearance</string>
 			</dict>
 			<key>PrefsBackup</key>
 			<dict>
@@ -254,14 +193,14 @@
 				</dict>
 				<key>icon</key>
 				<string>PrefsBackup</string>
+				<key>identifier</key>
+				<string>com.mbs.Backup</string>
 				<key>nib</key>
 				<string>PrefsBackup</string>
 				<key>ordering</key>
 				<integer>70</integer>
 				<key>title</key>
 				<string>Backup</string>
-				<key>identifier</key>
-				<string>com.mbs.Backup</string>
 			</dict>
 			<key>PrefsGeneral</key>
 			<dict>
@@ -284,7 +223,7 @@
 					<key>DefaultCustomSplitDistance</key>
 					<real>2.5</real>
 					<key>DefaultDataHUDTransparency</key>
-					<real>0.85</real>
+					<real>0.84999999999999998</real>
 					<key>DefaultDateFormat</key>
 					<integer>0</integer>
 					<key>DefaultDisplayPace</key>
@@ -300,11 +239,11 @@
 					<key>DefaultKeyword2Label</key>
 					<string>Keyword 2</string>
 					<key>DefaultMDHUDTransparency</key>
-					<real>0.6</real>
+					<real>0.59999999999999998</real>
 					<key>DefaultMDMapTransparency</key>
-					<real>0.8</real>
+					<real>0.80000000000000004</real>
 					<key>DefaultMDPathTransparency</key>
-					<real>0.8</real>
+					<real>0.80000000000000004</real>
 					<key>DefaultMDShowLaps</key>
 					<true/>
 					<key>DefaultMDShowPath</key>
@@ -362,18 +301,18 @@
 					<key>DefaultZoneTypeForStatsHUD</key>
 					<integer>0</integer>
 					<key>DefaultZonesTransparency</key>
-					<real>0.6</real>
+					<real>0.59999999999999998</real>
 				</dict>
 				<key>icon</key>
 				<string>GeneralPreferences</string>
+				<key>identifier</key>
+				<string>com.mbs.General</string>
 				<key>nib</key>
 				<string>PrefsGeneral</string>
 				<key>ordering</key>
 				<integer>20</integer>
 				<key>title</key>
 				<string>General</string>
-				<key>identifier</key>
-				<string>com.mbs.General</string>
 			</dict>
 			<key>PrefsHeartrate</key>
 			<dict>
@@ -414,14 +353,14 @@
 				</dict>
 				<key>icon</key>
 				<string>HAL-9000</string>
+				<key>identifier</key>
+				<string>com.mbs.HeartRate</string>
 				<key>nib</key>
 				<string>PrefsHeartrate</string>
 				<key>ordering</key>
 				<integer>50</integer>
 				<key>title</key>
 				<string>Heart Rate</string>
-				<key>identifier</key>
-				<string>com.mbs.HeartRate</string>
 			</dict>
 			<key>PrefsSync</key>
 			<dict>
@@ -446,14 +385,14 @@
 				</dict>
 				<key>icon</key>
 				<string>iphone</string>
+				<key>identifier</key>
+				<string>com.mbs.Sync</string>
 				<key>nib</key>
 				<string>PrefsSync</string>
 				<key>ordering</key>
 				<integer>95</integer>
 				<key>title</key>
 				<string>Sync</string>
-				<key>identifier</key>
-				<string>com.mbs.Sync</string>
 			</dict>
 			<key>PrefsUser</key>
 			<dict>
@@ -464,20 +403,20 @@
 					<key>DefaultGender</key>
 					<integer>1</integer>
 					<key>DefaultVO2Max</key>
-					<real>0</real>
+					<real>0.0</real>
 					<key>DefaultWeight</key>
 					<real>160</real>
 				</dict>
 				<key>icon</key>
 				<string>Albert Einstein</string>
+				<key>identifier</key>
+				<string>com.mbs.User</string>
 				<key>nib</key>
 				<string>PrefsUser</string>
 				<key>ordering</key>
 				<integer>40</integer>
 				<key>title</key>
 				<string>User</string>
-				<key>identifier</key>
-				<string>com.mbs.User</string>
 			</dict>
 			<key>PrefsZones</key>
 			<dict>
@@ -494,7 +433,7 @@
 						<key>DefaultZone1Color</key>
 						<string>.01 .0 .70</string>
 						<key>DefaultZone1Threshold</key>
-						<real>0</real>
+						<real>0.0</real>
 						<key>DefaultZone2Color</key>
 						<string>.13 .26 .91</string>
 						<key>DefaultZone2Threshold</key>
@@ -652,16 +591,98 @@
 				</dict>
 				<key>icon</key>
 				<string>zones</string>
+				<key>identifier</key>
+				<string>com.mbs.Zones</string>
 				<key>nib</key>
 				<string>PrefsZones</string>
 				<key>ordering</key>
 				<integer>60</integer>
 				<key>title</key>
 				<string>Other Zones</string>
-				<key>identifier</key>
-				<string>com.mbs.Zones</string>
 			</dict>
 		</dict>
 	</dict>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Ascent Activity Group</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.montebellosoftware.ascent.tlp</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>tlp</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/vnd.ascent.tlp</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Ascent Database</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.montebellosoftware.ascent.db</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>ascentdb</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/vnd.ascent.ascentdb</string>
+			</dict>
+		</dict>
+	</array>
+	<key>UTTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Ascent Activity Group</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.montebellosoftware.ascent.tlp</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>tlp</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/vnd.ascent.tlp</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Ascent Database</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.montebellosoftware.ascent.db</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>ascentdb</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/vnd.ascent.ascentdb</string>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

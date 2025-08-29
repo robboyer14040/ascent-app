@@ -220,7 +220,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	self.mapTransparentView = [[CWTransparentMapView alloc] initWithFrame:dummy
 																 dotColors:dotColorsArray];
 	self.mapTransparentWindow = [[CWTransparentWindow alloc] initWithContentRect:dummy
-																		styleMask:NSBorderlessWindowMask 
+																		styleMask:NSWindowStyleMaskBorderless
 																		  backing:NSBackingStoreBuffered 
 																			defer:NO];
 	[self.mapTransparentWindow setContentView:self.mapTransparentView];
@@ -238,8 +238,8 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	self.zoomMapTransparentView = [[CWTransparentMapView alloc] initWithFrame:dummy
 																	 dotColors:dotColorsArray];
 	self.zoomMapTransparentWindow = [[CWTransparentWindow alloc] initWithContentRect:dummy
-																			styleMask:NSBorderlessWindowMask 
-																			  backing:NSBackingStoreBuffered 
+																			styleMask:NSWindowStyleMaskBorderless
+																			  backing:NSBackingStoreBuffered
 																				defer:NO];
 	[self.zoomMapTransparentWindow setContentView:self.zoomMapTransparentView];
 	[self.zoomMapTransparentWindow setHasShadow:NO];

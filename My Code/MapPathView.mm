@@ -4,6 +4,7 @@
 #import "TrackPoint.h"
 #import "LatLong-UTMconversion.h"
 #import "Lap.h"
+#import "Lap.h"
 #import "Utils.h"
 #import "NDRunLoopMessenger.h"
 #import "math.h"
@@ -153,7 +154,7 @@ static float sCumulativeDeltaY = 0.0;			// for scrolling/zoom
 - (id) initWithData:(TrackPoint*)pt  northing:(double)n easting:(double)e zone:(int)z;
 - (double) northing;
 - (double) easting;
-- (int) zone;
+- (int) UTMzone;
 - (int) heartrate;
 - (NSPoint) point;
 - (BOOL) valid;
@@ -211,7 +212,7 @@ static float sCumulativeDeltaY = 0.0;			// for scrolling/zoom
    return easting;
 }
 
-- (int) zone
+- (int) UTMzone
 {
    return zone;
 }

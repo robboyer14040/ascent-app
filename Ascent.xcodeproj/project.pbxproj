@@ -16,6 +16,7 @@
 		D4450B702E5BDB8300AB39C3 /* ActivityStore.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B6F2E5BDB8300AB39C3 /* ActivityStore.m */; };
 		D4450B722E5BDBB500AB39C3 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4450B712E5BDBB400AB39C3 /* libsqlite3.tbd */; };
 		D4450B7D2E5BDC1C00AB39C3 /* OverrideData.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B7B2E5BDC1C00AB39C3 /* OverrideData.m */; };
+		D457D2B52E61FE4300D1DF73 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = D457D2B42E61FE4300D1DF73 /* Fonts */; };
 		D490A52E2E4F8E48005BAD01 /* TrackBrowserDocument.xib in Resources */ = {isa = PBXBuildFile; fileRef = D490A52C2E4F8E48005BAD01 /* TrackBrowserDocument.xib */; };
 		D4C0CE8F2E5BE2C4003B55C4 /* fit_example.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C0CE8B2E5BE2C4003B55C4 /* fit_example.c */; };
 		D4C0CE902E5BE2C4003B55C4 /* fit_ram.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C0CE8E2E5BE2C4003B55C4 /* fit_ram.c */; };
@@ -41,7 +42,6 @@
 		D4D51B112E4E50A90003E47F /* OmniQuartz.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D451E8A32E4D89FA0060BA74 /* OmniQuartz.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D4EFE9F616B5D0BC00A5305B /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4EFE9F516B5D0BC00A5305B /* SenTestingKit.framework */; };
 		D4EFE9F716B5D0BC00A5305B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4EFE9D116B5D0BC00A5305B /* Cocoa.framework */; };
-		D4F13BF02E4EAE4600462944 /* LCD-BOLD.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B832E4EAE4600462944 /* LCD-BOLD.TTF */; };
 		D4F13BF12E4EAE4600462944 /* Ascent_Doc.icns in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB12E4EAE4600462944 /* Ascent_Doc.icns */; };
 		D4F13BF22E4EAE4600462944 /* AppearancePreferences.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BAE2E4EAE4600462944 /* AppearancePreferences.tiff */; };
 		D4F13BF32E4EAE4600462944 /* bike shoes.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA52E4EAE4600462944 /* bike shoes.png */; };
@@ -52,13 +52,10 @@
 		D4F13C002E4EAE4600462944 /* SplitActivity.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B392E4EAE4600462944 /* SplitActivity.nib */; };
 		D4F13C012E4EAE4600462944 /* SelectAndApplyAction.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B352E4EAE4600462944 /* SelectAndApplyAction.nib */; };
 		D4F13C042E4EAE4600462944 /* DistanceMethod.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B0D2E4EAE4600462944 /* DistanceMethod.nib */; };
-		D4F13C052E4EAE4600462944 /* LCDML___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B902E4EAE4600462944 /* LCDML___.TTF */; };
-		D4F13C062E4EAE4600462944 /* LCD2N___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B892E4EAE4600462944 /* LCD2N___.TTF */; };
 		D4F13C082E4EAE4600462944 /* DataListView.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B092E4EAE4600462944 /* DataListView.nib */; };
 		D4F13C092E4EAE4600462944 /* LeftArrowPressed.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BCA2E4EAE4600462944 /* LeftArrowPressed.png */; };
 		D4F13C0A2E4EAE4600462944 /* GMTOffset.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B192E4EAE4600462944 /* GMTOffset.nib */; };
 		D4F13C0B2E4EAE4600462944 /* Splits_Trans.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BE22E4EAE4600462944 /* Splits_Trans.png */; };
-		D4F13C0C2E4EAE4600462944 /* LCD2L___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B882E4EAE4600462944 /* LCD2L___.TTF */; };
 		D4F13C0D2E4EAE4600462944 /* browser1.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB52E4EAE4600462944 /* browser1.png */; };
 		D4F13C0F2E4EAE4600462944 /* RoundRTZ.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B9A2E4EAE4600462944 /* RoundRTZ.png */; };
 		D4F13C102E4EAE4600462944 /* send_activity.scpt in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B452E4EAE4600462944 /* send_activity.scpt */; };
@@ -66,13 +63,10 @@
 		D4F13C122E4EAE4600462944 /* mountain bike.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD22E4EAE4600462944 /* mountain bike.png */; };
 		D4F13C162E4EAE4600462944 /* zones.icns in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BE82E4EAE4600462944 /* zones.icns */; };
 		D4F13C182E4EAE4600462944 /* EquipmentSelector.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B132E4EAE4600462944 /* EquipmentSelector.xib */; };
-		D4F13C1A2E4EAE4600462944 /* LCDM2L__.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B8C2E4EAE4600462944 /* LCDM2L__.TTF */; };
 		D4F13C1B2E4EAE4600462944 /* TrackDataEntry.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B3F2E4EAE4600462944 /* TrackDataEntry.nib */; };
-		D4F13C1C2E4EAE4600462944 /* LCDM2B__.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B8B2E4EAE4600462944 /* LCDM2B__.TTF */; };
 		D4F13C1D2E4EAE4600462944 /* PrefsGeneral.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B272E4EAE4600462944 /* PrefsGeneral.nib */; };
 		D4F13C1E2E4EAE4600462944 /* GetPassword.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B172E4EAE4600462944 /* GetPassword.nib */; };
 		D4F13C1F2E4EAE4600462944 /* calendar.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB72E4EAE4600462944 /* calendar.png */; };
-		D4F13C212E4EAE4600462944 /* LCD-N___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B852E4EAE4600462944 /* LCD-N___.TTF */; };
 		D4F13C222E4EAE4600462944 /* reverse_off.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD82E4EAE4600462944 /* reverse_off.png */; };
 		D4F13C232E4EAE4600462944 /* GreenDot.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA32E4EAE4600462944 /* GreenDot.png */; };
 		D4F13C252E4EAE4600462944 /* bike tires.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB32E4EAE4600462944 /* bike tires.png */; };
@@ -82,7 +76,6 @@
 		D4F13C2A2E4EAE4600462944 /* play_off.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD42E4EAE4600462944 /* play_off.png */; };
 		D4F13C2B2E4EAE4600462944 /* ImportDateEntry.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B1B2E4EAE4600462944 /* ImportDateEntry.nib */; };
 		D4F13C2C2E4EAE4600462944 /* RoundPlay.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B9B2E4EAE4600462944 /* RoundPlay.png */; };
-		D4F13C2D2E4EAE4600462944 /* LCDMB___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B8F2E4EAE4600462944 /* LCDMB___.TTF */; };
 		D4F13C2E2E4EAE4600462944 /* dt.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BBF2E4EAE4600462944 /* dt.jpg */; };
 		D4F13C2F2E4EAE4600462944 /* RightArrowPressed.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BDB2E4EAE4600462944 /* RightArrowPressed.png */; };
 		D4F13C302E4EAE4600462944 /* RoundFF.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B992E4EAE4600462944 /* RoundFF.png */; };
@@ -92,7 +85,6 @@
 		D4F13C362E4EAE4600462944 /* UnselectButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B952E4EAE4600462944 /* UnselectButton.png */; };
 		D4F13C3A2E4EAE4600462944 /* AdvancedPreferences.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA92E4EAE4600462944 /* AdvancedPreferences.tiff */; };
 		D4F13C3B2E4EAE4600462944 /* ABAction.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA72E4EAE4600462944 /* ABAction.tiff */; };
-		D4F13C3C2E4EAE4600462944 /* LCD2B___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B872E4EAE4600462944 /* LCD2B___.TTF */; };
 		D4F13C3D2E4EAE4600462944 /* AltSmoothingFactor.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B052E4EAE4600462944 /* AltSmoothingFactor.nib */; };
 		D4F13C3F2E4EAE4600462944 /* ActivityWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B032E4EAE4600462944 /* ActivityWindow.nib */; };
 		D4F13C402E4EAE4600462944 /* RightArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BDA2E4EAE4600462944 /* RightArrow.png */; };
@@ -107,10 +99,8 @@
 		D4F13C4B2E4EAE4600462944 /* SummaryWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B3B2E4EAE4600462944 /* SummaryWindow.nib */; };
 		D4F13C4C2E4EAE4600462944 /* rtz_off.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BDD2E4EAE4600462944 /* rtz_off.png */; };
 		D4F13C4D2E4EAE4600462944 /* canoe.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB92E4EAE4600462944 /* canoe.png */; };
-		D4F13C4E2E4EAE4600462944 /* LCD-L___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B842E4EAE4600462944 /* LCD-L___.TTF */; };
 		D4F13C4F2E4EAE4600462944 /* LeftArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC92E4EAE4600462944 /* LeftArrow.png */; };
 		D4F13C512E4EAE4600462944 /* bike wheels.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB42E4EAE4600462944 /* bike wheels.png */; };
-		D4F13C522E4EAE4600462944 /* LCD2U___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B8A2E4EAE4600462944 /* LCD2U___.TTF */; };
 		D4F13C532E4EAE4600462944 /* CompareButtonIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B9F2E4EAE4600462944 /* CompareButtonIcon.png */; };
 		D4F13C562E4EAE4600462944 /* BlueDot.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA22E4EAE4600462944 /* BlueDot.png */; };
 		D4F13C572E4EAE4600462944 /* PrefsBackup.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD72E4EAE4600462944 /* PrefsBackup.png */; };
@@ -121,7 +111,6 @@
 		D4F13C5D2E4EAE4600462944 /* TransportPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B432E4EAE4600462944 /* TransportPanel.nib */; };
 		D4F13C5F2E4EAE4600462944 /* DetailedMapWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B0B2E4EAE4600462944 /* DetailedMapWindow.nib */; };
 		D4F13C602E4EAE4600462944 /* line_solid.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BCD2E4EAE4600462944 /* line_solid.png */; };
-		D4F13C642E4EAE4600462944 /* LCDMU___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B922E4EAE4600462944 /* LCDMU___.TTF */; };
 		D4F13C662E4EAE4600462944 /* PrefsBackup.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B252E4EAE4600462944 /* PrefsBackup.nib */; };
 		D4F13C682E4EAE4600462944 /* SplashPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B372E4EAE4600462944 /* SplashPanel.nib */; };
 		D4F13C692E4EAE4600462944 /* bike chain.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB22E4EAE4600462944 /* bike chain.png */; };
@@ -130,7 +119,6 @@
 		D4F13C6D2E4EAE4600462944 /* ABAction_Trans.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA82E4EAE4600462944 /* ABAction_Trans.png */; };
 		D4F13C6E2E4EAE4600462944 /* Dot.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA12E4EAE4600462944 /* Dot.png */; };
 		D4F13C6F2E4EAE4600462944 /* line_solid_3.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD02E4EAE4600462944 /* line_solid_3.png */; };
-		D4F13C702E4EAE4600462944 /* LCDM2U__.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B8E2E4EAE4600462944 /* LCDM2U__.TTF */; };
 		D4F13C752E4EAE4600462944 /* cyclocross bike.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BBB2E4EAE4600462944 /* cyclocross bike.png */; };
 		D4F13C762E4EAE4600462944 /* ABAction.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA62E4EAE4600462944 /* ABAction.png */; };
 		D4F13C772E4EAE4600462944 /* line_solid_2.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BCF2E4EAE4600462944 /* line_solid_2.png */; };
@@ -155,9 +143,7 @@
 		D4F13C912E4EAE4600462944 /* ff_off.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC12E4EAE4600462944 /* ff_off.png */; };
 		D4F13C922E4EAE4600462944 /* DataRect.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BBD2E4EAE4600462944 /* DataRect.png */; };
 		D4F13C942E4EAE4600462944 /* road bike.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BDC2E4EAE4600462944 /* road bike.png */; };
-		D4F13C972E4EAE4600462944 /* LCDM2N__.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B8D2E4EAE4600462944 /* LCDM2N__.TTF */; };
 		D4F13C9A2E4EAE4600462944 /* gs.html in Resources */ = {isa = PBXBuildFile; fileRef = D4F13A792E4EAE4600462944 /* gs.html */; };
-		D4F13C9C2E4EAE4600462944 /* LCD-U___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B862E4EAE4600462944 /* LCD-U___.TTF */; };
 		D4F13C9D2E4EAE4600462944 /* AHud.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BAB2E4EAE4600462944 /* AHud.png */; };
 		D4F13C9E2E4EAE4600462944 /* PrefsAppearance.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B232E4EAE4600462944 /* PrefsAppearance.nib */; };
 		D4F13C9F2E4EAE4600462944 /* hud_titlebar-close.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC52E4EAE4600462944 /* hud_titlebar-close.tiff */; };
@@ -171,7 +157,6 @@
 		D4F13CAB2E4EAE4600462944 /* ColorPreferences.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BBA2E4EAE4600462944 /* ColorPreferences.tiff */; };
 		D4F13CAC2E4EAE4600462944 /* play_on.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD52E4EAE4600462944 /* play_on.png */; };
 		D4F13CAD2E4EAE4600462944 /* RoundStop.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B9C2E4EAE4600462944 /* RoundStop.png */; };
-		D4F13CAF2E4EAE4600462944 /* LCDMN___.TTF in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B912E4EAE4600462944 /* LCDMN___.TTF */; };
 		D4F13CB02E4EAE4600462944 /* BackupNag.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B072E4EAE4600462944 /* BackupNag.nib */; };
 		D4F13CB12E4EAE4600462944 /* NetReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A2C2E4EAE4600462944 /* NetReachability.m */; };
 		D4F13CB22E4EAE4600462944 /* AscentLongIntervalFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F13AAD2E4EAE4600462944 /* AscentLongIntervalFormatter.m */; };
@@ -379,6 +364,7 @@
 		D451E8A52E4D8A6E0060BA74 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		D451E8A72E4D8ABF0060BA74 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		D451E8A82E4D8ABF0060BA74 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		D457D2B42E61FE4300D1DF73 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fonts; sourceTree = "<group>"; };
 		D4C0CE8A2E5BE2C4003B55C4 /* fit_example.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = fit_example.h; path = "My Code/FIT/fit_example.h"; sourceTree = "<group>"; };
 		D4C0CE8B2E5BE2C4003B55C4 /* fit_example.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fit_example.c; path = "My Code/FIT/fit_example.c"; sourceTree = "<group>"; };
 		D4C0CE8C2E5BE2C4003B55C4 /* fit_include.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = fit_include.h; path = "My Code/FIT/fit_include.h"; sourceTree = "<group>"; };
@@ -872,6 +858,7 @@
 				D4F13AF42E4EAE4600462944 /* Mainline Code */,
 				D4F13D2A2E4EAF2D00462944 /* OtherCode */,
 				D4F13BEA2E4EAE4600462944 /* Resources */,
+				D457D2B42E61FE4300D1DF73 /* Fonts */,
 				D4F13BED2E4EAE4600462944 /* Supporting Files */,
 				D4D51A432E4E35220003E47F /* Other */,
 				D451E8632E4D640A0060BA74 /* RBSplitView.xcodeproj */,
@@ -1771,7 +1758,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D4F13BF02E4EAE4600462944 /* LCD-BOLD.TTF in Resources */,
+				D457D2B52E61FE4300D1DF73 /* Fonts in Resources */,
 				D4F13BF12E4EAE4600462944 /* Ascent_Doc.icns in Resources */,
 				D4F13BF22E4EAE4600462944 /* AppearancePreferences.tiff in Resources */,
 				D4F13BF32E4EAE4600462944 /* bike shoes.png in Resources */,
@@ -1782,13 +1769,10 @@
 				D4F13C002E4EAE4600462944 /* SplitActivity.nib in Resources */,
 				D4F13C012E4EAE4600462944 /* SelectAndApplyAction.nib in Resources */,
 				D4F13C042E4EAE4600462944 /* DistanceMethod.nib in Resources */,
-				D4F13C052E4EAE4600462944 /* LCDML___.TTF in Resources */,
-				D4F13C062E4EAE4600462944 /* LCD2N___.TTF in Resources */,
 				D4F13C082E4EAE4600462944 /* DataListView.nib in Resources */,
 				D4F13C092E4EAE4600462944 /* LeftArrowPressed.png in Resources */,
 				D4F13C0A2E4EAE4600462944 /* GMTOffset.nib in Resources */,
 				D4F13C0B2E4EAE4600462944 /* Splits_Trans.png in Resources */,
-				D4F13C0C2E4EAE4600462944 /* LCD2L___.TTF in Resources */,
 				D4F13C0D2E4EAE4600462944 /* browser1.png in Resources */,
 				D4F13C0F2E4EAE4600462944 /* RoundRTZ.png in Resources */,
 				D4F13C102E4EAE4600462944 /* send_activity.scpt in Resources */,
@@ -1796,14 +1780,11 @@
 				D4F13C122E4EAE4600462944 /* mountain bike.png in Resources */,
 				D4F13C162E4EAE4600462944 /* zones.icns in Resources */,
 				D4F13C182E4EAE4600462944 /* EquipmentSelector.xib in Resources */,
-				D4F13C1A2E4EAE4600462944 /* LCDM2L__.TTF in Resources */,
 				D4F13C1B2E4EAE4600462944 /* TrackDataEntry.nib in Resources */,
-				D4F13C1C2E4EAE4600462944 /* LCDM2B__.TTF in Resources */,
 				D4F13C1D2E4EAE4600462944 /* PrefsGeneral.nib in Resources */,
 				D4F13C1E2E4EAE4600462944 /* GetPassword.nib in Resources */,
 				D4F13C1F2E4EAE4600462944 /* calendar.png in Resources */,
 				D437641D2E5FA01A008AE5E4 /* Ascent.icns in Resources */,
-				D4F13C212E4EAE4600462944 /* LCD-N___.TTF in Resources */,
 				D4F13C222E4EAE4600462944 /* reverse_off.png in Resources */,
 				D4F13C232E4EAE4600462944 /* GreenDot.png in Resources */,
 				D4F13C252E4EAE4600462944 /* bike tires.png in Resources */,
@@ -1813,7 +1794,6 @@
 				D4F13C2A2E4EAE4600462944 /* play_off.png in Resources */,
 				D4F13C2B2E4EAE4600462944 /* ImportDateEntry.nib in Resources */,
 				D4F13C2C2E4EAE4600462944 /* RoundPlay.png in Resources */,
-				D4F13C2D2E4EAE4600462944 /* LCDMB___.TTF in Resources */,
 				D4F13C2E2E4EAE4600462944 /* dt.jpg in Resources */,
 				D4F13C2F2E4EAE4600462944 /* RightArrowPressed.png in Resources */,
 				D4F13C302E4EAE4600462944 /* RoundFF.png in Resources */,
@@ -1828,7 +1808,6 @@
 				D4F13C362E4EAE4600462944 /* UnselectButton.png in Resources */,
 				D4F13C3A2E4EAE4600462944 /* AdvancedPreferences.tiff in Resources */,
 				D4F13C3B2E4EAE4600462944 /* ABAction.tiff in Resources */,
-				D4F13C3C2E4EAE4600462944 /* LCD2B___.TTF in Resources */,
 				D4F13C3D2E4EAE4600462944 /* AltSmoothingFactor.nib in Resources */,
 				D4F13C3F2E4EAE4600462944 /* ActivityWindow.nib in Resources */,
 				D4F13C402E4EAE4600462944 /* RightArrow.png in Resources */,
@@ -1843,10 +1822,8 @@
 				D4F13C4B2E4EAE4600462944 /* SummaryWindow.nib in Resources */,
 				D4F13C4C2E4EAE4600462944 /* rtz_off.png in Resources */,
 				D4F13C4D2E4EAE4600462944 /* canoe.png in Resources */,
-				D4F13C4E2E4EAE4600462944 /* LCD-L___.TTF in Resources */,
 				D4F13C4F2E4EAE4600462944 /* LeftArrow.png in Resources */,
 				D4F13C512E4EAE4600462944 /* bike wheels.png in Resources */,
-				D4F13C522E4EAE4600462944 /* LCD2U___.TTF in Resources */,
 				D4F13C532E4EAE4600462944 /* CompareButtonIcon.png in Resources */,
 				D4F13C562E4EAE4600462944 /* BlueDot.png in Resources */,
 				D4F13C572E4EAE4600462944 /* PrefsBackup.png in Resources */,
@@ -1858,7 +1835,6 @@
 				D4CCE92A2E5049B900B46DB2 /* MainMenu.nib in Resources */,
 				D4F13C5F2E4EAE4600462944 /* DetailedMapWindow.nib in Resources */,
 				D4F13C602E4EAE4600462944 /* line_solid.png in Resources */,
-				D4F13C642E4EAE4600462944 /* LCDMU___.TTF in Resources */,
 				D4F13C662E4EAE4600462944 /* PrefsBackup.nib in Resources */,
 				D4F13C682E4EAE4600462944 /* SplashPanel.nib in Resources */,
 				D4F13C692E4EAE4600462944 /* bike chain.png in Resources */,
@@ -1867,7 +1843,6 @@
 				D4F13C6D2E4EAE4600462944 /* ABAction_Trans.png in Resources */,
 				D4F13C6E2E4EAE4600462944 /* Dot.png in Resources */,
 				D4F13C6F2E4EAE4600462944 /* line_solid_3.png in Resources */,
-				D4F13C702E4EAE4600462944 /* LCDM2U__.TTF in Resources */,
 				D4F13C752E4EAE4600462944 /* cyclocross bike.png in Resources */,
 				D4F13C762E4EAE4600462944 /* ABAction.png in Resources */,
 				D4F13C772E4EAE4600462944 /* line_solid_2.png in Resources */,
@@ -1893,9 +1868,7 @@
 				D4F13C912E4EAE4600462944 /* ff_off.png in Resources */,
 				D4F13C922E4EAE4600462944 /* DataRect.png in Resources */,
 				D4F13C942E4EAE4600462944 /* road bike.png in Resources */,
-				D4F13C972E4EAE4600462944 /* LCDM2N__.TTF in Resources */,
 				D4F13C9A2E4EAE4600462944 /* gs.html in Resources */,
-				D4F13C9C2E4EAE4600462944 /* LCD-U___.TTF in Resources */,
 				D4F13C9D2E4EAE4600462944 /* AHud.png in Resources */,
 				D4F13C9E2E4EAE4600462944 /* PrefsAppearance.nib in Resources */,
 				D4F13C9F2E4EAE4600462944 /* hud_titlebar-close.tiff in Resources */,
@@ -1909,7 +1882,6 @@
 				D4F13CAB2E4EAE4600462944 /* ColorPreferences.tiff in Resources */,
 				D4F13CAC2E4EAE4600462944 /* play_on.png in Resources */,
 				D4F13CAD2E4EAE4600462944 /* RoundStop.png in Resources */,
-				D4F13CAF2E4EAE4600462944 /* LCDMN___.TTF in Resources */,
 				D4F13CB02E4EAE4600462944 /* BackupNag.nib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2448,6 +2420,7 @@
 					"$(PROJECT_DIR)/OtherCode",
 				);
 				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Montebello Software, LLC. All rights reserved.";
 				INFOPLIST_KEY_NSMainNibFile = MainMenu;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -2533,6 +2506,7 @@
 					"$(PROJECT_DIR)/OtherCode",
 				);
 				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Montebello Software, LLC. All rights reserved.";
 				INFOPLIST_KEY_NSMainNibFile = MainMenu;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -2597,7 +2571,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.montebellosoftware.Ascent;
 				SDKROOT = macosx15.5;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Debug;
 		};
@@ -2635,7 +2609,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.montebellosoftware.Ascent;
 				SDKROOT = macosx15.5;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Release;
 		};

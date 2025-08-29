@@ -308,11 +308,93 @@ void setColorDefault(NSMutableDictionary* dict,
 
 
 
-// AppDelegate.m
+#if 0// AppDelegate.m
 - (IBAction)openTheDocument:(id)sender {
     NSLog(@"DocTypes = %@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDocumentTypes"]);
     [[NSDocumentController sharedDocumentController] openDocument:sender];
 }
+#endif
+
+
+- (IBAction)openTheDocument:(id)sender
+{
+    NSDocumentController *dc = [NSDocumentController sharedDocumentController];
+
+    NSOpenPanel *panel = [NSOpenPanel openPanel];
+    panel.canChooseFiles = YES;
+    panel.canChooseDirectories = NO;
+    panel.allowsMultipleSelection = NO;
+
+    // Build allowed types from your Info.plist (CFBundleDocumentTypes)
+
+    NSMutableArray<UTType *> *contentTypes = [NSMutableArray array];
+    NSArray *docTypes = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDocumentTypes"];
+
+    for (NSDictionary *t in docTypes) {
+        BOOL added = NO;
+
+        // 1) Try declared UTIs
+        for (NSString *uti in (t[@"LSItemContentTypes"] ?: @[])) {
+            if (UTType *u = [UTType typeWithIdentifier:uti]) {
+                [contentTypes addObject:u]; added = YES;
+            }
+        }
+
+        // 2) Fallback: map declared extensions -> UTType
+        if (!added) {
+            for (NSString *ext in (t[@"CFBundleTypeExtensions"] ?: @[])) {
+                if (UTType *u = [UTType typeWithFilenameExtension:ext]) {
+                    [contentTypes addObject:u]; added = YES;
+                }
+            }
+        }
+
+        // 3) Last-ditch: create a dynamic type from the extension, conforming to data
+        if (@available(macOS 11.0, *)) {
+            if (!added) {
+                for (NSString *ext in (t[@"CFBundleTypeExtensions"] ?: @[])) {
+                    if (UTType *u = [UTType typeWithTag:UTTagClassFilenameExtension
+                                                  value:ext
+                                           conformingTo:UTTypeData]) {
+                        [contentTypes addObject:u];
+                    }
+                }
+            }
+        }
+    }
+    panel.allowedContentTypes = [NSOrderedSet orderedSetWithArray:contentTypes].array;
+    if (contentTypes.count > 0) {
+        panel.allowedContentTypes = contentTypes; // NSOpenPanel API
+    }
+    // else leave unfiltered; user can still pick anything your app can open
+
+    NSWindow *host = NSApp.mainWindow ?: NSApp.keyWindow;
+    void (^openURL)(NSURL *) = ^(NSURL *url) {
+        [dc openDocumentWithContentsOfURL:url
+                                  display:YES
+                        completionHandler:^(NSDocument * _Nullable doc,
+                                            BOOL documentWasAlreadyOpen,
+                                            NSError * _Nullable error)
+        {
+            if (error) { [NSApp presentError:error]; return; }
+            // NSDocumentController records recents automatically on success.
+            // (Optional belt-and-suspenders:)
+            NSLog(@"max recents = %ld",
+                  (long)[NSDocumentController sharedDocumentController].maximumRecentDocumentCount);
+            NSLog(@"bundle id = %@", [[NSBundle mainBundle] bundleIdentifier]);
+            if (doc.fileURL) [dc noteNewRecentDocumentURL:doc.fileURL];
+        }];
+    };
+
+    if (host) {
+        [panel beginSheetModalForWindow:host completionHandler:^(NSModalResponse result) {
+            if (result == NSModalResponseOK && panel.URL) openURL(panel.URL);
+        }];
+    } else {
+        if ([panel runModal] == NSModalResponseOK && panel.URL) openURL(panel.URL);
+    }
+}
+
 
 - (BOOL) applicationShouldOpenUntitledFile: (NSApplication *) sender
 {
@@ -595,13 +677,6 @@ void setColorDefault(NSMutableDictionary* dict,
 {
     [NSDocumentController sharedDocumentController];
     
-    ///[RBSplitView class];
-	///[RBSplitSubview class];
-	NSDictionary* d = [[NSBundle mainBundle] infoDictionary];
-	///NSString* s = [d objectForKey:@"SUFeedURL"];
-	///NSLog(@"Feed URL: %@", s);
-
-
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											selector:@selector(afterSplashPanelDone:)
@@ -854,9 +929,43 @@ void setColorDefault(NSMutableDictionary* dict,
 }
 
 
-- (BOOL)fileManager:(NSFileManager *)manager shouldProceedAfterError:(NSDictionary *)errorInfo
+- (BOOL)fileManager:(NSFileManager *)fm
+shouldProceedAfterError:(NSError *)error
+ copyingItemAtURL:(NSURL *)srcURL
+             toURL:(NSURL *)dstURL
 {
-   return YES;
+    NSLog(@"Copy error %@ → %@: %@", srcURL, dstURL, error);
+    // return YES to keep going, NO to abort the operation
+    return YES;
+}
+
+// Move
+- (BOOL)fileManager:(NSFileManager *)fm
+shouldProceedAfterError:(NSError *)error
+  movingItemAtURL:(NSURL *)srcURL
+            toURL:(NSURL *)dstURL
+{
+    NSLog(@"Move error %@ → %@: %@", srcURL, dstURL, error);
+    return YES;
+}
+
+// Remove
+- (BOOL)fileManager:(NSFileManager *)fm
+shouldProceedAfterError:(NSError *)error
+ removingItemAtURL:(NSURL *)url
+{
+    NSLog(@"Remove error %@: %@", url, error);
+    return YES;
+}
+
+// Link (if you use it)
+- (BOOL)fileManager:(NSFileManager *)fm
+shouldProceedAfterError:(NSError *)error
+  linkingItemAtURL:(NSURL *)srcURL
+             toURL:(NSURL *)dstURL
+{
+    NSLog(@"Link error %@ → %@: %@", srcURL, dstURL, error);
+    return YES;
 }
 
 

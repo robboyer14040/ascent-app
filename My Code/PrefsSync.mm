@@ -41,24 +41,24 @@ NSString*  RCBDefaultGarminANTSync				= @"DefaultGarminANTSync";
 	}
 	else if (sender == enableWiFiSync)
 	{
-		[defaults setBool:[sender state] == NSOnState ? YES : NO forKey:RCBDefaultEnableWiFiSync];
+		[defaults setBool:[sender state] == NSControlStateValueOn ? YES : NO forKey:RCBDefaultEnableWiFiSync];
 	}
 	else if (sender == syncLastWeeksOrMonths)
 	{
-		[defaults setBool:[sender state] == NSOnState ? YES : NO forKey:RCBDefaultEnableWeeksOrMonthsSync];
+		[defaults setBool:[sender state] == NSControlStateValueOn ? YES : NO forKey:RCBDefaultEnableWeeksOrMonthsSync];
 	}
 #if 0
 	else if (sender == syncGarminUSB)
 	{
-		[defaults setBool:[sender state] == NSOnState ? YES : NO forKey:RCBDefaultGarminUSBSync];
+		[defaults setBool:[sender state] == NSControlStateValueOn ? YES : NO forKey:RCBDefaultGarminUSBSync];
 	}
 	else if (sender == syncGarminANT)
 	{
-		[defaults setBool:[sender state] == NSOnState ? YES : NO forKey:RCBDefaultGarminANTSync];
+		[defaults setBool:[sender state] == NSControlStateValueOn ? YES : NO forKey:RCBDefaultGarminANTSync];
 	}
 	else if (sender == syncGarminMassStorage)
 	{
-		[defaults setBool:[sender state] == NSOnState ? YES : NO forKey:RCBDefaultGarminMassStorageSync];
+		[defaults setBool:[sender state] == NSControlStateValueOn ? YES : NO forKey:RCBDefaultGarminMassStorageSync];
 	}
 #endif
     [defaults synchronize];

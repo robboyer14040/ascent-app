@@ -990,7 +990,7 @@ shouldProceedAfterError:(NSError *)error
     [alert addButtonWithTitle:@"Cancel"];
     [alert setMessageText:@"Clearing the map cache will delete all saved maps, resulting in slower performance until the same maps are retrieved again (a connection to the internet will also be required to re-fetch the maps)"];
     [alert setInformativeText:@"Continue clearing the map cache?"];
-    [alert setAlertStyle:NSInformationalAlertStyle];
+    [alert setAlertStyle:NSAlertStyleInformational];
     if ([alert runModal] == NSAlertFirstButtonReturn) 
     {
         NSString* cacheFilePath = [Utils getMapTilesPath];

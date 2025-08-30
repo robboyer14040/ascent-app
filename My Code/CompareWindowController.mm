@@ -181,18 +181,18 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 		if ([st isEqualToString:@"stop"])
 		{
 			[profilesTransparentView setHidePosition:NO];
-			[stopButton setState:NSOnState];
+			[stopButton setState:NSControlStateValueOn];
 		}
 		else if ([st isEqualToString:@"play"])
 		{
 			[profilesTransparentView setHidePosition:YES];
 			if ([[AnimTimer defaultInstance] playingInReverse])
 			{
-				[stopButton setState:NSOffState];
+				[stopButton setState:NSControlStateValueOff];
 			}
 			else
 			{
-				[stopButton setState:NSOffState];
+				[stopButton setState:NSControlStateValueOff];
 			}
 		}
 	}					
@@ -1084,7 +1084,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 - (IBAction)play:(id)sender
 {
 	AnimTimer* at = [AnimTimer defaultInstance];
-	if ([sender intValue] == NSOnState)
+	if ([sender intValue] == NSControlStateValueOn)
 	{
 		[at stop:self];
 		[at play:self reverse:NO];
@@ -1101,7 +1101,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 - (IBAction)reverse:(id)sender
 {
 	AnimTimer* at = [AnimTimer defaultInstance];
-	if ([sender intValue] == NSOnState)
+	if ([sender intValue] == NSControlStateValueOn)
 	{
 		[at stop:self];
 		[at play:self reverse:YES];

@@ -188,7 +188,7 @@
 #else
 			NSMenuItem* mi = [[NSMenuItem alloc] initWithTitle:[ci menuLabel] action:@selector(doit:) keyEquivalent:@""];
 #endif
-            NSCellStateValue state = ([ci order] == kNotInBrowser) ? NSOffState : NSOnState;
+            NSCellStateValue state = ([ci order] == kNotInBrowser) ? NSControlStateValueOff : NSControlStateValueOn;
 			[mi setState:state];
 			[mi setTag:[ci tag]];
 			[menu  addItem:mi];
@@ -337,10 +337,10 @@
 - (void) columnize:(NSMenu*)colMenu item:(id)it colIndex:(int)colIndex
 {
 	NSMenuItem* mi = it;
-	if ([mi state] == NSOnState) 
-		[mi setState:NSOffState];
+	if ([mi state] == NSControlStateValueOn) 
+		[mi setState:NSControlStateValueOff];
 	else
-		[mi setState:NSOnState];
+		[mi setState:NSControlStateValueOn];
 	int tag = [mi tag];
 	ColumnInfo* ci = [self columnInfoFromTag:tag];
 	if (ci != nil)

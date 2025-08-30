@@ -46,6 +46,7 @@
 #import "EquipmentLog.h"
 #import "EquipmentBoxView.h"
 #import "StravaAPI.h"
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 ///#import "DBComm.h"
 
@@ -1219,7 +1220,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 	mi = [leftOptsMenu addItemWithTitle:@"Toggle Info Display"
 							action:@selector(toggleStatsInfo:)
                           keyEquivalent:@"i"];
-    [mi setKeyEquivalentModifierMask:NSAlternateKeyMask];
+    [mi setKeyEquivalentModifierMask:NSEventModifierFlagOption];
     [mi setTag:0];
 
 	NSMenuItem* parent = [leftOptsMenu addItemWithTitle:@"Browser View"
@@ -1231,38 +1232,38 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 	mi = [browserViewSubMenu addItemWithTitle:@"Normal"
                                         action:@selector(changeView:)
                                  keyEquivalent:@"n"];
-    [mi setKeyEquivalentModifierMask:NSAlternateKeyMask];
+    [mi setKeyEquivalentModifierMask:NSEventModifierFlagOption];
     [mi setTag:tag++];
 	
 
     mi = [browserViewSubMenu addItemWithTitle:@"All Activities"
 								   action:@selector(changeView:)
 							keyEquivalent:@"a"];
-    [mi setKeyEquivalentModifierMask:NSAlternateKeyMask];
+    [mi setKeyEquivalentModifierMask:NSEventModifierFlagOption];
     [mi setTag:tag++];
 
 	mi = [browserViewSubMenu addItemWithTitle:@"All Weeks"
 								   action:@selector(changeView:)
 							keyEquivalent:@"w"];
-    [mi setKeyEquivalentModifierMask:NSAlternateKeyMask];
+    [mi setKeyEquivalentModifierMask:NSEventModifierFlagOption];
     [mi setTag:tag++];
 
     mi = [browserViewSubMenu addItemWithTitle:@"All Months"
 								   action:@selector(changeView:)
 							keyEquivalent:@"m"];
-    [mi setKeyEquivalentModifierMask:NSAlternateKeyMask];
+    [mi setKeyEquivalentModifierMask:NSEventModifierFlagOption];
     [mi setTag:tag++];
 
 	mi = [browserViewSubMenu addItemWithTitle:@"All Years"
 								   action:@selector(changeView:)
 							keyEquivalent:@"y"];
-    [mi setKeyEquivalentModifierMask:NSAlternateKeyMask];
+    [mi setKeyEquivalentModifierMask:NSEventModifierFlagOption];
     [mi setTag:tag++];
 
 	[leftOptsMenu setSubmenu:browserViewSubMenu
 					 forItem:parent];
 	int vt = [Utils intFromDefaults:RCBDefaultBrowserViewType];
-	[[browserViewSubMenu itemWithTag:vt] setState:NSOnState];
+	[[browserViewSubMenu itemWithTag:vt] setState:NSControlStateValueOn];
 	
 	tag = 0;
 	int mt = [Utils intFromDefaults:RCBDefaultMapType];
@@ -1288,7 +1289,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 	[[mapViewDataTypeSubMenu addItemWithTitle:@"(USGS) Topo"
 									   action:@selector(setMapDataType:)
 								keyEquivalent:@""] setTag:tag++];
-	[[mapViewDataTypeSubMenu itemWithTag:mt] setState:NSOnState];
+	[[mapViewDataTypeSubMenu itemWithTag:mt] setState:NSControlStateValueOn];
 	[leftOptsMenu setSubmenu:mapViewDataTypeSubMenu
 					 forItem:parent];
 	return leftOptsMenu;
@@ -1343,13 +1344,13 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 	NSRect fr = [mapPathView frame];
 	fr.origin.x = rightSplitViewFrame.origin.x + 8.0;
 	fr.origin.y = (leftSplitViewFrame.size.height - mapPathFrame.size.height + 20.0);		// add space for split view dividers
-	fr.origin = [[self window] convertBaseToScreen:fr.origin];
+	fr.origin = [[self window] convertPointToScreen:fr.origin];
 	[transparentMapWindow setFrame:fr display:YES];
 	
 	fr = [miniProfileView frame];
 	fr.origin.x = rightSplitViewFrame.origin.x + 8.0;
 	fr.origin.y = (leftSplitViewFrame.size.height - mapPathFrame.size.height - miniProfileFrame.size.height + 14.0);
-	fr.origin = [[self window] convertBaseToScreen:fr.origin];
+	fr.origin = [[self window] convertPointToScreen:fr.origin];
 	[transparentMiniProfileWindow setFrame:fr display:YES];
 }
 
@@ -1510,32 +1511,32 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 		  NSMenuItem* item = [subMenu itemWithTag:kTagSearchTitles];
 		  if (nil != item)
 		  {
-			  [item setState:FLAG_IS_SET(sopts, kSearchTitles) ? NSOnState : NSOffState];
+			  [item setState:FLAG_IS_SET(sopts, kSearchTitles) ? NSControlStateValueOn : NSControlStateValueOff];
 		  }
 		  item = [subMenu itemWithTag:kTagSearchNotes];
 		  if (nil != item)
 		  {
-			 [item setState:FLAG_IS_SET(sopts, kSearchNotes) ? NSOnState : NSOffState];
+			 [item setState:FLAG_IS_SET(sopts, kSearchNotes) ? NSControlStateValueOn : NSControlStateValueOff];
 		  }
 		  item = [subMenu itemWithTag:kTagSearchKeywords];
 		  if (nil != item)
 		  {
-			 [item setState:FLAG_IS_SET(sopts, kSearchKeywords) ? NSOnState : NSOffState];
+			 [item setState:FLAG_IS_SET(sopts, kSearchKeywords) ? NSControlStateValueOn : NSControlStateValueOff];
 		  }
 		  item = [subMenu itemWithTag:kTagSearchActivityType];
 		  if (nil != item)
 		  {
-			 [item setState:FLAG_IS_SET(sopts, kSearchActivityType) ? NSOnState : NSOffState];
+			 [item setState:FLAG_IS_SET(sopts, kSearchActivityType) ? NSControlStateValueOn : NSControlStateValueOff];
 		  }
 		  item = [subMenu itemWithTag:kTagSearchEventType];
 		  if (nil != item)
 		  {
-			  [item setState:FLAG_IS_SET(sopts, kSearchEventType) ? NSOnState : NSOffState];
+			  [item setState:FLAG_IS_SET(sopts, kSearchEventType) ? NSControlStateValueOn : NSControlStateValueOff];
 		  }
 		  item = [subMenu itemWithTag:kTagSearchEquipment];
 		  if (nil != item)
 		  {
-			  [item setState:FLAG_IS_SET(sopts, kSearchEquipment) ? NSOnState : NSOffState];
+			  [item setState:FLAG_IS_SET(sopts, kSearchEquipment) ? NSControlStateValueOn : NSControlStateValueOff];
 		  }
 	   }
 	}
@@ -1550,7 +1551,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 	[miniProfileView setTransparentView:transparentMiniProfileAnimView];
 	NSRect fr = [mapPathView frame];
 	//NSLog(@"vf: %1.0f, %1.0f %x", fr.origin.x, fr.origin.y, [self window]);
-	fr.origin = [[self window] convertBaseToScreen:fr.origin];
+	fr.origin = [[self window] convertPointToScreen:fr.origin];
 	//NSLog(@"wf: %1.0f, %1.0f", fr.origin.x, fr.origin.y);
 	fr = NSInsetRect(fr, 10, 10);
 	[transparentMapWindow setFrame:fr display:YES];
@@ -1565,7 +1566,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 
 	[miniProfileView setTransparentView:transparentMiniProfileAnimView];
 	fr = [miniProfileView frame];
-	fr.origin = [[self window] convertBaseToScreen:fr.origin];
+	fr.origin = [[self window] convertPointToScreen:fr.origin];
 	fr = NSInsetRect(fr, 10, 10);
 	//fr.origin.y += 50;
 	[transparentMiniProfileWindow setFrame:fr display:YES];
@@ -1654,7 +1655,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 
 
 	int idx = [Utils intFromDefaults:RCBDefaultBrowserTabView];
-	int mx = [infoStatsTabView numberOfTabViewItems];
+	int mx = (int)[infoStatsTabView numberOfTabViewItems];
 	if (!IS_BETWEEN(0, idx, (mx-1)))
 	{
 		idx = 0;
@@ -2013,14 +2014,14 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
     NSRect fr = mapPathFrame;
     fr.origin.x = rightSplitViewFrame.origin.x;
     fr.origin.y = (rightSplitViewFrame.size.height - fr.size.height + (2*dividerThickness));
-    fr.origin = [[self window] convertBaseToScreen:fr.origin];
+    fr.origin = [[self window] convertPointToScreen:fr.origin];
     [transparentMapWindow setFrame:fr display:YES];
     
     NSRect miniProfileFrame = [miniProfileSplitSubView frame];
     fr = miniProfileFrame;
     fr.origin.x = rightSplitViewFrame.origin.x;
     fr.origin.y = (rightSplitViewFrame.size.height - mapPathFrame.size.height - miniProfileFrame.size.height + dividerThickness);
-    fr.origin = [[self window] convertBaseToScreen:fr.origin];
+    fr.origin = [[self window] convertPointToScreen:fr.origin];
     [transparentMiniProfileWindow setFrame:fr display:YES];
     if ([self window])
     {
@@ -2056,7 +2057,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 
 - (void) setGMTOffset:(NSArray*)arr offset:(int)off
 {
-   int count = [arr count];
+    NSUInteger count = [arr count];
    NSUndoManager* undo = [tbDocument undoManager];
    if (count > 0)
    {
@@ -2086,7 +2087,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 
 -(void)doEnableDisableAutoPower:(NSArray*)trackArray enable:(BOOL)en
 {
-	int count = [trackArray count];
+    NSUInteger count = [trackArray count];
 	for (int i=0; i<count; i++)
 	{
 		Track* t = [trackArray objectAtIndex:i];
@@ -2098,7 +2099,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 
 -(void)enableAutoPowerCalcAction:(NSArray*)arr actionName:(NSString*)actionName enable:(BOOL)en
 {
-	int count = [arr count];
+    NSUInteger count = [arr count];
 	NSUndoManager* undo = [tbDocument undoManager];
 	if (count > 0)
 	{
@@ -2142,7 +2143,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 
 - (void) setAltitudeSmoothing:(NSArray*)arr factor:(float)fact
 {
-	int count = [arr count];
+    NSUInteger count = [arr count];
 	NSUndoManager* undo = [tbDocument undoManager];
 	if (count > 0)
 	{
@@ -2176,7 +2177,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 
 - (void) setDistanceMethod:(NSArray*)arr useOrig:(BOOL)useOrig
 {
-   int count = [arr count];
+    NSUInteger count = [arr count];
    NSUndoManager* undo = [tbDocument undoManager];
    if (count > 0)
    {
@@ -2217,7 +2218,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 - (IBAction) addActivity:(id)sender
 {
 	Track* t = nil;
-	int row = [trackTableView selectedRow];
+    NSInteger row = [trackTableView selectedRow];
 	if (row != -1)
 	{
 	  TrackBrowserItem* bi = [trackTableView itemAtRow:row];
@@ -2226,7 +2227,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 	NSDate* initialDate;
 	if ([self calendarViewActive])
 	{
-		initialDate = [NSDate dateWithString:[[calendarView selectedDay] description]];;
+        initialDate = [calendarView selectedDay];
 	}
 	else if (currentlySelectedTrack)
 	{
@@ -2248,8 +2249,8 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 
 	[[deWC window] setFrameOrigin:origin];
 	[deWC showWindow:self];
-	int ok = [NSApp runModalForWindow:[deWC window]];
-	if (ok == 0) 
+    NSModalResponse ok = [NSApp runModalForWindow:[deWC window]];
+	if (ok == 0)
 	{
 		[self resetSelectedTrack:[deWC track]
 							 lap:nil];
@@ -2280,8 +2281,8 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 		
 		[[deWC window] setFrameOrigin:origin];
 		[deWC showWindow:self];
-		int ok = [NSApp runModalForWindow:[deWC window]];
-		if (ok == 0) 
+        NSModalResponse ok = [NSApp runModalForWindow:[deWC window]];
+		if (ok == 0)
 		{
 			[tbDocument replaceTrack:currentlySelectedTrack with:[deWC track]];
 			[self resetSelectedTrack:[deWC track]
@@ -2386,7 +2387,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 		
 		[[sac window] setFrameOrigin:origin];
 		[sac showWindow:self];
-		int ok = [NSApp runModalForWindow:[sac window]];
+        NSModalResponse ok = [NSApp runModalForWindow:[sac window]];
 		Track* track = nil;
 		if (ok == 0) 
 		{
@@ -2432,8 +2433,8 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 
 	[[customSplitDistanceWC window] setFrameOrigin:origin];
 	[customSplitDistanceWC showWindow:self];
-	int ok = [NSApp runModalForWindow:[customSplitDistanceWC window]];
-	if (ok == 0) 
+    NSModalResponse ok = [NSApp runModalForWindow:[customSplitDistanceWC window]];
+	if (ok == 0)
 	{
 		//printf("set split length to %0.1f\n", [customSplitDistanceWC customDistance]);
 		[Utils setFloatDefault:[customSplitDistanceWC customDistance] 
@@ -2462,8 +2463,8 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
       
       [[gmtOffsetWC window] setFrameOrigin:origin];
       [gmtOffsetWC showWindow:self];
-      int ok = [NSApp runModalForWindow:[gmtOffsetWC window]];
-      if (ok == 0) 
+       NSModalResponse ok = [NSApp runModalForWindow:[gmtOffsetWC window]];
+      if (ok == 0)
       {
          [self setGMTOffset:arr
                      offset:[gmtOffsetWC offset]];
@@ -2490,8 +2491,8 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 		
 		[[asWC window] setFrameOrigin:origin];
 		[asWC showWindow:self];
-		int ok = [NSApp runModalForWindow:[asWC window]];
-		if (ok == 0) 
+        NSModalResponse ok = [NSApp runModalForWindow:[asWC window]];
+		if (ok == 0)
 		{
 			[self setAltitudeSmoothing:arr
 								factor:[asWC factor]];
@@ -2518,8 +2519,8 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
       
       [[dmc window] setFrameOrigin:origin];
       [dmc showWindow:self];
-      int ok = [NSApp runModalForWindow:[dmc window]];
-      if (ok == 0) 
+       NSModalResponse ok = [NSApp runModalForWindow:[dmc window]];
+      if (ok == 0)
       {
          [self setDistanceMethod:arr useOrig:[dmc useDistanceData]];
       }
@@ -2533,7 +2534,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 - (IBAction) postColumnOptionsPanel:(id)sender
 {
    [browserColumnsWC showWindow:self];
-   int ok = [NSApp runModalForWindow:[browserColumnsWC window]];
+    NSModalResponse ok = [NSApp runModalForWindow:[browserColumnsWC window]];
    if (ok == 0) [trackTableView rebuild];
    [[browserColumnsWC window] orderOut:[self window]];
    [[self window] makeKeyAndOrderFront:self];
@@ -2748,7 +2749,7 @@ static tEventInfo sEventInfo[] =
 			{
 				int endIdx = [currentlySelectedTrack findIndexOfFirstPointAtOrAfterDistanceUsingGoodPoints:curDist
 																								   startAt:startIdx];
-				if (endIdx == -1) endIdx = [[currentlySelectedTrack goodPoints] count] - 1;
+				if (endIdx == -1) endIdx = (int)[[currentlySelectedTrack goodPoints] count] - 1;
 				if (endIdx > startIdx)
 				{				
 					[currentlySelectedTrack calculateStats:statData 
@@ -2780,7 +2781,7 @@ static tEventInfo sEventInfo[] =
 
 - (int)numberOfSplits
 {
-	return [splitArray count];
+	return (int)[splitArray count];
 }
 
 
@@ -2875,10 +2876,10 @@ static tEventInfo sEventInfo[] =
 	}
 	else if (obj == metricsEventTable)
 	{
-		int idx = [metricsEventTable selectedRow];
+        NSInteger idx = [metricsEventTable selectedRow];
 		if (idx != -1)
 		{
-			[self gotoStatTime:idx];
+			[self gotoStatTime:(int)idx];
 		}
 	}
 }
@@ -2894,7 +2895,7 @@ static tEventInfo sEventInfo[] =
 
 		if (item == nil)
 		{
-			int numYears = [topDict count];
+            NSUInteger numYears = [topDict count];
 			if (index < numYears)
 			{
 				if (!self.topSortedKeys)
@@ -2925,7 +2926,7 @@ static tEventInfo sEventInfo[] =
 						bi.sortedChildKeys = [dict keysSortedByValueUsingSelector:itemComparator];
 				}
 				
-				int num = [bi.sortedChildKeys count];
+                NSUInteger num = [bi.sortedChildKeys count];
 				if (num > 0)
 				{
 					return [dict objectForKey:[bi.sortedChildKeys objectAtIndex:index]];
@@ -2962,11 +2963,11 @@ static tEventInfo sEventInfo[] =
 	{
 		if (item == nil)
 		{
-			return [[self outlineDict] count];
+			return (int)[[self outlineDict] count];
 		}
 		else
 		{
-			return [[item children] count];
+			return (int)[[item children] count];
 		}
 	}
 	return 0;
@@ -3009,17 +3010,23 @@ static tEventInfo sEventInfo[] =
 }
 
 
-- (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id < NSDraggingInfo >)info proposedItem:(id)item proposedChildIndex:(int)index
+- (NSDragOperation)outlineView:(NSOutlineView *)outlineView
+                   validateDrop:(id<NSDraggingInfo>)info
+                   proposedItem:(id)item
+            proposedChildIndex:(int)index
 {
-    // Add code here to validate the drop
-    NSPasteboard *pboard;
-    pboard = [info draggingPasteboard];
-	if ( [[pboard types] containsObject:NSFilenamesPboardType] ) 
-		return NSDragOperationCopy;
-	else
-		return NSDragOperationNone;
-}
+    NSPasteboard *pboard = [info draggingPasteboard];
 
+    // Accept any file URLs
+    NSDictionary *opts = @{
+        NSPasteboardURLReadingFileURLsOnlyKey: @YES
+    };
+
+    if ([pboard canReadObjectForClasses:@[ [NSURL class] ] options:opts]) {
+        return NSDragOperationCopy;
+    }
+    return NSDragOperationNone;
+}
 
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView acceptDrop:(id < NSDraggingInfo >)info item:(id)item childIndex:(int)index
@@ -3040,7 +3047,7 @@ static tEventInfo sEventInfo[] =
 			NSUInteger idx = [trackArray indexOfObjectIdenticalTo:[bi track]];
 			if (idx != NSNotFound)
 			{
-				[arr addObject:[NSNumber numberWithInt:idx]];
+				[arr addObject:[NSNumber numberWithInt:(int)idx]];
 			}
 		}
 	}
@@ -3203,12 +3210,12 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 
 - (void)expandLastItem
 {
-   int rows = [trackTableView numberOfRows];
+    NSInteger rows = [trackTableView numberOfRows];
    if (rows > 0)
    {
       id item = [trackTableView  itemAtRow:(rows-1)];
       [trackTableView  expandItem:item];
-      int row = [trackTableView numberOfRows]-1;
+       NSInteger row = [trackTableView numberOfRows]-1;
       while (([[item children] count]) != 0)
       {
          item = [trackTableView itemAtRow:row];
@@ -3221,7 +3228,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 
 - (void)expandFirstItem
 {
-   int rows = [trackTableView numberOfRows];
+    NSInteger rows = [trackTableView numberOfRows];
    if (rows > 0)
    {
       id item = [trackTableView  itemAtRow:0];
@@ -3261,14 +3268,14 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 
 - (void) updatePosition:(NSTimeInterval)trackTime reverse:(BOOL)rev  animating:(BOOL)anim;
 {
-	int pos = 0;
+    NSUInteger pos = 0;
 	if (currentlySelectedTrack)
 	{
-		int numPoints = [[currentlySelectedTrack goodPoints] count];
+        NSUInteger numPoints = [[currentlySelectedTrack goodPoints] count];
 		pos = [currentlySelectedTrack animIndex];
-		if (pos >= numPoints) pos = numPoints-1;
+		if (pos >= numPoints && numPoints > 0) pos = numPoints-1;
 	}
-	currentTrackPos = pos;
+	currentTrackPos = (int)pos;
     [miniProfileView updateTrackAnimation:currentTrackPos];
 	[mapPathView updateTrackAnimation:currentTrackPos
 							   animID:0];
@@ -3312,11 +3319,11 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 - (IBAction)setSplitLength:(id)sender
 {
 	NSInteger tag = [(NSView*)sender tag];
-	[Utils setIntDefault:tag 
+	[Utils setIntDefault:(int)tag
 				  forKey:RCBDefaultSplitIndex];
 	[self rebuildSplitTable];
 	[splitsTableView reloadData];
-	[Utils selectMenuItem:tag
+	[Utils selectMenuItem:(int)tag
 				  forMenu:splitLengthSubMenu];
 }
 
@@ -3324,10 +3331,10 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 - (IBAction)setSplitGraphItem:(id)sender
 {
 	NSInteger tag = [(NSView*)sender tag];
-	[Utils setIntDefault:tag 
+	[Utils setIntDefault:(int)tag
 				  forKey:RCBDefaultSplitGraphItem];
-	[splitsGraphView setGraphItem:tag];
-	[Utils selectMenuItem:tag
+	[splitsGraphView setGraphItem:(int)tag];
+	[Utils selectMenuItem:(int)tag
 				  forMenu:splitGraphSubMenu];
 }
 
@@ -3338,7 +3345,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 	//int numMenuItems = [[browserOptionsPopup menu] numberOfItems];
 	//for (int i=1; i<numMenuItems; i++)
 	//{
-	//	[[[browserOptionsPopup menu] itemAtIndex:i] setState:i == (idx+1) ? NSOnState : NSOffState];
+	//	[[[browserOptionsPopup menu] itemAtIndex:i] setState:i == (idx+1) ? NSControlStateValueOn : NSControlStateValueOff];
 	//}
 	//[self doSetViewType:idx];
 }
@@ -3349,7 +3356,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 - (IBAction)setMapDataType:(id)sender
 {
 	NSInteger idx = [(NSView*)sender tag];
-	int dt = [Utils mapIndexToType:idx];    
+	int dt = (int)[Utils mapIndexToType:(int)idx];
 	[mapPathView setDataType:dt];
 	[Utils selectMenuItem:dt
 				  forMenu:mapViewDataTypeSubMenu];
@@ -3359,7 +3366,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 
 - (IBAction)setColorPathType:(id)sender
 {
-   int cpz = [sender indexOfSelectedItem];
+   int cpz = (int)[sender indexOfSelectedItem];
    [Utils setIntDefault:cpz forKey:RCBDefaultColorPathUsingZone];
    [mapPathView forceRedisplay];   
 }
@@ -3379,7 +3386,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
    [alert addButtonWithTitle:@"Not Yet"];
    [alert setMessageText:msg];
    [alert setInformativeText:@"Please purchase a registration key to enable all features."];
-   [alert setAlertStyle:NSInformationalAlertStyle];
+   [alert setAlertStyle:NSAlertStyleInformational];
    if ([alert runModal] == NSAlertFirstButtonReturn) 
    {
       NSWindow* w = [self window];
@@ -3408,7 +3415,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 {
 	NSMutableString* lineString = [NSMutableString stringWithCapacity:4000];
 	NSArray* colArray = [trackTableView tableColumns];
-	int numColumns = [colArray count];
+    NSUInteger numColumns = [colArray count];
 	for (int col=0; col<numColumns; col++)
 	{
 		NSTableColumn* column = [colArray objectAtIndex:col];
@@ -3421,7 +3428,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 	}
 	[lineString appendString:@"\n"];
 	 
-	int numRows = [trackTableView numberOfRows];
+	int numRows = (int)[trackTableView numberOfRows];
 	for (int r=0; r<numRows; r++)
 	{
 		TrackBrowserItem* bi = [trackTableView itemAtRow:r];
@@ -3464,7 +3471,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 - (IBAction)importTCX:(id)sender
 {
 	[self stopAnimations];
-	int numOld = [[tbDocument trackArray] count];
+    NSUInteger numOld = [[tbDocument trackArray] count];
 	if (!([RegController CHECK_REGISTRATION]) && ((1 + numOld) > kNumUnregisteredTracks))
 	{
 		[self postActivityImportLimitExeeded];
@@ -3477,7 +3484,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 		int status = [op runModalForDirectory:nil
 										 file:nil
 										types:fileTypes];
-		if (status == NSOKButton)	
+		if (status == NSModalResponseOK)	
 		{
 			NSArray* names = [op filenames];
 			if (!([RegController CHECK_REGISTRATION]) && (([names count] + numOld) > kNumUnregisteredTracks))
@@ -3496,7 +3503,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 - (IBAction)importFIT:(id)sender
 {
 	[self stopAnimations];
-	int numOld = [[tbDocument trackArray] count];
+    NSUInteger numOld = [[tbDocument trackArray] count];
 	if (!([RegController CHECK_REGISTRATION]) && ((1 + numOld) > kNumUnregisteredTracks))
 	{
 		[self postActivityImportLimitExeeded];
@@ -3509,7 +3516,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 		int status = [op runModalForDirectory:nil
 										 file:nil
 										types:fileTypes];
-		if (status == NSOKButton)	
+		if (status == NSModalResponseOK)	
 		{
 			NSArray* names = [op filenames];
 			if (!([RegController CHECK_REGISTRATION]) && (([names count] + numOld) > kNumUnregisteredTracks))
@@ -3529,7 +3536,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 - (IBAction)importHRM:(id)sender
 {
 	[self stopAnimations];
-	int numOld = [[tbDocument trackArray] count];
+    NSUInteger numOld = [[tbDocument trackArray] count];
 	if (!([RegController CHECK_REGISTRATION]) && ((1 + numOld) > kNumUnregisteredTracks))
 	{
 		[self postActivityImportLimitExeeded];
@@ -3542,7 +3549,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 		int status = [op runModalForDirectory:nil
 										 file:nil
 										types:fileTypes];
-		if (status == NSOKButton)	
+		if (status == NSModalResponseOK)	
 		{
 			NSArray* names = [op filenames];
 			if (!([RegController CHECK_REGISTRATION]) && (([names count] + numOld) > kNumUnregisteredTracks))
@@ -3561,7 +3568,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 - (IBAction)importGPX:(id)sender
 {
 	[self stopAnimations];
-	int numOld = [[tbDocument trackArray] count];
+    NSUInteger numOld = [[tbDocument trackArray] count];
 	if (!([RegController CHECK_REGISTRATION]) && ((1 + numOld) > kNumUnregisteredTracks))
 	{
 		[self postActivityImportLimitExeeded];
@@ -3574,7 +3581,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 		int status = [op runModalForDirectory:nil
 										 file:nil
 										types:fileTypes];
-		if (status == NSOKButton)
+		if (status == NSModalResponseOK)
 		{
 			NSArray* names = [op filenames];
 			if (!([RegController CHECK_REGISTRATION]) && (([names count] + numOld) > kNumUnregisteredTracks))
@@ -3640,7 +3647,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
       [alert addButtonWithTitle:@"OK"];
       [alert setMessageText:@"Please select one or more tracks in the browser for export"];
       //[alert setInformativeText:@"Please purchase a registration key to enable all features."];
-      [alert setAlertStyle:NSInformationalAlertStyle];
+      [alert setAlertStyle:NSAlertStyleInformational];
       [alert runModal];
    }
    else
@@ -3661,7 +3668,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 									  file:baseName];
       
       /* if successful, save file under designated name */
-      if (runResult == NSOKButton) 
+      if (runResult == NSModalResponseOK) 
       {
          [tbDocument exportTCXFile:arr 
                           fileName:[sp filename]];
@@ -3682,7 +3689,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
       [alert addButtonWithTitle:@"OK"];
       [alert setMessageText:@"Please select a single track in the browser for export"];
       //[alert setInformativeText:@"Please purchase a registration key to enable all features."];
-      [alert setAlertStyle:NSInformationalAlertStyle];
+      [alert setAlertStyle:NSAlertStyleInformational];
       [alert runModal];
    }
    else
@@ -3704,7 +3711,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 									  file:baseName];
       
       /* if successful, save file under designated name */
-      if (runResult == NSOKButton) 
+      if (runResult == NSModalResponseOK) 
       {
          [tbDocument exportGPXFile:[arr objectAtIndex:0] 
                           fileName:[sp filename]];
@@ -3724,7 +3731,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
       [alert addButtonWithTitle:@"OK"];
       [alert setMessageText:@"Please select a single track in the browser for export"];
       //[alert setInformativeText:@"Please purchase a registration key to enable all features."];
-      [alert setAlertStyle:NSInformationalAlertStyle];
+      [alert setAlertStyle:NSAlertStyleInformational];
       [alert runModal];
    }
    else
@@ -3746,7 +3753,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 									  file:baseName];
       
       /* if successful, save file under designated name */
-      if (runResult == NSOKButton) 
+      if (runResult == NSModalResponseOK) 
       {
          [tbDocument exportKMLFile:[arr objectAtIndex:0] 
                           fileName:[sp filename]];
@@ -3768,7 +3775,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
      [alert addButtonWithTitle:@"OK"];
       [alert setMessageText:@"Please select a single track in the browser for fly-by"];
       //[alert setInformativeText:@"Please purchase a registration key to enable all features."];
-      [alert setAlertStyle:NSInformationalAlertStyle];
+      [alert setAlertStyle:NSAlertStyleInformational];
       [alert runModal];
    }
    else
@@ -3805,7 +3812,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
          [alert addButtonWithTitle:@"OK"];
          [alert setMessageText:@"There was a problem completing this request. Have you installed Google Earth?"];
          [alert setInformativeText:@"This feature requires Google Earth to be installed."];
-         [alert setAlertStyle:NSInformationalAlertStyle];
+         [alert setAlertStyle:NSAlertStyleInformational];
          [alert runModal];
       }
    }
@@ -3822,7 +3829,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 		[alert addButtonWithTitle:@"OK"];
 		[alert setMessageText:@"Please select a single track in the browser for export"];
 		//[alert setInformativeText:@"Please purchase a registration key to enable all features."];
-		[alert setAlertStyle:NSInformationalAlertStyle];
+		[alert setAlertStyle:NSAlertStyleInformational];
 		[alert runModal];
 	}
 	else
@@ -3844,7 +3851,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 										file:baseName];
 
 		/* if successful, save file under designated name */
-		if (runResult == NSOKButton) 
+		if (runResult == NSModalResponseOK) 
 		{
 			Track* track = [arr objectAtIndex:0];
 			NSString* s = [track buildTextOutput:sep];
@@ -3893,7 +3900,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 									file:baseName];
 	
 	/* if successful, save file under designated name */
-	if (runResult == NSOKButton) 
+	if (runResult == NSModalResponseOK) 
 	{
 		NSString* s = [self buildSummaryTextOutput:sep];
 		if (![s writeToURL:[sp URL] 
@@ -3932,33 +3939,49 @@ NSString*      gCompareString = nil;         // @@FIXME@@
       [alert addButtonWithTitle:@"OK"];
       [alert setMessageText:@"Please select a single track in the browser for export"];
       //[alert setInformativeText:@"Please purchase a registration key to enable all features."];
-      [alert setAlertStyle:NSInformationalAlertStyle];
+      [alert setAlertStyle:NSAlertStyleInformational];
       [alert runModal];
    }
    else
    {
-      NSSavePanel *sp;
-      int runResult;
-      
-      /* create or get the shared instance of NSSavePanel */
-      sp = [NSSavePanel savePanel];
-      
-      /* set up new attributes */
-      //[sp setAccessoryView:newView];
-      [sp setRequiredFileType:@"txt"];
-      
-      /* display the NSSavePanel */
-      NSString* baseName = [self baseActivityFileName:[arr objectAtIndex:0]
-                                             fileType:@"txt"];
-      runResult = [sp runModalForDirectory:[self baseDirectoryForImportExport]  
-									  file:baseName];
-      
+       NSSavePanel *sp = [NSSavePanel savePanel];
+
+       // Instead of setAllowedFileTypes:
+       if (@available(macOS 11.0, *)) {
+           // “Plain text” UTI
+           [sp setAllowedContentTypes:@[ UTTypePlainText ]];
+       } else {
+           // Fallback for older macOS
+           [sp setAllowedFileTypes:@[@"txt"]];
+       }
+
+       [sp setCanCreateDirectories:YES];
+       [sp setExtensionHidden:NO];
+
+       // Suggested file name
+       NSString *baseName = [self baseActivityFileName:[arr objectAtIndex:0]
+                                              fileType:@"txt"];
+       [sp setNameFieldStringValue:baseName];
+
+       // Starting directory
+       [sp setDirectoryURL:[NSURL fileURLWithPath:[self baseDirectoryForImportExport]
+                                      isDirectory:YES]];
+
+       // Show panel
+       NSInteger runResult = [sp runModal];
+       if (runResult == NSModalResponseOK) {
+           NSURL *destURL = [sp URL];
+           // use destURL
+       }
+       
       /* if successful, save file under designated name */
-      if (runResult == NSOKButton) 
+      if (runResult == NSModalResponseOK) 
       {
-         [tbDocument exportLatLonTextFile:[arr objectAtIndex:0] 
-                                 fileName:[sp filename]];
-         
+          NSURL *destURL = [sp URL];
+          if (destURL) {
+              [tbDocument exportLatLonTextFile:[arr objectAtIndex:0]
+                                      fileName:[destURL path]];
+          }
       }
    }
    
@@ -3984,9 +4007,9 @@ NSString*      gCompareString = nil;         // @@FIXME@@
    NSInteger attrID = [(NSView*)sender tag];
    if ([sender indexOfSelectedItem] >= [sender numberOfItems]-1)
    {
-      NSString* prevSel = [currentlySelectedTrack attribute:attrID];
+      NSString* prevSel = [currentlySelectedTrack attribute:(int)attrID];
       int sts = [Utils editAttributeList:sender
-                             attributeID:attrID
+                             attributeID:(int)attrID
                                       wc:self];
       
       changed = (sts == 0);
@@ -3998,9 +4021,9 @@ NSString*      gCompareString = nil;         // @@FIXME@@
       {
          if (changed)
          {
-               [Utils buildPopupMenuFromItems:[Utils attrIDToDefaultsKey:attrID]
-                                        popup:sender 
-                             currentSelection:[currentlySelectedTrack attribute:attrID]];
+               [Utils buildPopupMenuFromItems:[Utils attrIDToDefaultsKey:(int)attrID]
+                                        popup:sender
+                             currentSelection:[currentlySelectedTrack attribute:(int)attrID]];
          }
          [sender selectItemWithTitle:prevSel]; 
        }
@@ -4165,12 +4188,12 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 {
 	if (currentlySelectedTrack != nil)
 	{
-		int sr = [trackTableView selectedRow];
+		int sr = (int)[trackTableView selectedRow];
 		TrackBrowserItem* item = [trackTableView itemAtRow:sr];
 		if ([item type] == kTypeLap)
 		{
 			item = [trackTableView parentForItem:item];
-			sr = [trackTableView rowForItem:item];
+			sr = (int)[trackTableView rowForItem:item];
 		}
 		if ([item type] == kTypeActivity)
 		{
@@ -4439,7 +4462,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 -(void) doSelChange
 {
 	[self stopAnimations];
-	int row = [trackTableView  selectedRow];
+	int row = (int)[trackTableView  selectedRow];
 	if (row != -1)
 	{
 		TrackBrowserItem* bi = [trackTableView  itemAtRow:row];
@@ -4637,7 +4660,7 @@ int searchTagToMask(int searchTag)
 - (IBAction)setSearchOptions:(id)sender
 {
    NSMenuItem* item = sender;
-   [item setState:[item state] == NSOnState ? NSOffState : NSOnState];
+   [item setState:[item state] == NSControlStateValueOn ? NSControlStateValueOff : NSControlStateValueOn];
    int theTag = (int)[item tag];
    int flags = [self searchOptions];
    BOOL state = [item state];
@@ -4689,7 +4712,6 @@ int searchTagToMask(int searchTag)
                 NSLog(@"Fetched %lu activities", (unsigned long)activities.count);
 
                 NSDictionary *lastActivity = [activities lastObject];
-                 NSDictionary *found = nil;
 
                 for (NSDictionary *activity in activities) {
                     NSLog(@"Activity name=%@", [activity objectForKey:@"name"]);
@@ -4854,10 +4876,10 @@ int searchTagToMask(int searchTag)
 		// NOTE: runModalForWindow does NOT work with WebView!!
 		
 		NSModalSession session = [NSApp beginModalSessionForWindow:[gswc window]];
-		int result = NSRunContinuesResponse;
+        NSModalResponse result = NSModalResponseContinue;
 		
 		// Loop until some result other than continues:
-		while (result == NSRunContinuesResponse)
+		while (result == NSModalResponseContinue)
 		{
 			// Run the window modally until there are no events to process:
 			result = [NSApp runModalSession:session];
@@ -4933,10 +4955,10 @@ int searchTagToMask(int searchTag)
 	
 	[[eswc window] setFrameOrigin:origin];
 	NSModalSession session = [NSApp beginModalSessionForWindow:[eswc window]];
-	int result = NSRunContinuesResponse;
+    NSModalResponse result = NSModalResponseContinue;
 	
 	// Loop until some result other than continues:
-	while (result == NSRunContinuesResponse)
+	while (result == NSModalResponseContinue)
 	{
 		// Run the window modally until there are no events to process:
 		result = [NSApp runModalSession:session];
@@ -5179,8 +5201,8 @@ int searchTagToMask(int searchTag)
 			
 				NSMutableDictionary* lapItems = [activityBI children];
 				NSArray* laps = [track laps];
-				int numLaps = [laps count];
-				if (numLaps > 0) 
+                NSUInteger numLaps = [laps count];
+				if (numLaps > 0)
 				{
 					Lap* lap = [laps objectAtIndex:0];
 					float lapEndTime = [lap startingWallClockTimeDelta] + [track durationOfLap:lap];
@@ -5376,7 +5398,7 @@ int searchTagToMask(int searchTag)
       NSAlert *alert = [[[NSAlert alloc] init] autorelease];
       [alert addButtonWithTitle:@"OK"];
       [alert setMessageText:@"Please select one or more tracks in the browser"];
-       [alert setAlertStyle:NSInformationalAlertStyle];
+       [alert setAlertStyle:NSAlertStyleInformational];
       [alert runModal];
    }
    else
@@ -5408,7 +5430,7 @@ int searchTagToMask(int searchTag)
 									  file:fname];
       
       /* if successful, save file under designated name */
-      if (runResult == NSOKButton) 
+      if (runResult == NSModalResponseOK) 
       {
          TrackBrowserDocument* doc = [[[TrackBrowserDocument alloc] init] autorelease];
          [doc setTracks:arr];
@@ -5466,7 +5488,7 @@ int searchTagToMask(int searchTag)
 	BOOL ret = YES;
 	SEL action = [anItem action];
 	
-	int numSelectedTracks = [[self prepareArrayOfSelectedTracks] count];
+    NSUInteger numSelectedTracks = [[self prepareArrayOfSelectedTracks] count];
 	if (action == @selector(setUploadToMobile:))
 	{
 		NSMenuItem* mi = (NSMenuItem*)anItem;
@@ -5568,7 +5590,7 @@ int searchTagToMask(int searchTag)
         NSAlert *alert = [[[NSAlert alloc] init] autorelease];
         [alert addButtonWithTitle:@"OK"];
         [alert setMessageText:@"Please select one or more tracks in the browser"];
-        [alert setAlertStyle:NSInformationalAlertStyle];
+        [alert setAlertStyle:NSAlertStyleInformational];
         [alert runModal];
     }
     else
@@ -5745,7 +5767,7 @@ int searchTagToMask(int searchTag)
 
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
-   int idx = [infoStatsTabView indexOfTabViewItem:[infoStatsTabView selectedTabViewItem]];
+   int idx = (int)[infoStatsTabView indexOfTabViewItem:[infoStatsTabView selectedTabViewItem]];
    [Utils setIntDefault:idx forKey:RCBDefaultBrowserTabView];
 }
 
@@ -5753,7 +5775,7 @@ int searchTagToMask(int searchTag)
 
 - (void) doTCXImport:(NSArray*)files showProgress:(BOOL)sp
 {
-	int numOld = [[tbDocument trackArray] count];
+    NSUInteger numOld = [[tbDocument trackArray] count];
 	if (!([RegController CHECK_REGISTRATION]) && (([files count] + numOld) > kNumUnregisteredTracks))
 	{
 		[self postActivityImportLimitExeeded];
@@ -5761,7 +5783,7 @@ int searchTagToMask(int searchTag)
 	else
 	{
 		if (sp) [self startProgressIndicator:@"Importing tracks..."];
-		int num = [files count];
+        NSUInteger num = [files count];
 		Track* lastTrack = nil;
 		for (int i=0; i<num; i++)
 		{
@@ -5822,7 +5844,7 @@ int searchTagToMask(int searchTag)
 
 -(void)addDataFromFiles:(NSArray*) files
 {
-	int num = [files count];
+    NSUInteger num = [files count];
 	NSMutableArray* tcxArray = [NSMutableArray arrayWithCapacity:num];
 	NSMutableArray* gpxArray = [NSMutableArray arrayWithCapacity:num];
 	NSMutableArray* hrmArray = [NSMutableArray arrayWithCapacity:num];
@@ -5903,7 +5925,7 @@ int searchTagToMask(int searchTag)
 
 - (void) doGPXImportWithProgress:(NSArray*)files
 {
-	int numOld = [[tbDocument trackArray] count];
+    NSUInteger numOld = [[tbDocument trackArray] count];
 	if (!([RegController CHECK_REGISTRATION]) && (([files count] + numOld) > kNumUnregisteredTracks))
 	{
 		[self postActivityImportLimitExeeded];
@@ -5911,7 +5933,7 @@ int searchTagToMask(int searchTag)
 	else
 	{
 		[self startProgressIndicator:@"Importing tracks..."];
-		int num = [files count];
+        NSUInteger num = [files count];
 		Track* lastTrack = nil;
 		for (int i=0; i<num; i++)
 		{
@@ -5935,7 +5957,7 @@ int searchTagToMask(int searchTag)
 
 - (void) doHRMImportWithProgress:(NSArray*)files
 {
-	int numOld = [[tbDocument trackArray] count];
+    NSUInteger numOld = [[tbDocument trackArray] count];
 	if (!([RegController CHECK_REGISTRATION]) && (([files count] + numOld) > kNumUnregisteredTracks))
 	{
 		[self postActivityImportLimitExeeded];
@@ -5943,7 +5965,7 @@ int searchTagToMask(int searchTag)
 	else
 	{
 		[self startProgressIndicator:@"Importing tracks..."];
-		int num = [files count];
+        NSUInteger num = [files count];
 		Track* lastTrack = nil;
 		for (int i=0; i<num; i++)
 		{
@@ -5967,7 +5989,7 @@ int searchTagToMask(int searchTag)
 
 - (void) doFITImportWithProgress:(NSArray*)files
 {
-	int numOld = [[tbDocument trackArray] count];
+    NSUInteger numOld = [[tbDocument trackArray] count];
 	if (!([RegController CHECK_REGISTRATION]) && (([files count] + numOld) > kNumUnregisteredTracks))
 	{
 		[self postActivityImportLimitExeeded];
@@ -5975,7 +5997,7 @@ int searchTagToMask(int searchTag)
 	else
 	{
 		[self startProgressIndicator:@"Importing FIT tracks..."];
-		int num = [files count];
+        NSUInteger num = [files count];
 		Track* lastTrack = nil;
 		for (int i=0; i<num; i++)
 		{

@@ -19,12 +19,12 @@
 -(void)awakeFromNib
 {
 	BOOL dontShow = [Utils boolFromDefaults:RCBDefaultCompareWindowDontShowHelp];
-	[alwaysShowHelpButton setState:dontShow ? NSOffState : NSOnState];
+	[alwaysShowHelpButton setState:dontShow ? NSControlStateValueOff : NSControlStateValueOn];
 }
 
 -(IBAction)setAlwaysShowHelp:(id)sender
 {
-	BOOL alwaysShow = [sender state] == NSOnState;
+	BOOL alwaysShow = [sender state] == NSControlStateValueOn;
 	[Utils setBoolDefault:!alwaysShow
 				   forKey:RCBDefaultCompareWindowDontShowHelp];
 }

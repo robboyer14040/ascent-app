@@ -80,11 +80,11 @@
 	int v = [Utils intFromDefaults:RCBDefaultSummaryGraphGranularity];
 	if (v == 0)
 	{
-	  [unitsMatrix setState:NSOnState atRow:0 column:0];
+	  [unitsMatrix setState:NSControlStateValueOn atRow:0 column:0];
 	} 
 	else
 	{
-	  [unitsMatrix setState:NSOnState atRow:1 column:0];
+	  [unitsMatrix setState:NSControlStateValueOn atRow:1 column:0];
 	}   
 	[sgView setPlotUnits:(v == 0 ? kWeeks : kMonths)];
 	[totalDistanceColorBox setTag:kDistance];

@@ -121,7 +121,7 @@ NSString* ActivityDragType = @"ActivityDragType";
 {
 	int kc = [theEvent keyCode];
     int mods = [theEvent modifierFlags];
-    bool optionKeyDown = ((mods&NSAlternateKeyMask)!=0);
+    bool optionKeyDown = ((mods&NSEventModifierFlagOption)!=0);
 	if (kc == 49)
 	{
 	  [[NSNotificationCenter defaultCenter] postNotificationName:@"TogglePlay" object:self];

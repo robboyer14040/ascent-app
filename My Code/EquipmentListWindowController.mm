@@ -453,7 +453,7 @@
 {
  	id ei = [[equipmentItemsArrayController selectedObjects] lastObject];
 	if (!ei) return;
-	if (returnCode == NSOKButton)
+	if (returnCode == NSModalResponseOK)
 	{
         NSImage *outputImage = [pictureTaker outputImage];
 		NSSize sz = [outputImage size];
@@ -510,10 +510,10 @@
 	
 	[[eswc window] setFrameOrigin:origin];
 	NSModalSession session = [NSApp beginModalSessionForWindow:[eswc window]];
-	int result = NSRunContinuesResponse;
+	int result = NSModalResponseContinue;
 	
 	// Loop until some result other than continues:
-	while (result == NSRunContinuesResponse)
+	while (result == NSModalResponseContinue)
 	{
 		// Run the window modally until there are no events to process:
 		result = [NSApp runModalSession:session];

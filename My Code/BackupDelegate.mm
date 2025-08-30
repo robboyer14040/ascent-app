@@ -556,7 +556,7 @@ shouldProceedAfterError:(NSError *)error
 			NSModalSession session = [NSApp beginModalSessionForWindow:[pbc window]];
 			while (uploadInProgress)
 			{
-				if ([NSApp runModalSession:session] != NSRunContinuesResponse)
+				if ([NSApp runModalSession:session] != NSModalResponseContinue)
 				{
 					break;
 				}

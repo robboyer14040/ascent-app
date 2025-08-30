@@ -43,21 +43,21 @@
 	BOOL endPickerEnabled = NO;
 	if ([startDate compare:[NSDate distantPast]] == NSOrderedSame)
 	{
-		[startDateMatrix setState:NSOnState atRow:0 column:0];
+		[startDateMatrix setState:NSControlStateValueOn atRow:0 column:0];
 	}
 	else
 	{
-		[startDateMatrix setState:NSOnState atRow:1 column:0];
+		[startDateMatrix setState:NSControlStateValueOn atRow:1 column:0];
 		[startDatePicker setDateValue:[dateRangeArray objectAtIndex:0]];
 		startPickerEnabled = YES;
 	}
 	if ([endDate compare:[NSDate distantFuture]] == NSOrderedSame)
 	{
-		[endDateMatrix setState:NSOnState atRow:0 column:0];
+		[endDateMatrix setState:NSControlStateValueOn atRow:0 column:0];
 	}
 	else
 	{
-		[endDateMatrix setState:NSOnState atRow:1 column:0];
+		[endDateMatrix setState:NSControlStateValueOn atRow:1 column:0];
 		[endDatePicker setDateValue:[dateRangeArray objectAtIndex:1]];
 		endPickerEnabled = YES;
 	}
@@ -172,7 +172,7 @@
 									  withObject:startDate];
 			[startDatePicker setEnabled:YES];
 			[startDatePicker setDateValue:startDate];
-			[startDateMatrix setState:NSOnState atRow:1 column:0];
+			[startDateMatrix setState:NSControlStateValueOn atRow:1 column:0];
 		}
 	}
 	else if (sender == setEndDateToLastButton)
@@ -184,7 +184,7 @@
 									  withObject:endDate];
 			[endDatePicker setEnabled:YES];
 			[endDatePicker setDateValue:endDate];
-			[endDateMatrix setState:NSOnState atRow:1 column:0];
+			[endDateMatrix setState:NSControlStateValueOn atRow:1 column:0];
 		}
 	}
 	[tbDocument setDocumentDateRange:dateRangeArray];

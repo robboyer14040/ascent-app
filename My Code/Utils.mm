@@ -1425,7 +1425,7 @@ static const int sNumSplitValues = sizeof(sSplitValues)/sizeof(float);
 	
 	
 	int selIdx = [Utils intFromDefaults:RCBDefaultSplitIndex];
-	[[subMenu itemWithTag:selIdx] setState:NSOnState];
+	[[subMenu itemWithTag:selIdx] setState:NSControlStateValueOn];
 
 	
 	[topMenu setSubmenu:subMenu
@@ -1451,7 +1451,7 @@ static const int sNumSplitValues = sizeof(sSplitValues)/sizeof(float);
 		}
 	}
 	selIdx = [Utils intFromDefaults:RCBDefaultSplitGraphItem];
-	[[subMenu itemWithTag:selIdx] setState:NSOnState];
+	[[subMenu itemWithTag:selIdx] setState:NSControlStateValueOn];
 	[topMenu setSubmenu:subMenu
 				forItem:parent];
 	
@@ -1768,7 +1768,7 @@ static BOOL                sThreshInited = NO;
 	for (int i=0; i<numMenuItems; i++)
 	{
 		NSMenuItem* mi = [menu itemAtIndex:i];
-		[mi setState:([mi tag] == itemTag) ? NSOnState : NSOffState];
+		[mi setState:([mi tag] == itemTag) ? NSControlStateValueOn : NSControlStateValueOff];
 	}
 }
 

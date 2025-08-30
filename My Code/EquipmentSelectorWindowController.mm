@@ -94,7 +94,7 @@
 - (void)windowDidBecomeKey:(NSNotification *)notification
 {
 	//NSLog(@"did become key");
-	[useAsDefaultsButton setState:NSOffState];
+	[useAsDefaultsButton setState:NSControlStateValueOff];
 	[equipmentItemsArrayController rearrangeObjects];
 	[self performSelector:@selector(updateCurrentSelection:)
 			   withObject:nil
@@ -155,7 +155,7 @@
 		NSError* error;
 		[[[EquipmentLog sharedInstance] managedObjectContext] save:&error];
 	}
-	if ([useAsDefaultsButton state] == NSOnState)
+	if ([useAsDefaultsButton state] == NSControlStateValueOn)
 	{
 		[equipmentLog setCurrentEquipmentItemsAsDefault:tbDocument];
 	}

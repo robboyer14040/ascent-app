@@ -224,7 +224,7 @@ NSString* TerraServerUrbanMap    = @"USGS Urban";
 - (IBAction)setShowIntervalMarkers:(id)sender
 {
 	int state = [sender state];
-	BOOL on = (state == NSOnState) ? YES : NO;
+	BOOL on = (state == NSControlStateValueOn) ? YES : NO;
 	[Utils setBoolDefault:on 
 				   forKey:RCBDefaultShowIntervalMarkers];
 	[intervalIncrementTextField setEnabled:on];
@@ -346,7 +346,7 @@ NSString* TerraServerUrbanMap    = @"USGS Urban";
 		[intervalIncrementStepper setFloatValue:v];
 		[intervalIncrementTextField setFloatValue:v];
 		BOOL on = [Utils boolFromDefaults:RCBDefaultShowIntervalMarkers];
-		[showIntervalMarkersButton setState:on ? NSOnState : NSOffState];
+		[showIntervalMarkersButton setState:on ? NSControlStateValueOn : NSControlStateValueOff];
 		[intervalIncrementTextField setEnabled:on];
 		[intervalIncrementStepper setEnabled:on];
 		[intervalIncrementUnitsLabel setEnabled:on];

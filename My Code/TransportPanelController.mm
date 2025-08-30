@@ -44,21 +44,21 @@
 		if ([st isEqualToString:@"stop"])
 		{
 			///printf("@stopping...\n");
-			[playButton setState:NSOffState];
-			[reverseButton setState:NSOffState];
+			[playButton setState:NSControlStateValueOff];
+			[reverseButton setState:NSControlStateValueOff];
 		}
 		else if ([st isEqualToString:@"play"])
 		{
 			///printf("@playing...\n");
 			if ([[AnimTimer defaultInstance] playingInReverse])
 			{
-				[reverseButton setState:NSOnState];
-				[playButton setState:NSOffState];
+				[reverseButton setState:NSControlStateValueOn];
+				[playButton setState:NSControlStateValueOff];
 			}
 			else
 			{
-				[playButton setState:NSOnState];
-				[reverseButton setState:NSOffState];
+				[playButton setState:NSControlStateValueOn];
+				[reverseButton setState:NSControlStateValueOff];
 			}
 		}
 	}					
@@ -180,7 +180,7 @@
 - (IBAction)play:(id)sender
 {
    AnimTimer* at = [AnimTimer defaultInstance];
-   if ([sender intValue] == NSOnState)
+   if ([sender intValue] == NSControlStateValueOn)
    {
       [at stop:self];
       [at play:self reverse:NO];
@@ -196,7 +196,7 @@
 - (IBAction)reverse:(id)sender
 {
    AnimTimer* at = [AnimTimer defaultInstance];
-   if ([sender intValue] == NSOnState)
+   if ([sender intValue] == NSControlStateValueOn)
    {
       [at stop:self];
       [at play:self reverse:YES];

@@ -26,7 +26,7 @@ NSString*  RCBDefaultMobileMeBackupFrequency	= @"DefaultMobileMeBackupFrequency"
     NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
 	if (sender == doLocalBackupButton)
 	{
-		[defaults setBool:[sender state] == NSOnState ? YES : NO forKey:RCBDefaultDoLocalBackup];
+		[defaults setBool:[sender state] == NSControlStateValueOn ? YES : NO forKey:RCBDefaultDoLocalBackup];
 	}
 	else if (sender == localBackupFreqPopup)
 	{
@@ -50,7 +50,7 @@ NSString*  RCBDefaultMobileMeBackupFrequency	= @"DefaultMobileMeBackupFrequency"
 		runResult = [op runModalForDirectory:curBackupFolder
 										file:nil];
 
-		if (runResult == NSOKButton) 
+		if (runResult == NSModalResponseOK) 
 		{
 			[defaults setObject:[op directory] forKey:RCBDefaultLocalBackupFolder];
 			[localBackupFolderTextField setStringValue:[op directory]];
@@ -58,7 +58,7 @@ NSString*  RCBDefaultMobileMeBackupFrequency	= @"DefaultMobileMeBackupFrequency"
 	}
 	else if (sender == doMobileMeBackupButton)
 	{
-		[defaults setBool:[sender state] == NSOnState ? YES : NO forKey:RCBDefaultDoMobileMeBackup];
+		[defaults setBool:[sender state] == NSControlStateValueOn ? YES : NO forKey:RCBDefaultDoMobileMeBackup];
 	}
 	else if (sender == mobileMeBackupFreqPopup)
 	{

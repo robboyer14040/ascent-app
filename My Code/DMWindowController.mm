@@ -626,7 +626,7 @@ NSEvent* sMouseEv = nil;
 - (IBAction)setShowPath:(id)sender
 {
    int state = [sender state];
-   BOOL on = (state == NSOnState) ? YES : NO;
+   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
    [mapView setShowPath:on];
 }
 
@@ -634,7 +634,7 @@ NSEvent* sMouseEv = nil;
 - (IBAction)setShowLaps:(id)sender
 {
    int state = [sender state];
-   BOOL on = (state == NSOnState) ? YES : NO;
+   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
    [mapView setShowLaps:on];
 }
 
@@ -642,7 +642,7 @@ NSEvent* sMouseEv = nil;
 - (IBAction)setShowIntervalMarkers:(id)sender
 {
 	int state = [sender state];
-	BOOL on = (state == NSOnState) ? YES : NO;
+	BOOL on = (state == NSControlStateValueOn) ? YES : NO;
 	[mapView setShowIntervalMarkers:on];
 	[Utils setBoolDefault:on 
 				   forKey:RCBDefaultShowIntervalMarkers];
@@ -669,7 +669,7 @@ NSEvent* sMouseEv = nil;
 
 - (IBAction) setShowHud:(id) sender
 {
-	BOOL on = [sender state] == NSOnState;
+	BOOL on = [sender state] == NSControlStateValueOn;
 	if (on)
 	{
 		[[self window] addChildWindow:(NSWindow*)[dataHUDWC window] ordered:NSWindowAbove];
@@ -937,7 +937,7 @@ NSEvent* sMouseEv = nil;
 	[mapView setDataType:[Utils mapIndexToType:idx]];
 	[mapView setIntervalIncrement:[Utils floatFromDefaults:RCBDefaultIntervalMarkerIncrement]];
 	BOOL on = [Utils boolFromDefaults:RCBDefaultShowIntervalMarkers];
-	[showIntervalMarkersButton setState:on ? NSOnState : NSOffState];
+	[showIntervalMarkersButton setState:on ? NSControlStateValueOn : NSControlStateValueOff];
 	[intervalIncrementTextField setEnabled:on];
 	v = [Utils floatFromDefaults:RCBDefaultIntervalMarkerIncrement];
 	[intervalIncrementStepper setFloatValue:v];

@@ -3895,7 +3895,7 @@ static BOOL dragging = NO;
 				if (!selectRegionInProgress)
 				{
 					// start select region here if left mouse down and 'option' key held
-					selectRegionInProgress = (([ev type] == NSLeftMouseDown) && ([ev modifierFlags] & NSAlternateKeyMask));
+					selectRegionInProgress = (([ev type] == NSLeftMouseDown) && ([ev modifierFlags] & NSEventModifierFlagOption));
 					if (selectRegionInProgress) 
 					{
 						[transparentView setStartSelection:[self calcTransparentViewPos:i]];
@@ -4044,7 +4044,7 @@ static ADView* lastDown = nil;
 	{
 		BOOL adjustStart = NO;
 		BOOL adjustEnd = NO;
-		if ([ev modifierFlags] & NSAlternateKeyMask) // operate on start point
+		if ([ev modifierFlags] & NSEventModifierFlagOption) // operate on start point
 		{
 			selectionStartIdx += delta;
 			selectionStartIdx = CLIP(0, selectionStartIdx, (count-1));

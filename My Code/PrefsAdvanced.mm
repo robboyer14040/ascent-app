@@ -198,13 +198,13 @@ NSString*  RCBDefaultCalculatePowerActivities		= @"CalculatePowerActivities";
     NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
 	if (sender == checkForUpdatesAtStartupButton)
 	{
-		[defaults setBool:[sender state] == NSOnState ? YES : NO forKey:RCBCheckForUpdateAtStartup];
+		[defaults setBool:[sender state] == NSControlStateValueOn ? YES : NO forKey:RCBCheckForUpdateAtStartup];
 		[defaults synchronize];
 	}
 	else if (sender == checkForUpdatesPeriodicallyButton)
 	{
 		[self setUpdateFrequency:sender];
-		if ([sender state] == NSOnState) 
+		if ([sender state] == NSControlStateValueOn) 
 		{
 			[checkForUpdatesAtStartupButton setState:NO];
 			[checkForUpdatesAtStartupButton setEnabled:NO];
@@ -222,9 +222,9 @@ NSString*  RCBDefaultCalculatePowerActivities		= @"CalculatePowerActivities";
 	}
 	else if (sender == enableAutoSplitButton)
 	{
-		[defaults setBool:[sender state] == NSOnState ? YES : NO forKey:RCBDefaultAutoSplitEnabled];
+		[defaults setBool:[sender state] == NSControlStateValueOn ? YES : NO forKey:RCBDefaultAutoSplitEnabled];
 		[defaults synchronize];
-		BOOL enabled = [sender state] == NSOnState;
+		BOOL enabled = [sender state] == NSControlStateValueOn;
 		NSColor* clr = (enabled ? [NSColor blackColor] : [NSColor lightGrayColor]);
 		[autoSplitThresholdText setTextColor:clr];
 		[autoSplitThresholdField setTextColor:clr];
@@ -244,7 +244,7 @@ NSString*  RCBDefaultCalculatePowerActivities		= @"CalculatePowerActivities";
 	}
 	else if (sender == useDistanceDataButton)
 	{
-		[defaults setBool:[sender state] == NSOnState ? YES : NO forKey:RCBDefaultUseDistanceDataEnabled];
+		[defaults setBool:[sender state] == NSControlStateValueOn ? YES : NO forKey:RCBDefaultUseDistanceDataEnabled];
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"MustFixupTrack" object:nil];
 	}
 	else if (sender == altitudeFilterSlider)
@@ -297,7 +297,7 @@ NSString*  RCBDefaultCalculatePowerActivities		= @"CalculatePowerActivities";
 	}
 	else if (sender == calculatePowerIfAbsentButton)
 	{
-		[defaults setBool:[sender state] == NSOnState ? YES : NO forKey:RCBDefaultCalculatePowerIfAbsent];
+		[defaults setBool:[sender state] == NSControlStateValueOn ? YES : NO forKey:RCBDefaultCalculatePowerIfAbsent];
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"MustFixupTrack" object:nil];
 	}
 	else if (sender == powerActvitiesPopup)
@@ -367,15 +367,15 @@ NSString*  RCBDefaultCalculatePowerActivities		= @"CalculatePowerActivities";
 
 	enabled = [defaults boolForKey:RCBDefaultAutoSplitEnabled];
 	NSColor* clr = enabled ? [NSColor blackColor] : [NSColor grayColor];
-	[enableAutoSplitButton setState: enabled ? NSOnState : NSOffState];
+	[enableAutoSplitButton setState: enabled ? NSControlStateValueOn : NSControlStateValueOff];
 	[autoSplitThresholdText setTextColor:clr];
 	[autoSplitThresholdSlider setEnabled:enabled];
 
 	enabled = [defaults boolForKey:RCBDefaultUseDistanceDataEnabled];
-	[useDistanceDataButton setState: enabled ? NSOnState : NSOffState];
+	[useDistanceDataButton setState: enabled ? NSControlStateValueOn : NSControlStateValueOff];
 
 	enabled = [defaults boolForKey:RCBDefaultCalculatePowerIfAbsent];
-	[calculatePowerIfAbsentButton setState: enabled ? NSOnState : NSOffState];
+	[calculatePowerIfAbsentButton setState: enabled ? NSControlStateValueOn : NSControlStateValueOff];
 	
 	float v = [Utils convertSpeedValue:[defaults floatForKey:RCBDefaultMinSpeed]];
 	[self updateMinSpeedForMovingTime:v];
@@ -430,11 +430,11 @@ NSString*  RCBDefaultCalculatePowerActivities		= @"CalculatePowerActivities";
 		if ([powerActs containsObject:act])
 		{
 			NSMenuItem* mi = [powerActvitiesPopup itemWithTitle:act];
-			[mi setState:NSOnState];
+			[mi setState:NSControlStateValueOn];
 		}
 	}
 	NSMenuItem* mi = [powerActvitiesPopup itemWithTitle:theMenuTitle];
-	[mi setState:NSOffState];
+	[mi setState:NSControlStateValueOff];
 }
 
 

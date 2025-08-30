@@ -146,7 +146,7 @@ enum
 {
 	NSInteger tag = [sender tag];
 	tPlotType pt = (tPlotType)tag;
-	BOOL newState = [graphView plotEnabled:pt] ? NSOffState : NSOnState;
+	BOOL newState = [graphView plotEnabled:pt] ? NSControlStateValueOff : NSControlStateValueOn;
 	[sender setState:newState];
 	tag = typeComponentToTag(pt,kEnabledControl);
 	[sender setTag:tag];
@@ -253,13 +253,13 @@ enum
 		case kCM_ShowMarkers:
 			[sender setState:![graphView showMarkers]];
 			[self setShowMarkers:sender];
-			[showMarkersButton setState:[graphView showMarkers] ? NSOnState : NSOffState];
+			[showMarkersButton setState:[graphView showMarkers] ? NSControlStateValueOn : NSControlStateValueOff];
 			break;
 		 
 		case kCM_ShowLaps:
 			[sender setState:![graphView showLaps]];
 			[self setShowLaps:sender];
-			[showLapsButton setState:[graphView showLaps] ? NSOnState : NSOffState];
+			[showLapsButton setState:[graphView showLaps] ? NSControlStateValueOn : NSControlStateValueOff];
 			break;
 		 
 		case kCM_ShowCrossHairs:
@@ -271,7 +271,7 @@ enum
 		case kCM_ShowPeaks:
 			[sender setState:![graphView showPeaks]];
 			[self setShowPeaks:sender];
-			[showPeaksButton setState:[graphView showPeaks] ? NSOnState : NSOffState];
+			[showPeaksButton setState:[graphView showPeaks] ? NSControlStateValueOn : NSControlStateValueOff];
 			break;
 		 
 		case kSpeed:
@@ -623,7 +623,7 @@ enum
 	}
 	else
 	{
-      if ([showStatsHudButton state] == NSOffState)
+      if ([showStatsHudButton state] == NSControlStateValueOff)
       {
          [statsHUDWindow orderOut:self];
       }
@@ -1252,7 +1252,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setStatsHUDLocked:(id) sender
 {
-   if ([sender state] == NSOnState)
+   if ([sender state] == NSControlStateValueOn)
    {
       [statsHUDWindow orderFront:self];
    }
@@ -1266,7 +1266,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (BOOL) statsHUDLocked
 {
-   return [showStatsHudButton state] == NSOnState;
+   return [showStatsHudButton state] == NSControlStateValueOn;
 }
 
 
@@ -1316,7 +1316,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setShowDataHUD:(id) sender
 {
-   BOOL on = [sender state] == NSOnState;
+   BOOL on = [sender state] == NSControlStateValueOn;
    if (on)
    {
       [[self window] addChildWindow:(NSWindow*)[dataHUDWC window] ordered:NSWindowAbove];
@@ -1617,7 +1617,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 			NSNumber* enabledNum = [dict objectForKey:k];
 			BOOL enabled = [enabledNum boolValue];
 			[v setTitle:[Utils friendlyIntervalAsString:[k intValue]]];
-			[v setState:enabled ? NSOnState : NSOffState];
+			[v setState:enabled ? NSControlStateValueOn : NSControlStateValueOff];
 			[v setEnabled:canShowPower];
 			 ++tag;
 			 ++i;
@@ -1628,10 +1628,10 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (void)drawerDidOpen:(NSNotification *)notification
 {
-	[showLapsButton setState:[graphView showLaps] ? NSOnState : NSOffState];
-	[showMarkersButton setState:[graphView showMarkers] ? NSOnState : NSOffState];
-	[showPeaksButton setState:[graphView showPeaks] ? NSOnState : NSOffState];
-	[showPeakPowerIntervalsButton setState:[graphView showPowerPeakIntervals] ? NSOnState : NSOffState];
+	[showLapsButton setState:[graphView showLaps] ? NSControlStateValueOn : NSControlStateValueOff];
+	[showMarkersButton setState:[graphView showMarkers] ? NSControlStateValueOn : NSControlStateValueOff];
+	[showPeaksButton setState:[graphView showPeaks] ? NSControlStateValueOn : NSControlStateValueOff];
+	[showPeakPowerIntervalsButton setState:[graphView showPowerPeakIntervals] ? NSControlStateValueOn : NSControlStateValueOff];
 	[numberOfPeaksStepper setIntValue:[graphView numPeaks]];   
 	[numberOfPeaksField setIntValue:[graphView numPeaks]];   
 	[numAvgPointsField setIntValue:[graphView numAvgPoints]];   
@@ -1773,7 +1773,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 {
    int state = [sender state];
    int type = tagToPlotType([sender tag]);
-   BOOL on = (state == NSOnState) ? YES : NO;
+   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
    [graphView setPlotEnabled:(tPlotType)type 
 					 enabled:on
 			  updateDefaults:YES];
@@ -1784,7 +1784,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 {
    int state = [sender state];
    int type = tagToPlotType([sender tag]);
-   BOOL on = (state == NSOnState) ? YES : NO;
+   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
    PlotAttributes* pa = [[graphView plotAttributesArray] objectAtIndex:type];
    [pa setFillEnabled:on];
    [graphView setNeedsDisplay:YES];
@@ -1820,7 +1820,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 - (IBAction) setShowMarkers:(id) sender
 {
    int state = [sender state];
-   BOOL on = (state == NSOnState) ? YES : NO;
+   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
    [graphView setShowMarkers:on];
    [graphView setNeedsDisplay:YES];
    [Utils setBoolDefault:on 
@@ -1831,7 +1831,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 - (IBAction) setShowPowerPeakIntervals:(id)sender
 {
 	int state = [sender state];
-	BOOL on = (state == NSOnState) ? YES : NO;
+	BOOL on = (state == NSControlStateValueOn) ? YES : NO;
 	[graphView setShowPowerPeakIntervals:on];
 	[graphView setNeedsDisplay:YES];
 	[Utils setBoolDefault:on 
@@ -1842,7 +1842,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 - (IBAction) setShowLaps:(id) sender
 {
    int state = [sender state];
-   BOOL on = (state == NSOnState) ? YES : NO;
+   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
    [graphView setShowLaps:on];
    [graphView setNeedsDisplay:YES];
    [Utils setBoolDefault:on 
@@ -1853,7 +1853,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 - (IBAction) setShowPeaks:(id) sender
 {
    int state = [sender state];
-   BOOL on = (state == NSOnState) ? YES : NO;
+   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
    [graphView setShowPeaks:on];
    [graphView setNeedsDisplay:YES];
    [self updatePeakControls:on];
@@ -1865,7 +1865,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 - (IBAction) setShowHeartrateZones:(id) sender
 {
    int state = [sender state];
-   BOOL on = (state == NSOnState) ? YES : NO;
+   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
    [graphView setShowHeartrateZones:on];
    [graphView setNeedsDisplay:YES];
    [Utils setBoolDefault:on 
@@ -1998,7 +1998,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 - (IBAction) setShowCrossHairs:(id)sender
 {
    int state = [sender state];
-   BOOL on = (state == NSOnState) ? YES : NO;
+   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
    [graphView setShowCrossHairs:on];
    [graphView setNeedsDisplay:YES];
    [Utils setBoolDefault:on 
@@ -2080,7 +2080,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 - (IBAction) setPeakPowerIntervalEnabled:(id)sender
 {
 	int intervalIndex = [sender tag] - kStartingPeakPowerCheckboxTag;
-	BOOL enabled = [sender state] == NSOnState;
+	BOOL enabled = [sender state] == NSControlStateValueOn;
 	[Utils setPeakPowerIntervalAtIndexEnabled:intervalIndex
 									  enabled:enabled];
 	 if (enabled)
@@ -2154,7 +2154,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 {
 	if ([notification object] == statsHUDWindow)
 	{
-		[showStatsHudButton setState:NSOffState];
+		[showStatsHudButton setState:NSControlStateValueOff];
 	}
 }
 

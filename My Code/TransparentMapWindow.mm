@@ -32,10 +32,6 @@
 	return result;
 }
 
-- (BOOL) canBecomeKeyWindow
-{
-   return NO;
-}
 
 
 - (void)dealloc
@@ -43,7 +39,23 @@
 #if DEBUG_LEAKS
 	NSLog(@"Transparent MAP window dealloc...rc:%d", [self retainCount]);
 #endif
+    [super dealloc];
 }
+
+
+- (BOOL)canBecomeKeyWindow { return NO; }
+- (BOOL)canBecomeMainWindow { return NO; } // also prevent becoming main
+
+// If anything calls these, do not try to become key; just show the window.
+- (void)makeKeyAndOrderFront:(id)sender
+{
+    [self orderFront:sender];
+}
+- (void)makeKeyWindow
+{
+    /* no-op on purpose */
+}
+
 
 
 @end

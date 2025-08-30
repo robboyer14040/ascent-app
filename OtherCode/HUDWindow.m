@@ -246,9 +246,18 @@ static const float kHeightCutoff = 120.0;
     [self windowDidResize:nil];
 }
 
-- (BOOL)canBecomeKeyWindow
+
+- (BOOL)canBecomeKeyWindow { return NO; }
+- (BOOL)canBecomeMainWindow { return NO; } // also prevent becoming main
+
+// If anything calls these, do not try to become key; just show the window.
+- (void)makeKeyAndOrderFront:(id)sender
 {
-    return NO;
+    [self orderFront:sender];
+}
+- (void)makeKeyWindow
+{
+    /* no-op on purpose */
 }
 
 

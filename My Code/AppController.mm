@@ -12,6 +12,7 @@
 #import "TransportPanelController.h"
 #import "RegController.h"
 #import "MapPathView.h"
+#import "StravaAPI.h"
 #import <OmniAppKit/OAPreferenceClient.h>
 #import <OmniAppKit/OAPreferenceClientRecord.h>
 #import <OmniAppKit/OAPreferenceController.h>
@@ -283,6 +284,19 @@ void setColorDefault(NSMutableDictionary* dict,
 	[dc closeAllDocumentsWithDelegate:self 
 				 didCloseAllSelector:@selector(didCloseAllFunc:didCloseAll:contextInfo:)
 						 contextInfo:nil];
+}
+
+- (void)application:(NSApplication *)app openURLs:(NSArray<NSURL *> *)urls {
+    for (NSURL *url in urls) {
+        if ([url.scheme.lowercaseString isEqualToString:@"ascent"]) {
+            NSError *err = nil;
+            BOOL ok = [[StravaAPI shared] handleCallbackURL:url error:&err];
+            if (!ok) {
+                NSLog(@"Strava callback error: %@", err);
+            }
+            break; // handled one; stop looping
+        }
+    }
 }
 
 
@@ -1054,6 +1068,8 @@ shouldProceedAfterError:(NSError *)error
    }
    [alert release];
 }
+
+
 
 
 @end

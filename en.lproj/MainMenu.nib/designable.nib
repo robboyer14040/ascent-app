@@ -183,10 +183,10 @@
                             <menuItem isSeparatorItem="YES" id="426">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Upload to Mobile" id="465">
+                            <menuItem title="Sync Strava Activities" id="465">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="setUploadToMobile:" target="-1" id="467"/>
+                                    <action selector="syncStravaActivities:" target="-1" id="d9S-Kt-VjX"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="464">

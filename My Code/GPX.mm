@@ -36,19 +36,20 @@
 
 -(void) dealloc
 {
+    [super dealloc];
 }
 
 
 // this code is very similar to the code executed during sync, currently in TrackBrowserDocument.mm
 -(void) processLapData:(NSMutableArray*)laps
 {
-	int lapCount = [laps count];
-	int numTracks = [currentImportTrackArray count];
+    NSUInteger lapCount = [laps count];
+    NSUInteger numTracks = [currentImportTrackArray count];
 	if ((numTracks > 0) && (lapCount > 0))
 	{
 		int lapIndex = 0;
 		NSDate* earliestTrackDate = [[currentImportTrackArray objectAtIndex:0] creationTime];
-		int trackIndex = [currentImportTrackArray count] - 1;
+		int trackIndex = (int)[currentImportTrackArray count] - 1;
 		Lap* lap = [laps objectAtIndex:lapIndex];
 		while ((trackIndex >= 0) && (lapIndex < lapCount))
 		{
@@ -448,7 +449,7 @@
    {
       if (currentImportTrack != nil)
       {
-         int numPoints = [currentImportPointArray count];
+          NSUInteger numPoints = [currentImportPointArray count];
          if ((numPoints > 0) && !skipTrack)
          {
             TrackPoint* pt = [currentImportPointArray objectAtIndex:0];
@@ -516,7 +517,7 @@
 		{
 			if (inActivity)
 			{
-				int num = [currentImportPointArray count];
+                NSUInteger num = [currentImportPointArray count];
 				if (num > 1)
 				{
 					TrackPoint* prevPt = [currentImportPointArray objectAtIndex:num-1];
@@ -682,7 +683,7 @@
             NSRange r = [currentStringValue rangeOfString:@"![CDATA["];
             if (r.location != NSNotFound)
             {
-               int len = [currentStringValue length];
+               int len = (int)[currentStringValue length];
                r.location += 8;
                r.length = len - 10;
                currentTrackName = [currentStringValue substringWithRange:r];
@@ -849,7 +850,7 @@
 	NSArray* pts = [track goodPoints];
 	//NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMTAtSync]];
 	NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:0];
-	int num = [pts count];
+    NSUInteger num = [pts count];
 	for (int i=0; i<num; i++)
 	{
 		TrackPoint* pt = [pts objectAtIndex:i];
@@ -901,7 +902,7 @@
 	[root addChild:trk];
 	
 	NSArray* laps = [track laps];
-	int numLaps = [laps count];
+    NSUInteger numLaps = [laps count];
 	if (numLaps > 0)
 	{
 		//.... gpxdata LAP EXTENSIONS ...............................................

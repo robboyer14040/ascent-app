@@ -46,6 +46,7 @@
 #import "EquipmentLog.h"
 #import "EquipmentBoxView.h"
 #import "StravaAPI.h"
+#import "StravaImporter.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 ///#import "DBComm.h"
@@ -4689,62 +4690,113 @@ int searchTagToMask(int searchTag)
 	[self doToggleCalendarAndBrowser:(int)[sender selectedSegment]];
 }
 
-
 - (IBAction)syncStravaActivities:(id)sender
 {
     NSWindow *host = self.window ?: NSApp.keyWindow ?: NSApp.mainWindow;
-    [[StravaAPI shared] startAuthorizationFromWindow:host completion:^(NSError *err){
-        if (err) {
-            int wtf = 42;
-            wtf++;
+
+    // Helper so we don't duplicate import start logic
+    void (^startImportWithToken)(NSString *) = ^(NSString *token) {
+        [self startProgressIndicator:@"syncing activities from Strava…"];
+
+        NSDateComponents *dc = [NSDateComponents new];
+        dc.year = 2025; dc.month = 4; dc.day = 1;
+        NSDate *since = [[NSCalendar currentCalendar] dateFromComponents:dc];
+        [dc release];
+
+        StravaImporter *importer = [[StravaImporter alloc] initWithAccessToken:token];
+
+        __block BOOL madeDeterminate = NO;
+        [importer importTracksSince:since
+                            perPage:200
+                           maxPages:4
+                           progress:^(NSUInteger pagesFetched, NSUInteger totalSoFar) {
+                               // already on main
+                               if (!madeDeterminate && totalSoFar > 0) {
+                                   madeDeterminate = YES;
+                                   [[[SharedProgressBar sharedInstance] controller]
+                                       begin:@"syncing Strava activities…"
+                                       divisions:(int)totalSoFar];
+                               } else {
+                                   [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                               }
+                           }
+                         completion:^(NSArray *tracks, NSError *error) {
+                             // main thread
+                             if (error) {
+                                 NSLog(@"Strava import failed: %@", error);
+                             } else {
+                                 [self updateProgressIndicator:@"updating browser..."];
+                                 [tbDocument addTracks:[tracks mutableCopy]];
+                                 // [self buildBrowser:YES];
+                             }
+                             [importer release];
+                             [self endProgressIndicator];
+                         }];
+    };
+
+    // 1) Try to reuse/refresh token silently.
+    [[StravaAPI shared] fetchFreshAccessToken:^(NSString * _Nullable token, NSError * _Nullable error) {
+        if (!error && token.length) {
+            // We already have a fresh token (either reused or silently refreshed).
+            startImportWithToken(token);
+            return;
         }
-        else {
-            NSDateComponents *dc = [NSDateComponents new];
-            dc.year = 2025; dc.month = 8; dc.day = 1;
-            NSDate *since = [[NSCalendar currentCalendar] dateFromComponents:dc];
 
-            [[StravaAPI shared] fetchAllActivitiesSince:since
-                                                perPage:200
-                                               progress:^(NSUInteger pagesFetched, NSUInteger totalSoFar) {
-               NSLog(@"Fetched page %lu (total so far %lu)", (unsigned long)pagesFetched, (unsigned long)totalSoFar);
-            } completion:^(NSArray<NSDictionary *> * _Nullable activities, NSError * _Nullable error) {
-                if (error) { NSLog(@"Fetch failed: %@", error); return; }
-                NSLog(@"Fetched %lu activities", (unsigned long)activities.count);
-
-                NSDictionary *lastActivity = [activities lastObject];
-
-                for (NSDictionary *activity in activities) {
-                    NSLog(@"Activity name=%@", [activity objectForKey:@"name"]);
+        // 2) If we get 401/“authorization required”, *then* run the browser flow.
+        if ([error.domain isEqualToString:@"Strava"] && error.code == 401) {
+            [[StravaAPI shared] startAuthorizationFromWindow:host completion:^(NSError * _Nullable authErr) {
+                if (authErr) {
+                    NSLog(@"Error authorizing with Strava: %@", authErr);
+                    return;
                 }
-
-                if (lastActivity) {
-                    NSNumber *actID = [lastActivity objectForKey:@"id"];
-                    
-                    [[StravaAPI shared] fetchActivityStreams:actID
-                                                       types:@[@"latlng", @"heartrate", @"velocity_smooth", @"time"]
-                                                  completion:^(NSDictionary<NSString *,NSArray *> * _Nullable streams, NSError * _Nullable error) {
-                        if (streams) {
-                            int wtff = 42;
-                            wtff++;
-                        }
-                        // streams[@"latlng"] -> array of [lat,lon]
-                        // streams[@"heartrate"] -> array of bpm
-                        // streams[@"velocity_smooth"] -> m/s (convert to mph or km/h)
-                        // streams[@"time"] -> seconds from start (aligned with the above)
-                    }];
-                }
-               // TODO: map dictionaries -> your Activity model and persist to your DB.
-               // Example fields per item:
-               // id (NSNumber), name (NSString), type (NSString),
-               // start_date (NSString ISO 8601), distance (meters, NSNumber),
-               // moving_time (seconds), elapsed_time (seconds), total_elevation_gain, private, etc.
-           }];
+                // After browser auth, the API has stored fresh tokens;
+                // fetch the token (fast path) and start import.
+                [[StravaAPI shared] fetchFreshAccessToken:^(NSString * _Nullable token2, NSError * _Nullable err2) {
+                    if (err2 || token2.length == 0) {
+                        NSLog(@"Could not obtain token after auth: %@", err2);
+                        return;
+                    }
+                    startImportWithToken(token2);
+                }];
+            }];
+            return;
         }
-        /* ... */
+
+        // Other error (network, parse, etc.)
+        NSLog(@"Token fetch error: %@", error);
     }];
-    
 }
 
+
+- (void)addStravaActivities:(NSArray<NSDictionary*> *) activities
+{
+#if 0
+    NSUInteger numTracks = [activities count];
+    for (i=0; i<numTracks; )
+    NSDictionary *lastActivity = [activities lastObject];
+
+    for (NSDictionary *activity in activities) {
+        NSLog(@"Activity name=%@", [activity objectForKey:@"name"]);
+    }
+
+    if (lastActivity) {
+        NSNumber *actID = [lastActivity objectForKey:@"id"];
+        
+        [[StravaAPI shared] fetchActivityStreams:actID
+                                           types:@[@"latlng", @"heartrate", @"velocity_smooth", @"time"]
+                                      completion:^(NSDictionary<NSString *,NSArray *> * _Nullable streams, NSError * _Nullable error) {
+            if (streams) {
+                int wtff = 42;
+                wtff++;
+            }
+            // streams[@"latlng"] -> array of [lat,lon]
+            // streams[@"heartrate"] -> array of bpm
+            // streams[@"velocity_smooth"] -> m/s (convert to mph or km/h)
+            // streams[@"time"] -> seconds from start (aligned with the above)
+        }];
+    }
+#endif
+}
 
 - (IBAction)showActivityDetail:(id)sender
 {

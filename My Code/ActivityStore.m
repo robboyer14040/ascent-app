@@ -19,7 +19,17 @@
 
 #import <objc/runtime.h>
 
-@implementation ActivityStore {
+
+
+@interface ActivityStore ()
+
+- (BOOL)ensureSchema:(NSError **)error;
+
+@end
+
+
+@implementation ActivityStore
+{
     sqlite3 *_db;
     NSURL *_url;
 }
@@ -29,6 +39,70 @@
     return self;
 }
 
+
+- (BOOL)open:(NSError **)error {
+    if (_db) return YES;
+
+    if (!_url.isFileURL) {
+        if (error) *error = [NSError errorWithDomain:@"ActivityStore"
+                                                code:EINVAL
+                                            userInfo:@{NSLocalizedDescriptionKey:@"URL is not a file URL"}];
+        return NO;
+    }
+
+    NSString *path = _url.path;
+    NSString *wal  = [path stringByAppendingString:@"-wal"];
+    NSString *shm  = [path stringByAppendingString:@"-shm"];
+    NSFileManager *fm = NSFileManager.defaultManager;
+    BOOL hasWAL = [fm fileExistsAtPath:wal] || [fm fileExistsAtPath:shm];
+
+    int rc = sqlite3_open_v2(path.UTF8String, &_db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    if (rc != SQLITE_OK) {
+        int xrc = sqlite3_extended_errcode(_db);
+        int sys = sqlite3_system_errno(_db);
+        const char *msg = sqlite3_errmsg(_db);
+        if (error) *error = [NSError errorWithDomain:@"ActivityStore"
+                                                code:rc
+                                            userInfo:@{NSLocalizedDescriptionKey:
+                                                       [NSString stringWithFormat:@"sqlite3_open_v2 failed (%d/%d): %s (errno=%d)",
+                                                        rc, xrc, msg ?: "(null)", sys]}];
+        if (_db) { sqlite3_close(_db); _db = NULL; }
+        return NO;
+    }
+
+    if (hasWAL) {
+        char *errmsg = NULL;
+        rc = sqlite3_exec(_db, "PRAGMA journal_mode;", NULL, NULL, &errmsg);
+        if (rc != SQLITE_OK) {
+            int xrc = sqlite3_extended_errcode(_db);
+            int sys = sqlite3_system_errno(_db);
+            if (error) *error = [NSError errorWithDomain:@"ActivityStore"
+                                                    code:rc
+                                                userInfo:@{NSLocalizedDescriptionKey:
+                                                           [NSString stringWithFormat:
+                        @"Cannot access WAL sidecar next to database. "
+                        @"Folder permission is required to read '%@' and its '-wal'/'-shm' files. "
+                        @"(rc=%d/%d errno=%d: %s)", path, rc, xrc, sys, errmsg?: "(null)"]}];
+            if (errmsg) sqlite3_free(errmsg);
+            sqlite3_close(_db); _db = NULL;
+            return NO;
+        }
+    }
+
+    // Prefer DELETE mode (no sidecars out of your sandbox)
+    (void)sqlite3_exec(_db, "PRAGMA journal_mode = DELETE;", NULL, NULL, NULL);
+    (void)sqlite3_exec(_db, "PRAGMA synchronous = NORMAL;", NULL, NULL, NULL);
+    (void)sqlite3_exec(_db, "PRAGMA foreign_keys = ON;", NULL, NULL, NULL);
+
+    // 🔹 Create current schema (no ALTERs, no duplicates)
+    if (![self ensureSchema:error]) {
+        sqlite3_close(_db); _db = NULL;
+        return NO;
+    }
+    return YES;
+}
+
+#if 0
 - (BOOL)open:(NSError **)error {
     if (_db) return YES;
 
@@ -103,6 +177,7 @@
 
     return YES;
 }
+#endif
 
 
 - (void)close {
@@ -112,7 +187,7 @@
 #pragma mark - Schema
 
 
-
+#if 0
 - (BOOL)createSchema:(NSError **)error
 {
     // _db is your opened sqlite3 *
@@ -278,6 +353,8 @@
     run("ALTER TABLE meta ADD COLUMN int4 INTEGER;", NO);
    return YES;
 }
+#endif
+
 
 
 
@@ -846,9 +923,9 @@ fail:
 #endif
         
         if (outUuid) *outUuid = [NSString stringWithUTF8String:(const char *)sqlite3_column_text(st,1)];
-        const unsigned char *txt1 = sqlite3_column_text(st, 2);
+        ///const unsigned char *txt1 = sqlite3_column_text(st, 2);
         if (outTableInfo) *outTableInfo = ColumnInfoDictFromJSONText(sqlite3_column_text(st, 2));
-        const unsigned char *txt2 = sqlite3_column_text(st, 3);
+        ///const unsigned char *txt2 = sqlite3_column_text(st, 3);
         if (outSplitsTableInfo) *outSplitsTableInfo = ColumnInfoDictFromJSONText(sqlite3_column_text(st, 3));
         if (outStartTime) *outStartTime = DateFromEpoch(sqlite3_column_int64(st, 4));
         if (outEndTime) *outEndTime = DateFromEpoch(sqlite3_column_int64(st, 5));
@@ -925,7 +1002,7 @@ fail:
         if ([t respondsToSelector:@selector(setCreationTime:)]) [t setCreationTime:ct]; else [t setValue:ct forKey:@"creationTime"];
         if ([t respondsToSelector:@selector(setCreationTimeOverride:)]) [t setCreationTimeOverride:cto]; else [t setValue:cto forKey:@"creationTimeOverride"];
         if ([t respondsToSelector:@selector(setDistance:)]) [t setDistance:dist]; else [t setValue:@(dist) forKey:@"distance"];
-        if ([t respondsToSelector:@selector(setOrigDistance:)]) [t setOrigDistance:dist]; else [t setValue:@(dist) forKey:@"distance"];
+        ///if ([t respondsToSelector:@selector(setOrigDistance:)]) [t setOrigDistance:dist]; else [t setValue:@(dist) forKey:@"distance"];
         if ([t respondsToSelector:@selector(setWeight:)]) [t setWeight:wt]; else [t setValue:@(wt) forKey:@"weight"];
         if ([t respondsToSelector:@selector(setAltitudeSmoothingFactor:)]) [t setAltitudeSmoothingFactor:asf];
         if ([t respondsToSelector:@selector(setEquipmentWeight:)])       [t setEquipmentWeight:eqw];
@@ -1376,7 +1453,7 @@ fail:
     ActivityStore *store = [[ActivityStore alloc] initWithURL:dbURL];
     NSError *err = nil;
     [store open:&err];
-    [store createSchema:&err];
+    ///[store createSchema:&err];
     [store saveAllTracks:inTracks error:&err];
     [store close];
 //    // Save a track
@@ -1389,6 +1466,148 @@ fail:
 //    Track *one = [store loadTrackWithUUID:someUUID error:&err];
 }
 #endif
+
+
+// Call once after opening `_db` (sqlite3 *).
+// Returns NO and fills *error if any CREATE/INSERT fails.
+
+static BOOL ASCExecStrict(sqlite3 *db, const char *sql, NSError **outError) {
+    char *errmsg = NULL;
+    int rc = sqlite3_exec(db, sql, NULL, NULL, &errmsg);
+    if (rc != SQLITE_OK) {
+        if (outError) {
+            NSString *msg = errmsg ? [NSString stringWithUTF8String:errmsg] : @"SQLite error";
+            *outError = [NSError errorWithDomain:@"ActivityStore" code:rc
+                                        userInfo:@{NSLocalizedDescriptionKey: msg}];
+        }
+        if (errmsg) sqlite3_free(errmsg);
+        return NO;
+    }
+    return YES;
+}
+
+- (BOOL)ensureSchema:(NSError **)error
+{
+    // Pragmas
+    if (!ASCExecStrict(_db, "PRAGMA foreign_keys = ON;", error)) return NO;
+    (void)sqlite3_exec(_db, "PRAGMA journal_mode = DELETE;", NULL, NULL, NULL);
+    (void)sqlite3_exec(_db, "PRAGMA synchronous = NORMAL;", NULL, NULL, NULL);
+
+    // Transaction
+    if (!ASCExecStrict(_db, "BEGIN IMMEDIATE;", error)) return NO;
+
+    BOOL ok = NO;
+    do {
+        // ---- Tables ----
+        const char *createActivities =
+            "CREATE TABLE IF NOT EXISTS activities ("
+            " id INTEGER PRIMARY KEY,"
+            " uuid TEXT UNIQUE NOT NULL,"
+            " name TEXT,"
+            " creation_time_s INTEGER,"
+            " creation_time_override_s INTEGER,"
+            " distance_mi REAL,"
+            " weight_lb REAL,"
+            " altitude_smooth_factor REAL,"
+            " equipment_weight_lb REAL,"
+            " device_total_time_s REAL,"
+            " moving_speed_only INTEGER,"
+            " has_distance_data INTEGER,"
+            " attributes_json TEXT,"
+            " markers_json TEXT,"
+            " override_json TEXT,"
+            " seconds_from_gmt_at_sync INTEGER,"
+            " flags INTEGER,"
+            " device_id INTEGER,"
+            " firmware_version INTEGER"
+            ");";
+        if (!ASCExecStrict(_db, createActivities, error)) break;
+
+        const char *createLaps =
+            "CREATE TABLE IF NOT EXISTS laps ("
+            " id INTEGER PRIMARY KEY,"
+            " track_id INTEGER NOT NULL REFERENCES activities(id) ON DELETE CASCADE,"
+            " lap_index INTEGER,"
+            " orig_start_time_s INTEGER,"
+            " start_time_delta_s REAL,"
+            " total_time_s REAL,"
+            " distance_mi REAL,"
+            " max_speed_mph REAL,"
+            " avg_speed_mph REAL,"
+            " begin_lat REAL,"
+            " begin_lon REAL,"
+            " end_lat REAL,"
+            " end_lon REAL,"
+            " device_total_time_s REAL,"
+            " average_hr INTEGER,"
+            " max_hr INTEGER,"
+            " average_cad INTEGER,"
+            " max_cad INTEGER,"
+            " calories INTEGER,"
+            " intensity INTEGER,"
+            " trigger_method INTEGER,"
+            " selected INTEGER,"
+            " stats_calculated INTEGER"
+            ");";
+        if (!ASCExecStrict(_db, createLaps, error)) break;
+
+        const char *createPoints =
+            "CREATE TABLE IF NOT EXISTS points ("
+            " id INTEGER PRIMARY KEY,"
+            " track_id INTEGER NOT NULL REFERENCES activities(id) ON DELETE CASCADE,"
+            " seq INTEGER,"
+            " wall_clock_delta_s REAL,"
+            " active_time_delta_s REAL,"
+            " latitude REAL,"
+            " longitude REAL,"
+            " orig_altitude_m REAL,"
+            " heartrate_bpm REAL,"
+            " cadence_rpm REAL,"
+            " temperature_c REAL,"
+            " speed_mps REAL,"
+            " power_w REAL,"
+            " orig_distance_mi REAL,"
+            " flags INTEGER"
+            ");";
+        if (!ASCExecStrict(_db, createPoints, error)) break;
+
+        const char *createMeta =
+            "CREATE TABLE IF NOT EXISTS meta ("
+            " id INTEGER PRIMARY KEY CHECK(id=1),"
+            " uuid_s TEXT,"
+            " tableInfo_json TEXT,"
+            " splitsTableInfo_json TEXT,"
+            " startDate_s INTEGER,"
+            " endDate_s INTEGER,"
+            " flags INTEGER,"
+            " totalTracks INTEGER,"
+            " int3 INTEGER,"
+            " int4 INTEGER"
+            ");";
+        if (!ASCExecStrict(_db, createMeta, error)) break;
+        if (!ASCExecStrict(_db, "INSERT OR IGNORE INTO meta (id) VALUES (1);", error)) break;
+
+        // ---- Indexes ----
+        if (!ASCExecStrict(_db, "CREATE UNIQUE INDEX IF NOT EXISTS idx_activities_uuid ON activities(uuid);", error)) break;
+        if (!ASCExecStrict(_db, "CREATE INDEX IF NOT EXISTS idx_activities_ct ON activities(creation_time_s);", error)) break;
+        if (!ASCExecStrict(_db, "CREATE INDEX IF NOT EXISTS idx_laps_track ON laps(track_id, lap_index);", error)) break;
+        if (!ASCExecStrict(_db, "CREATE INDEX IF NOT EXISTS idx_points_track ON points(track_id, seq);", error)) break;
+
+        ok = YES;
+    } while (0);
+
+    if (ok) {
+        if (!ASCExecStrict(_db, "COMMIT;", error)) {
+            (void)sqlite3_exec(_db, "ROLLBACK;", NULL, NULL, NULL);
+            return NO;
+        }
+        return YES;
+    } else {
+        (void)sqlite3_exec(_db, "ROLLBACK;", NULL, NULL, NULL);
+        return NO;
+    }
+}
+
 
 @end
 

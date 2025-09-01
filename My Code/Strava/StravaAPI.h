@@ -53,9 +53,30 @@ typedef void (^StravaProgress)(NSUInteger pagesFetched, NSUInteger totalSoFar);
 - (void)fetchActivityDetail:(NSNumber *)activityID
                  completion:(void (^)(NSDictionary * _Nullable activity, NSError * _Nullable error))completion;
 
+// Convenience: deliver completion on the given queue (nil => main)
+- (void)fetchActivityDetail:(NSNumber *)activityID
+                      queue:(dispatch_queue_t _Nullable)queue
+                 completion:(void (^)(NSDictionary * _Nullable activity,
+                                      NSError * _Nullable error))completion;
 - (void)fetchActivityStreams:(NSNumber *)activityID
                        types:(NSArray<NSString *> *)types
                   completion:(void (^)(NSDictionary<NSString *, NSArray *> * _Nullable streams, NSError * _Nullable error))completion;
+
+- (void)fetchActivityStreams:(NSNumber *)activityID
+                       types:(NSArray<NSString *> *)types
+                       queue:(dispatch_queue_t _Nullable)queue
+                  completion:(void (^)(NSDictionary<NSString *, NSArray *> * _Nullable streams,
+                                       NSError * _Nullable error))completion;
+
+// Returns an autoreleased copy of the current token, or nil if none.
+- (NSString * _Nullable)currentAccessToken;
+
+// Ensures you have a valid token (refreshing or reauthing if needed) and returns it.
+- (void)fetchFreshAccessToken:(void (^)(NSString * _Nullable token, NSError * _Nullable error))completion;
+
+- (void)_ensureFreshAccessToken:(StravaAuthCompletion)completion;
+
+- (void)persistTokensWithAccess:(NSString *)access refresh:(NSString *)refresh;
 
 @end
 

@@ -87,6 +87,7 @@ NSString* RCBDefaultSplitMethod = @"DefaultSplitMethod";
 
 - (void) dealloc
 {
+    [super dealloc];
 }
 
 
@@ -106,7 +107,7 @@ NSString* RCBDefaultSplitMethod = @"DefaultSplitMethod";
 
 -(IBAction) setSplitMethod:(id)sender
 {
-	splitMethod = [sender indexOfSelectedItem];
+	splitMethod = (int)[sender indexOfSelectedItem];
 	[Utils setIntDefault:splitMethod
 				  forKey:RCBDefaultSplitMethod];
 	[self updateAutoSplit];

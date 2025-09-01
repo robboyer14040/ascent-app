@@ -28,7 +28,50 @@ enum
 
 
 @implementation TrackPoint
-- (id)initWithGPSData:(NSTimeInterval)wcd 
+
+
+@synthesize wallClockDelta = _wallClockDelta;
+@synthesize activeTimeDelta = _activeTimeDelta;
+@synthesize latitude = _latitude;
+@synthesize longitude = _longitude;
+@synthesize origAltitude = _origAltitude;
+@synthesize altitude = _altitude;
+@synthesize heartrate = _heartrate;
+@synthesize cadence = _cadence;
+@synthesize temperature = _temperature;
+@synthesize speed = _speed;
+@synthesize power = _power;
+@synthesize origDistance = _origDistance;
+@synthesize distance = _distance;
+@synthesize gradient = _gradient;
+@synthesize flags = _flags;
+
++ (BOOL)supportsSecureCoding { return YES; }
+
+- (instancetype)init {
+    if ((self = [super init])) {
+        _wallClockDelta  = 0;
+        _activeTimeDelta = 0;
+        _latitude        = BAD_LATLON;
+        _longitude       = BAD_LATLON;
+        _altitude        = BAD_ALTITUDE;
+        _origAltitude    = BAD_ALTITUDE;
+        _heartrate       = 0;
+        _cadence         = 0;
+        _temperature     = 0;
+        _speed           = 0;
+        _power           = 0;
+        _origDistance    = BAD_DISTANCE;
+        _distance        = BAD_DISTANCE;
+        _gradient        = 0;
+        _flags           = 0;
+        validLatLon = NO;
+   }
+    return self;
+}
+
+
+- (id)initWithGPSData:(NSTimeInterval)wcd
            activeTime:(NSTimeInterval)atd
              latitude:(float)lat
             longitude:(float)lon
@@ -39,104 +82,79 @@ enum
                 speed:(float)sp
              distance:(float)d
 {
-  // NSTimeInterval ti = (NSTimeInterval) creationTime;
-  // date = [NSDate dateWithTimeIntervalSince1970:ti];
-   //[date retain];
-  // activeTime = [NSDate dateWithTimeIntervalSince1970:(NSTimeInterval) at];
-  // [activeTime retain];
-	wallClockDelta = wcd;
-	activeTimeDelta = atd;
-	latitude = lat;
-	longitude = lon;
+	_wallClockDelta = wcd;
+    _activeTimeDelta = atd;
+    _latitude = lat;
+    _longitude = lon;
 	validLatLon = [Utils validateLatitude:lat longitude:lon];
-	heartrate = (float)hr;
-	origAltitude = altitude = alt;
-	power = 0;
+    _heartrate = (float)hr;
+    _origAltitude = _altitude = alt;
+    _power = 0;
 	if (cd >= 255)
 	{
-		cadence = 0.0;
+        _cadence = 0.0;
 	}
 	else
 	{
-		cadence = (float)cd;
+        _cadence = (float)cd;
 	}
-	temperature = temp;
-	speed = sp;
-	origDistance = distance = d;
-	gradient = 0.0;
+    _temperature = temp;
+    _speed = sp;
+    _origDistance = self.distance = d;
+    _gradient = 0.0;
 	climbSoFar = 0.0;
 	descentSoFar = 0.0;
-	flags = 0;
+    _flags = 0;
 	return self;
 }
 
-
--(id)init
-{
-   self = [self initWithGPSData:0
-                     activeTime:0
-                       latitude:BAD_LATLON     // must be bad value
-                      longitude:BAD_LATLON     // must be bad value
-                       altitude:BAD_ALTITUDE     // must be bad value
-                      heartrate:0
-                        cadence:0
-                    temperature:0
-                          speed:0.0
-                    distance:BAD_DISTANCE];
-	//date = [NSDate dateWithTimeIntervalSince1970:0];
-	//[date retain];
-	//activeTime = [NSDate dateWithTimeIntervalSince1970:0];
-	//[activeTime retain];
-	wallClockDelta = activeTimeDelta = 0.0;
-	validLatLon = NO;
-	return self;
-}
 
 
 -(void)dealloc
 {
+    [super dealloc];
 }
 
 
 - (id)mutableCopyWithZone:(NSZone *)zone
 {
 	TrackPoint* newPoint = [[TrackPoint allocWithZone:zone] init];
-	[newPoint setWallClockDelta:wallClockDelta];
-	[newPoint setActiveTimeDelta:activeTimeDelta];
-	[newPoint setAltitude:altitude];
-	[newPoint setOrigAltitude:origAltitude];
-	[newPoint setLatitude:latitude];
-	[newPoint setLongitude:longitude];
-	[newPoint setHeartrate:heartrate];
-	[newPoint setCadence:cadence];
-	[newPoint setTemperature:temperature];
-	[newPoint setSpeed:speed];
-	[newPoint setDistance:distance];
-	[newPoint setGradient:gradient];
-	[newPoint setOrigDistance:origDistance];
+	[newPoint setWallClockDelta:self.wallClockDelta];
+	[newPoint setActiveTimeDelta:self.activeTimeDelta];
+	[newPoint setAltitude:self.altitude];
+	[newPoint setOrigAltitude:self.origAltitude];
+	[newPoint setLatitude:self.latitude];
+	[newPoint setLongitude:self.longitude];
+	[newPoint setHeartrate:self.heartrate];
+	[newPoint setCadence:self.cadence];
+	[newPoint setTemperature:self.temperature];
+	[newPoint setSpeed:self.speed];
+	[newPoint setDistance:self.distance];
+	[newPoint setGradient:self.gradient];
+	[newPoint setOrigDistance:self.origDistance];
 	[newPoint setValidLatLon:validLatLon];
 	[newPoint setClimbSoFar:climbSoFar];
 	[newPoint setDescentSoFar:descentSoFar];
-	[newPoint setPower:power];
-	newPoint->flags = flags;
+	[newPoint setPower:self.power];
+	newPoint.flags = self.flags;
 	return newPoint;
 }
 
 
 - (id)initWithDeadZoneMarker:(NSTimeInterval)wcd activeTimeDelta:(NSTimeInterval)atd
 {
-	wallClockDelta = wcd;
-	activeTimeDelta = atd;
-	latitude = longitude = BAD_LATLON;
-	heartrate = 0.0;
-	cadence = 0.0;
-	altitude = BAD_ALTITUDE;
-	origDistance = distance = BAD_DISTANCE;
-	gradient = 0.0;
-	speed = 0.0;
+    _wallClockDelta = wcd;
+    _activeTimeDelta = atd;
+    _latitude = _longitude = BAD_LATLON;
+    _heartrate = 0.0;
+    _cadence = 0.0;
+    _altitude = BAD_ALTITUDE;
+    _origDistance = _distance = BAD_DISTANCE;
+    _gradient = 0.0;
+    _speed = 0.0;
 	climbSoFar = 0.0;
 	descentSoFar = 0.0;
-	flags = 0;
+    _flags = 0;
 	return self;
 }
 
@@ -144,31 +162,31 @@ enum
 // old school, hackish way of marking dead zones use methods below
 - (BOOL) isDeadZoneMarker
 {
-   return /*(altitude == BAD_ALTITUDE) &&*/  (origDistance == BAD_DISTANCE) && (latitude == BAD_LATLON) && (longitude == BAD_LATLON);
+   return /*(altitude == BAD_ALTITUDE) &&*/  (self.origDistance == BAD_DISTANCE) && (self.latitude == BAD_LATLON) && (self.longitude == BAD_LATLON);
 }
 
 
 - (BOOL)beginningOfDeadZone
 {
-    return FLAG_IS_SET(flags, kStartDeadZoneMarker);
+    return FLAG_IS_SET(self.flags, kStartDeadZoneMarker);
 }
 
 
 - (BOOL)setBeginningOfDeadZone
 {
-    return SET_FLAG(flags, kStartDeadZoneMarker);
+    return SET_FLAG(self.flags, kStartDeadZoneMarker);
 }
 
 
 - (BOOL)endOfDeadZone
 {
-    return FLAG_IS_SET(flags, kEndDeadZoneMarker);
+    return FLAG_IS_SET(self.flags, kEndDeadZoneMarker);
 }
 
 
 - (BOOL)setEndOfDeadZone
 {
-    return SET_FLAG(flags, kEndDeadZoneMarker);
+    return SET_FLAG(self.flags, kEndDeadZoneMarker);
 }
 
 
@@ -190,154 +208,180 @@ static NSDate* sStartTime = nil;
 - (id)initWithCoder:(NSCoder *)coder
 {
 #if DEBUG_DECODE_POINT
-	printf("  decoding TrackPoint\n");
+    printf("  decoding TrackPoint\n");
 #endif
-	self = [super init];
-	int version;
-	float fval;
-	int ival;
-	[coder decodeValueOfObjCType:@encode(int) at:&version];
+    self = [super init];
+    int version;
+    float fval;
+    int ival;
+    [coder decodeValueOfObjCType:@encode(int) at:&version];
 #if DEBUG_DECODE_POINT
-	printf("    version\n");
+    printf("    version\n");
 #endif
-	if (version > CUR_VERSION)
-	{
-		NSException *e = [NSException exceptionWithName:ExFutureVersionName
-												 reason:ExFutureVersionReason
-											   userInfo:nil];			  
-		@throw e;
-	}
-	
-	NSDate* wallDate = nil;
-	NSDate* activeTimeDate = nil;
-	if (version < 4)
-	{
-		wallDate = [coder decodeObject];
-#if DEBUG_DECODE_POINT
-	printf("    wall date\n");
-#endif
-		activeTimeDate = wallDate;
+    if (version > CUR_VERSION) {
+        NSException *e = [NSException exceptionWithName:ExFutureVersionName
+                                                 reason:ExFutureVersionReason
+                                               userInfo:nil];
+        @throw e;
+    }
 
-		assert(sStartTime);
-		wallClockDelta = activeTimeDelta = [wallDate timeIntervalSinceDate:sStartTime];
-	}
-	else
-	{
-		[coder decodeValueOfObjCType:@encode(double) at:&wallClockDelta];
-#if DEBUG_DECODE_POINT
-	printf("    wall clock delta\n");
-#endif
-		[coder decodeValueOfObjCType:@encode(double) at:&activeTimeDelta];
-#if DEBUG_DECODE_POINT
-	printf("    active time delta\n");
-#endif
-	}
-	[coder decodeValueOfObjCType:@encode(float) at:&fval];
-#if DEBUG_DECODE_POINT
-	printf("    active distance\n");
-#endif
-	[self setDistance:fval];
-	origDistance = fval;
+    NSDate *wallDate = nil;
+    NSDate *activeTimeDate = nil;
 
-	[coder decodeValueOfObjCType:@encode(float) at:&fval];
+    if (version < 4) {
+        wallDate = [coder decodeObject];   // legacy unkeyed date
 #if DEBUG_DECODE_POINT
-	printf("    latitude\n");
+        printf("    wall date\n");
 #endif
-	[self setLatitude:fval];
+        activeTimeDate = wallDate;
+        assert(sStartTime);
+        _wallClockDelta  = [wallDate timeIntervalSinceDate:sStartTime];
+        _activeTimeDelta = _wallClockDelta;
+    } else {
+        // decode into double, not float
+        double dtemp = 0.0;
+        [coder decodeValueOfObjCType:@encode(double) at:&dtemp];
+        _wallClockDelta = dtemp;
+#if DEBUG_DECODE_POINT
+        printf("    wall clock delta\n");
+#endif
+        dtemp = 0.0;
+        [coder decodeValueOfObjCType:@encode(double) at:&dtemp];
+        _activeTimeDelta = dtemp;
+#if DEBUG_DECODE_POINT
+        printf("    active time delta\n");
+#endif
+    }
 
-	[coder decodeValueOfObjCType:@encode(float) at:&fval];
+    [coder decodeValueOfObjCType:@encode(float) at:&fval];    // distance (legacy note: may be recalculated)
 #if DEBUG_DECODE_POINT
-	printf("    longitude\n");
+    printf("    active distance\n");
 #endif
-	[self setLongitude:fval];
+    [self setDistance:fval];
+    _origDistance = fval;
 
-	[coder decodeValueOfObjCType:@encode(float) at:&fval];
-#if DEBUG_DECODE_POINT
-	printf("    altitude\n");
-#endif
-	[self setAltitude:fval];
-	origAltitude = fval;
+    [coder decodeValueOfObjCType:@encode(float) at:&fval];    // latitude
+    [self setLatitude:fval];
 
-	[coder decodeValueOfObjCType:@encode(float) at:&fval];
-#if DEBUG_DECODE_POINT
-	printf("    speed\n");
-#endif
-	[self setSpeed:fval];
+    [coder decodeValueOfObjCType:@encode(float) at:&fval];    // longitude
+    [self setLongitude:fval];
 
-	[coder decodeValueOfObjCType:@encode(float) at:&fval];
-#if DEBUG_DECODE_POINT
-	printf("    temperature\n");
-#endif
-	[self setTemperature:fval];
+    [coder decodeValueOfObjCType:@encode(float) at:&fval];    // altitude
+    [self setAltitude:fval];
+    _origAltitude = fval;
 
-	[coder decodeValueOfObjCType:@encode(float) at:&fval];		// added in v5 
-#if DEBUG_DECODE_POINT
-	printf("    power\n");
-#endif
-	[self setPower:fval];										// added in v5 
+    [coder decodeValueOfObjCType:@encode(float) at:&fval];    // speed
+    [self setSpeed:fval];
 
-	[coder decodeValueOfObjCType:@encode(float) at:&fval];      // spare
-#if DEBUG_DECODE_POINT
-	printf("    fspare\n");
-#endif
+    [coder decodeValueOfObjCType:@encode(float) at:&fval];    // temperature
+    [self setTemperature:fval];
 
-	[coder decodeValueOfObjCType:@encode(float) at:&fval];
-#if DEBUG_DECODE_POINT
-	printf("    heartrate\n");
-#endif
-	[self setHeartrate:fval];
+    [coder decodeValueOfObjCType:@encode(float) at:&fval];    // power (v5)
+    [self setPower:fval];
 
-	[coder decodeValueOfObjCType:@encode(float) at:&fval];
-#if DEBUG_DECODE_POINT
-	printf("    cadence\n");
-#endif
-	if (fval >= 254.5) fval = 0.0;     // illegal cadence value, not present
-	[self setCadence:fval];
+    [coder decodeValueOfObjCType:@encode(float) at:&fval];    // spare
 
-	[coder decodeValueOfObjCType:@encode(int) at:&flags];      // added in v3
-#if DEBUG_DECODE_POINT
-	printf("    flags\n");
-#endif
+    [coder decodeValueOfObjCType:@encode(float) at:&fval];    // heartrate
+    [self setHeartrate:fval];
 
-	[coder decodeValueOfObjCType:@encode(int) at:&ival];        // spare
-#if DEBUG_DECODE_POINT
-	printf("    spare\n");
-#endif
+    [coder decodeValueOfObjCType:@encode(float) at:&fval];    // cadence
+    if (fval >= 254.5f) fval = 0.0f;                          // illegal cadence value, not present
+    [self setCadence:fval];
 
-	if ((version < 4) && (version > 1))
-	{
-		activeTimeDate = [coder decodeObject];            // added in v2
-#if DEBUG_DECODE_POINT
-		printf("    active time date\n");
-#endif
-		activeTimeDelta = [activeTimeDate timeIntervalSinceDate:sStartTime];
-	}
-	validLatLon = [Utils validateLatitude:latitude longitude:longitude];
-	return self;
+    int iTemp = 0;
+    [coder decodeValueOfObjCType:@encode(int) at:&iTemp];     // flags (v3)
+    _flags = iTemp;
+
+    [coder decodeValueOfObjCType:@encode(int) at:&ival];      // spare
+
+    if ((version < 4) && (version > 1)) {
+        activeTimeDate = [coder decodeObject];                // added in v2
+        _activeTimeDelta = [activeTimeDate timeIntervalSinceDate:sStartTime];
+    }
+
+    validLatLon = [Utils validateLatitude:self.latitude longitude:self.longitude];
+    return self;
 }
 
 
 - (void)encodeWithCoder:(NSCoder *)coder
 {
-	int version = CUR_VERSION;
-	float spareFloat = 0.0f;
-	int spareInt = 0;
-	[coder encodeValueOfObjCType:@encode(int) at:&version];
-	[coder encodeValueOfObjCType:@encode(double) at:&wallClockDelta];
-	[coder encodeValueOfObjCType:@encode(double) at:&activeTimeDelta];
-	[coder encodeValueOfObjCType:@encode(float) at:&origDistance];	// 'distance' field is always calculated in Track::fixDistance
-	[coder encodeValueOfObjCType:@encode(float) at:&latitude];
-	[coder encodeValueOfObjCType:@encode(float) at:&longitude];
-	[coder encodeValueOfObjCType:@encode(float) at:&origAltitude];	// 'altitude' field may be re-calculated in Track::fixupTrack
-	[coder encodeValueOfObjCType:@encode(float) at:&speed];
-	[coder encodeValueOfObjCType:@encode(float) at:&temperature];
-	float p = (!(FLAG_IS_SET(flags, kPowerDataCalculated)) ? power : 0.0);
-	[coder encodeValueOfObjCType:@encode(float) at:&p];			// added in v5
-	[coder encodeValueOfObjCType:@encode(float) at:&spareFloat];
-	[coder encodeValueOfObjCType:@encode(float) at:&heartrate];
-	[coder encodeValueOfObjCType:@encode(float) at:&cadence];
-	[coder encodeValueOfObjCType:@encode(int) at:&flags];			// added in v3
-	[coder encodeValueOfObjCType:@encode(int) at:&spareInt];
+    int version = CUR_VERSION;
+    [coder encodeValueOfObjCType:@encode(int) at:&version];
+
+    // times
+    double dTemp = _wallClockDelta;
+    [coder encodeValueOfObjCType:@encode(double) at:&dTemp];
+
+    dTemp = _activeTimeDelta;
+    [coder encodeValueOfObjCType:@encode(double) at:&dTemp];
+
+    // distance (legacy: Track::fixDistance may recalc; historically encoded 0)
+    float fTemp = 0.0f;
+    [coder encodeValueOfObjCType:@encode(float) at:&fTemp];
+
+    // latitude / longitude
+    fTemp = _latitude;   [coder encodeValueOfObjCType:@encode(float) at:&fTemp];
+    fTemp = _longitude;  [coder encodeValueOfObjCType:@encode(float) at:&fTemp];
+
+    // altitude (legacy comment says may be re-calculated; we encode current altitude)
+    fTemp = _altitude;   [coder encodeValueOfObjCType:@encode(float) at:&fTemp];
+
+    // speed, temperature
+    fTemp = _speed;         [coder encodeValueOfObjCType:@encode(float) at:&fTemp];
+    fTemp = _temperature;   [coder encodeValueOfObjCType:@encode(float) at:&fTemp];
+
+    // power: if calculated, store 0.0 per your legacy behavior
+    float p = (!(FLAG_IS_SET(self.flags, kPowerDataCalculated)) ? _power : 0.0f);
+    [coder encodeValueOfObjCType:@encode(float) at:&p];
+
+    // spare float
+    fTemp = 0.0f;
+    [coder encodeValueOfObjCType:@encode(float) at:&fTemp];
+
+    // heartrate, cadence
+    fTemp = _heartrate; [coder encodeValueOfObjCType:@encode(float) at:&fTemp];
+    fTemp = _cadence;   [coder encodeValueOfObjCType:@encode(float) at:&fTemp];
+
+    // flags (v3)
+    int iTemp = _flags;
+    [coder encodeValueOfObjCType:@encode(int) at:&iTemp];
+
+    // spare int
+    int spareInt = 0;
+    [coder encodeValueOfObjCType:@encode(int) at:&spareInt];
+}
+
+
+- (id)copyWithZone:(NSZone *)zone
+{
+    TrackPoint *p = [[TrackPoint allocWithZone:zone] init];
+
+    p->_wallClockDelta  = _wallClockDelta;
+    p->_activeTimeDelta = _activeTimeDelta;
+
+    p->_latitude     = _latitude;
+    p->_longitude    = _longitude;
+    p->_altitude     = _altitude;
+    p->_origAltitude = _origAltitude;
+
+    p->_heartrate    = _heartrate;
+    p->_cadence      = _cadence;
+    p->_temperature  = _temperature;
+    p->_speed        = _speed;
+    p->_power        = _power;
+
+    p->_distance     = _distance;
+    p->_origDistance = _origDistance;
+    p->_gradient     = _gradient;
+
+    p->_flags        = _flags;
+
+    p->validLatLon   = validLatLon;
+    p->climbSoFar    = climbSoFar;
+    p->descentSoFar  = descentSoFar;
+
+    return p; // MRR: returned retained; ARC will handle if enabled
 }
 
 
@@ -356,45 +400,45 @@ static NSDate* sStartTime = nil;
 {
 	// if altitude is *exactly* 0.0 assume it is a bad value.  BAD_ALTITUDE values may have
 	// been overriden at the beginning of activities due to a bug in 1.8.x, but they will always be 0.
-	return (origAltitude != 0.0) && (VALID_ALTITUDE(origAltitude));
+	return (self.origAltitude != 0.0) && (VALID_ALTITUDE(self.origAltitude));
 }
 
 
 - (BOOL)validDistance 
 {
-   return VALID_DISTANCE(distance);
+   return VALID_DISTANCE(self.distance);
 }
 
 
 - (BOOL)validOrigDistance 
 {
-	return VALID_DISTANCE(origDistance);
+	return VALID_DISTANCE(_origDistance);
 }
 
 
 
 - (BOOL)validHeartrate {
-   return heartrate > 0;
+   return _heartrate > 0;
 }
 
 
 - (NSTimeInterval)wallClockDelta 
 {
-    return wallClockDelta;
+    return _wallClockDelta;
 }
 
 - (void)setWallClockDelta:(NSTimeInterval)value 
 {
-    wallClockDelta = value;
+    _wallClockDelta = value;
 }
 
 - (NSTimeInterval)activeTimeDelta {
-    return activeTimeDelta;
+    return _activeTimeDelta;
 }
 
 - (void)setActiveTimeDelta:(NSTimeInterval)value 
 {
-      activeTimeDelta = value;
+    _activeTimeDelta = value;
 }
 
 
@@ -429,27 +473,27 @@ static NSDate* sStartTime = nil;
 
 - (float)latitude
 {
-   return latitude;
+   return _latitude;
 }
 
 
 - (void)setLatitude:(float)l
 {
-   latitude = l;
-   validLatLon = [Utils validateLatitude:latitude longitude:longitude];
+    _latitude = l;
+   validLatLon = [Utils validateLatitude:_latitude longitude:_longitude];
 }
 
 
 - (float)longitude
 {
-   return longitude;
+   return _longitude;
 }
 
 
 - (void)setLongitude:(float)l
 {
-   longitude = l;
-   validLatLon = [Utils validateLatitude:latitude longitude:longitude];
+    _longitude = l;
+   validLatLon = [Utils validateLatitude:_latitude longitude:_longitude];
 }
 
 
@@ -458,85 +502,85 @@ typedef float (*tAcc)(id, SEL);
 
 - (float)origAltitude
 {
-	return origAltitude;
+	return _origAltitude;
 }
 
 
 - (void)setOrigAltitude:(float)a
 {
-	origAltitude = a;
+    _origAltitude = a;
 }
 
 
 - (float)altitude
 {
-   return altitude;
+   return _altitude;
 }
 
 - (void)setAltitude:(float)a
 {
-   altitude = a;
+    _altitude = a;
 }
 
 - (float)heartrate
 {
-   return heartrate;
+   return _heartrate;
 }
 
 
 - (void)setHeartrate:(float)h
 {
-   heartrate = h;
+    _heartrate = h;
 }
 
 
 - (float)cadence
 {
-   return cadence;
+   return _cadence;
 }
 
 
 - (void)setCadence:(float)c
 {
-   cadence = c;
+    _cadence = c;
 }
 
 
 - (int)flags
 {
-   return flags;
+   return _flags;
 }
 
 
 - (void)setFlags:(int)f
 {
-    flags = f;
+    _flags = f;
 }
 
 
 - (float)temperature
 {
-   return temperature;
+   return _temperature;
 }
 
 
 - (void)setTemperature:(float)t
 {
-   temperature = t;
+    _temperature = t;
 }
 
 
 - (float)speed
 {
-   return speed;
+   return _speed;
 }
 
 
 - (float)pace
 {
-   if (speed > 0.0)
+   if (_speed > 0.0)
    {
-      return 3600.0/speed;       // seconds/mile
+      return 3600.0/_speed;       // seconds/mile
    }
    else
    {
@@ -547,12 +591,12 @@ typedef float (*tAcc)(id, SEL);
 
 - (void)setSpeed:(float)s
 {
-   speed = s;
+    _speed = s;
 }
 
 - (float)power
 {
-	return power;
+	return _power;
 }
 
 
@@ -561,8 +605,8 @@ typedef float (*tAcc)(id, SEL);
 {
 	if (p < MAX_REASONABLE_POWER)
 	{
-		power = p;
-		if (p > 0.0) CLEAR_FLAG(flags, kPowerDataCalculated);
+        _power = p;
+		if (p > 0.0) CLEAR_FLAG(self.flags, kPowerDataCalculated);
 	}
 #if _DEBUG
 	else
@@ -577,8 +621,8 @@ typedef float (*tAcc)(id, SEL);
 {
 	if (IS_BETWEEN(0.0, p, MAX_REASONABLE_POWER))
 	{
-		power = p;
-		SET_FLAG(flags, kPowerDataCalculated);
+        _power = p;
+		SET_FLAG(self.flags, kPowerDataCalculated);
 	}
 #if _DEBUG
 	else
@@ -591,7 +635,7 @@ typedef float (*tAcc)(id, SEL);
 
 -(BOOL)powerIsCalculated
 {
-	return FLAG_IS_SET(flags, kPowerDataCalculated);
+	return FLAG_IS_SET(_flags, kPowerDataCalculated);
 }
 
 
@@ -600,11 +644,11 @@ typedef float (*tAcc)(id, SEL);
 	int flag = DATA_ITEM_TO_FLAG(item);
 	if (st)
 	{
-		SET_FLAG(flags, flag);
+		SET_FLAG(_flags, flag);
 	}
 	else
 	{
-		CLEAR_FLAG(flags, flag);
+		CLEAR_FLAG(_flags, flag);
 	}
 }
 
@@ -612,31 +656,31 @@ typedef float (*tAcc)(id, SEL);
 -(BOOL)importFlagState:(int)item
 {
 	int flag = DATA_ITEM_TO_FLAG(item);
-	return FLAG_IS_SET(flags, flag);
+	return FLAG_IS_SET(_flags, flag);
 }
 
 
 - (float)distance
 {
-   return distance;
+   return _distance;
 }
 
 
 - (void)setDistance:(float)d
 {
-   distance = d;
+    _distance = d;
 }
 
 
 - (float)gradient
 {
-   return gradient;
+   return _gradient;
 }
 
 
 - (void)setGradient:(float)g
 {
-   gradient = g;
+    _gradient = g;
 }
 
 
@@ -666,7 +710,7 @@ typedef float (*tAcc)(id, SEL);
 
 - (BOOL)speedOverridden
 {
-   return FLAG_IS_SET(flags, kSpeedOverriden);
+   return FLAG_IS_SET(_flags, kSpeedOverriden);
 }
 
 
@@ -674,18 +718,18 @@ typedef float (*tAcc)(id, SEL);
 {
    if (set)
    {
-      SET_FLAG(flags, kSpeedOverriden);
+      SET_FLAG(_flags, kSpeedOverriden);
    }
    else
    {
-      CLEAR_FLAG(flags, kSpeedOverriden);
+      CLEAR_FLAG(_flags, kSpeedOverriden);
    }
 }
 
 
 - (BOOL)isFirstPointInLap
 {
-	return FLAG_IS_SET(flags, kIsFirstPointInLap);
+	return FLAG_IS_SET(_flags, kIsFirstPointInLap);
 }
 
 
@@ -693,65 +737,65 @@ typedef float (*tAcc)(id, SEL);
 {
 	if (set)
 	{
-		SET_FLAG(flags, kIsFirstPointInLap);
+		SET_FLAG(_flags, kIsFirstPointInLap);
 	}
 	else
 	{
-		CLEAR_FLAG(flags, kIsFirstPointInLap);
+		CLEAR_FLAG(_flags, kIsFirstPointInLap);
 	}
 }
 
 
 - (void)setDistanceToOriginal
 {
-   distance = origDistance;
+    _distance = _origDistance;
 }
 
 
 - (float)origDistance
 {
-	return origDistance;
+	return _origDistance;
 }
 
 
 -(void)setOrigDistance:(float)d
 {
-   origDistance = d;
+    _origDistance = d;
 }
 
 - (NSNumber*)speedAsNumber
 {
-	return [NSNumber numberWithFloat:self.speed];
+	return [NSNumber numberWithFloat:_speed];
 }
 
 
 - (NSNumber*)paceAsNumber
 {
-	return [NSNumber numberWithFloat:self.pace];
+	return [NSNumber numberWithFloat:[self pace]];
 }
 
 - (NSNumber*)cadenceAsNumber
 {
-	return [NSNumber numberWithFloat:self.cadence];
+	return [NSNumber numberWithFloat:_cadence];
 }
 
 - (NSNumber*)heartrateAsNumber
 {
-	return [NSNumber numberWithFloat:self.heartrate];
+	return [NSNumber numberWithFloat:_heartrate];
 }
 
 - (NSNumber*)powerAsNumber
 {
-	return [NSNumber numberWithFloat:self.power];
+	return [NSNumber numberWithFloat:_power];
 }
 
 
 - (NSComparisonResult) compare:(TrackPoint*)anotherPoint
 {
 	NSTimeInterval otherPointWCD = [anotherPoint wallClockDelta];
-	if  (wallClockDelta < otherPointWCD)
+	if  (_wallClockDelta < otherPointWCD)
 		return NSOrderedAscending;
-	else if (wallClockDelta > otherPointWCD)
+	else if (_wallClockDelta > otherPointWCD)
 		return NSOrderedDescending;
 	else 
 		return NSOrderedSame;

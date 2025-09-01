@@ -22,9 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)open:(NSError **)error;
 - (void)close;
 
-/// Create/upgrade schema. Safe to call every launch.
-- (BOOL)createSchema:(NSError **)error;
-
 /// Upsert a Track (replaces laps/points for that uuid). Also stores Track.attributes / Track.markers / Track.overrideData as JSON in the track row.
 - (BOOL)saveTrack:(Track *)track error:(NSError **)error;
 

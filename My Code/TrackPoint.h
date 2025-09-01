@@ -6,6 +6,7 @@
 //  Copyright 2006 rcb Construction. All rights reserved.
 //
 
+#import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 
 
@@ -24,27 +25,34 @@ enum tImportFlag
 };
 
 
-@interface TrackPoint : NSObject <NSCoding, NSMutableCopying>
+NS_ASSUME_NONNULL_BEGIN
+
+///@interface TrackPoint : NSObject <NSCoding, NSMutableCopying>
+@interface TrackPoint : NSObject <NSSecureCoding, NSCopying, NSMutableCopying>
 {
-	NSTimeInterval	wallClockDelta;
-	NSTimeInterval	activeTimeDelta;
-	float			latitude;
-	float			longitude;
-	float			altitude;			// may be smoothed, etc
-	float			origAltitude;		// as synced from GPS
-	float			heartrate;
-	float			cadence;
-	float			temperature;
-	float			speed;
-	float			power;				// watts
-	float			distance;			// distance being used in calculations.  May be from GPS or calculated from GPS positions (Lat/Lon)
-	float			origDistance;		// distance reported from the sync device; may not be the same as calculated with lat/lon
-	float			gradient;
-	float			climbSoFar;			// not stored
-	float			descentSoFar;		// not stored 
-	int				flags;
-	BOOL			validLatLon;
+    float       climbSoFar;            // not stored
+    float       descentSoFar;        // not stored
+    BOOL        validLatLon;
 }
+
+// sequence index
+@property (nonatomic) NSInteger seq;
+
+@property (nonatomic) NSTimeInterval wallClockDelta;
+@property (nonatomic) NSTimeInterval activeTimeDelta;
+@property (nonatomic) float latitude;
+@property (nonatomic) float longitude;
+@property (nonatomic) float altitude;
+@property (nonatomic) float origAltitude;
+@property (nonatomic) float heartrate;
+@property (nonatomic) float cadence;
+@property (nonatomic) float temperature;
+@property (nonatomic) float speed;
+@property (nonatomic) float power;
+@property (nonatomic) float origDistance;
+@property (nonatomic) float distance;
+@property (nonatomic) float gradient;
+@property (nonatomic) int flags;
 
 + (void) resetStartTime:(NSDate*)startTime;			// for use in converting old point data that had dates instead of delta times
 
@@ -60,7 +68,7 @@ enum tImportFlag
              distance:(float)distance;    // in miles
 
 - (id)initWithDeadZoneMarker:(NSTimeInterval)wallClockDelta activeTimeDelta:(NSTimeInterval)activeTimeDelta;
-- (id)mutableCopyWithZone:(NSZone *)zone;
+- (id)mutableCopyWithZone:(NSZone * _Nullable)zone;
 
 //- (NSDate *)date;
 //- (void)setDate:(NSDate *)d;
@@ -133,3 +141,6 @@ enum tImportFlag
 
 
 @end
+
+
+NS_ASSUME_NONNULL_END

@@ -2485,6 +2485,65 @@ done:
 }
 
 
+#if 1
+
+- (void)saveToURL:(NSURL *)url
+           ofType:(NSString *)type
+ forSaveOperation:(NSSaveOperationType)op
+completionHandler:(void (^)(NSError * _Nullable error))handler
+{
+    // 0) Show progress now
+    NSLog(@"Saving doc %s", [[url path] UTF8String]);
+    
+    ProgressBarController *pbc = [[SharedProgressBar sharedInstance] controller];
+    [self _presentProgress:pbc total:(int)browserData.trackArray.count];
+
+    // 1) Phase A: export to a temp file on a background queue
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        NSError *exportErr = nil;
+        NSURL *tmp = [self _exportDocumentToTemporaryURLWithProgress:^(NSInteger done, NSInteger total){
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [pbc setDivs:(int)done];
+            });
+        } error:&exportErr];
+
+        // 2) Back to main for the (short) commit INSIDE the current file-access section
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (!tmp || exportErr) {
+                [self _dismissProgress];
+                if (handler) handler(exportErr);
+                return;
+            }
+
+            self.stagedExportURL = tmp;
+
+            NSError *writeErr = nil;
+            BOOL ok = [self writeSafelyToURL:url
+                                      ofType:type
+                             forSaveOperation:op
+                                        error:&writeErr];
+
+            // Clean up temp & UI
+            if (self.stagedExportURL) {
+                [[NSFileManager defaultManager] removeItemAtURL:self.stagedExportURL error:NULL];
+                self.stagedExportURL = nil;
+            }
+            [self _dismissProgress];
+ 
+            if (ok) {
+                // Ensure autosave state is clean
+                [self updateChangeCount:NSChangeCleared];
+            }
+
+            // Tell NSDocument we're done
+            if (handler) handler(ok ? nil : writeErr);
+        });
+    });
+}
+
+
+#else
+
 - (void)saveToURL:(NSURL *)url
            ofType:(NSString *)type
  forSaveOperation:(NSSaveOperationType)op
@@ -2527,6 +2586,8 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
     });
 }
 
+#endif
+
 - (NSURL *)_exportDocumentToTemporaryURLWithProgress:(ASProgress)progress
                                                error:(NSError **)outError
 {
@@ -2536,7 +2597,7 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
     NSError *err = nil;
     ActivityStore *store = [[ActivityStore alloc] initWithURL:tmpURL];
     [store open:&err];
-    if (!err) [store createSchema:&err];
+    ///if (!err) [store createSchema:&err];
     if (!err) [browserData storeMetaData:store];
     if (!err) {
         NSArray *tracks = browserData.trackArray;
@@ -2567,36 +2628,52 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
         forSaveOperation:(NSSaveOperationType)op
                    error:(NSError **)outError
 {
-    // Just move/copy the prebuilt file into place.
-    if (!self.stagedExportURL) {
-        if (outError) *outError = [NSError errorWithDomain:NSCocoaErrorDomain
-                                                      code:NSFileWriteUnknownError
-                                                  userInfo:@{NSLocalizedDescriptionKey:@"No staged export found"}];
-        return NO;
+    // If saveToURL: already staged an export, use it.
+    NSURL *staged = self.stagedExportURL;
+    BOOL  stagedOwnedHere = NO;
+
+    // Duplicate / some autosave paths call writeSafelyToURL: directly.
+    // In that case, build the staged export synchronously *here*.
+    if (!staged) {
+        NSError *exportErr = nil;
+        staged = [self _exportDocumentToTemporaryURLWithProgress:nil error:&exportErr];
+        if (!staged) {
+            if (outError) *outError = exportErr ?: [NSError errorWithDomain:NSCocoaErrorDomain
+                                                                       code:NSFileWriteUnknownError
+                                                                   userInfo:@{NSLocalizedDescriptionKey:@"No staged export found"}];
+            return NO;
+        }
+        stagedOwnedHere = YES;
     }
 
     NSFileManager *fm = [NSFileManager defaultManager];
     NSError *err = nil;
 
-    // Use atomic replace to preserve attributes when applicable
+    // Try atomic replace first.
     NSURL *resultURL = nil;
     if (![fm replaceItemAtURL:destURL
-                 withItemAtURL:self.stagedExportURL
+                 withItemAtURL:staged
                 backupItemName:nil
                        options:0
               resultingItemURL:&resultURL
                          error:&err]) {
-        // Fall back to copy
+        // Fallback to copy (handle new/untitled destinations, etc.).
         [fm removeItemAtURL:destURL error:NULL];
-        if (![fm copyItemAtURL:self.stagedExportURL toURL:destURL error:&err]) {
+        if (![fm copyItemAtURL:staged toURL:destURL error:&err]) {
             if (outError) *outError = err;
+            // If we created the staged file here, clean it up on failure.
+            if (stagedOwnedHere) [fm removeItemAtURL:staged error:NULL];
             return NO;
         }
     }
+
+    // Clean up the staged file if we created it here.
+    if (stagedOwnedHere) {
+        [fm removeItemAtURL:staged error:NULL];
+    }
+
     return YES;
 }
-
-
 
 #if 1
 - (BOOL)writeToURL:(NSURL *)absoluteURL

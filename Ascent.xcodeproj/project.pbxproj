@@ -17,7 +17,8 @@
 		D4450B722E5BDBB500AB39C3 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4450B712E5BDBB400AB39C3 /* libsqlite3.tbd */; };
 		D4450B7D2E5BDC1C00AB39C3 /* OverrideData.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B7B2E5BDC1C00AB39C3 /* OverrideData.m */; };
 		D457D2B52E61FE4300D1DF73 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = D457D2B42E61FE4300D1DF73 /* Fonts */; };
-		D457D2E62E629C3600D1DF73 /* StravaAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = D457D2E52E629C3600D1DF73 /* StravaAPI.m */; };
+		D457D2ED2E6488B400D1DF73 /* StravaAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = D457D2EB2E6488B400D1DF73 /* StravaAPI.m */; };
+		D457D2EF2E64894F00D1DF73 /* StravaImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D457D2EE2E64894F00D1DF73 /* StravaImporter.m */; };
 		D490A52E2E4F8E48005BAD01 /* TrackBrowserDocument.xib in Resources */ = {isa = PBXBuildFile; fileRef = D490A52C2E4F8E48005BAD01 /* TrackBrowserDocument.xib */; };
 		D4C0CE8F2E5BE2C4003B55C4 /* fit_example.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C0CE8B2E5BE2C4003B55C4 /* fit_example.c */; };
 		D4C0CE902E5BE2C4003B55C4 /* fit_ram.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C0CE8E2E5BE2C4003B55C4 /* fit_ram.c */; };
@@ -366,8 +367,10 @@
 		D451E8A72E4D8ABF0060BA74 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		D451E8A82E4D8ABF0060BA74 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		D457D2B42E61FE4300D1DF73 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fonts; sourceTree = "<group>"; };
-		D457D2E42E629C3600D1DF73 /* StravaAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = StravaAPI.h; path = Strava/StravaAPI.h; sourceTree = SOURCE_ROOT; };
-		D457D2E52E629C3600D1DF73 /* StravaAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = StravaAPI.m; path = Strava/StravaAPI.m; sourceTree = SOURCE_ROOT; };
+		D457D2EA2E6488B400D1DF73 /* StravaAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StravaAPI.h; sourceTree = "<group>"; };
+		D457D2EB2E6488B400D1DF73 /* StravaAPI.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = StravaAPI.m; sourceTree = "<group>"; };
+		D457D2EE2E64894F00D1DF73 /* StravaImporter.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = StravaImporter.m; sourceTree = "<group>"; };
+		D457D2F02E64896B00D1DF73 /* StravaImporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StravaImporter.h; sourceTree = "<group>"; };
 		D4C0CE8A2E5BE2C4003B55C4 /* fit_example.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = fit_example.h; path = "My Code/FIT/fit_example.h"; sourceTree = "<group>"; };
 		D4C0CE8B2E5BE2C4003B55C4 /* fit_example.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fit_example.c; path = "My Code/FIT/fit_example.c"; sourceTree = "<group>"; };
 		D4C0CE8C2E5BE2C4003B55C4 /* fit_include.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = fit_include.h; path = "My Code/FIT/fit_include.h"; sourceTree = "<group>"; };
@@ -844,13 +847,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		D457D2E32E629BE800D1DF73 /* Strava Access */ = {
+		D457D2EC2E6488B400D1DF73 /* Strava */ = {
 			isa = PBXGroup;
 			children = (
-				D457D2E42E629C3600D1DF73 /* StravaAPI.h */,
-				D457D2E52E629C3600D1DF73 /* StravaAPI.m */,
+				D457D2EA2E6488B400D1DF73 /* StravaAPI.h */,
+				D457D2EB2E6488B400D1DF73 /* StravaAPI.m */,
+				D457D2EE2E64894F00D1DF73 /* StravaImporter.m */,
+				D457D2F02E64896B00D1DF73 /* StravaImporter.h */,
 			);
-			path = "Strava Access";
+			name = Strava;
+			path = "My Code/Strava";
 			sourceTree = "<group>";
 		};
 		D4A783F22E4EE0D8001F7940 /* Products */ = {
@@ -1314,7 +1320,7 @@
 		D4F13AF42E4EAE4600462944 /* Mainline Code */ = {
 			isa = PBXGroup;
 			children = (
-				D457D2E32E629BE800D1DF73 /* Strava Access */,
+				D457D2EC2E6488B400D1DF73 /* Strava */,
 				D4F139F42E4EAE4600462944 /* Utilities */,
 				D4F13A262E4EAE4600462944 /* Track Browser */,
 				D4F13A382E4EAE4600462944 /* Mobile Sync */,
@@ -2010,6 +2016,7 @@
 				D4F13CFF2E4EAE4600462944 /* PrefsZones.mm in Sources */,
 				D4F13D002E4EAE4600462944 /* CustomSplitDistanceController.m in Sources */,
 				D4F13D012E4EAE4600462944 /* SGWindowController.m in Sources */,
+				D457D2EF2E64894F00D1DF73 /* StravaImporter.m in Sources */,
 				D4F13D022E4EAE4600462944 /* GarminFIT.mm in Sources */,
 				D4F13D032E4EAE4600462944 /* TCPConnection.m in Sources */,
 				D4F13D042E4EAE4600462944 /* HRM.mm in Sources */,
@@ -2042,7 +2049,7 @@
 				D4F13D1B2E4EAE4600462944 /* AscentServer.mm in Sources */,
 				D4F13D1C2E4EAE4600462944 /* SplitTableItem.mm in Sources */,
 				D4F13D1D2E4EAE4600462944 /* SGView.mm in Sources */,
-				D457D2E62E629C3600D1DF73 /* StravaAPI.m in Sources */,
+				D457D2ED2E6488B400D1DF73 /* StravaAPI.m in Sources */,
 				D4F13D1E2E4EAE4600462944 /* TransparentWindowController.mm in Sources */,
 				D4F13D1F2E4EAE4600462944 /* SelectAndApplyActionController.mm in Sources */,
 				D4F13D202E4EAE4600462944 /* SplitsGraphView.mm in Sources */,

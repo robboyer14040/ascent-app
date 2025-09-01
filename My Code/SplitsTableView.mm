@@ -39,6 +39,7 @@
 	NSLog(@"splits table view DEALLOC %x rc: %d\n", self, [self retainCount]);
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+    [super dealloc];
 }
 
 

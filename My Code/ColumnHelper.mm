@@ -47,6 +47,7 @@
 
 - (void) dealloc
 {
+    [super dealloc];
 }
 
 
@@ -116,7 +117,7 @@
 	//NSMutableDictionary* ciDict = [[self document] tableInfoDict];
 	NSMutableDictionary* ciDict = [[self document] performSelector:dictSelector];
 	NSArray* sortedKeysArray = [[ciDict allKeys] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
-	int num = [sortedKeysArray count];
+    NSUInteger num = [sortedKeysArray count];
 	int i;
 	for (i=0; i<num; i++)
 	{
@@ -126,7 +127,7 @@
 		if ((flags & kCantRemove) == 0)
 		{  
 			NSString* iden = [ci ident];
-			int idx = [tableView columnWithIdentifier:iden];
+            NSInteger idx = [tableView columnWithIdentifier:iden];
 			if (idx != -1)    // column is present, so remove it
 			{
 				NSTableColumn* col = [[tableView tableColumns] objectAtIndex:idx];
@@ -240,7 +241,7 @@
 
 -(void)adjustLastColumn
 {
-	int numcols = [tableView numberOfColumns];
+    NSInteger numcols = [tableView numberOfColumns];
 	if (numcols > 0)
 	{
 		NSTableColumn* col = [[tableView tableColumns] objectAtIndex:(numcols-1)];
@@ -322,7 +323,7 @@
 	NSMutableDictionary* ciDict = [[self document] performSelector:dictSelector];
 	NSArray* colArray = [tableView tableColumns];
 	int next = 0;
-	int num = [colArray count];
+    NSUInteger num = [colArray count];
 	ColumnInfo* ci;
 	for (int i=0; i<num; i++)
 	{
@@ -341,7 +342,7 @@
 		[mi setState:NSControlStateValueOff];
 	else
 		[mi setState:NSControlStateValueOn];
-	int tag = [mi tag];
+	int tag = (int)[mi tag];
 	ColumnInfo* ci = [self columnInfoFromTag:tag];
 	if (ci != nil)
 	{
@@ -349,7 +350,7 @@
 		if ((flags & kCantRemove) == 0)
 		{
 			NSTableColumn* col = nil;
-			int idx = [tableView columnWithIdentifier:[ci ident]];
+			int idx = (int)[tableView columnWithIdentifier:[ci ident]];
 			if (idx != -1)    // column is present, so remove it
 			{
 				col = [[tableView tableColumns] objectAtIndex:idx];
@@ -359,10 +360,10 @@
 			else              // column is not present, so add it
 			{
 				[self installColumn:ci];
-				int nc = [tableView numberOfColumns];
+                NSInteger nc = [tableView numberOfColumns];
 				if (nc > 2)
 				{
-					int targetColIndex = colIndex;
+                    NSInteger targetColIndex = colIndex;
 					if (targetColIndex < 1) targetColIndex = 1;
 					if (targetColIndex > (nc-1)) targetColIndex = nc-1;
 					[tableView moveColumn:nc-1  
@@ -396,7 +397,7 @@
 	}
 	NSArray* colArray = [tableView tableColumns];
 	int i;
-	int num = [colArray count];
+    NSUInteger num = [colArray count];
 	// can't let the user move col 0!!!  scan first for this possibility
 	for (i=0; i<num; i++)
 	{
@@ -477,6 +478,7 @@
 
 - (void) dealloc
 {
+    [super dealloc];
 }
 
 - (IBAction) doit:(id)sender
@@ -493,7 +495,7 @@
 	{
 		NSPoint point = [self convertPoint:[theEvent locationInWindow] 
 								  fromView:NULL];
-		lastClickedColumn = [self columnAtPoint:point];
+		lastClickedColumn = (int)[self columnAtPoint:point];
 		return menuOfColumns;
 	}
 	//NSLog(@"menu for event, col:%d\n", lastClickedColumn);

@@ -279,4 +279,6 @@ enum
 - (void) simpleUpdateBrowserTrack:(Track*)track;
 -(void)rebuildBrowserAndRestoreState:(Track*)track selectLap:(Lap*)lap;
 - (NSArray*)trackArray;
+- (void)addStravaActivities:(NSArray<NSDictionary*> *) arr;
+
 @end

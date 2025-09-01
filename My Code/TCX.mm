@@ -61,6 +61,7 @@
 
 -(void) dealloc
 {
+    [super dealloc];
 }
 
 
@@ -325,7 +326,7 @@
 #if DO_PARSING
 		if (currentImportTrack != nil)
 		{
-			int numPoints = [currentImportPointArray count];
+            NSUInteger numPoints = [currentImportPointArray count];
 			[currentImportTrack setCreationTime:currentTrackStartTime];
 			if (numPoints > 0)
 			{
@@ -338,7 +339,7 @@
 			}
 			else
 			{
-				int numLaps = [currentImportLapArray count];
+                NSUInteger numLaps = [currentImportLapArray count];
 				if (numLaps > 0)
 				{
 					NSNumber* totalDist = [currentImportLapArray valueForKeyPath:@"@sum.distance"];		// in FEET
@@ -1044,7 +1045,7 @@ donePoint:
 {
 	NSArray* points = [track points];
 	NSXMLElement* elem;
-	int numPointsInTrack = [points count];
+    NSUInteger numPointsInTrack = [points count];
 	BOOL hasEverHadSensorData = NO;
 	if (numPointsInTrack > 0 && idx >= 0)
 	{
@@ -1292,7 +1293,7 @@ next:
 	[xmlDoc setVersion:@"1.0"];
 	[xmlDoc setCharacterEncoding:@"UTF-8"];
 
-	int count = [trackArray count];
+    NSUInteger count = [trackArray count];
 	NSXMLElement* folders = [NSXMLNode elementWithName:@"Folders"];
 	[root addChild:folders];
 	NSXMLElement* activities = [NSXMLNode elementWithName:@"Activities"];
@@ -1331,7 +1332,7 @@ next:
 		[activity addChild:aid];
 
 		NSArray* lapArray = [track laps];
-		int numLaps = [lapArray count];
+        NSUInteger numLaps = [lapArray count];
 		int lapIdx;
 		int idx = 0;
 		if (numLaps > 0)

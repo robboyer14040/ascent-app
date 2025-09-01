@@ -74,7 +74,7 @@ startTimeSecsSince1970:(time_t)sts
 
 - (void)dealloc
 {
-
+    [super dealloc];
 }
 
 

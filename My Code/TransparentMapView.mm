@@ -139,7 +139,7 @@
    dataRect = NSOffsetRect(dataRect, -ANIM_RECT_SIZE/2.0, -ANIM_RECT_SIZE/2.0);
    [dotImage drawInRect:dataRect
                fromRect:imageRect
-              operation:NSCompositeSourceOver
+              operation:NSCompositingOperationSourceOver
                fraction:1.0];
 
    [[self window] flushWindow];

@@ -23,6 +23,7 @@
 
 -(void)dealloc
 {
+    [super dealloc];
 }
 
 -(void) update:(TrackPoint*)tpt

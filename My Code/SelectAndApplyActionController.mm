@@ -60,6 +60,7 @@
 
 -(void)dealloc
 {
+    [super dealloc];
 }
 
 -(NSString*)name
@@ -169,6 +170,7 @@
 
 -(void)dealloc
 {
+    [super dealloc];
 }
 
 -(NSString*)name
@@ -372,6 +374,7 @@ static NSString*  sDK_Val1			= @"V1";
 
 - (void) dealloc
 {
+    [super dealloc];
 }
 
 

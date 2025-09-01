@@ -53,6 +53,7 @@ NSString* ActivityDragType = @"ActivityDragType";
 {
 	self.trackDragImage = nil;
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+    [super dealloc];
 }
 
 
@@ -85,8 +86,8 @@ NSString* ActivityDragType = @"ActivityDragType";
 // default version of this causes an exception if clicked in a non-column area of the table
 - (NSMenu *)menuForEvent:(NSEvent *)theEvent
 {
-	if([theEvent type] == NSRightMouseDown || ([theEvent type] == 
-											   NSLeftMouseDown && ([theEvent modifierFlags] & NSControlKeyMask)))
+	if([theEvent type] == NSEventTypeRightMouseDown || ([theEvent type] == 
+											   NSEventTypeLeftMouseDown && ([theEvent modifierFlags] & NSEventModifierFlagControl)))
 	{
 		return [self menu];
 	}
@@ -120,7 +121,7 @@ NSString* ActivityDragType = @"ActivityDragType";
 - (void)keyDown:(NSEvent *)theEvent
 {
 	int kc = [theEvent keyCode];
-    int mods = [theEvent modifierFlags];
+    NSEventModifierFlags mods = [theEvent modifierFlags];
     bool optionKeyDown = ((mods&NSEventModifierFlagOption)!=0);
 	if (kc == 49)
 	{
@@ -128,7 +129,7 @@ NSString* ActivityDragType = @"ActivityDragType";
 	}
 	else if (kc == 126)		// up arrow
 	{
-		int row = [self selectedRow];
+        NSInteger row = [self selectedRow];
 		if (row > 0)
 		{
 			NSIndexSet* is = [NSIndexSet indexSetWithIndex:row-1];
@@ -139,7 +140,7 @@ NSString* ActivityDragType = @"ActivityDragType";
 	}
 	else if (kc == 125)		// down arrow
 	{
-		int row = [self selectedRow];
+        NSInteger row = [self selectedRow];
 		if (row < ([self numberOfRows]-1))
 		{
 			NSIndexSet* is = [NSIndexSet indexSetWithIndex:row+1];
@@ -246,7 +247,7 @@ NSString* ActivityDragType = @"ActivityDragType";
 
 - (NSImage *)dragImageForRowsWithIndexes:(NSIndexSet *)dragRows tableColumns:(NSArray *)tableColumns event:(NSEvent *)dragEvent offset:(NSPointPointer)dragImageOffset
 {
-	int count = dragRows.count;
+    NSUInteger count = dragRows.count;
 	NSSize s = NSMakeSize(trackDragImage.size.width, count*(trackDragImage.size.height + 2.0));
 	NSImage* anImage = [[NSImage alloc] initWithSize:s];
 	[anImage lockFocus];
@@ -260,7 +261,7 @@ NSString* ActivityDragType = @"ActivityDragType";
 		///								 row:idx];
 		[self.trackDragImage drawAtPoint:p
 								fromRect:NSZeroRect
-							   operation:NSCompositeSourceOver
+							   operation:NSCompositingOperationSourceOver
 								fraction:1.0];
 		idx = [dragRows indexGreaterThanIndex:idx];
 		p.y += trackDragImage.size.height + 2.0;

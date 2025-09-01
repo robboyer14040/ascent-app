@@ -47,7 +47,7 @@
             return;
    
    //	Offer mouse-down events (lefty or righty) to the delegate
-   if ( ([theEvent type] == NSLeftMouseDown) || ([theEvent type] == NSRightMouseDown) )
+   if ( ([theEvent type] == NSEventTypeLeftMouseDown) || ([theEvent type] == NSEventTypeRightMouseDown) )
       if ([[self delegate] respondsToSelector: @selector(handlesMouseDown:inWindow:)])
          if ([[self delegate] handlesMouseDown: theEvent  inWindow: self])
             return;

@@ -594,7 +594,6 @@
 		D4F13AA32E4EAE4600462944 /* ColumnInfo.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = ColumnInfo.mm; path = "My Code/ColumnInfo.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13AA42E4EAE4600462944 /* DataHUDWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DataHUDWindowController.h; path = "My Code/DataHUDWindowController.h"; sourceTree = SOURCE_ROOT; };
 		D4F13AA52E4EAE4600462944 /* DataHUDWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = DataHUDWindowController.mm; path = "My Code/DataHUDWindowController.mm"; sourceTree = SOURCE_ROOT; };
-		D4F13AA62E4EAE4600462944 /* fit_garmin_sdk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fit_garmin_sdk.h; sourceTree = "<group>"; };
 		D4F13AA82E4EAE4600462944 /* AscentDistanceFormatter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AscentDistanceFormatter.h; path = "My Code/AscentDistanceFormatter.h"; sourceTree = SOURCE_ROOT; };
 		D4F13AA92E4EAE4600462944 /* AscentDistanceFormatter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = AscentDistanceFormatter.m; path = "My Code/AscentDistanceFormatter.m"; sourceTree = SOURCE_ROOT; };
 		D4F13AAA2E4EAE4600462944 /* AscentIntervalFormatter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AscentIntervalFormatter.h; path = "My Code/AscentIntervalFormatter.h"; sourceTree = SOURCE_ROOT; };
@@ -1197,7 +1196,6 @@
 				D4F13AA32E4EAE4600462944 /* ColumnInfo.mm */,
 				D4F13AA42E4EAE4600462944 /* DataHUDWindowController.h */,
 				D4F13AA52E4EAE4600462944 /* DataHUDWindowController.mm */,
-				D4F13AA62E4EAE4600462944 /* fit_garmin_sdk.h */,
 			);
 			name = Misc;
 			sourceTree = "<group>";

@@ -64,6 +64,7 @@
 
 -(void) dealloc
 {
+    [super dealloc];
 }
 
 
@@ -365,7 +366,7 @@
                             lastLatitude = BAD_LATLON;
                             lastLongitude = BAD_LATLON;
 
-                            const FIT_ACTIVITY_MESG *activity = (FIT_ACTIVITY_MESG *) mesg;
+                            ///const FIT_ACTIVITY_MESG *activity = (FIT_ACTIVITY_MESG *) mesg;
 #if TRACE_PARSING
 							NSDate* dt = [[[NSDate alloc] initWithTimeInterval:(NSTimeInterval)activity->timestamp
 																	 sinceDate:refDate] autorelease];

@@ -55,6 +55,7 @@
 -(void)dealloc
 {
 	CGColorRelease(color);
+    [super dealloc];
 }
 
 @end
@@ -163,6 +164,7 @@
 	self.highlightLayer = nil;
 	CGColorRelease(backgroundColor);
 	CGColorRelease(blackColor);
+    [super dealloc];
 }
 							  
 							  

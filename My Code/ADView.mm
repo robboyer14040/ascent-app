@@ -891,7 +891,7 @@ tPlotInfo plotInfoArray[] =
 	float retv;
 	int numLeft = numAvgPoints;
 	int i = idx - (numAvgPoints/2);
-	int count = [pts count];
+    NSUInteger count = [pts count];
 	int numToSum = 0;
 	float sum = 0.0;
 	while ((numLeft > 0) && (i<count))
@@ -978,14 +978,14 @@ tPlotInfo plotInfoArray[] =
 	float h = bounds.size.height;
 	float x = bounds.origin.x;
 	float y = bounds.origin.y;
-	int numPts = [pts count];
+    NSUInteger numPts = [pts count];
 	NSBezierPath* bezpath = [[NSBezierPath alloc] init];
 	if ((numPts > 0) /*&& (xmax > 0.0)*/)
 	{
 		if (!immed)
 		{
 			[bezpath setLineWidth:lineWidth];
-			[bezpath setLineJoinStyle:NSRoundLineJoinStyle];
+			[bezpath setLineJoinStyle:NSLineJoinStyleRound];
 		} 
 #if 0
 		TrackPoint* pt = [pts objectAtIndex:0];
@@ -1010,6 +1010,7 @@ tPlotInfo plotInfoArray[] =
 			TrackPoint* pt = [pts objectAtIndex:i];
 			
 			float newy = ysel(pt, nil);
+            ycur = newy;
 			if (ycur > ymax) ycur = ymax;
 			if (newy == iv) 
 			{
@@ -1077,7 +1078,7 @@ tPlotInfo plotInfoArray[] =
 { 
    int i;
    int count = 0;
-   int numPlotTypes = [plotAttributesArray count];
+    NSUInteger numPlotTypes = [plotAttributesArray count];
    for (i = 0; i<numPlotTypes; i++)
    {
       PlotAttributes* attrs = [plotAttributesArray objectAtIndex:i];
@@ -1194,7 +1195,7 @@ struct tPosInfo
          NSRect drawBounds = [self drawBounds];
          NSRect plotBounds = [self getPlotBounds:NO];
          NSArray* pts = [self ptsForPlot];
-         int npts = [pts count];
+          NSUInteger npts = [pts count];
          if (npts > 0)
          {
             PathMarker* pm = [markers lastObject];
@@ -1254,7 +1255,7 @@ struct tPosInfo
 {
    NSPoint p = NSZeroPoint;
    NSRect bounds = [self getPlotBounds:YES];
-   int x;
+   int x = 0.0;
    if (xAxisIsTime)
    {
       float dur = maxDurationForPlotting;
@@ -1268,12 +1269,12 @@ struct tPosInfo
          x = bounds.origin.x + ((bounds.size.width*distanceOrTime)/(maxdist-mindist));
       }
    }
-   int numElems = [path elementCount];
+    NSInteger numElems = [path elementCount];
    int i;
    for (i=0; i<numElems; i++)
    {
       NSBezierPathElement ele = [path elementAtIndex:i associatedPoints:&p];
-      if (ele == NSLineToBezierPathElement)
+      if (ele == NSBezierPathElementLineTo)
       {
          if (p.x >= x) break;
       }
@@ -1284,7 +1285,7 @@ struct tPosInfo
 - (NSPoint) findNearestPointToWallClockDelta:(NSTimeInterval)delta path:(NSBezierPath*)path
 {
 	NSArray* pts = [self ptsForPlot];
-	int num = [pts count];
+    NSUInteger num = [pts count];
 	int i = 0;
 	TrackPoint* pt = nil;
 	for (i=0; i<num; i++)
@@ -1353,14 +1354,14 @@ struct tPosInfo
 		NSMutableArray* markers = [track markers];
 		if (markers != nil)
 		{
-			int num = [markers count];
+            NSUInteger num = [markers count];
 			int i;
 			float startDistance = 0.0;
 			float endDistance = 0.0;
 			//NSDate* startDate = nil;
 			NSTimeInterval startTimeDelta = 0.0;
 			NSArray* pts = [self ptsForPlot];
-			int npts = [pts count];
+            NSUInteger npts = [pts count];
 			if (npts > 0)
 			{
 				startDistance = [[pts objectAtIndex:0] distance];
@@ -1428,7 +1429,7 @@ struct tPosInfo
 	
 	[img drawAtPoint:r.origin
 			fromRect:NSZeroRect
-		   operation:NSCompositeSourceOver
+		   operation:NSCompositingOperationSourceOver
 			fraction:1.0];
 	return p;
 }
@@ -1440,7 +1441,7 @@ struct tPosInfo
 	NSMutableDictionary *fontAttrs = [NSMutableDictionary dictionary];
 	[fontAttrs setObject:font forKey:NSFontAttributeName];
 	NSMutableArray* laps = [track laps];
-	int numLaps = [laps count];
+    int numLaps = (int)[laps count];
 	int i;
 	// don't show first or last lap end marker
 	for (i=numLaps-2; i>=0; i--)
@@ -1463,7 +1464,7 @@ struct tPosInfo
 			r.origin.y = (int)p.y - 4;
 //			[lapMarkerImage drawAtPoint:r.origin
 //							 fromRect:NSZeroRect
-//							operation:NSCompositeSourceOver
+//							operation:NSCompositingOperationSourceOver
 //							 fraction:1.0];
 			NSString* s = [NSString stringWithFormat:@"%d", i+1];
 			NSSize size = [s sizeWithAttributes:fontAttrs];
@@ -1490,8 +1491,9 @@ struct tPosInfo
 {
 	NSRect plotBounds = [self getPlotBounds:YES];
 	float scalerY = 1.0;
-	float mn, mx;
-	float zn;
+    float mn = 0.0;
+    float mx = 0.0;
+	float zn = 0.0;
 	NSRect zoneBounds;
 	int znType = [Utils intFromDefaults:RCBDefaultZoneInADViewItem];
 	BOOL rev = NO;
@@ -1648,7 +1650,7 @@ BOOL mightBeAMax(NSArray* pts, int num, int idx, int thresh, tAccessor ysel)
 {
 	float alt = 0.0;
 	NSArray* pts = [self ptsForPlot];
-	int num = [pts count];
+    NSUInteger num = [pts count];
 	if (startingGoodIdx < num)
 	{
 		for (int i=startingGoodIdx; i<num; i++)
@@ -1670,7 +1672,7 @@ BOOL mightBeAMax(NSArray* pts, int num, int idx, int thresh, tAccessor ysel)
 - (void)drawPeaks:(NSBezierPath*)altitudePath type:(int)ptype numPeaks:(int)n threshold:(int)thresh  ysel:(tAccessor)ysel colorKey:(NSString*)colorKey format:(NSString*)fm
 {
 	NSArray* pts = [self ptsForPlot];
-	int num = [pts count];
+	int num = (int)[pts count];
 	float maxValues[n];
 	int   maxIndices[n];
 	int i;
@@ -1746,7 +1748,7 @@ BOOL mightBeAMax(NSArray* pts, int num, int idx, int thresh, tAccessor ysel)
 			imageRect.size = [altSignImage size];
 			[peakImage drawAtPoint:p
 						  fromRect:NSZeroRect
-						 operation:NSCompositeSourceOver
+						 operation:NSCompositingOperationSourceOver
 						  fraction:1.0];
 			float val = maxValues[i];
 			switch (ptype)
@@ -1856,7 +1858,8 @@ BOOL mightBeAMax(NSArray* pts, int num, int idx, int thresh, tAccessor ysel)
 	NSArray*pts = [self ptsForPlot];
 	if ([pts count] > 0)
 	{
-		startTime = [startTime addTimeInterval:[[pts objectAtIndex:0] DATE_METHOD]];
+        NSTimeInterval dt = [pts[0] activeTimeDelta];
+        startTime = [startTime dateByAddingTimeInterval:dt];
 	}
 	NSString* dt = [Utils activityNameFromDate:track alternateStartTime:startTime];
 	NSMutableDictionary *fontAttrs = [NSMutableDictionary dictionary];
@@ -2667,7 +2670,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 -(float)findMinTemperature:(NSArray*)ipts
 {
 	float minTemp = INVALID_TEMP;
-	int num = [ipts count];
+    NSUInteger num = [ipts count];
 	for (int i=0; i<num; i++)
 	{
 		float temp = [[ipts objectAtIndex:i] temperature];
@@ -2969,7 +2972,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 	//[roadPath closePath];
 	[[NSColor blackColor] set];
 	[roadPath setLineWidth:0.5];
-	[roadPath setLineJoinStyle:NSRoundLineJoinStyle];
+	[roadPath setLineJoinStyle:NSLineJoinStyleRound];
 	[roadPath stroke];
 	[[[NSColor blackColor] colorWithAlphaComponent:0.5] setFill];
 	[roadPath fill];
@@ -2984,7 +2987,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 	CGFloat arr[2] = { 1.0, 3.0 };
 	[path setLineWidth:1.0];
 	[path setLineDash:arr count:2 phase:0.0];
-	[path setLineJoinStyle:NSRoundLineJoinStyle];
+	[path setLineJoinStyle:NSLineJoinStyleRound];
 	[path stroke];
 	[path release];
 #endif
@@ -3090,7 +3093,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 #endif
 				[[NSColor blackColor] set];
 				[altPath setLineWidth:1.0];
-				[altPath setLineJoinStyle:NSRoundLineJoinStyle];
+				[altPath setLineJoinStyle:NSLineJoinStyleRound];
 				[altPath stroke];
 				[[[Utils colorFromDefaults:RCBDefaultAltitudeColor] colorWithAlphaComponent:[self plotOpacity:kAltitude]] set];
 				dpath = [altPath copy];
@@ -3116,8 +3119,8 @@ static float calcY(float ymin, float ymax, float h, float v)
 
 -(void)setupAndDrawPeaks
 {
-	NSString* ck;
-	tAccessor ys;
+	NSString* ck = RCBDefaultAltitudeColor;
+	tAccessor ys = (tAccessor)[TrackPoint instanceMethodForSelector:@selector(altitude)];
 	NSString* fm = @"";
 	switch (peakType)
 	{
@@ -3174,7 +3177,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 -(int) findAvailableSpaceOnLine:(NSMutableArray*)lineArray text:(NSString*)s withAttributes:(NSDictionary*)attrs xpos:(float*)xposPtr
 {
 	int line = 0;
-	int num = [lineArray count];
+    NSUInteger num = [lineArray count];
 	NSSize sz = [s sizeWithAttributes:attrs];
 	float left = *xposPtr;
 	float width = sz.width;
@@ -3183,7 +3186,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 		NSMutableArray* larr = [lineArray objectAtIndex:i];
 		if (larr)
 		{
-			int numOnLine = [larr count];
+            NSUInteger numOnLine = [larr count];
 			BOOL intersects = NO;
 			for (int j=0; j<numOnLine; j++)
 			{
@@ -3226,9 +3229,14 @@ static float calcY(float ymin, float ymax, float h, float v)
 	TrackPoint* endingPlotPoint = [plottedPoints lastObject];
 	
 	NSDictionary* dict = [Utils peakPowerIntervalInfoDict];
-	NSArray* keys = [dict allKeys];
-	keys = [keys sortedArrayUsingSelector:@selector(compareAsNumbers:)];
-	int num = [dict count];
+    
+    NSArray *keys = dict.allKeys;
+    keys = [keys sortedArrayUsingComparator:^NSComparisonResult(NSString *a, NSString *b) {
+        // Numeric / natural sort: "2" < "10"
+        return [a compare:b options:NSNumericSearch];
+    }];
+    
+    NSUInteger num = [dict count];
 	NSMutableArray* lineInfoArr = [NSMutableArray arrayWithCapacity:num];
 	for (int i = 0; i<num; i++)
 	{
@@ -3409,8 +3417,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 	
 	if (dragStart && [[self window] firstResponder] == self)
 	{
-		NSRect r = NSInsetRect(r, 3.0, 3.0);
-		[[NSColor colorWithCalibratedRed:0.0 
+		[[NSColor colorWithCalibratedRed:0.0
 								   green:0.0 
 									blue:1.0 
 								   alpha:0.66] set];
@@ -3421,7 +3428,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 	if (track == nil) return;
 
 	NSArray* pts = [self ptsForPlot];
-	int numPoints = [pts count];
+    NSUInteger numPoints = [pts count];
 	NSRect plotBounds = [self getPlotBounds:YES];
 	
 	[[NSColor blackColor] set];
@@ -3609,7 +3616,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 
 - (void)setPlotDuration:(NSArray*) pts isTrack:(BOOL)isTrack
 {
-	int num = [pts count];
+    NSUInteger num = [pts count];
 	if (num > 0)
 	{
 		// need to make sure that active times NEVER exceed duration used in this graph
@@ -3660,7 +3667,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 			[self setPlotDuration:[track lapPoints:lap] isTrack:NO];
 			posOffsetIndex = [track lapStartingIndex:lap];	// this is a "GOOD POINTS" index
 			NSArray* pts = [self ptsForPlot];
-			NSTimeInterval dt;
+			NSTimeInterval dt = 0.0;
 			if ([pts count] > 0)
 			{
 				dt = [[pts objectAtIndex:0] DATE_METHOD];
@@ -3783,7 +3790,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 		NSArray* pts = [self ptsForPlot];
 		//NSDate* startTime;
 		NSTimeInterval startTimeDelta = 0.0;
-		int count = [pts count];
+        NSUInteger count = [pts count];
 		if (count > 0)
 			startTimeDelta = [[pts objectAtIndex:0] DATE_METHOD];
 			//startTime = [[pts objectAtIndex:0] DATE_METHOD];
@@ -3825,7 +3832,7 @@ static float calcY(float ymin, float ymax, float h, float v)
       {
          NSMutableArray* npts = [NSMutableArray arrayWithCapacity:(selectionEndIdx-selectionStartIdx+1)];
          NSArray* pts = [self ptsForPlot];
-         int count = [pts count];
+          NSUInteger count = [pts count];
          int i = selectionStartIdx;
          while ((i<count) && (i<=selectionEndIdx))
          {
@@ -3895,7 +3902,7 @@ static BOOL dragging = NO;
 				if (!selectRegionInProgress)
 				{
 					// start select region here if left mouse down and 'option' key held
-					selectRegionInProgress = (([ev type] == NSLeftMouseDown) && ([ev modifierFlags] & NSEventModifierFlagOption));
+					selectRegionInProgress = (([ev type] == NSEventTypeLeftMouseDown) && ([ev modifierFlags] & NSEventModifierFlagOption));
 					if (selectRegionInProgress) 
 					{
 						[transparentView setStartSelection:[self calcTransparentViewPos:i]];
@@ -4023,11 +4030,11 @@ static ADView* lastDown = nil;
    }
    else if (lap && track)
    {
-      return [[track lapPoints:lap] count] - 1;
+      return (int) [[track lapPoints:lap] count] - 1;
    }
    else if (track)
    {
-      return [[track goodPoints] count] - 1;
+      return (int) [[track goodPoints] count] - 1;
    }
    return 0;
 }
@@ -4038,7 +4045,7 @@ static ADView* lastDown = nil;
 - (void) doMove:(NSEvent*)ev delta:(int)delta
 {
 	NSArray* pts = [self ptsForPlot];
-	int count = [pts count];
+    int count = (int)[pts count];
 	TrackPoint* tpt  = nil;
 	if (selectRegionInProgress)
 	{

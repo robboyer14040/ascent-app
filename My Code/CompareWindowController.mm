@@ -269,7 +269,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 																 iconFile:[self.dotColorsArray objectAtIndex:i]
 																	track:track];
 		CWTransparentWindow* tw = [[CWTransparentWindow alloc] initWithContentRect:dummy
-																		 styleMask:NSBorderlessWindowMask 
+																		 styleMask:NSWindowStyleMaskBorderless 
 																		   backing:NSBackingStoreBuffered 
 																			 defer:NO];
 		[tw setContentView:tv];

@@ -65,7 +65,7 @@
    //	Programmatically create the new panel
    panelToDisplay = [[SplashPanel alloc]
         initWithContentRect: [[splashPanelInNib contentView] frame]
-                  styleMask: NSBorderlessWindowMask
+                  styleMask: NSWindowStyleMaskBorderless
                     backing: [splashPanelInNib backingType]
                       defer: NO];
    

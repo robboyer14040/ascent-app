@@ -501,7 +501,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 
 #if 0
     transparentMapWindow = [[[TransparentMapWindow alloc] initWithContentRect:dummy
-																  styleMask:NSBorderlessWindowMask
+																  styleMask:NSWindowStyleMaskBorderless
 																	backing:NSBackingStoreBuffered 
 																	  defer:NO] retain];
 #else
@@ -518,7 +518,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 
 #if 0
     transparentMiniProfileWindow = [[[TransparentMapWindow alloc] initWithContentRect:dummy
-																  styleMask:NSBorderlessWindowMask
+																  styleMask:NSWindowStyleMaskBorderless
 																	backing:NSBackingStoreBuffered 
 																	  defer:NO] retain];
 #else

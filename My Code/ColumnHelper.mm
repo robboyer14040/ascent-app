@@ -490,8 +490,8 @@
 
 - (NSMenu *)menuForEvent:(NSEvent *)theEvent
 {
-	if([theEvent type] == NSRightMouseDown || ([theEvent type] == 
-											   NSLeftMouseDown && ([theEvent modifierFlags] & NSControlKeyMask)))
+	if([theEvent type] == NSEventTypeRightMouseDown || ([theEvent type] == 
+											   NSEventTypeLeftMouseDown && ([theEvent modifierFlags] & NSEventModifierFlagControl)))
 	{
 		NSPoint point = [self convertPoint:[theEvent locationInWindow] 
 								  fromView:NULL];

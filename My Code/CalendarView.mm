@@ -638,7 +638,7 @@ static BOOL sDragging = NO;
 				[arr addObject:[NSNumber numberWithInt:idx]];
 				[self.trackDragImage drawAtPoint:p
 										fromRect:NSZeroRect
-									   operation:NSCompositeSourceOver
+									   operation:NSCompositingOperationSourceOver
 										fraction:1.0];
 				p.y += (self.trackDragImage.size.height + 2.0);
 			}
@@ -663,7 +663,7 @@ static BOOL sDragging = NO;
 	if (!sDragging)
 	{
 		unsigned int modflags = [mouseEvent modifierFlags];
-		BOOL shiftMask = (0 != (modflags & NSShiftKeyMask));
+		BOOL shiftMask = (0 != (modflags & NSEventModifierFlagShift));
 		if (!shiftMask) 
 		{
 			Track* lastSelected = selectedTrack;
@@ -875,8 +875,8 @@ static BOOL sDragging = NO;
     
     NSEvent *event = [NSApp currentEvent];
     unsigned int kflags = [event modifierFlags];
-    BOOL shiftMask = (0 != (kflags & NSShiftKeyMask));
-    BOOL commandMask = (0 != (kflags & NSCommandKeyMask));
+    BOOL shiftMask = (0 != (kflags & NSEventModifierFlagShift));
+    BOOL commandMask = (0 != (kflags & NSEventModifierFlagCommand));
     
     NSCalendarDate *startDate = [selectedDays objectAtIndex:0];
     if (shiftMask) {
@@ -1088,8 +1088,8 @@ static BOOL sDragging = NO;
 // default version of this causes an exception if clicked in a non-column area of the table
 - (NSMenu *)menuForEvent:(NSEvent *)theEvent
 {
-	if([theEvent type] == NSRightMouseDown || ([theEvent type] == 
-											   NSLeftMouseDown && ([theEvent modifierFlags] & NSControlKeyMask)))
+	if([theEvent type] == NSEventTypeRightMouseDown || ([theEvent type] == 
+											   NSEventTypeLeftMouseDown && ([theEvent modifierFlags] & NSEventModifierFlagControl)))
 	{
 		return [self menu];
 	}

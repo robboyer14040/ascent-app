@@ -46,6 +46,7 @@
 
 -(void)dealloc
 {
+    [super dealloc];
 }
 
 
@@ -62,9 +63,9 @@
 									windowSize.width, windowSize.height);
 	
 	// Create a HUDWindow.
-	// Note: the styleMask is ignored; NSBorderlessWindowMask is always used.
+	// Note: the styleMask is ignored; NSWindowStyleMaskBorderless is always used.
 	dataHUDWindow = [[HUDWindow alloc] initWithContentRect:windowFrame 
-												 styleMask:NSBorderlessWindowMask 
+												 styleMask:NSWindowStyleMaskBorderless 
 												   backing:NSBackingStoreBuffered 
 													 defer:NO];
 	

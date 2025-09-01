@@ -541,7 +541,7 @@ NSInteger compareDates(id dt1, id dt2, void* ctx)
                   NSColor* clr = [Utils colorFromDefaults:[ti colorKey]];
                   [clr set];
                   [[ti path] setLineWidth:3.0];
-                  [[ti path] setLineJoinStyle:NSRoundLineJoinStyle];
+                  [[ti path] setLineJoinStyle:NSLineJoinStyleRound];
                   [[ti path] stroke];
                   //offset = [self drawTickMarks:ti
                   //                        type:j

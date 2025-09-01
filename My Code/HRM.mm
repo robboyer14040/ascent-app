@@ -67,6 +67,7 @@
 
 -(void) dealloc
 {
+    [super dealloc];
 }
 
 
@@ -102,7 +103,7 @@
 
 -(NSArray*) arrayifyHRMBuffer:(NSString*)buf
 {
-	int slen = [buf length];
+    NSUInteger slen = [buf length];
 	NSMutableArray* arr = [NSMutableArray arrayWithCapacity:100];
 	NSUInteger startIdx, contentsIdx;
 	NSUInteger endIdx = 0;
@@ -124,7 +125,7 @@
 {
  if (currentImportTrack != nil)
 	{
-		int numPoints = [importedPoints count];
+        NSUInteger numPoints = [importedPoints count];
 		if (numPoints > 0)
 		{
             TrackPoint* pt = [importedPoints objectAtIndex:0];
@@ -158,7 +159,7 @@
 {
 	@try 
 	{
-		int num = [arr count];
+        NSUInteger num = [arr count];
 		int line = 0;
 		while (line < num)
 		{
@@ -328,7 +329,7 @@
 {
 	int line = startLine;
 	NSString* s = [arr objectAtIndex:line];
-	int num = [arr count];
+    NSUInteger num = [arr count];
 	while (![s isEqualToString:@""] && ([s characterAtIndex:0] != '[') && (line < num))
 	{
 		[self processParamValue:[s componentsSeparatedByString:@"="]];
@@ -382,7 +383,7 @@
 {
 	int line = startLine;
 	NSString* s = [arr objectAtIndex:line];
-	int num = [arr count];
+    NSUInteger num = [arr count];
 	while (![s isEqualToString:@""] && ([s characterAtIndex:0] != '[') && (line < num))
 	{
 		[self processLapValue:[s componentsSeparatedByString:@"\t"]];
@@ -396,7 +397,7 @@
 -(void) processDataLine:(NSString*)lineStr time:(float*)pointTimePtr distance:(float*)currentDistancePtr
 {
 	NSArray* arr = [lineStr componentsSeparatedByString:@"\t"];
-	int num = [arr count];
+    NSUInteger num = [arr count];
 	float alt = 0.0;
 	float sp = 0.0;
 	float cd = 0.0;
@@ -432,7 +433,7 @@
 {
 	int line = startLine;
 	NSString* s = [arr objectAtIndex:line];
-	int num = [arr count];
+    NSUInteger num = [arr count];
 	float elapsedTime = 0.0;
 	float distance = 0.0;
 	while (![s isEqualToString:@""] && ([s characterAtIndex:0] != '[') && (line < num))
@@ -453,7 +454,7 @@
 	int line = startLine;
 	notes = [NSMutableString string];
 	NSString* s = [arr objectAtIndex:line];
-	int num = [arr count];
+    NSUInteger num = [arr count];
 	while (![s isEqualToString:@""] && ([s characterAtIndex:0] != '[') && (line < num))
 	{
 		[notes appendString:s];

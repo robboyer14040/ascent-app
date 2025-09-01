@@ -1845,6 +1845,7 @@ static int sPeakIntervals[] = { 5, 10, 20, 30, 60, 5*60, 10*60, 20*60, 30*60, 60
 		NSMutableDictionary* mdict = [NSMutableDictionary dictionaryWithCapacity:num];
 		for (int i=0; i<num; i++)
 		{
+            // default is 5 minutes
 			[mdict setObject:[NSNumber numberWithBool:(i==5) ? YES : NO]
 					  forKey:[NSString stringWithFormat:@"%d",sPeakIntervals[i]]];
 		}
@@ -1859,7 +1860,7 @@ static int sPeakIntervals[] = { 5, 10, 20, 30, 60, 5*60, 10*60, 20*60, 30*60, 60
 +(int)numPeakIntervals
 {
 	NSDictionary* dict = [Utils peakPowerIntervalInfoDict];
-	return [dict count];
+	return (int)[dict count];
 }
 
 

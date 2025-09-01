@@ -39,9 +39,7 @@
 
 - (void)dealloc
 {
-#if DEBUG_LEAKS
-	NSLog(@"destroying mini profile view ...");
-#endif
+    [super dealloc];
 }
 
 
@@ -200,7 +198,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 														startAt:0];
 	int eidx = [currentTrack findFirstGoodPointAtOrAfterDelta:wcEndTime
 														startAt:sidx];
-	if ((sidx != -1) && (eidx == -1)) eidx = [[currentTrack goodPoints] count] - 1;
+	if ((sidx != -1) && (eidx == -1)) eidx = (int)[[currentTrack goodPoints] count] - 1;
 	int np = eidx-sidx+1;
 	[lpath removeAllPoints];
 	if ((np > 0) && (maxdist > 0.0))
@@ -301,7 +299,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 {
 	if (splitsArray)
 	{
-		int num = [splitsArray count];
+        NSUInteger num = [splitsArray count];
 		for (int i=0; i<num; i++)
 		{
 			SplitTableItem* sti = [splitsArray objectAtIndex:i];
@@ -312,7 +310,7 @@ static float calcY(float ymin, float ymax, float h, float v)
                 NSArray* pts = [currentTrack points];
                 if (pts && [pts count] > idx)
                 {
-                    int np = [pts count];
+                    NSUInteger np = [pts count];
                     float d = [sti splitDuration];
                     TrackPoint* spt = [pts objectAtIndex:idx];
                     TrackPoint* lpt = nil;
@@ -415,7 +413,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 		float y = plotBounds.origin.y;
 		//float dy = h*.05;
 		//h -= (dy*2);
-		numPts = [pts count];
+		numPts = (int)[pts count];
 		[plottedPoints removeAllObjects];
 		float dur = 0.0;
 		if (numPts > 0)
@@ -435,7 +433,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 		{
 			// y += dy; 
 			[dpath setLineWidth:1.0];
-			//[dpath setLineJoinStyle:NSRoundLineJoinStyle];
+			//[dpath setLineJoinStyle:NSLineJoinStyleRound]];
 			NSPoint p;
 			TrackPoint* pt = [pts objectAtIndex:0];
 			p.x = x;
@@ -571,7 +569,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 
 -(void)mouseDown:(NSEvent *)event
 {
-	int i = [event clickCount];
+    NSInteger i = [event clickCount];
 	if(2==i)
 	{
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"OpenActivityDetail" object:self];

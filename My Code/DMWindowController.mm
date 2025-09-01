@@ -112,7 +112,7 @@ enum
     dummy.origin.x = 0;
     dummy.origin.y = 0;
     transparentMapWindow = [[TransparentMapWindow alloc] initWithContentRect:dummy 
-                                                                   styleMask:NSBorderlessWindowMask 
+                                                                   styleMask:NSWindowStyleMaskBorderless 
                                                                      backing:NSBackingStoreBuffered 
                                                                        defer:NO];
     [transparentMapWindow setDelegate:self];

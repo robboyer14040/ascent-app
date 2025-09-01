@@ -461,7 +461,7 @@
 										  sz.width, sz.height);
 		NSWindow* offscreenWindow = [[NSWindow alloc]
 									 initWithContentRect:offscreenRect
-									 styleMask:NSBorderlessWindowMask
+									 styleMask:NSWindowStyleMaskBorderless
 									 backing:NSBackingStoreRetained
 									 defer:NO];
 		

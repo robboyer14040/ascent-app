@@ -1003,7 +1003,7 @@ static double getMetersPerTile(int zoom)
 	   if (dataHudUpdateInvocation)
 	   {
 		   //float alt = [self getAltitude:curPointIdx];
-		   float alt = [currentTrack firstValidAltitudeUsingGoodPoints:curPointIdx];
+           CGFloat alt = (CGFloat)[currentTrack firstValidAltitudeUsingGoodPoints:curPointIdx];
 		   if (alt == BAD_ALTITUDE) alt = 0.0;
 		   [dataHudUpdateInvocation setArgument:&tpt 
 										atIndex:2];
@@ -1601,12 +1601,12 @@ struct tStringInfo
 -(void)recalcPathXY:(int)lt bottomTile:(int)bt
 {
    [trackPath removeAllPoints];
-   [trackPath setLineJoinStyle:NSRoundLineJoinStyle];
+   [trackPath setLineJoinStyle:NSLineJoinStyleRound];
    [trackPath setLineWidth:3.0];
    [lapPath removeAllPoints];
-   [lapPath setLineJoinStyle:NSRoundLineJoinStyle];
+   [lapPath setLineJoinStyle:NSLineJoinStyleRound];
    [lapPath setLineWidth:3.0];
-   int numPts = [plottedPoints count];
+    NSUInteger numPts = [plottedPoints count];
 #if 0
 	//double utmEastingOfLeftTile;
 	//double utmNorthingOfBottomTile;

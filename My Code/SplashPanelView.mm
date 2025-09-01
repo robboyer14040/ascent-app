@@ -63,7 +63,7 @@
    [backgroundImage setSize:bounds.size];
    [backgroundImage drawAtPoint:NSMakePoint(0,0)
                        fromRect:NSZeroRect
-                      operation:NSCompositeSourceOver
+                      operation:NSCompositingOperationSourceOver
                     fraction:1.0];
    NSString* s = @"Ascent: GPS-Enabled Training";
    NSFont* font = [NSFont boldSystemFontOfSize:18];

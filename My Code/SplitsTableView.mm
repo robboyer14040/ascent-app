@@ -46,8 +46,8 @@
 // default version of this causes an exception if clicked in a non-column area of the table
 - (NSMenu *)menuForEvent:(NSEvent *)theEvent
 {
-	if([theEvent type] == NSRightMouseDown || ([theEvent type] == 
-											   NSLeftMouseDown && ([theEvent modifierFlags] & NSControlKeyMask)))
+	if([theEvent type] == NSEventTypeRightMouseDown || ([theEvent type] == 
+											   NSEventTypeLeftMouseDown && ([theEvent modifierFlags] & NSEventModifierFlagControl)))
 	{
 		return [self menu];
 	}

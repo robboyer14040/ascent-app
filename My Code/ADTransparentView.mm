@@ -118,7 +118,7 @@ NSString*      speedFormat;
 	drect.size = imageRect.size;
 	[dotImage drawInRect:drect
 				fromRect:imageRect
-			   operation:NSCompositeSourceOver
+			   operation:NSCompositingOperationSourceOver
 				fraction:1.0];
 	
 	if (inSelection)
@@ -134,7 +134,8 @@ NSString*      speedFormat;
 		[NSBezierPath fillRect:selRect];
 	}
 
-	[[self window] flushWindowIfNeeded];
+    [self.window displayIfNeeded];                 // window-wide
+    [self.window.contentView displayIfNeeded];     // specific subtree
 }
 
 

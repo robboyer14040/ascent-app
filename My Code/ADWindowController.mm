@@ -81,7 +81,7 @@ enum
 	dummy.origin.x = 0;
 	dummy.origin.y = 0;
 	transparentWindow = [[ADTransparentWindow alloc] initWithContentRect:dummy 
-															   styleMask:NSBorderlessWindowMask 
+															   styleMask:NSWindowStyleMaskBorderless 
 																 backing:NSBackingStoreBuffered 
 																   defer:NO];
 	transparentView = [[ADTransparentView alloc] initWithFrame:dummy];
@@ -1071,9 +1071,9 @@ static tHUDStringInfo sHUDStringInfo[] =
 								   windowSize.width, windowSize.height);
 
 	// Create a HUDWindow.
-	// Note: the styleMask is ignored; NSBorderlessWindowMask is always used.
+	// Note: the styleMask is ignored; NSWindowStyleMaskBorderless is always used.
 	statsHUDWindow = [[HUDWindow alloc] initWithContentRect:windowFrame 
-										 styleMask:NSBorderlessWindowMask 
+										 styleMask:NSWindowStyleMaskBorderless 
 										   backing:NSBackingStoreBuffered 
 											 defer:NO];
 

@@ -2090,8 +2090,8 @@ static NSPoint interpPoints(NSPoint p1, NSPoint p2, float ratio)
 				   needsDisplay:doUpdate];
 		if (doUpdate)
 		{
-			float alt = [self getAltitude:gi];
-			[dataHudUpdateInvocation setArgument:&tpt 
+			CGFloat alt = [self getAltitude:gi];
+			[dataHudUpdateInvocation setArgument:&tpt
 										 atIndex:2];
 			[dataHudUpdateInvocation setArgument:&p.x 
 										 atIndex:3];

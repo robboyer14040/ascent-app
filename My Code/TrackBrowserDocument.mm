@@ -2531,8 +2531,20 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
             [self _dismissProgress];
  
             if (ok) {
-                // Ensure autosave state is clean
+                if ((op == NSSaveOperation || op == NSSaveAsOperation)) {
+                    if (self.fileURL == nil || ![self.fileURL isEqual:url]) {
+                        // Adopt the new identity so the title updates from “Untitled”
+                        [self setFileURL:url];
+                    }
+                    // Ensure Recents gets updated (normally NSDocumentController does this, but be defensive)
+                    NSDocumentController *dc = [NSDocumentController sharedDocumentController];
+                    if ([dc respondsToSelector:@selector(noteNewRecentDocumentURL:)]) {
+                        [dc noteNewRecentDocumentURL:url];
+                    }
+                }
+               // Ensure autosave state is clean
                 [self updateChangeCount:NSChangeCleared];
+                
             }
 
             // Tell NSDocument we're done

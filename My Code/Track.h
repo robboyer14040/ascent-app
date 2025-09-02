@@ -81,6 +81,7 @@ struct tPeakIntervalData
 @interface Track : NSObject <NSCoding, NSMutableCopying> 
 {
 	// fields that are stored persistently
+    NSNumber*           stravaActivityID;
 	NSString*			uuid;
 	NSDate*				creationTime;
 	NSDate*				creationTimeOverride;		// if user has over-ridden original creationtime
@@ -121,6 +122,25 @@ struct tPeakIntervalData
 	///BOOL				hasDistanceData;
 }
 
+// items from track source - used if points not available, stored persistently
+@property(nonatomic) float srcDistance;
+@property(nonatomic) float srcMaxSpeed;
+@property(nonatomic) float srcAvgHeartrate;
+@property(nonatomic) float srcMaxHeartrate;
+@property(nonatomic) float srcAvgTemperature;
+@property(nonatomic) float srcMaxElevation;
+@property(nonatomic) float srcMinElevation;
+@property(nonatomic) float srcAvgPower;
+@property(nonatomic) float srcMaxPower;
+@property(nonatomic) float srcAvgCadence;
+@property(nonatomic) float srcTotalClimb;
+@property(nonatomic) float srcKilojoules;
+@property(nonatomic) NSTimeInterval srcElapsedTime;
+@property(nonatomic) NSTimeInterval srcMovingTime;
+
+
+
+@property(nonatomic, retain) NSNumber* stravaActivityID;
 @property(nonatomic, retain) NSArray* equipmentUUIDs;
 @property(nonatomic, retain) NSString* mainEquipmentUUID;
 @property(nonatomic) float equipmentWeight;
@@ -133,6 +153,7 @@ struct tPeakIntervalData
 @property(nonatomic, retain) NSMutableArray* laps;
 @property(nonatomic) BOOL movingSpeedOnly;
 @property(nonatomic) BOOL hasDistanceData;
+@property(nonatomic, retain) NSArray<NSURL *> *photoURLs;  // array of file or web URLs
 
 - (NSComparisonResult) comparator:(Track*)track;
 -(void) doFixupAndCalcGradients;

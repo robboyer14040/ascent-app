@@ -30,10 +30,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)saveMetaWithTableInfo:(NSDictionary<NSString*,ColumnInfo*> *)tableInfoDict
               splitsTableInfo:(NSDictionary<NSString*,ColumnInfo*> *)splitsTableInfoDict
                          uuid:(NSString*)uuid
-                    startDate:(NSDate *)startTime
-                      endDate:(NSDate *)endTime
+                    startDate:(NSDate *)startDate
+                      endDate:(NSDate *)endDate
+                 lastSyncTime:(NSDate *)lastSyncTime
                         flags:(NSInteger)flags
-                  totalTracks:(NSInteger)total
+                  totalTracks:(NSInteger)i2
                          int3:(NSInteger)i3
                          int4:(NSInteger)i4
                         error:(NSError **)error;
@@ -44,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
                      uuid:(NSString * _Nullable __autoreleasing * _Nullable)outUuid
                 startDate:(NSDate * _Nullable __autoreleasing * _Nullable)outStartTime
                   endDate:(NSDate * _Nullable __autoreleasing * _Nullable)outEndTime
+             lastSyncTime:(NSDate * _Nullable __autoreleasing * _Nullable)lastSyncTime
                     flags:(NSInteger * _Nullable)outFlags
               totalTracks:(NSInteger * _Nullable)outTotalTracks
                      int3:(NSInteger * _Nullable)outI3
@@ -53,8 +55,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// Load all tracks, each with laps, points, attributes, markers, overrideData
 - (NSArray<Track *> *)loadAllTracks:(NSError **)error totalTracks:(NSInteger)tt progressBlock:(ASProgress)progress;
 
-/// Load a single track by UUID (faster than loadAll)
-- (nullable Track *)loadTrackWithUUID:(NSString *)uuid error:(NSError **)error;
 @end
 
 NS_ASSUME_NONNULL_END

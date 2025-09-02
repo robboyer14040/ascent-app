@@ -54,19 +54,14 @@ typedef void (^StravaProgress)(NSUInteger pagesFetched, NSUInteger totalSoFar);
                  completion:(void (^)(NSDictionary * _Nullable activity, NSError * _Nullable error))completion;
 
 // Convenience: deliver completion on the given queue (nil => main)
-- (void)fetchActivityDetail:(NSNumber *)activityID
-                      queue:(dispatch_queue_t _Nullable)queue
-                 completion:(void (^)(NSDictionary * _Nullable activity,
-                                      NSError * _Nullable error))completion;
+//- (void)fetchActivityDetail:(NSNumber *)activityID
+//                      queue:(dispatch_queue_t _Nullable)queue
+//                 completion:(void (^)(NSDictionary * _Nullable activity,
+//                                      NSError * _Nullable error))completion;
 - (void)fetchActivityStreams:(NSNumber *)activityID
                        types:(NSArray<NSString *> *)types
                   completion:(void (^)(NSDictionary<NSString *, NSArray *> * _Nullable streams, NSError * _Nullable error))completion;
 
-- (void)fetchActivityStreams:(NSNumber *)activityID
-                       types:(NSArray<NSString *> *)types
-                       queue:(dispatch_queue_t _Nullable)queue
-                  completion:(void (^)(NSDictionary<NSString *, NSArray *> * _Nullable streams,
-                                       NSError * _Nullable error))completion;
 
 // Returns an autoreleased copy of the current token, or nil if none.
 - (NSString * _Nullable)currentAccessToken;
@@ -77,6 +72,14 @@ typedef void (^StravaProgress)(NSUInteger pagesFetched, NSUInteger totalSoFar);
 - (void)_ensureFreshAccessToken:(StravaAuthCompletion)completion;
 
 - (void)persistTokensWithAccess:(NSString *)access refresh:(NSString *)refresh;
+
+typedef void (^StravaPhotosCompletion)(NSArray<NSDictionary *> * _Nullable photos, NSError * _Nullable error);
+
+// Get all photos for an activity (Strava + external). `size` is the longest edge (e.g. 1024 or 2048).
+- (void)fetchActivityPhotos:(NSNumber *)activityID
+                       size:(NSUInteger)size
+                      queue:(dispatch_queue_t _Nullable)queue
+                 completion:(StravaPhotosCompletion)completion;
 
 @end
 

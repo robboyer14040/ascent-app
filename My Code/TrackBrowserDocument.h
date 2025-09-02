@@ -49,6 +49,8 @@ NSString * const AscentUTIDatabase      = @"com.montebellosoftware.ascent.db";
 @property(nonatomic, retain) NSMutableDictionary* equipmentLogDataDict;
 
 - (void)syncGPS;
+- (NSDate*)lastSyncTime;
+- (void)setLastSyncTime:(NSDate*) d;
 - (void)setTracks:(NSMutableArray*)tracks;
 - (Track*) currentlySelectedTrack;
 - (void)setCurrentlySelectedTrack:(Track*)t;
@@ -56,6 +58,7 @@ NSString * const AscentUTIDatabase      = @"com.montebellosoftware.ascent.db";
 - (NSMutableArray*)trackArray;
 - (TBWindowController*) windowController;
 -(void) addTracks:(NSMutableArray*)arr;
+-(NSArray*) addTracksAfterStravaSync:(NSMutableArray*)arr;
 -(void) deleteTracks:(NSMutableArray*)arr;
 -(Track*)combineTracks:(NSArray*)tracks;
 -(Track*) splitTrack:(Track*)track usingThreshold:(NSTimeInterval)threshold;

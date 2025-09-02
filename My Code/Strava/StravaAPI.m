@@ -561,6 +561,8 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
     }];
 }
 
+
+#if 0
 // New, queue-aware API
 - (void)fetchActivityDetail:(NSNumber *)activityID
                       queue:(dispatch_queue_t)queue
@@ -589,40 +591,7 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
         [task resume];
     }];
 }
-
-- (void)fetchActivityStreams:(NSNumber *)activityID
-                       types:(NSArray<NSString *> *)types
-                       queue:(dispatch_queue_t)queue
-                  completion:(void (^)(NSDictionary<NSString *,NSArray *> * _Nullable, NSError * _Nullable))completion
-{
-    if (!activityID) { ASCOnQueue(queue, ^{ if (completion) completion(nil, [NSError errorWithDomain:@"Strava" code:-22 userInfo:@{NSLocalizedDescriptionKey:@"Missing activity id"}]); }); return; }
-    NSString *keys = types.count ? [types componentsJoinedByString:@","]
-                                 : @"latlng,heartrate,velocity_smooth,time,cadence,altitude,distance";
-    [self _ensureFreshAccessToken:^(NSError * _Nullable err) {
-        if (err) { ASCOnQueue(queue, ^{ if (completion) completion(nil, err); }); return; }
-        NSString *url = [NSString stringWithFormat:
-            @"https://www.strava.com/api/v3/activities/%@/streams?keys=%@&key_by_type=true",
-            activityID, [keys stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]];
-        NSURLRequest *req = [self _GET:url bearer:_accessToken];
-
-        __unsafe_unretained StravaAPI *unretainedSelf = self;
-        __block NSURLSessionDataTask *task = nil;
-        task = [_session dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-            [unretainedSelf _untrackTask:task];
-            if (error) { ASCOnQueue(queue, ^{ if (completion) completion(nil, error); }); return; }
-            NSError *jsonErr = nil;
-            id obj = ASCJSON(data, &jsonErr);
-            if (jsonErr || ![obj isKindOfClass:[NSDictionary class]]) {
-                NSError *e = jsonErr ?: [NSError errorWithDomain:@"Strava" code:-23 userInfo:@{NSLocalizedDescriptionKey:@"Malformed streams response"}];
-                ASCOnQueue(queue, ^{ if (completion) completion(nil, e); }); return;
-            }
-            ASCOnQueue(queue, ^{ if (completion) completion((NSDictionary *)obj, nil); });
-        }];
-        [self _trackTask:task];
-        [task resume];
-    }];
-}
-
+#endif
 
 // Streams (arrays of aligned samples; use key_by_type for {type: [..]} map)
 - (void)fetchActivityStreams:(NSNumber *)activityID
@@ -873,6 +842,48 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
         NSLog(@"[StravaAPI] Keychain persist error (access=%d, refresh=%d)",
               (int)sa, (int)sr);
     }
+}
+
+
+- (void)fetchActivityPhotos:(NSNumber *)activityID
+                       size:(NSUInteger)size
+                      queue:(dispatch_queue_t)queue
+                 completion:(StravaPhotosCompletion)completion
+{
+    if (!activityID) {
+        if (completion) completion(nil, [NSError errorWithDomain:@"Strava" code:-30 userInfo:@{NSLocalizedDescriptionKey:@"Missing activity id"}]);
+        return;
+    }
+    if (size == 0) size = 1024;
+
+    [self _ensureFreshAccessToken:^(NSError * _Nullable err) {
+        if (err) { if (completion) completion(nil, err); return; }
+
+        NSString *url = [NSString stringWithFormat:
+            @"https://www.strava.com/api/v3/activities/%@/photos?photo_sources=true&size=%lu",
+            activityID, (unsigned long)size];
+
+        NSURLRequest *req = [self _GET:url bearer:_accessToken];
+
+        __unsafe_unretained StravaAPI *unretainedSelf = self;
+        __block NSURLSessionDataTask *task = nil;
+        task = [_session dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+            [unretainedSelf _untrackTask:task];
+
+            if (error) { (queue ? dispatch_async(queue, ^{ if (completion) completion(nil, error); }) : ASCOnMain(^{ if (completion) completion(nil, error); })); return; }
+
+            NSError *jsonErr = nil;
+            id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonErr];
+            if (jsonErr || ![obj isKindOfClass:[NSArray class]]) {
+                NSError *e = jsonErr ?: [NSError errorWithDomain:@"Strava" code:-31 userInfo:@{NSLocalizedDescriptionKey:@"Malformed photos response"}];
+                (queue ? dispatch_async(queue, ^{ if (completion) completion(nil, e); }) : ASCOnMain(^{ if (completion) completion(nil, e); }));
+                return;
+            }
+            (queue ? dispatch_async(queue, ^{ if (completion) completion((NSArray *)obj, nil); }) : ASCOnMain(^{ if (completion) completion((NSArray *)obj, nil); }));
+        }];
+        [self _trackTask:task];
+        [task resume];
+    }];
 }
 
 

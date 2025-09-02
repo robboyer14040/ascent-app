@@ -24,6 +24,7 @@
 
 - (void) dealloc
 {
+    [super dealloc];
 }
 
 

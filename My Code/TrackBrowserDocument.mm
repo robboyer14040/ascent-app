@@ -342,6 +342,7 @@ enum
                                               uuid:uuid
                                          startDate:(NSDate *)startEndDateArray[0]
                                            endDate:(NSDate *)startEndDateArray[1]
+                                      lastSyncTime:lastSyncTime
                                              flags:flags
                                        totalTracks:[trackArray count]
                                               int3:0
@@ -1881,6 +1882,27 @@ deviceIsPluggedIn:YES];
 }
 
 
+- (NSDate*)lastSyncTime
+{
+    if (browserData)
+    {
+        return [browserData lastSyncTime];
+    }
+    return [NSDate distantPast];
+}
+
+
+- (void)setLastSyncTime:(NSDate*) d
+{
+    if (browserData)
+    {
+        [browserData setLastSyncTime:d];
+    }
+}
+
+
+
+
 -(BOOL)trackExistsAtTime:(NSDate*)st startIndex:(int*)startIdx slop:(int)secondsSlop
 {
 	BOOL ret = NO;
@@ -2012,6 +2034,7 @@ deviceIsPluggedIn:YES];
     NSInteger iflags = 0;
     NSDate *startDate = nil;
     NSDate *endDate = nil;
+    NSDate *lastSyncTime = nil;
     NSDictionary* d1 = nil;
     NSDictionary* d2 = nil;
     NSString* sid = nil;
@@ -2025,6 +2048,7 @@ deviceIsPluggedIn:YES];
                                      uuid:&sid
                                 startDate:&startDate
                                   endDate:&endDate
+                             lastSyncTime:&lastSyncTime
                                     flags:&iflags
                               totalTracks:&numTracks
                                      int3:&i3
@@ -3219,6 +3243,75 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
          [[NSNotificationCenter defaultCenter] postNotificationName:@"UndoRedoCompleted" object:self];
       }
    }
+}
+
+
+-(NSArray*) addTracksAfterStravaSync:(NSMutableArray*)arr
+{
+    NSDate* newestCreatedTrack = [NSDate distantPast];
+    NSDate* oldestCreatedTrack = [NSDate distantFuture];
+    NSMutableArray* trackArray = [browserData trackArray];
+    NSUInteger num = [arr count];
+    if ((trackArray != nil) && (num > 0))
+    {
+        NSUndoManager* undo = [self undoManager];
+        if (![undo isUndoing])
+        {
+            if (num == 1)
+            {
+            [undo setActionName:@"Add Strava activity"];
+            }
+            else
+            {
+            [undo setActionName:@"Add Strava activities"];
+            }
+        }
+        [[undo prepareWithInvocationTarget:self] deleteTracks:arr];
+        for (int i=0; i<num; i++)
+        {
+            Track* t = [arr objectAtIndex:i];
+            NSDate* trackCreationDate = [t creationTime];
+            if (trackCreationDate)
+            {
+                if ([trackCreationDate compare:newestCreatedTrack] == NSOrderedDescending)
+                {
+                    newestCreatedTrack = trackCreationDate;
+                 }
+                if ([trackCreationDate compare:oldestCreatedTrack] == NSOrderedAscending)
+                {
+                    oldestCreatedTrack = trackCreationDate;
+                }
+            }
+            if ([trackArray indexOfObject:t] == NSNotFound)
+            {
+                ///[trackArray addObject:t];
+                [self addTracksToDB:[NSArray arrayWithObject:t]
+                alsoAddToTrackArray:YES];
+
+                    NSMutableArray* deletedTracks = [browserData userDeletedTrackTimes];
+                if ([deletedTracks containsObject:[t creationTime]])
+                {
+                    [deletedTracks removeObject:[t creationTime]];
+                    //NSLog(@"REMOVED track at time %@ from user deleted list", [t creationTime]);
+                }
+                
+            }
+            else
+            {
+                NSLog(@"skipping Strava imported track %s, already there", [[t name] UTF8String]);
+            }
+        }
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
+        [trackArray sortUsingSelector:@selector(compareByDate:)];
+        [tbWindowController storeExpandedState];
+        [tbWindowController buildBrowser:YES];
+        [tbWindowController restoreExpandedState];
+        if ([undo isUndoing] || [undo isRedoing])
+        {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"UndoRedoCompleted" object:self];
+        }
+    }
+    return [NSArray arrayWithObjects:oldestCreatedTrack, newestCreatedTrack, nil];
 }
 
 

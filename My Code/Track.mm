@@ -80,14 +80,19 @@
 //------------------------------------------------------------------------------------------
 
 @interface Track ()
+
+
 -(void)calcPeaks;
 - (float)realDurationOfLap:(Lap*)lap;
 - (void) checkPowerData;
 - (void)fixLapDurations;
+
 @end
 
 @implementation Track
+@synthesize photoURLs = _photoURLs;
 
+@synthesize stravaActivityID = _stravaActivityID;
 @synthesize equipmentUUIDs;
 @synthesize mainEquipmentUUID;
 @synthesize equipmentWeight;
@@ -99,44 +104,156 @@
 @synthesize laps;
 @synthesize deviceTotalTime;
 
+// items from track source - used if points not available, stored persistently
+@synthesize srcDistance;
+@synthesize srcMaxSpeed;
+@synthesize srcAvgHeartrate;
+@synthesize srcMaxHeartrate;
+@synthesize srcAvgTemperature;
+@synthesize srcMaxElevation;
+@synthesize srcMinElevation;
+@synthesize srcAvgPower;
+@synthesize srcMaxPower;
+@synthesize srcAvgCadence;
+@synthesize srcTotalClimb;
+@synthesize srcKilojoules;
+@synthesize srcElapsedTime;
+@synthesize srcMovingTime;
+
+
+- (id)init
+{
+    self = [super init];
+    attributes = [[NSMutableArray alloc] initWithCapacity:kNumAttributes];
+    int i;
+    for (i=0; i<kNumAttributes; i++) [attributes addObject:@""];
+
+    // set default attributes
+    NSString* activity;
+    NSString* eventType;
+    activity = [Utils stringFromDefaults:RCBDefaultActivity];
+    if ((activity==nil) || [activity isEqualToString:@""])
+        activity = @kCycling;
+    eventType = [Utils stringFromDefaults:RCBDefaultEventType];
+    if ((eventType==nil) || [eventType isEqualToString:@""])
+        eventType = @kTraining;
+    
+    [self setUuid:[NSString uniqueString]];
+    [attributes replaceObjectAtIndex:kActivity withObject:activity];
+    [attributes replaceObjectAtIndex:kEffort withObject:@kMedium];
+    [attributes replaceObjectAtIndex:kDisposition withObject:@kOK];
+    [attributes replaceObjectAtIndex:kEventType withObject:eventType];
+    [attributes replaceObjectAtIndex:kWeather withObject:@kSunny];
+    // ALWAYS store values in STATUTE units!!!
+    //[attributes replaceObjectAtIndex:kWeight withObject:[self getStatuteDefaultWeightAsString]];
+    weight = [Utils floatFromDefaults:RCBDefaultWeight];
+
+    points = [[NSMutableArray alloc] init];
+    laps = [[NSMutableArray alloc] init];
+    lapInfoArray = [[NSMutableArray alloc] init];
+    markers = [[NSMutableArray alloc] init];
+    goodPoints = [[NSMutableArray alloc] init];
+    name = @"";
+    creationTime = nil;
+    creationTimeOverride = nil;
+    deviceTotalTime = 0.0;
+    distance = 0.0;
+    animTime = 0.0;
+    animIndex = 0;
+    peakIntervalData = 0;
+    deviceID = -1;
+    firmwareVersion = 0;
+    NSTimeZone* tz = [NSTimeZone localTimeZone];
+    secondsFromGMTAtSync = (int)[tz secondsFromGMTForDate:[NSDate date]];
+    [self initNonPersistantData];
+    hrzCacheStart = hrzCacheEnd = -42;
+    flags = 0;
+    equipmentWeight = kDefaultEquipmentWeight;
+    if ([Utils boolFromDefaults:RCBDefaultUseDistanceDataEnabled])
+    {
+        SET_FLAG(flags, kUseOrigDistance);
+    }
+    overrideData = [[OverrideData alloc] init];
+    ///BOOL calcPower = [Utils boolFromDefaults:RCBDefaultCalculatePowerIfAbsent];
+    [self setEnableCalculationOfPower:YES];
+    altitudeSmoothingFactor = [Utils floatFromDefaults:RCBDefaultAltitudeSmoothingPercentage];
+    
+    srcDistance = 0.0;
+    srcMaxSpeed = 0.0;
+    srcAvgHeartrate = 0.0;
+    srcMaxHeartrate = 0.0;
+    srcAvgTemperature = 0.0;
+    srcMaxElevation = 0.0;
+    srcMinElevation = 0.0;
+    srcAvgPower = 0.0;
+    srcMaxPower = 0.0;
+    srcAvgCadence = 0.0;
+    srcTotalClimb = 0.0;
+    srcKilojoules = 0.0;
+    srcElapsedTime = 0.0;
+    srcMovingTime = 0.0;
+
+    
+    return self;
+}
+
+
+- (void)dealloc
+{
+#if 0&&DEBUG_LEAKS
+    NSLog(@"  TRACK dealloc'd... ");
+#endif
+    [attributes release];
+    [laps release];
+    [points release];
+    [markers release];
+    [equipmentUUIDs release];
+    [overrideData release];
+     free(peakIntervalData);
+    [_photoURLs release];
+    [_stravaActivityID release];
+    [super dealloc];
+}
+
 
 -(NSString*) uuid
 {
-	return uuid;
+    return uuid;
 }
 
 
 -(void) setUuid:(NSString*)s
 {
-	if (uuid != s)
-	{
-		uuid = [s retain];      // added retain, FIXME
-	}
+    if (uuid != s)
+    {
+        uuid = [s retain];      // added retain, FIXME
+    }
 }
 
 
 
 -(void)initNonPersistantData
 {
-	for (int i=0; i<kST_NumStats; i++)
-	{
-		for (int j=0; j<kNumValsPerStat; j++)
-		{
-			statsArray[i].vals[j] = 0.0;
-		}
-		statsArray[i].atActiveTimeDelta[kMin] = statsArray[i].atActiveTimeDelta[kMax] = 0.0;
-	}
-	
-	statsCalculated = NO;
-	self.movingSpeedOnly = YES;
-	minGradientDistance = 175.0;      // feet, tweaky adjustment
-	peakIntervalData = 0;
-	self.equipmentUUIDs = nil;
-	animTimeBegin = 0.0;
-	animTimeEnd = 0.0;
-	self.mainEquipmentUUID = nil;
+    for (int i=0; i<kST_NumStats; i++)
+    {
+        for (int j=0; j<kNumValsPerStat; j++)
+        {
+            statsArray[i].vals[j] = 0.0;
+        }
+        statsArray[i].atActiveTimeDelta[kMin] = statsArray[i].atActiveTimeDelta[kMax] = 0.0;
+    }
+    
+    statsCalculated = NO;
+    self.movingSpeedOnly = YES;
+    minGradientDistance = 175.0;      // feet, tweaky adjustment
+    peakIntervalData = 0;
+    self.equipmentUUIDs = nil;
+    animTimeBegin = 0.0;
+    animTimeEnd = 0.0;
+    self.mainEquipmentUUID = nil;
     distance = 0.0;
 }
+
 
 -(void)setOverrideData:(OverrideData*)od
 {
@@ -236,65 +353,6 @@
 }   
 
 
-- (id)init
-{
-	self = [super init];
-	attributes = [[NSMutableArray alloc] initWithCapacity:kNumAttributes];
-	int i;
-	for (i=0; i<kNumAttributes; i++) [attributes addObject:@""];
-
-	// set default attributes
-	NSString* activity;
-	NSString* eventType;
-	activity = [Utils stringFromDefaults:RCBDefaultActivity];
-	if ((activity==nil) || [activity isEqualToString:@""])
-		activity = @kCycling;
-	eventType = [Utils stringFromDefaults:RCBDefaultEventType];
-	if ((eventType==nil) || [eventType isEqualToString:@""])
-		eventType = @kTraining;
-	
-	[self setUuid:[NSString uniqueString]];
-	[attributes replaceObjectAtIndex:kActivity withObject:activity];
-	[attributes replaceObjectAtIndex:kEffort withObject:@kMedium];
-	[attributes replaceObjectAtIndex:kDisposition withObject:@kOK];
-	[attributes replaceObjectAtIndex:kEventType withObject:eventType];
-	[attributes replaceObjectAtIndex:kWeather withObject:@kSunny];
-	// ALWAYS store values in STATUTE units!!!
-	//[attributes replaceObjectAtIndex:kWeight withObject:[self getStatuteDefaultWeightAsString]];
-	weight = [Utils floatFromDefaults:RCBDefaultWeight];
-
-	points = [[NSMutableArray alloc] init];
-	laps = [[NSMutableArray alloc] init];
-	lapInfoArray = [[NSMutableArray alloc] init];
-	markers = [[NSMutableArray alloc] init];
-	goodPoints = [[NSMutableArray alloc] init];
-	name = @"";
-	creationTime = nil;
-	creationTimeOverride = nil;
-    deviceTotalTime = 0.0;
-	distance = 0.0;
-	animTime = 0.0;
-	animIndex = 0;
-	peakIntervalData = 0;
-	deviceID = -1;
-	firmwareVersion = 0;
-	NSTimeZone* tz = [NSTimeZone localTimeZone];
-	secondsFromGMTAtSync = (int)[tz secondsFromGMTForDate:[NSDate date]];
-	[self initNonPersistantData];
-	hrzCacheStart = hrzCacheEnd = -42;
-	flags = 0;
-	equipmentWeight = kDefaultEquipmentWeight;
-	if ([Utils boolFromDefaults:RCBDefaultUseDistanceDataEnabled])
-	{
-		SET_FLAG(flags, kUseOrigDistance);
-	}
-	overrideData = [[OverrideData alloc] init];
-	///BOOL calcPower = [Utils boolFromDefaults:RCBDefaultCalculatePowerIfAbsent];
-	[self setEnableCalculationOfPower:YES];
-    altitudeSmoothingFactor = [Utils floatFromDefaults:RCBDefaultAltitudeSmoothingPercentage];
-	
-	return self;
-}
 
 
 #define TRACK_CUR_VERSION		9
@@ -488,20 +546,6 @@
 }
 
 
-- (void)dealloc
-{
-#if 0&&DEBUG_LEAKS
-	NSLog(@"  TRACK dealloc'd... ");
-#endif
-    [attributes release];
-    [laps release];
-    [points release];
-    [markers release];
-    [equipmentUUIDs release];
-    [overrideData release];
- 	free(peakIntervalData);
-    [super dealloc];
-}
 
 
 - (NSMutableArray*) goodPoints
@@ -2599,6 +2643,11 @@ static int sSpikeCount = 0;
 
 - (NSTimeInterval)duration
 {
+    if (points.count == 0)
+    {
+        return srcElapsedTime;
+    }
+    
 	float val = 0.0;
 	if ([overrideData isOverridden:kST_Durations])
 	{
@@ -2678,6 +2727,11 @@ static int sSpikeCount = 0;
 
 - (NSTimeInterval)movingDuration
 {
+    if (points.count == 0.0)
+    {
+        return srcMovingTime;
+    }
+    
 	float val = 0.0;
 	if ([overrideData isOverridden:kST_Durations])
 	{
@@ -3651,6 +3705,22 @@ enum
 					statsArray[kST_Speed].vals[kAvg] = statsArray[kST_MovingSpeed].vals[kAvg] = totalDistance/totalTime;
 				}
 			}
+            else
+            {
+                // no points data yet, use anything stored in track
+                float totalDistance = [self distance];
+                statsArray[kST_Distance].vals[kVal] = totalDistance;
+                statsArray[kST_Heartrate].vals[kMax] = [self maxHeartrate:nil];
+                statsArray[kST_Heartrate].vals[kAvg] = [self avgHeartrate];
+                statsArray[kST_Cadence].vals[kAvg] = [self avgCadence];
+                statsArray[kST_Power].vals[kAvg] = [self avgPower];
+                statsArray[kST_Power].vals[kMax] = [self maxPower:nil];
+                statsArray[kST_Speed].vals[kMax] = [self avgSpeed];
+                statsArray[kST_MovingSpeed].vals[kMax] = [self maxSpeed:nil];
+                ///statsArray[kST_Calories].vals[kVal] = [[laps valueForKeyPath:@"@sum.calories"] floatValue];
+                statsArray[kST_Durations].vals[kElapsed] = [self duration];
+                statsArray[kST_Durations].vals[kMoving] = [self movingDuration];
+            }
 		}
 	}
 }
@@ -3726,7 +3796,11 @@ enum
 			val += [self distanceOfLap:lap];
 		}
 	}
-	else
+	else if ([points count] == 0)
+    {
+        return distance;
+    }
+    else
 	{
 		val = [self statOrOverride:kST_Distance
 							 index:kVal
@@ -3761,6 +3835,10 @@ enum
 
 - (float)maxSpeed:(NSTimeInterval*)atTime
 {
+    if (points.count == 0)
+    {
+        return srcMaxSpeed;
+    }
 	return [self statOrOverride:kST_MovingSpeed
 						  index:kMax
 						 atActiveTimeDelta:atTime];
@@ -3769,6 +3847,10 @@ enum
 
 - (float)avgSpeed
 {
+    if (points.count == 0)
+    {
+        return srcElapsedTime ? srcDistance/(srcElapsedTime/3600.0) : 0.0;
+    }
    NSTimeInterval dur = [self duration];
    if (dur != 0.0)
    {
@@ -3781,6 +3863,10 @@ enum
 
 - (float)avgMovingSpeed
 {
+    if (points.count == 0)
+    {
+        return srcMovingTime ? srcDistance/(srcMovingTime/3600.0) : 0.0;
+    }
 	float val;
 	if ([overrideData isOverridden:kST_MovingSpeed])
 	{
@@ -3870,6 +3956,10 @@ enum
 
 - (float)maxAltitude:(NSTimeInterval*)atTime
 {
+    if (points.count ==0)
+    {
+        return srcMaxElevation;
+    }
 	return [self statOrOverride:kST_Altitude
 						  index:kMax
 						 atActiveTimeDelta:atTime];
@@ -3878,6 +3968,10 @@ enum
 
 - (float)minAltitude:(NSTimeInterval*)atTime
 {
+    if (points.count ==0)
+    {
+        return srcMinElevation;
+    }
 	return [self statOrOverride:kST_Altitude
 						  index:kMin
 						 atActiveTimeDelta:atTime];
@@ -3893,6 +3987,11 @@ enum
 
 - (float)maxHeartrate:(NSTimeInterval*)atTime
 {
+    if (points.count == 0)
+    {
+        return srcMaxHeartrate;
+    }
+    
 	float val = 0.0;
 	int numLaps = laps ? (int)[laps count] : 0;
 	BOOL useLapData = ([self usingDeviceLapData] && (numLaps > 0) && (![overrideData isOverridden:kST_Heartrate]));
@@ -3908,8 +4007,8 @@ enum
 	if (!useLapData || (val <= 0.0))
 	{
 		val = [self statOrOverride:kST_Heartrate
-						  index:kMax
-						 atActiveTimeDelta:atTime];
+                             index:kMax
+                 atActiveTimeDelta:atTime];
 	}
 	return val;
 }
@@ -3925,7 +4024,12 @@ enum
 
 - (float)avgHeartrate
 {
-	return [self statOrOverride:kST_Heartrate
+    if (points.count == 0)
+    {
+        return srcAvgHeartrate;
+    }
+
+    return [self statOrOverride:kST_Heartrate
 						  index:kAvg
 						 atActiveTimeDelta:0];
 }
@@ -3975,6 +4079,10 @@ enum
 
 - (float)avgTemperature
 {
+    if (points.count == 0)
+    {
+        return srcAvgTemperature;
+    }
 	return [self statOrOverride:kST_Temperature
 						  index:kAvg
 			  atActiveTimeDelta:0];
@@ -3991,6 +4099,10 @@ enum
 
 - (float)avgCadence
 {
+    if (points.count == 0)
+    {
+        return srcAvgCadence;
+    }
 	return [self statOrOverride:kST_Cadence
 						  index:kAvg
 						 atActiveTimeDelta:0];
@@ -4102,6 +4214,10 @@ enum
 
 - (float)maxPower:(NSTimeInterval*)atTime
 {
+    if (points.count == 0)
+    {
+        return srcMaxPower;
+    }
 	[self checkPowerData];
 	return [self statOrOverride:kST_Power
 						  index:kMax
@@ -4111,6 +4227,10 @@ enum
 
 - (float)avgPower
 {
+    if (points.count == 0)
+    {
+        return srcAvgPower;
+    }
 	[self checkPowerData];
 	return [self statOrOverride:kST_Power
 						  index:kAvg
@@ -4121,6 +4241,10 @@ enum
 
 - (float)work
 {
+    if (points.count == 0)
+    {
+        return srcKilojoules;
+    }
 	float val = 0.0;
 	if ([overrideData isOverridden:kST_Power])
 	{
@@ -4137,9 +4261,13 @@ enum
 
 - (float)totalClimb
 {
-	return [self statOrOverride:kST_ClimbDescent
-						  index:kMax
-						 atActiveTimeDelta:0];
+    if (points.count == 0)
+    {
+        return srcTotalClimb;
+    }
+    return [self statOrOverride:kST_ClimbDescent
+                                index:kMax
+                    atActiveTimeDelta:0];
 }
 
 

@@ -19,6 +19,8 @@ static const double kMToMi     = 0.000621371;
 static const double kMToFt     = 3.28084;
 static const double kMPSToMPH  = 2.2369362921;
 
+
+
 // ---- ISO8601 (UTC Z) -> NSDate
 static NSDate *ISO8601ToDate(NSString *iso) {
     if (!iso) return nil;
@@ -128,7 +130,7 @@ static NSArray *PointsFromStreams(NSDictionary *streamsByType) {
     NSArray *alt      = Safe(Safe(streamsByType[@"altitude"])[@"data"]);        // m
     NSArray *hr       = Safe(Safe(streamsByType[@"heartrate"])[@"data"]);       // bpm
     NSArray *cad      = Safe(Safe(streamsByType[@"cadence"])[@"data"]);         // rpm
-    NSArray *tmp      = Safe(Safe(streamsByType[@"temperature"])[@"data"]);     // °C
+    NSArray *tmp      = Safe(Safe(streamsByType[@"temp"])[@"data"]);            // °C
     NSArray *wat      = Safe(Safe(streamsByType[@"watts"])[@"data"]);           // W
     NSArray *grade    = Safe(Safe(streamsByType[@"grade_smooth"])[@"data"]);    // %
     NSArray *moving   = Safe(Safe(streamsByType[@"moving"])[@"data"]);          // 0/1 per-sample (optional)
@@ -210,6 +212,70 @@ static NSArray *PointsFromStreams(NSDictionary *streamsByType) {
     return out;
 }
 
+
+// Extract array of NSURLs from Strava "photos" field (detailed activity)
+// Accepts either a dictionary with "primary"->"urls" map, or an array of items with "urls".
+static NSArray<NSURL *> *ASCPhotoURLsFromStravaPhotos(id photosObj) {
+    if (!photosObj) return [NSArray array];
+
+    NSMutableArray<NSURL *> *urls = [NSMutableArray array];
+
+    // Case 1: {"count":N, "primary":{"id":...,"urls":{"100":"...","600":"...","2048":"..."}}}
+    if ([photosObj isKindOfClass:[NSDictionary class]]) {
+        NSDictionary *photosDict = (NSDictionary *)photosObj;
+        id primary = photosDict[@"primary"];
+        if ([primary isKindOfClass:[NSDictionary class]]) {
+            id urlMap = ((NSDictionary *)primary)[@"urls"];
+            if ([urlMap isKindOfClass:[NSDictionary class]]) {
+                NSDictionary *m = (NSDictionary *)urlMap;
+
+                // Deterministic order: sort size keys numerically (e.g., "100","600","2048")
+                NSArray *keys = [[m allKeys] sortedArrayUsingComparator:^NSComparisonResult(id a, id b) {
+                    NSInteger ia = [a respondsToSelector:@selector(integerValue)] ? [a integerValue] : 0;
+                    NSInteger ib = [b respondsToSelector:@selector(integerValue)] ? [b integerValue] : 0;
+                    if (ia < ib) return NSOrderedAscending;
+                    if (ia > ib) return NSOrderedDescending;
+                    return NSOrderedSame;
+                }];
+
+                for (id k in keys) {
+                    NSString *s = [m[k] isKindOfClass:[NSString class]] ? (NSString *)m[k] : nil;
+                    if (s.length) {
+                        NSURL *u = [NSURL URLWithString:s];
+                        if (u) [urls addObject:u];
+                    }
+                }
+            }
+        }
+
+        // Some variants put a flat URL at photos.primary (string) — be lenient:
+        if (urls.count == 0 && [primary isKindOfClass:[NSString class]]) {
+            NSURL *u = [NSURL URLWithString:(NSString *)primary];
+            if (u) [urls addObject:u];
+        }
+    }
+
+    // Case 2 (rare in this endpoint but harmless): array of photo dicts, each with "urls"
+    if (urls.count == 0 && [photosObj isKindOfClass:[NSArray class]]) {
+        for (id e in (NSArray *)photosObj) {
+            if (![e isKindOfClass:[NSDictionary class]]) continue;
+            id urlMap = ((NSDictionary *)e)[@"urls"];
+            if (![urlMap isKindOfClass:[NSDictionary class]]) continue;
+            for (id k in [(NSDictionary *)urlMap allKeys]) {
+                NSString *s = [urlMap[k] isKindOfClass:[NSString class]] ? (NSString *)urlMap[k] : nil;
+                if (s.length) {
+                    NSURL *u = [NSURL URLWithString:s];
+                    if (u) [urls addObject:u];
+                }
+            }
+        }
+    }
+
+    return urls;
+}
+
+
+
 // ---- Strava API helpers -----------------------------------------------------
 
 @interface StravaImporter ()
@@ -236,6 +302,7 @@ static NSArray *PointsFromStreams(NSDictionary *streamsByType) {
     [super dealloc];
 }
 
+
 // GET /api/v3/athlete/activities?after=...&per_page=...&page=...
 - (NSArray *)fetchActivitiesSince:(NSDate *)since
                           perPage:(NSUInteger)perPage
@@ -252,246 +319,55 @@ static NSArray *PointsFromStreams(NSDictionary *streamsByType) {
     return json; // NSArray<NSDictionary *>
 }
 
-// GET /api/v3/activities/{id}/streams?keys=...&key_by_type=true
+
 - (NSDictionary *)fetchStreamsForActivityID:(NSNumber *)actID
                                       error:(NSError **)outError
 {
-    NSString *keys = @"time,latlng,distance,velocity_smooth,altitude,heartrate,cadence,temperature,watts,grade_smooth,moving";
-    NSString *url = [NSString stringWithFormat:
-                     @"https://www.strava.com/api/v3/activities/%@/streams?keys=%@&key_by_type=true",
-                     actID, keys];
-    id json = GET_JSON(url, _accessToken, outError);
-    if (!json) return nil;
-    
-    if ([json isKindOfClass:[NSDictionary class]]) {
-        // key_by_type=true (ideal)
-        return json;
-    }
-    
-    if ([json isKindOfClass:[NSArray class]]) {
-        // Convert array of stream dicts into a by-type dictionary
-        NSMutableDictionary *byType = [NSMutableDictionary dictionary];
-        for (NSDictionary *stream in (NSArray *)json) {
-            NSString *type = stream[@"type"];
-            if (type) [byType setObject:stream forKey:type];
-        }
-        return byType;
-    }
-    
-    // Unexpected shape
-    if (outError) {
-        *outError = [NSError errorWithDomain:@"StravaJSON"
-                                        code:-1
-                                    userInfo:@{ NSLocalizedDescriptionKey : @"Unexpected streams JSON format" }];
-    }
-    return nil;
-}
+    __block NSDictionary *result = nil;
+    __block NSError *err = nil;
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
 
+    [[StravaAPI shared] fetchFreshAccessToken:^(NSString *token, NSError *tokenErr) {
+        if (tokenErr || token.length == 0) {
+            err = [tokenErr ?: [NSError errorWithDomain:@"StravaHTTP" code:401
+                                               userInfo:@{NSLocalizedDescriptionKey:@"No access token"}] retain];
+            dispatch_semaphore_signal(sem);
+            return;
+        }
+
+        // IMPORTANT: match what GET_JSON expects. If GET_JSON adds "Bearer " itself, pass just token.
+        // If GET_JSON expects the whole value, build it here:
+        NSString *auth = [NSString stringWithFormat:@"Bearer %@", token];
+
+        NSString *keys = @"time,latlng,distance,velocity_smooth,altitude,heartrate,cadence,temp,watts,grade_smooth,moving";
+        NSString *url  = [NSString stringWithFormat:
+            @"https://www.strava.com/api/v3/activities/%@/streams?keys=%@&key_by_type=true",
+            actID, keys];
+
+        NSDictionary *json = GET_JSON(url, auth, &err);
+        if ([json isKindOfClass:[NSDictionary class]]) {
+            result = [json retain];
+        } else if ([json isKindOfClass:[NSArray class]]) {
+            // Convert array-form into by-type dict (some older responses)
+            NSMutableDictionary *byType = [NSMutableDictionary dictionary];
+            for (NSDictionary *stream in (NSArray *)json) {
+                NSString *type = stream[@"type"];
+                if (type) byType[type] = stream;
+            }
+            result = [byType retain];
+        }
+        dispatch_semaphore_signal(sem);
+    }];
+
+    (void)dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(20 * NSEC_PER_SEC)));
+#if !OS_OBJECT_USE_OBJC
+    dispatch_release(sem);
+#endif
+    if (outError) *outError = [err autorelease];
+    return [result autorelease];
+}
 
 // ---- Public entry: import everything into Track/TrackPoint ------------------
-
-#if 0
-- (NSArray *)importTracksSince:(NSDate *)since
-                       perPage:(NSUInteger)perPage
-                      maxPages:(NSUInteger)maxPages
-                         error:(NSError **)outError
-{
-    NSMutableArray *tracksOut = [NSMutableArray array];
-    NSError *err = nil;
-
-    for (NSUInteger page = 1; page <= maxPages; page++) {
-        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
-        NSArray *activities = [self fetchActivitiesSince:since perPage:perPage page:page error:&err];
-        if (!activities) { if (outError) *outError = err; [pool drain]; break; }
-        if ([activities count] == 0) { [pool drain]; break; }
-
-        for (NSDictionary *act in activities) {
-            NSAutoreleasePool *p = [[NSAutoreleasePool alloc] init];
-
-            // ---- Build Track header
-            Track *track = [[[Track alloc] init] autorelease];
-
-            // uuid: use Strava id (string)
-            id actIDObj = Safe(act[@"id"]);
-            NSString *uuid = actIDObj ? [[actIDObj description] copy] : nil;
-            if (uuid) { [track setUuid:uuid]; [uuid release]; }
-
-            // name
-            NSString *name = Safe(act[@"name"]);
-            if (name) [track setName:name];
-
-            // creationTime: start_date (UTC ISO8601 Z)
-            NSString *startISO = Safe(act[@"start_date"]);
-            NSDate *startDate = ISO8601ToDate(startISO);
-            if (startDate) [track setCreationTime:startDate];
-
-            // distance: meters -> miles
-            NSNumber *distM = Safe(act[@"distance"]);
-            if (distM) [track setDistance:([distM doubleValue] * kMToMi)];
-
-            // notes / description
-            NSString *desc = Safe(act[@"description"]);
-            if (desc && [desc length] > 0) {
-                // Store as attribute kNotes
-                [track setAttribute:kNotes usingString:desc];
-            }
-
-            // activity_type -> kActivity (use sport_type or type)
-            NSString *sportType = Safe(act[@"sport_type"]) ?: Safe(act[@"type"]);
-            if (sportType) [track setAttribute:kActivity usingString:sportType];
-
-            // event_type -> kEventType (best-effort from workout_type)
-            NSString *eventType = EventTypeStringFromWorkoutType(Safe(act[@"workout_type"]), sportType);
-            if (eventType) [track setAttribute:kEventType usingString:eventType];
-
-            // ---- Fetch streams and build TrackPoints
-            NSNumber *actIDNum = ([actIDObj isKindOfClass:[NSNumber class]]
-                                  ? (NSNumber *)actIDObj
-                                  : [NSNumber numberWithLongLong:[[actIDObj description] longLongValue]]);
-            NSDictionary *streams = [self fetchStreamsForActivityID:actIDNum error:&err];
-            if (!streams && err) {
-                // If streams fail, push empty points but still keep the track header.
-                err = nil;
-                [track setPoints:[NSMutableArray array]];
-                [tracksOut addObject:track];
-                [p drain];
-                continue;
-            }
-
-            NSArray *pts = PointsFromStreams(streams);
-
-            // put into mutable array for Track API
-            NSMutableArray *mutablePts = [NSMutableArray arrayWithCapacity:[pts count]];
-            for (TrackPoint *tp in pts) [mutablePts addObject:tp];
-
-            [track setPoints:mutablePts];
-            [track fixupTrack];
-            [tracksOut addObject:track];
-            [p drain];
-        }
-
-        [pool drain];
-    }
-
-    return tracksOut;
-}
-#else
-- (NSArray *)importTracksSince:(NSDate *)since
-                       perPage:(NSUInteger)perPage
-                      maxPages:(NSUInteger)maxPages
-                         error:(NSError **)outError
-{
-    NSMutableArray *tracksOut = [NSMutableArray array];
-    NSError *err = nil;
-
-    for (NSUInteger page = 1; page <= maxPages; page++) {
-        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
-        NSArray *activities = [self fetchActivitiesSince:since perPage:perPage page:page error:&err];
-        if (!activities) { if (outError) *outError = err; [pool drain]; break; }
-        if ([activities count] == 0) { [pool drain]; break; }
-
-        for (NSDictionary *act in activities) {
-            NSAutoreleasePool *p = [[NSAutoreleasePool alloc] init];
-
-            // ---- Build Track header
-            Track *track = [[[Track alloc] init] autorelease];
-
-            // Strava id → uuid (string)
-            id actIDObj = Safe(act[@"id"]);
-            NSString *uuid = actIDObj ? [[actIDObj description] copy] : nil;
-            if (uuid) { [track setUuid:uuid]; [uuid release]; }
-
-            // Numeric ID for API calls
-            NSNumber *actIDNum = ([actIDObj isKindOfClass:[NSNumber class]]
-                                  ? (NSNumber *)actIDObj
-                                  : (actIDObj ? [NSNumber numberWithLongLong:[[actIDObj description] longLongValue]] : nil));
-
-            // name
-            NSString *name = Safe(act[@"name"]);
-            if (name) [track setName:name];
-
-            // creationTime: start_date (UTC ISO8601 Z)
-            NSString *startISO = Safe(act[@"start_date"]);
-            NSDate *startDate = ISO8601ToDate(startISO);
-            if (startDate) [track setCreationTime:startDate];
-
-            // distance: meters -> miles
-            NSNumber *distM = Safe(act[@"distance"]);
-            if (distM) [track setDistance:([distM doubleValue] * kMToMi)];
-
-            // activity_type -> kActivity (use sport_type or type)
-            NSString *sportType = Safe(act[@"sport_type"]) ?: Safe(act[@"type"]);
-            if (sportType) [track setAttribute:kActivity usingString:sportType];
-
-            // event_type -> kEventType (best-effort from workout_type)
-            NSString *eventType = EventTypeStringFromWorkoutType(Safe(act[@"workout_type"]), sportType);
-            if (eventType) [track setAttribute:kEventType usingString:eventType];
-
-            // ---- Notes / description
-            // Summary payload often lacks "description" (or it's NSNull). If so, fetch the detailed activity.
-            NSString *desc = Safe(act[@"description"]);
-            if (!(desc && desc.length > 0) && actIDNum) {
-                
-                __block NSDictionary *detail = nil;
-                __block NSError *detailErr = nil;
-
-                dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-                [[StravaAPI shared] fetchActivityDetail:actIDNum
-                                             completion:^(NSDictionary * _Nullable activity, NSError * _Nullable error)
-                {
-                    if (activity) detail = [activity retain];   // MRC
-                    if (error)    detailErr = [error retain];   // (unused; for debugging)
-                    dispatch_semaphore_signal(sem);
-                }];
-
-                // Wait up to ~20s (tune as you like)
-                (void)dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(20 * NSEC_PER_SEC)));
-                #if !OS_OBJECT_USE_OBJC
-                dispatch_release(sem);
-                #endif
-
-                if (detail) {
-                    NSString *d = Safe(detail[@"description"]);
-                    if (d.length) [track setAttribute:kNotes usingString:d];
-                    [detail release];
-                }
-                if (detailErr) [detailErr release];
-            } else if (desc.length) {
-                [track setAttribute:kNotes usingString:desc];
-            }
-
-            // ---- Fetch streams and build TrackPoints
-            NSDictionary *streams = actIDNum ? [self fetchStreamsForActivityID:actIDNum error:&err] : nil;
-            if (!streams && err) {
-                // Keep the header even if streams fail.
-                err = nil;
-                [track setPoints:[NSMutableArray array]];
-                [tracksOut addObject:track];
-                [p drain];
-                continue;
-            }
-
-            NSArray *pts = PointsFromStreams(streams);
-
-            // put into mutable array for Track API
-            NSMutableArray *mutablePts = [NSMutableArray arrayWithCapacity:[pts count]];
-            for (TrackPoint *tp in pts) [mutablePts addObject:tp];
-
-            [track setPoints:mutablePts];
-            [track fixupTrack];
-            [tracksOut addObject:track];
-            [p drain];
-        }
-
-        [pool drain];
-    }
-
-    return tracksOut;
-}
-#endif
-
 
 // StravaImporter.m (implementation)
 // Assumes typedefs:
@@ -505,89 +381,168 @@ static NSArray *PointsFromStreams(NSDictionary *streamsByType) {
                completion:(StravaImportCompletion)completion
 {
     // Copy blocks for MRC safety
-    StravaImportProgress      progressCopy   = [progress copy];
-    StravaImportCompletion    completionCopy = [completion copy];
+    StravaImportProgress   progressCopy   = [progress copy];
+    StravaImportCompletion completionCopy = [completion copy];
     NSDate *sinceRetained = [since retain];
 
-    // Sanitize values outside the async block to avoid __block warnings
-    const NSUInteger perPageEff  = (perPage  ? perPage  : 50);
-    const NSUInteger maxPagesEff = (maxPages ? maxPages : 1);
+    const NSUInteger perPageEff  = perPage  ? perPage  : 50;
+    const NSUInteger maxPagesEff = maxPages ? maxPages : 1;
 
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
         NSMutableArray *tracksOut = [[NSMutableArray alloc] init];
-        NSError *err = nil;
+        NSError *err = nil; // long-lived error snapshot (retain from temps)
 
-        
+        __block int idx = 0;
         for (NSUInteger page = 1; page <= maxPagesEff; page++) {
             NSAutoreleasePool *pagePool = [[NSAutoreleasePool alloc] init];
 
-            // ——— Page fetch (summary activities) ———
+            // --- Fetch a page of summary activities (use temp error) ---
+            NSError *pageErr = nil;
             NSArray *activities = [self fetchActivitiesSince:sinceRetained
                                                      perPage:perPageEff
                                                         page:page
-                                                       error:&err];
-            if (!activities) {
-                // Hard failure fetching this page
-                [pagePool drain];
-                break;
-            }
+                                                       error:&pageErr];
+            if (pageErr) { [err release]; err = [pageErr retain]; }
+
+            if (!activities) { [pagePool drain]; break; }
             NSUInteger numActivities = [activities count];
-            if (numActivities == 0) {
-                // No more pages
-                [pagePool drain];
-                break;
-            }
-            __block int idx = 0;
-           // ——— Build Tracks for this page ———
+            if (numActivities == 0) { [pagePool drain]; break; }
+
+            // --- For each activity, build a Track ---
             for (NSDictionary *act in activities) {
                 NSAutoreleasePool *rowPool = [[NSAutoreleasePool alloc] init];
 
-
-                // Track header
+                // Track header (CREATE IT HERE)
                 Track *track = [[[Track alloc] init] autorelease];
 
-                // Strava id → uuid (string)
+                // Strava id → uuid (string) + numeric id
                 id actIDObj = Safe(act[@"id"]);
                 NSString *uuid = actIDObj ? [[actIDObj description] copy] : nil;
                 if (uuid) { [track setUuid:uuid]; [uuid release]; }
-
-                // numeric ID for API calls
                 NSNumber *actIDNum = ([actIDObj isKindOfClass:[NSNumber class]]
                                       ? (NSNumber *)actIDObj
                                       : (actIDObj ? [NSNumber numberWithLongLong:[[actIDObj description] longLongValue]] : nil));
-
-                // name
+                [track setStravaActivityID:actIDNum];
+                
+                // Name
                 NSString *name = Safe(act[@"name"]);
                 if (name) [track setName:name];
 
-                // start_date (UTC ISO8601)
+                // Start date
                 NSString *startISO = Safe(act[@"start_date"]);
                 NSDate *startDate = ISO8601ToDate(startISO);
                 if (startDate) [track setCreationTime:startDate];
 
-                // distance meters → miles
+                // Distance (m → miles)
                 NSNumber *distM = Safe(act[@"distance"]);
                 if (distM) [track setDistance:([distM doubleValue] * kMToMi)];
 
-                // activity type
+                // ===================== NEW: src* fields from summary =====================
+                // Distance (as reported by Strava, in miles)
+                if (distM && [track respondsToSelector:@selector(setSrcDistance:)]) {
+                    [track setSrcDistance:(float)([distM doubleValue] * kMToMi)];
+                }
+
+                // Speeds (m/s → mph)
+                NSNumber *maxSpeedMps = Safe(act[@"max_speed"]);
+                if (maxSpeedMps && [track respondsToSelector:@selector(setSrcMaxSpeed:)]) {
+                    [track setSrcMaxSpeed:(float)([maxSpeedMps doubleValue] * kMPSToMPH)];
+                }
+
+                // Heart rate (bpm)
+                NSNumber *avgHR = Safe(act[@"average_heartrate"]);
+                if (avgHR && [track respondsToSelector:@selector(setSrcAvgHeartrate:)]) {
+                    [track setSrcAvgHeartrate:[avgHR floatValue]];
+                }
+                NSNumber *maxHR = Safe(act[@"max_heartrate"]);
+                if (maxHR && [track respondsToSelector:@selector(setSrcMaxHeartrate:)]) {
+                    [track setSrcMaxHeartrate:[maxHR floatValue]];
+                }
+
+                // Temperature: Strava average_temp is °C → convert to °F to match UI/TrackPoint
+                NSNumber *avgTempC = Safe(act[@"average_temp"]);
+                if (avgTempC && [track respondsToSelector:@selector(setSrcAvgTemperature:)]) {
+                    double f = [avgTempC doubleValue] * 9.0/5.0 + 32.0;
+                    [track setSrcAvgTemperature:(float)f];
+                }
+
+                // Elevation highs/lows (meters → feet)
+                NSNumber *elevHighM = Safe(act[@"elev_high"]);
+                if (elevHighM && [track respondsToSelector:@selector(setSrcMaxElevation:)]) {
+                    [track setSrcMaxElevation:(float)([elevHighM doubleValue] * kMToFt)];
+                }
+                NSNumber *elevLowM = Safe(act[@"elev_low"]);
+                if (elevLowM && [track respondsToSelector:@selector(setSrcMinElevation:)]) {
+                    [track setSrcMinElevation:(float)([elevLowM doubleValue] * kMToFt)];
+                }
+
+                // Total climb (meters → feet)
+                NSNumber *totalGainM = Safe(act[@"total_elevation_gain"]);
+                if (totalGainM && [track respondsToSelector:@selector(setSrcTotalClimb:)]) {
+                    [track setSrcTotalClimb:(float)([totalGainM doubleValue] * kMToFt)];
+                }
+
+                // Power (watts)
+                NSNumber *avgW = Safe(act[@"weighted_average_watts"]) ?: Safe(act[@"average_watts"]);
+                if (avgW && [track respondsToSelector:@selector(setSrcAvgPower:)]) {
+                    [track setSrcAvgPower:[avgW floatValue]];
+                }
+                NSNumber *maxW = Safe(act[@"max_watts"]);
+                if (maxW && [track respondsToSelector:@selector(setSrcMaxPower:)]) {
+                    [track setSrcMaxPower:[maxW floatValue]];
+                }
+
+                // Cadence (rpm)
+                NSNumber *avgCad = Safe(act[@"average_cadence"]);
+                if (avgCad && [track respondsToSelector:@selector(setSrcAvgCadence:)]) {
+                    [track setSrcAvgCadence:[avgCad floatValue]];
+                }
+
+                // Energy (kJ)
+                NSNumber *kJ = Safe(act[@"kilojoules"]);
+                if (kJ && [track respondsToSelector:@selector(setSrcKilojoules:)]) {
+                    [track setSrcKilojoules:[kJ floatValue]];
+                }
+
+                // Durations (seconds)
+                NSNumber *elapsed = Safe(act[@"elapsed_time"]);
+                if (elapsed && [track respondsToSelector:@selector(setSrcElapsedTime:)]) {
+                    [track setSrcElapsedTime:[elapsed doubleValue]];
+                }
+                NSNumber *moving = Safe(act[@"moving_time"]);
+                if (moving && [track respondsToSelector:@selector(setSrcMovingTime:)]) {
+                    [track setSrcMovingTime:[moving doubleValue]];
+                }
+                // =================== end NEW: src* fields from summary ===================
+                // Activity / Event type
                 NSString *sportType = Safe(act[@"sport_type"]) ?: Safe(act[@"type"]);
                 if (sportType) [track setAttribute:kActivity usingString:sportType];
-
-                // event type (best-effort)
                 NSString *eventType = EventTypeStringFromWorkoutType(Safe(act[@"workout_type"]), sportType);
                 if (eventType) [track setAttribute:kEventType usingString:eventType];
 
-                // ---- Notes / description
-                // Summary often lacks "description". If missing, fetch detail.
+                
+                // ---- Notes / description + Photo URLs ----
+                // Try summary first
                 NSString *desc = Safe(act[@"description"]);
-                if (!(desc && desc.length > 0) && actIDNum) {
+                NSArray<NSURL *> *photoURLs = nil;
+
+                // Summary may include a "photos" object with a primary photo; harvest if present
+                id photosSummaryObj = Safe(act[@"photos"]);
+                NSArray<NSURL *> *urlsFromSummary = ASCPhotoURLsFromStravaPhotos(photosSummaryObj);
+                if (urlsFromSummary.count) {
+                    photoURLs = urlsFromSummary; // autoreleased; Track property will retain
+                }
+#if GETALL
+               // If we still need description OR photo URLs and we have an activity ID, fetch detail:
+                if (((!(desc && desc.length > 0)) || (photoURLs.count == 0)) && actIDNum) {
+
                     __block NSDictionary *detail = nil;
                     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
 
-                    // Current StravaAPI delivers completion on main; we’re off-main, so it’s safe to wait briefly.
                     [[StravaAPI shared] fetchActivityDetail:actIDNum
-                                                 completion:^(NSDictionary * _Nullable activity, NSError * _Nullable error) {
-                        if (activity) detail = [activity retain]; // MRC retain for use after wait
+                                                 completion:^(NSDictionary * _Nullable activity, NSError * _Nullable error)
+                    {
+                        if (activity) detail = [activity retain];   // MRC retain for post-wait use
                         dispatch_semaphore_signal(sem);
                     }];
 
@@ -597,22 +552,46 @@ static NSArray *PointsFromStreams(NSDictionary *streamsByType) {
                 #endif
 
                     if (detail) {
-                        NSString *d = Safe(detail[@"description"]);
-                        if (d.length) [track setAttribute:kNotes usingString:d];
+                        // Description from detail (if summary was empty)
+                        if (!(desc && desc.length > 0)) {
+                            NSString *d = Safe(detail[@"description"]);
+                            if (d.length) [track setAttribute:kNotes usingString:d];
+                        }
+
+                        // Photo URLs from detailed "photos"
+                        id photosDetailObj = Safe(detail[@"photos"]);
+                        NSArray<NSURL *> *urlsFromDetail = ASCPhotoURLsFromStravaPhotos(photosDetailObj);
+                        if (urlsFromDetail.count) photoURLs = urlsFromDetail;
+
                         [detail release];
+                    } else {
+                        // If we didn't get detail back but summary had desc, keep that
+                        if (desc.length) [track setAttribute:kNotes usingString:desc];
                     }
                 } else if (desc.length) {
+                    // We had a description in summary and didn't need detail
                     [track setAttribute:kNotes usingString:desc];
                 }
 
-                // ---- Streams → TrackPoints
-                NSDictionary *streams = actIDNum ? [self fetchStreamsForActivityID:actIDNum error:&err] : nil;
-                if (!streams && err) {
-                    // Keep the header even if streams fail; clear err so the whole import continues.
-                    err = nil;
+                // Finally, store photo URLs (empty array if none, which is fine)
+                if ([track respondsToSelector:@selector(setPhotoURLs:)]) {
+                    [track setPhotoURLs:(photoURLs ?: [NSArray array])];
+                } else {
+                    @try { [track setValue:(photoURLs ?: [NSArray array]) forKey:@"photoURLs"]; } @catch (__unused id e) {}
+                }
+
+                
+                // Streams → TrackPoints (temp error; do not abort whole import)
+                NSError *streamsErr = nil;
+                NSDictionary *streams = actIDNum ? [self fetchStreamsForActivityID:actIDNum error:&streamsErr] : nil;
+                if (!streams && streamsErr) {
+                    // Keep header, no points
                     [track setPoints:[NSMutableArray array]];
                     [tracksOut addObject:track];
 
+                    if (progressCopy) {
+                        dispatch_async(dispatch_get_main_queue(), ^{ progressCopy(idx++, numActivities); });
+                    }
                     [rowPool drain];
                     continue;
                 }
@@ -620,15 +599,14 @@ static NSArray *PointsFromStreams(NSDictionary *streamsByType) {
                 NSArray *pts = PointsFromStreams(streams);
                 NSMutableArray *mutablePts = [NSMutableArray arrayWithCapacity:pts.count];
                 for (TrackPoint *tp in pts) [mutablePts addObject:tp];
-
                 [track setPoints:mutablePts];
+#endif
                 [track fixupTrack];
                 [tracksOut addObject:track];
-
-                // Progress after each track (or you could move this to end-of-page)
                 if (progressCopy) {
-                     dispatch_async(dispatch_get_main_queue(), ^{ progressCopy(idx++, numActivities); });
+                    dispatch_async(dispatch_get_main_queue(), ^{ progressCopy(idx++, numActivities); });
                 }
+
 
                 [rowPool drain];
             }
@@ -636,18 +614,165 @@ static NSArray *PointsFromStreams(NSDictionary *streamsByType) {
             [pagePool drain];
         }
 
-        // Finish on main
+        // --- Snapshot results off-main ---
+        NSArray *finalTracks = [tracksOut copy];  // +1
+        NSError *finalError  = [err retain];      // +1 (nil-safe)
+
+        // Clean up background objects
+        [tracksOut release];
+        [sinceRetained release];
+        [err release];
+
+        // --- Finish on main ---
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (completionCopy) {
-                NSArray *final = [[tracksOut copy] autorelease];
-                completionCopy(final, err);
+            @try {
+                if (completionCopy) {
+                    completionCopy([finalTracks autorelease],
+                                   [finalError  autorelease]);
+                } else {
+                    [finalTracks release];
+                    [finalError  release];
+                }
+            } @catch (NSException *ex) {
+                NSLog(@"Completion threw exception: %@\n%@", ex, [ex callStackSymbols]);
+                @throw;
             }
-            // Cleanup
-            [tracksOut release];
-            [sinceRetained release];
-            if (progressCopy)   Block_release(progressCopy);
-            if (completionCopy) Block_release(completionCopy);
+            [progressCopy release];
+            [completionCopy release];
         });
+    });
+}
+
+
+// StravaImporter.m (or a helper). Call OFF-MAIN.
+// Returns YES if it populated anything; NO on hard failure (and sets *outError).
+// Async, safe from main thread
+// StravaImporter.m  (MRC)
+
+static inline NSString *SafeStr(id v) {
+    return [v isKindOfClass:[NSString class]] ? (NSString *)v : nil;
+}
+
+static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
+    if (![photos isKindOfClass:[NSArray class]] || photos.count == 0) return [NSArray array];
+    NSMutableArray<NSURL *> *out = [NSMutableArray arrayWithCapacity:photos.count];
+    for (NSDictionary *p in photos) {
+        NSDictionary *urls = [p objectForKey:@"urls"]; // { "2048":"https://...", ... }
+        NSString *direct   = SafeStr([p objectForKey:@"url"]);
+        NSString *picked = nil;
+
+        if ([urls isKindOfClass:[NSDictionary class]] && urls.count) {
+            NSString *maxKey = nil;
+            for (NSString *k in urls) {
+                if (![k isKindOfClass:[NSString class]]) continue;
+                if (!maxKey || k.integerValue > maxKey.integerValue) maxKey = k;
+            }
+            picked = SafeStr(urls[maxKey]);
+        } else if (direct.length) {
+            picked = direct;
+        }
+        if (picked.length) {
+            NSURL *u = [NSURL URLWithString:picked];
+            if (u) [out addObject:u];
+        }
+    }
+    return out;
+}
+
+// Uses your existing: - (NSDictionary *)fetchStreamsForActivityID:(NSNumber *)actID error:(NSError **)outError
+// and static NSArray *PointsFromStreams(NSDictionary *streamsByType)
+
+- (void)enrichTrack:(Track *)track
+    withSummaryDict:(NSDictionary * _Nullable )summary
+         completion:(void (^)(NSError * _Nullable error))completion
+{
+    // Pull the Strava activity id from the Track (already present per your note)
+    NSNumber *activityID = nil;
+    if ([track respondsToSelector:@selector(stravaActivityID)]) {
+        activityID = [track stravaActivityID];
+    } else {
+        @try { activityID = [track valueForKey:@"stravaActivityID"]; } @catch (__unused id e) {}
+    }
+
+    dispatch_queue_t workQ = dispatch_get_global_queue(QOS_CLASS_UTILITY, 0);
+    dispatch_async(workQ, ^{
+        @autoreleasepool {
+            __block NSDictionary *detail = nil;
+            __block NSArray<NSDictionary *> *photosPayload = nil;
+            __block NSError *firstError = nil;
+
+            // Streams (sync on background queue)
+            NSError *streamsErr = nil;
+            __block NSDictionary *streamsByType = nil;
+            if (activityID) {
+                streamsByType = [[self fetchStreamsForActivityID:activityID error:&streamsErr] retain];
+                if (streamsErr && !firstError) firstError = [streamsErr retain];
+            }
+
+            // Detail + Photos (async, in parallel)
+            dispatch_group_t g = dispatch_group_create();
+
+            if (activityID) {
+                dispatch_group_enter(g);
+                [[StravaAPI shared] fetchActivityDetail:activityID completion:^(NSDictionary *a, NSError *e) {
+                    if (a) detail = [a retain];
+                    if (e && !firstError) firstError = [e retain];
+                    dispatch_group_leave(g);
+                }];
+
+                dispatch_group_enter(g);
+                [[StravaAPI shared] fetchActivityPhotos:activityID
+                                                   size:2048
+                                                  queue:workQ
+                                             completion:^(NSArray<NSDictionary *> *p, NSError *e) {
+                    if (p) photosPayload = [p retain];
+                    if (e && !firstError) firstError = [e retain];
+                    dispatch_group_leave(g);
+                }];
+            }
+
+            dispatch_group_notify(g, dispatch_get_main_queue(), ^{
+                // Description: prefer summary, else detail
+                NSString *desc = SafeStr(summary[@"description"]);
+                if (!desc.length && detail) desc = SafeStr(detail[@"description"]);
+                if (desc.length) {
+                    if ([track respondsToSelector:@selector(setAttribute:usingString:)]) {
+                        [track setAttribute:kNotes usingString:desc];
+                    } else {
+                        @try { [track setValue:desc forKey:@"notes"]; } @catch (__unused id e) {}
+                    }
+                }
+
+                // Photos → Track.photoURLs
+                if (photosPayload) {
+                    NSArray<NSURL *> *urls = ExtractPhotoURLs(photosPayload);
+                    if (urls.count) {
+                        if ([track respondsToSelector:@selector(setPhotoURLs:)]) {
+                            [track setPhotoURLs:urls];
+                        } else {
+                            @try { [track setValue:urls forKey:@"photoURLs"]; } @catch (__unused id e) {}
+                        }
+                    }
+                    [photosPayload release]; photosPayload = nil;
+                }
+
+                // Streams → PointsFromStreams → Track.points
+                if (streamsByType) {
+                    // No wrapping needed; your fetch returns {type:{data:[…]}} (or we already normalized it).
+                    NSArray *pts = PointsFromStreams(streamsByType);
+                    if (pts.count) {
+                        @try { [track setValue:pts forKey:@"points"]; } @catch (__unused id e) {}
+                        if ([track respondsToSelector:@selector(fixupTrack)]) [track fixupTrack];
+                    }
+                    [streamsByType release]; streamsByType = nil;
+                }
+
+                if (detail) { [detail release]; detail = nil; }
+
+                if (completion) completion(firstError);
+                [firstError release];
+            });
+        }
     });
 }
 

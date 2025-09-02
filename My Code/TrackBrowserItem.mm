@@ -656,7 +656,7 @@ extern NSString*      gCompareString;
 		float answer = 0.0;
 		if ((track == nil) && (lap == nil))
 		{
-			float totalDuration = [self durationAsFloat];
+			float totalDuration = [self movingDurationAsFloat];
 			if (totalDuration > 0.0)
 			{
 				TrackBrowserItem* bi;
@@ -664,7 +664,7 @@ extern NSString*      gCompareString;
 				NSEnumerator *enumerator = [children objectEnumerator];
 				while ((bi = [enumerator nextObject])) 
 				{
-					float td = [bi durationAsFloat];
+					float td = [bi movingDurationAsFloat];
 					sum += ([bi avgMovingSpeed] * td);
 				}
 				answer = sum/totalDuration;

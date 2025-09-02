@@ -25,23 +25,15 @@ typedef void (^StravaImportCompletion)(NSArray * _Nullable tracks, NSError * _Nu
 
 - (id)initWithAccessToken:(NSString *)accessToken;
 
-/**
- * Fetch activities since 'since' (UTC) and build Track objects with TrackPoints.
- * Returns autoreleased NSArray<Track *> or nil on error (see *outError).
- *
- * perPage: typical 30..200. maxPages: simple guard to avoid huge imports.
- */
-- (NSArray *)importTracksSince:(NSDate *)since
-                       perPage:(NSUInteger)perPage
-                      maxPages:(NSUInteger)maxPages
-                         error:(NSError **)outError;
-
-
 - (void)importTracksSince:(NSDate *)since
                   perPage:(NSUInteger)perPage
                  maxPages:(NSUInteger)maxPages
                  progress:(StravaImportProgress)progress
                completion:(StravaImportCompletion)completion;
+
+- (void)enrichTrack:(Track *)track
+    withSummaryDict:(NSDictionary * _Nullable )summary
+         completion:(void (^)(NSError * _Nullable error))completion;
 
 @end
 

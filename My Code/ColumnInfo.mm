@@ -246,6 +246,8 @@ static tColInfo sSplitsColInfo[] =
 
 -(void) dealloc
 {
+    [title release];
+    [formatter release];
     [super dealloc];
 }
 
@@ -386,7 +388,8 @@ static tColInfo sSplitsColInfo[] =
     }
    if (title != value)
    {
-      title = value;
+       [title release];
+       title = [value retain];
    }
 }
 
@@ -400,7 +403,8 @@ static tColInfo sSplitsColInfo[] =
 - (void)setFormatter:(NSFormatter *)value {
    if (formatter != value) 
    {
-      formatter = value;
+       [formatter release];
+       formatter = [value retain];
    }
 }
 

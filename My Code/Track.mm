@@ -91,8 +91,10 @@
 
 @implementation Track
 @synthesize photoURLs = _photoURLs;
+@synthesize localMediaItems = _localMediaItems;
 
 @synthesize stravaActivityID = _stravaActivityID;
+@synthesize timeZoneName = _timeZoneName;
 @synthesize equipmentUUIDs;
 @synthesize mainEquipmentUUID;
 @synthesize equipmentWeight;
@@ -124,6 +126,7 @@
 - (id)init
 {
     self = [super init];
+    _stravaActivityID = 0;
     attributes = [[NSMutableArray alloc] initWithCapacity:kNumAttributes];
     int i;
     for (i=0; i<kNumAttributes; i++) [attributes addObject:@""];
@@ -164,7 +167,7 @@
     deviceID = -1;
     firmwareVersion = 0;
     NSTimeZone* tz = [NSTimeZone localTimeZone];
-    secondsFromGMTAtSync = (int)[tz secondsFromGMTForDate:[NSDate date]];
+    secondsFromGMT = (int)[tz secondsFromGMTForDate:[NSDate date]];
     [self initNonPersistantData];
     hrzCacheStart = hrzCacheEnd = -42;
     flags = 0;
@@ -211,7 +214,9 @@
     [overrideData release];
      free(peakIntervalData);
     [_photoURLs release];
+    [_localMediaItems release];
     [_stravaActivityID release];
+    [_timeZoneName release];
     [super dealloc];
 }
 
@@ -289,11 +294,11 @@
     // equipmentUUIDs is a property and doesn't need to be retained
 	[newTrack setEquipmentUUIDs:[self deepCopyOfMutableArray:equipmentUUIDs zone:zone]];
 	[newTrack setMainEquipmentUUID:[self mainEquipmentUUID]];
-	[newTrack setSecondsFromGMTAtSync:secondsFromGMTAtSync];
+	[newTrack setSecondsFromGMT:secondsFromGMT];
 	[newTrack setDistance:distance];
 	[newTrack setWeight:weight];
 	[newTrack setOverrideData:[overrideData mutableCopyWithZone:zone]];
-	[newTrack setSecondsFromGMTAtSync:secondsFromGMTAtSync];
+	[newTrack setSecondsFromGMT:secondsFromGMT];
 	[newTrack setDeviceID:deviceID];
 	[newTrack setAltitudeSmoothingFactor:altitudeSmoothingFactor];
 	[newTrack setDeviceTotalTime:deviceTotalTime];
@@ -412,7 +417,7 @@
 	//int ival;
 	statsCalculated = NO;
 	NSTimeZone* tz = [NSTimeZone localTimeZone];
-	secondsFromGMTAtSync = (int)[tz secondsFromGMTForDate:[NSDate date]];
+	secondsFromGMT = (int)[tz secondsFromGMTForDate:[NSDate date]];
 	[self setName:[coder decodeObject]];
 	[self setCreationTime:[coder decodeObject]];
 	[TrackPoint resetStartTime:[self creationTime]];	// needed to convert earlier point data
@@ -450,7 +455,7 @@
 	
 	if (version > 2)
 	{
-		[self setSecondsFromGMTAtSync:secsFromGMT];
+		[self setSecondsFromGMT:secsFromGMT];
 	}
 	
 	if (version > 3)
@@ -535,7 +540,7 @@
 	[coder encodeValueOfObjCType:@encode(float) at:&altitudeSmoothingFactor];	// added in v8
 	[coder encodeValueOfObjCType:@encode(float) at:&equipmentWeight];       // changed in v9 from spare (did not incr version)
 	[coder encodeValueOfObjCType:@encode(float) at:&deviceTotalTime];       // changed in v9 from spare (did not incr version)
-	[coder encodeValueOfObjCType:@encode(int) at:&secondsFromGMTAtSync];    // only valid in v3 or higher
+	[coder encodeValueOfObjCType:@encode(int) at:&secondsFromGMT];    // only valid in v3 or higher
 	[coder encodeValueOfObjCType:@encode(int) at:&flags];                   // added in v5
 	[coder encodeValueOfObjCType:@encode(int) at:&deviceID];				// added in v8
 	[coder encodeValueOfObjCType:@encode(int) at:&firmwareVersion];			// changed from spare during v9
@@ -2394,15 +2399,15 @@ static int sSpikeCount = 0;
 
 
 
-- (int)secondsFromGMTAtSync 
+- (int)secondsFromGMT 
 {
-   return secondsFromGMTAtSync;
+   return secondsFromGMT;
 }
 
-- (void)setSecondsFromGMTAtSync:(int)value 
+- (void)setSecondsFromGMT:(int)value 
 {
-   if (secondsFromGMTAtSync != value) {
-      secondsFromGMTAtSync = value;
+   if (secondsFromGMT != value) {
+      secondsFromGMT = value;
    }
 }
 
@@ -4731,7 +4736,7 @@ static tAttribute sAttributesInCSVHeader[] =
 	int timeFormat = [Utils intFromDefaults:RCBDefaultTimeFormat];
 	NSString* dt;
 	NSDate* startTime = [self creationTime];
-	NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[self secondsFromGMTAtSync]];
+	NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[self secondsFromGMT]];
 	if (timeFormat == 0)
     {
 #if 0

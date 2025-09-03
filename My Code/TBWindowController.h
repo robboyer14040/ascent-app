@@ -248,6 +248,8 @@ enum
 - (IBAction)showGarminSync:(id) sender;
 - (IBAction)showEquipmentSelector:(id)sender;
 - (IBAction)showEquipmentList:(id) sender;
+- (IBAction)linkStravaActivitiesFromCSV:(id)sender;
+
 - (void)dismissEquipmentList:(id)wc;
 
 
@@ -280,5 +282,7 @@ enum
 -(void)rebuildBrowserAndRestoreState:(Track*)track selectLap:(Lap*)lap;
 - (NSArray*)trackArray;
 - (void)addStravaActivities:(NSArray<NSDictionary*> *) arr;
+- (BOOL)applyStravaActivitiesCSVAtURL:(NSURL *)csvURL
+                             toTracks:(NSArray<Track *> *)tracks;
 
 @end

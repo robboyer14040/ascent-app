@@ -189,6 +189,12 @@
                                     <action selector="syncStravaActivities:" target="-1" id="d9S-Kt-VjX"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Link Strava Activity Data" id="i8d-N6-NuB">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="linkStravaActivitiesFromCSV:" target="-1" id="1uu-T2-WAu"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="464">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>

@@ -135,6 +135,9 @@ static BOOL RegisterFontsInFolder(NSURL *fontsURL) {
 
 @interface AppController ()
 - (void)afterDocOpened:(NSNotification *)notification;
+- (void)rememberLastOpenedDocumentURL:(NSURL *)url;
+- (void)forgetLastOpenedDocumentURL;
+- (NSURL *)restoreLastOpenedDocumentURL;
 @end
 
 @implementation AppController
@@ -255,7 +258,6 @@ void setColorDefault(NSMutableDictionary* dict,
 {
 	[super init];
 	transportPanelController = nil;
-	fileURLData = nil;
 	initialDocument = nil;
 	return self;
 }
@@ -263,9 +265,7 @@ void setColorDefault(NSMutableDictionary* dict,
 
 - (void)dealloc
 {
-	//NSLog(@"AppController dealloc");
 	[transportPanelController release];
-	[fileURLData release];
 	[syncController release];
 	[super dealloc];
 }
@@ -552,7 +552,7 @@ void setColorDefault(NSMutableDictionary* dict,
 		{
 			format = @"  (%A, %B %d  %I:%M%p)";
 		}
-		NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMTAtSync]];
+		NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
 		title = [title stringByAppendingString:[ct descriptionWithCalendarFormat:format
 																	  timeZone:tz
 																		locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]]];
@@ -590,78 +590,48 @@ void setColorDefault(NSMutableDictionary* dict,
 
 -(void) openLastDoc:(id)junk
 {
-   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-   //sleep(1);
-   //[[NSNotificationCenter defaultCenter] postNotificationName:@"AfterDocOpened" object:self];
-#if 1
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	// do open on the main thread, otherwise drag/drop operations don't seem
 	// to work correctly.  Don't know why.
 	[self performSelectorOnMainThread:@selector(afterDocOpened:) 
 						   withObject:nil 
 						waitUntilDone:NO];
-#else
-	[self afterDocOpened:nil];
-#endif
    [pool release];
 }   
 
-
 - (void)afterDocOpened:(NSNotification *)notification
 {
-	NSError *error;
-	if (/*([notification object] == self) && */(fileURLData != nil))
-	{
-	   @try
-	   {
-			NSURL *fileURL = [NSUnarchiver unarchiveObjectWithData:  fileURLData];
-			[fileURLData autorelease];
-			fileURLData = nil;
-#ifdef _DEBUG
-		   NSLog(@"OPENING LAST FILE...");
-#endif
-           // NEW (async, preferred)
-           [[NSDocumentController sharedDocumentController]
-               openDocumentWithContentsOfURL:fileURL
-                                     display:YES
-                           completionHandler:^(NSDocument *doc,
-                                               BOOL documentWasAlreadyOpen,
-                                               NSError *error)
-           {
-               if (error) {
-                   // present the error
-                   [[NSApplication sharedApplication] presentError:error];
-                   return;
-               }
-               // success: doc is opened; do any post-open work here
-           }];
-#ifdef _DEBUG
-		   NSLog(@"DONE");
-#endif
-		   if (initialDocument != nil)
-		   {
-			   [initialDocument makeWindowControllers];
-			   [initialDocument showWindows];
-			   [initialDocument updateChangeCount:NSChangeCleared];
-		   }
+    // Prefer bookmark-based restore
+    NSURL *fileURL = [self restoreLastOpenedDocumentURL];
 
-	   }
-	   @catch(NSException *exception)
-	   {
-		   NSLog(@"exception:%@", exception);
-	   }
-	   @finally
-	   {
-	   }
-	}
-	
-	[[SplashPanelController sharedInstance] canDismiss:YES];
-	[[SplashPanelController sharedInstance] updateProgress:@"data loaded"];
-	[[SplashPanelController sharedInstance] performSelectorOnMainThread:@selector(startFade:)
-															 withObject:nil 
-														  waitUntilDone:NO];
-	
+    if (fileURL) {
+        [[NSDocumentController sharedDocumentController]
+            openDocumentWithContentsOfURL:fileURL
+                                  display:YES
+                        completionHandler:^(NSDocument *doc,
+                                            BOOL documentWasAlreadyOpen,
+                                            NSError *error)
+        {
+            if (error) {
+                // Stop the launch loop: forget the bad URL immediately
+                [self forgetLastOpenedDocumentURL];
+
+                // Optionally present once
+                [[NSApplication sharedApplication] presentError:error];
+                return;
+            }
+
+            // Successful open: refresh the bookmark (path may have moved)
+            [self rememberLastOpenedDocumentURL:doc.fileURL];
+        }];
+    }
+
+    [[SplashPanelController sharedInstance] canDismiss:YES];
+    [[SplashPanelController sharedInstance] updateProgress:@"data loaded"];
+    [[SplashPanelController sharedInstance] performSelectorOnMainThread:@selector(startFade:)
+                                                             withObject:nil
+                                                          waitUntilDone:NO];
 }
-
 
 - (void)transportPanelClosed:(NSNotification *)notification
 {
@@ -723,26 +693,6 @@ void setColorDefault(NSMutableDictionary* dict,
 
 
 	initialDocument = nil;
-	if ([[[NSDocumentController sharedDocumentController] documents]  count]==0)
-	{
-		fileURLData=[[NSUserDefaults standardUserDefaults]  objectForKey:@"lastFileURL"];
-		[fileURLData retain];
-		if (fileURLData)
-		{
-			[[SplashPanelController sharedInstance] updateProgress:@"loading activity data..."];
-			[NSThread detachNewThreadSelector:@selector(openLastDoc:) toTarget:self withObject:nil];
-		}
-		else
-		{
-			[[SplashPanelController sharedInstance] canDismiss:YES];
-			[[SplashPanelController sharedInstance] startFade:nil];
-		}
-	}
-	else
-	{
-		[[SplashPanelController sharedInstance] canDismiss:YES];
-		[[SplashPanelController sharedInstance] startFade:nil];
-	}
 
 	NSString* title = [NSString stringWithFormat:@"Move \"%@\" values to \"%@\" field",
                        [Utils stringFromDefaults:RCBDefaultKeyword1Label],
@@ -755,13 +705,6 @@ void setColorDefault(NSMutableDictionary* dict,
 	[copyKeyword2MenuItem setTitle:title];
 	[Utils createPowerActivityArrayIfDoesntExist];
 
-//	syncController = [[SyncController alloc] initWithAppController:self];
-//	BOOL wifiEnabled = [Utils boolFromDefaults:RCBDefaultEnableWiFiSync];
-//	if (wifiEnabled)
-//	{
-//		[syncController startAdvertising];
-//		NSLog(@"Running as sync server...");		
-//	}
 }
 
 
@@ -1069,7 +1012,51 @@ shouldProceedAfterError:(NSError *)error
    [alert release];
 }
 
+static NSString * const kLastDocBookmarkKey = @"AscentLastOpenedDocBookmark";
 
+- (void)rememberLastOpenedDocumentURL:(NSURL *)url {
+    if (!url) return;
+    NSError *err = nil;
+    NSData *bm = [url bookmarkDataWithOptions:
+#if __has_feature(objc_arc) // (you’re on MRC; leaving for completeness)
+                  0
+#else
+                  0
+#endif
+        includingResourceValuesForKeys:nil
+                         relativeToURL:nil
+                                 error:&err];
+    if (bm) {
+        [[NSUserDefaults standardUserDefaults] setObject:bm forKey:kLastDocBookmarkKey];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
+}
+
+- (NSURL *)restoreLastOpenedDocumentURL {
+    NSData *bm = [[NSUserDefaults standardUserDefaults] objectForKey:kLastDocBookmarkKey];
+    if (!bm) return nil;
+
+    BOOL stale = NO;
+    NSError *err = nil;
+    NSURL *url = [NSURL URLByResolvingBookmarkData:bm
+                                           options:0
+                                     relativeToURL:nil
+                               bookmarkDataIsStale:&stale
+                                             error:&err];
+    if (!url) { [self forgetLastOpenedDocumentURL]; return nil; }
+
+    // Make sure it actually exists
+    if (![url checkResourceIsReachableAndReturnError:&err] || stale) {
+        [self forgetLastOpenedDocumentURL];
+        return nil;
+    }
+    return url;
+}
+
+- (void)forgetLastOpenedDocumentURL {
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:kLastDocBookmarkKey];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
 
 
 @end

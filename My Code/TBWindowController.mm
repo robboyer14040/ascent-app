@@ -2071,12 +2071,12 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
         {
             [undo setActionName:@"Adjust GMT Offset"];
         }
-        int curOffset = [currentlySelectedTrack secondsFromGMTAtSync]/(60.0*60.0);
+        int curOffset = [currentlySelectedTrack secondsFromGMT]/(60.0*60.0);
         [[undo prepareWithInvocationTarget:self] setGMTOffset:arr offset:curOffset];
         for (int i=0; i<count; i++)
         {
             Track* t = [arr objectAtIndex:i];
-            [t setSecondsFromGMTAtSync:(off*60.0*60)];
+            [t setSecondsFromGMT:(off*60.0*60)];
         }
         [self buildBrowser:NO];
         [self restoreExpandedState];
@@ -2459,7 +2459,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
     if ([arr count] > 0)
     {
         Track* t = [arr objectAtIndex:0];
-        GMTOffsetController *gmtOffsetWC = [[GMTOffsetController alloc] initWithOffset:[t secondsFromGMTAtSync]/(60.0*60.0)];
+        GMTOffsetController *gmtOffsetWC = [[GMTOffsetController alloc] initWithOffset:[t secondsFromGMT]/(60.0*60.0)];
         NSRect fr = [[self window] frame];
         NSRect panelRect = [[gmtOffsetWC window] frame];
         NSPoint origin = fr.origin;
@@ -3548,23 +3548,31 @@ NSString*      gCompareString = nil;         // @@FIXME@@
     }
     else
     {
-        NSOpenPanel* op = [NSOpenPanel openPanel];
-        [op setAllowsMultipleSelection:YES];
-        NSArray *fileTypes = [NSArray arrayWithObjects:@"hrm", @"HRM", nil];
-        int status = [op runModalForDirectory:nil
-                                         file:nil
-                                        types:fileTypes];
+        NSArray<NSString *> *fileTypes = @[@"hrm", @"HRM"]; // whatever your types are
+
+        // Build the list of UTTypes you want:
+        NSArray<UTType *> *types = @[
+            UTTypeText,
+            [UTType typeWithFilenameExtension:@"hrm"],
+            [UTType typeWithFilenameExtension:@"HRM"]
+        ];
+
+        NSOpenPanel *op = [NSOpenPanel openPanel];
+        op.canChooseFiles = YES;
+        op.canChooseDirectories = NO;
+        op.allowsMultipleSelection = YES;
+        op.allowedContentTypes = types;   // <- modern replacement
+
+        NSInteger status = [op runModal];
+        if (status == NSModalResponseOK) {
+            NSURL *url = op.URL;
+            // use url
+        }
         if (status == NSModalResponseOK)
         {
-            NSArray* names = [op filenames];
-            if (!([RegController CHECK_REGISTRATION]) && (([names count] + numOld) > kNumUnregisteredTracks))
-            {
-                [self postActivityImportLimitExeeded];
-            }
-            else
-            {
-                [self doHRMImportWithProgress:names];
-            }
+            NSArray<NSURL *> *urls = [op URLs];
+            NSArray<NSString *> *paths = [urls valueForKey:@"path"];
+            [self doHRMImportWithProgress:paths];
         }
     }
 }
@@ -3580,23 +3588,33 @@ NSString*      gCompareString = nil;         // @@FIXME@@
     }
     else
     {
-        NSOpenPanel* op = [NSOpenPanel openPanel];
-        NSArray *fileTypes = [NSArray arrayWithObject:@"gpx"];
-        [op setAllowsMultipleSelection:YES];
-        int status = [op runModalForDirectory:nil
-                                         file:nil
-                                        types:fileTypes];
-        if (status == NSModalResponseOK)
-        {
-            NSArray* names = [op filenames];
-            if (!([RegController CHECK_REGISTRATION]) && (([names count] + numOld) > kNumUnregisteredTracks))
-            {
-                [self postActivityImportLimitExeeded];
-            }
-            else
-            {
-                [self doGPXImportWithProgress:names];
-            }
+        NSOpenPanel *op = [NSOpenPanel openPanel];
+
+        // Replace old string-based fileTypes with UTType
+        NSArray<UTType *> *fileTypes = @[
+            [UTType typeWithFilenameExtension:@"gpx"]
+        ];
+        op.allowedContentTypes = fileTypes;
+
+        op.allowsMultipleSelection = YES;
+        op.canChooseDirectories = NO;
+        op.canChooseFiles = YES;
+
+        // Modern runModal
+        NSInteger status = [op runModal];
+        if (status == NSModalResponseOK) {
+            // Modern replacement for -filenames
+            NSArray<NSURL *> *urls = [op URLs];
+            
+            // If you want full POSIX paths:
+            NSArray<NSString *> *paths = [urls valueForKey:@"path"];
+            
+            // If you want just file names:
+            ///NSArray<NSString *> *filenames = [urls valueForKey:@"lastPathComponent"];
+            
+            NSLog(@"Picked paths: %@", paths);
+            ///NSLog(@"Picked filenames: %@", filenames);
+            [self doGPXImportWithProgress:paths];
         }
     }
 }
@@ -3634,7 +3652,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
     NSDate* date = [track creationTime];
     NSMutableString* s = [NSMutableString stringWithString:@"%d-%b-%y %H_%M."];
     [s appendString:ft];
-    NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMTAtSync]];
+    NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
     NSString* baseName = [date descriptionWithCalendarFormat:s
                                                     timeZone:tz
                                                       locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]];
@@ -3642,132 +3660,195 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 }
 
 
-- (IBAction)exportTCX:(id)sender
+- (IBAction)exportKML:(id)sender
 {
     [self stopAnimations];
-    NSArray* arr = [self prepareArrayOfSelectedTracks];
-    if ([arr count] < 1)
-    {
+
+    NSMutableArray *arr = [self prepareArrayOfSelectedTracks];
+    if (arr.count != 1) {
         NSAlert *alert = [[[NSAlert alloc] init] autorelease];
         [alert addButtonWithTitle:@"OK"];
-        [alert setMessageText:@"Please select one or more tracks in the browser for export"];
-        //[alert setInformativeText:@"Please purchase a registration key to enable all features."];
+        [alert setMessageText:@"Please select a single track in the browser for export"];
         [alert setAlertStyle:NSAlertStyleInformational];
         [alert runModal];
+        return;
     }
-    else
-    {
-        NSSavePanel *sp;
-        int runResult;
-        
-        /* create or get the shared instance of NSSavePanel */
-        sp = [NSSavePanel savePanel];
-        
-        /* set up new attributes */
-        [sp setRequiredFileType:@"tcx"];
-        
-        /* display the NSSavePanel */
-        NSString* baseName = [self baseActivityFileName:[arr objectAtIndex:0]
-                                               fileType:@"tcx"];
-        runResult = [sp runModalForDirectory:[self baseDirectoryForImportExport]
-                                        file:baseName];
-        
-        /* if successful, save file under designated name */
-        if (runResult == NSModalResponseOK)
-        {
-            [tbDocument exportTCXFile:arr
-                             fileName:[sp filename]];
-            
-        }
+
+    NSSavePanel *sp = [NSSavePanel savePanel];
+    // KML is XML-based; use a concrete KML type if the system knows it, else fall back to XML
+    UTType *kmlType = [UTType typeWithFilenameExtension:@"kml"] ?: UTTypeXML;
+    sp.allowedContentTypes = @[ kmlType ];
+    sp.allowsOtherFileTypes = NO;
+    sp.canCreateDirectories = YES;
+
+    NSString *baseName = [self baseActivityFileName:arr.firstObject fileType:@"kml"];
+    NSString *dirPath  = [self baseDirectoryForImportExport];
+    if (dirPath.length) sp.directoryURL = [NSURL fileURLWithPath:dirPath];
+    if (baseName.length) sp.nameFieldStringValue = baseName;
+
+    NSWindow *win = self.window ?: NSApp.mainWindow ?: NSApp.keyWindow;
+    void (^complete)(NSModalResponse) = ^(NSModalResponse result){
+        if (result != NSModalResponseOK) return;
+        NSURL *url = sp.URL;
+        if (!url) return;
+        [tbDocument exportKMLFile:arr.firstObject fileName:url.path];
+    };
+
+    if (win) {
+        [sp beginSheetModalForWindow:win completionHandler:complete];
+    } else {
+        complete([sp runModal]);
     }
 }
 
+- (IBAction)exportTCX:(id)sender
+{
+    [self stopAnimations];
+
+    NSArray *arr = [self prepareArrayOfSelectedTracks];
+    if (arr.count < 1) {
+        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        [alert addButtonWithTitle:@"OK"];
+        [alert setMessageText:@"Please select one or more tracks in the browser for export"];
+        [alert setAlertStyle:NSAlertStyleInformational];
+        [alert runModal];
+        return;
+    }
+
+    NSSavePanel *sp = [NSSavePanel savePanel];
+    // TCX is XML-based; use a dynamic type for "tcx" or fall back to XML
+    UTType *tcxType = [UTType typeWithFilenameExtension:@"tcx"] ?: UTTypeXML;
+    sp.allowedContentTypes = @[ tcxType ];
+    sp.allowsOtherFileTypes = NO;
+    sp.canCreateDirectories = YES;
+
+    NSString *baseName = [self baseActivityFileName:arr.firstObject fileType:@"tcx"];
+    NSString *dirPath  = [self baseDirectoryForImportExport];
+    if (dirPath.length) sp.directoryURL = [NSURL fileURLWithPath:dirPath];
+    if (baseName.length) sp.nameFieldStringValue = baseName;
+
+    NSWindow *win = self.window ?: NSApp.mainWindow ?: NSApp.keyWindow;
+    void (^complete)(NSModalResponse) = ^(NSModalResponse result){
+        if (result != NSModalResponseOK) return;
+        NSURL *url = sp.URL;
+        if (!url) return;
+        [tbDocument exportTCXFile:arr fileName:url.path];
+    };
+
+    if (win) {
+        [sp beginSheetModalForWindow:win completionHandler:complete];
+    } else {
+        complete([sp runModal]);
+    }
+}
+
+- (void)doExportTextFile:(NSString *)suffix seperator:(char)sep
+{
+    [self stopAnimations];
+
+    NSMutableArray *arr = [self prepareArrayOfSelectedTracks];
+    if (arr.count != 1) {
+        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        [alert addButtonWithTitle:@"OK"];
+        [alert setMessageText:@"Please select a single track in the browser for export"];
+        [alert setAlertStyle:NSAlertStyleInformational];
+        [alert runModal];
+        return;
+    }
+
+    NSSavePanel *sp = [NSSavePanel savePanel];
+
+    // Choose the most appropriate UTType for the provided suffix
+    UTType *t = nil;
+    if ([[suffix lowercaseString] isEqualToString:@"csv"]) {
+        // Prefer the dedicated CSV type when available (macOS 12+)
+        t = [UTType typeWithIdentifier:@"public.comma-separated-values-text"];
+        if (!t) t = UTTypeCommaSeparatedText; // if SDK provides the symbol
+        if (!t) t = [UTType typeWithFilenameExtension:@"csv"];
+        if (!t) t = UTTypePlainText;
+    } else if ([[suffix lowercaseString] isEqualToString:@"txt"]) {
+        t = UTTypePlainText;
+    } else {
+        t = [UTType typeWithFilenameExtension:suffix] ?: UTTypePlainText;
+    }
+
+    sp.allowedContentTypes = @[ t ];
+    sp.allowsOtherFileTypes = NO;
+    sp.canCreateDirectories = YES;
+
+    NSString *baseName = [self baseActivityFileName:arr.firstObject fileType:suffix];
+    NSString *dirPath  = [self baseDirectoryForImportExport];
+    if (dirPath.length) sp.directoryURL = [NSURL fileURLWithPath:dirPath];
+    if (baseName.length) sp.nameFieldStringValue = baseName;
+
+    NSWindow *win = self.window ?: NSApp.mainWindow ?: NSApp.keyWindow;
+    void (^complete)(NSModalResponse) = ^(NSModalResponse result){
+        if (result != NSModalResponseOK) return;
+        NSURL *url = sp.URL;
+        if (!url) return;
+
+        Track *track = arr.firstObject;
+        NSString *s = [track buildTextOutput:sep];
+        NSError *err = nil;
+        if (![s writeToURL:url atomically:YES encoding:NSUTF8StringEncoding error:&err]) {
+            NSLog(@"Could not write document out: %@", err.localizedDescription);
+        }
+    };
+
+    if (win) {
+        [sp beginSheetModalForWindow:win completionHandler:complete];
+    } else {
+        complete([sp runModal]);
+    }
+}
 
 
 - (IBAction)exportGPX:(id)sender
 {
     [self stopAnimations];
-    NSMutableArray* arr = [self prepareArrayOfSelectedTracks];
-    if ([arr count] != 1)
-    {
+
+    NSMutableArray *arr = [self prepareArrayOfSelectedTracks];
+    if (arr.count != 1) {
         NSAlert *alert = [[[NSAlert alloc] init] autorelease];
         [alert addButtonWithTitle:@"OK"];
         [alert setMessageText:@"Please select a single track in the browser for export"];
-        //[alert setInformativeText:@"Please purchase a registration key to enable all features."];
         [alert setAlertStyle:NSAlertStyleInformational];
         [alert runModal];
+        return;
     }
-    else
-    {
-        NSSavePanel *sp;
-        int runResult;
-        
-        /* create or get the shared instance of NSSavePanel */
-        sp = [NSSavePanel savePanel];
-        
-        /* set up new attributes */
-        //[sp setAccessoryView:newView];
-        [sp setRequiredFileType:@"gpx"];
-        
-        /* display the NSSavePanel */
-        NSString* baseName = [self baseActivityFileName:[arr objectAtIndex:0]
-                                               fileType:@"gpx"];
-        runResult = [sp runModalForDirectory:[self baseDirectoryForImportExport]
-                                        file:baseName];
-        
-        /* if successful, save file under designated name */
-        if (runResult == NSModalResponseOK)
-        {
-            [tbDocument exportGPXFile:[arr objectAtIndex:0]
-                             fileName:[sp filename]];
-            
+
+    NSSavePanel *sp = [NSSavePanel savePanel];
+
+    // Prefer a real GPX type; fall back to XML if unknown on the system
+    UTType *gpxType = [UTType typeWithFilenameExtension:@"gpx"];
+    if (!gpxType) gpxType = UTTypeXML;
+    sp.allowedContentTypes = @[ gpxType ];
+    sp.allowsOtherFileTypes = NO;
+    sp.canCreateDirectories = YES;
+
+    // Suggest directory + filename
+    NSString *baseName = [self baseActivityFileName:arr.firstObject fileType:@"gpx"];
+    NSString *dirPath  = [self baseDirectoryForImportExport];
+    if (dirPath.length) sp.directoryURL = [NSURL fileURLWithPath:dirPath];
+    if (baseName.length) sp.nameFieldStringValue = baseName;
+
+    // Present as a sheet from our window (we're an NSWindowController)
+    NSWindow *win = self.window ?: NSApp.mainWindow ?: NSApp.keyWindow;
+
+    if (win) {
+        [sp beginSheetModalForWindow:win completionHandler:^(NSModalResponse result) {
+            if (result != NSModalResponseOK) return;
+            NSURL *url = sp.URL;
+            if (!url) return;
+            [tbDocument exportGPXFile:arr.firstObject fileName:url.path];
+        }];
+    } else {
+        if ([sp runModal] == NSModalResponseOK) {
+            NSURL *url = sp.URL;
+            if (url) [tbDocument exportGPXFile:arr.firstObject fileName:url.path];
         }
     }
 }
-
-
-- (IBAction)exportKML:(id)sender
-{
-    [self stopAnimations];
-    NSMutableArray* arr = [self prepareArrayOfSelectedTracks];
-    if ([arr count] != 1)
-    {
-        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-        [alert addButtonWithTitle:@"OK"];
-        [alert setMessageText:@"Please select a single track in the browser for export"];
-        //[alert setInformativeText:@"Please purchase a registration key to enable all features."];
-        [alert setAlertStyle:NSAlertStyleInformational];
-        [alert runModal];
-    }
-    else
-    {
-        NSSavePanel *sp;
-        int runResult;
-        
-        /* create or get the shared instance of NSSavePanel */
-        sp = [NSSavePanel savePanel];
-        
-        /* set up new attributes */
-        //[sp setAccessoryView:newView];
-        [sp setRequiredFileType:@"kml"];
-        
-        /* display the NSSavePanel */
-        NSString* baseName = [self baseActivityFileName:[arr objectAtIndex:0]
-                                               fileType:@"kml"];
-        runResult = [sp runModalForDirectory:[self baseDirectoryForImportExport]
-                                        file:baseName];
-        
-        /* if successful, save file under designated name */
-        if (runResult == NSModalResponseOK)
-        {
-            [tbDocument exportKMLFile:[arr objectAtIndex:0]
-                             fileName:[sp filename]];
-            
-        }
-    }
-}
-
-
 
 
 - (IBAction)googleEarthFlyBy:(id)sender
@@ -3789,7 +3870,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
         Track* track = [arr objectAtIndex:0];
         NSDate* trackDate = [track creationTime];
         NSString* frm = @"%d-%b-%y at %I:%M%p";
-        NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMTAtSync]];
+        NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
         NSString* dayKey = [trackDate descriptionWithCalendarFormat:frm
                                                            timeZone:tz
                                                              locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]];
@@ -3824,54 +3905,6 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 }
 
 
--(void) doExportTextFile:(NSString*)suffix seperator:(char)sep
-{
-    [self stopAnimations];
-    NSMutableArray* arr = [self prepareArrayOfSelectedTracks];
-    if ([arr count] != 1)
-    {
-        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-        [alert addButtonWithTitle:@"OK"];
-        [alert setMessageText:@"Please select a single track in the browser for export"];
-        //[alert setInformativeText:@"Please purchase a registration key to enable all features."];
-        [alert setAlertStyle:NSAlertStyleInformational];
-        [alert runModal];
-    }
-    else
-    {
-        NSSavePanel *sp;
-        int runResult;
-        
-        /* create or get the shared instance of NSSavePanel */
-        sp = [NSSavePanel savePanel];
-        
-        /* set up new attributes */
-        //[sp setAccessoryView:newView];
-        [sp setRequiredFileType:suffix];
-        
-        /* display the NSSavePanel */
-        NSString* baseName = [self baseActivityFileName:[arr objectAtIndex:0]
-                                               fileType:suffix];
-        runResult = [sp runModalForDirectory:[self baseDirectoryForImportExport]
-                                        file:baseName];
-        
-        /* if successful, save file under designated name */
-        if (runResult == NSModalResponseOK)
-        {
-            Track* track = [arr objectAtIndex:0];
-            NSString* s = [track buildTextOutput:sep];
-            if (![s writeToURL:[sp URL]
-                    atomically:YES
-                      encoding:NSUTF8StringEncoding
-                         error:NULL])
-            {
-                NSLog(@"Could not write document out...");
-            }
-        }
-    }
-}
-
-
 - (IBAction)exportCSV:(id)sender
 {
     [self doExportTextFile:@"csv" seperator:','];
@@ -3884,40 +3917,60 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 }
 
 
--(void) doExportSummaryTextFile:(NSString*)suffix seperator:(char)sep
+- (void)doExportSummaryTextFile:(NSString *)suffix seperator:(char)sep
 {
     [self stopAnimations];
-    NSSavePanel *sp;
-    int runResult;
-    
-    /* create or get the shared instance of NSSavePanel */
-    sp = [NSSavePanel savePanel];
-    
-    /* set up new attributes */
-    //[sp setAccessoryView:newView];
-    [sp setRequiredFileType:suffix];
-    
-    /* display the NSSavePanel */
-    NSMutableString* baseName = [NSMutableString stringWithString:[tbDocument displayName]];
-    [baseName appendString:@"."];
-    [baseName appendString:suffix];
-    runResult = [sp runModalForDirectory:[self baseDirectoryForImportExport]
-                                    file:baseName];
-    
-    /* if successful, save file under designated name */
-    if (runResult == NSModalResponseOK)
-    {
-        NSString* s = [self buildSummaryTextOutput:sep];
-        if (![s writeToURL:[sp URL]
-                atomically:YES
-                  encoding:NSUTF8StringEncoding
-                     error:NULL])
-        {
-            NSLog(@"Could not write document out...");
+
+    NSSavePanel *sp = [NSSavePanel savePanel];
+
+    // Choose an appropriate content type for the suffix
+    UTType *t = nil;
+    NSString *lower = [suffix lowercaseString];
+    if ([lower isEqualToString:@"csv"]) {
+        t = [UTType typeWithIdentifier:@"public.comma-separated-values-text"]
+            ?: UTTypeCommaSeparatedText
+            ?: [UTType typeWithFilenameExtension:@"csv"]
+            ?: UTTypePlainText;
+    } else if ([lower isEqualToString:@"txt"]) {
+        t = UTTypePlainText;
+    } else {
+        t = [UTType typeWithFilenameExtension:lower] ?: UTTypePlainText;
+    }
+    sp.allowedContentTypes = @[ t ];
+    sp.allowsOtherFileTypes = NO;
+    sp.canCreateDirectories = YES;
+
+    // Default name and directory
+    NSMutableString *baseName = [NSMutableString stringWithString:([tbDocument displayName] ?: @"Summary")];
+    if (suffix.length) {
+        [baseName appendFormat:@".%@", suffix];
+    }
+    sp.nameFieldStringValue = baseName;
+
+    NSString *dirPath = [self baseDirectoryForImportExport];
+    if (dirPath.length) sp.directoryURL = [NSURL fileURLWithPath:dirPath];
+
+    // Present as a sheet if we have a window, otherwise modal
+    NSWindow *win = self.window ?: NSApp.mainWindow ?: NSApp.keyWindow;
+
+    void (^complete)(NSModalResponse) = ^(NSModalResponse result){
+        if (result != NSModalResponseOK) return;
+        NSURL *url = sp.URL;
+        if (!url) return;
+
+        NSString *text = [self buildSummaryTextOutput:sep];
+        NSError *err = nil;
+        if (![text writeToURL:url atomically:YES encoding:NSUTF8StringEncoding error:&err]) {
+            NSLog(@"Could not write document out: %@", err.localizedDescription);
         }
+    };
+
+    if (win) {
+        [sp beginSheetModalForWindow:win completionHandler:complete];
+    } else {
+        complete([sp runModal]);
     }
 }
-
 
 
 
@@ -3952,13 +4005,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
         NSSavePanel *sp = [NSSavePanel savePanel];
         
         // Instead of setAllowedFileTypes:
-        if (@available(macOS 11.0, *)) {
-            // “Plain text” UTI
-            [sp setAllowedContentTypes:@[ UTTypePlainText ]];
-        } else {
-            // Fallback for older macOS
-            [sp setAllowedFileTypes:@[@"txt"]];
-        }
+        [sp setAllowedContentTypes:@[ UTTypePlainText ]];
         
         [sp setCanCreateDirectories:YES];
         [sp setExtensionHidden:NO];
@@ -3975,8 +4022,8 @@ NSString*      gCompareString = nil;         // @@FIXME@@
         // Show panel
         NSInteger runResult = [sp runModal];
         if (runResult == NSModalResponseOK) {
-            NSURL *destURL = [sp URL];
-            // use destURL
+            ///NSURL *destURL = [sp URL];
+            // **FIXME** use destURL
         }
         
         /* if successful, save file under designated name */
@@ -5108,272 +5155,217 @@ int searchTagToMask(int searchTag)
 }
 
 
-- (void) buildBrowser:(BOOL)expandLastItem
+- (void)buildBrowser:(BOOL)expandLastItem
 {
-    //NSLog(@"build browser START");
     BOOL searchUnderway = [self isSearchUnderway];
-    NSMutableDictionary* topDict;
-    if (searchUnderway)
-    {
-        topDict = [self searchItems];
-    }
-    else
-    {
-        topDict = [self yearItems];
-    }
+    NSMutableDictionary *topDict = searchUnderway ? [self searchItems] : [self yearItems];
+
     [expandedItems removeAllObjects];
     [topDict removeAllObjects];
-    NSCalendar* cal = [NSCalendar currentCalendar];
-    NSMutableArray* trackArray = [tbDocument trackArray];
+
+    // Calendar we’ll use for date math; we’ll set its timeZone per-track
+    NSCalendar *baseCal = [[[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian] autorelease];
+
+    NSMutableArray *trackArray = [tbDocument trackArray];
     NSUInteger numTracks = [trackArray count];
-    int i;
-    NSDate* trackDate;
-    NSCalendarDate *caldate;
-    NSCalendarDate *firstDayOfWeekDate;
-    NSString* dayKey;
-    NSString* weekKey;
-    NSString* monthKey;
-    NSString* yearKey;
+
     int timeFormat = [Utils intFromDefaults:RCBDefaultTimeFormat];
-    NSString* frm;
-    NSString* lapFrm;
-    NSString* actFrm;
-    if (timeFormat == 0)
-    {
-        frm = [NSString stringWithFormat:@"%@ at %%I:%%M:%%S%%p", [Utils dateFormat]];
-        lapFrm = @"%I:%M:%S%p";
-        actFrm = @"%A, %B %d, %Y at %I:%M:%S%p";
+    int weekStartDay = [Utils intFromDefaults:RCBDefaultWeekStartDay]; // 0=Sun, 1=Mon (existing behavior)
+
+    // ---------- Formatters (we’ll update timeZone each iteration) ----------
+    NSDateFormatter *fmtDay   = [[[NSDateFormatter alloc] init] autorelease];
+    NSDateFormatter *fmtLap   = [[[NSDateFormatter alloc] init] autorelease];
+    NSDateFormatter *fmtYear  = [[[NSDateFormatter alloc] init] autorelease];
+    NSDateFormatter *fmtMonth = [[[NSDateFormatter alloc] init] autorelease];
+    NSDateFormatter *fmtWeekD = [[[NSDateFormatter alloc] init] autorelease]; // date inside “Week of …”
+
+    fmtDay.locale = fmtLap.locale = fmtYear.locale = fmtMonth.locale = fmtWeekD.locale = [NSLocale currentLocale];
+
+    // Day (activity) title format
+    if (timeFormat == 0) {
+        // like “Friday, June 29, 2012 at 03:01:24PM”
+        fmtDay.dateFormat = @"EEE, MMM dd, yyyy 'at' hh:mma";
+        fmtLap.dateFormat = @"hh:mma";            // shown after “Lap N at ”
+    } else {
+        // like “Friday, June 29, 2012 at 15:01:24”
+        fmtDay.dateFormat = @"EEE, MMM dd, yyyy 'at' HH:mm:ss";
+        fmtLap.dateFormat = @"HH:mm:ss";
     }
-    else
-    {
-        frm = [NSString stringWithFormat:@"%@ at %%H:%%M:%%S", [Utils dateFormat]];
-        lapFrm = @"%H:%M:%S";
-        actFrm = @"%A, %B %d, %Y at %H:%M:%S";
-    }
-    int weekStartDay = [Utils intFromDefaults:RCBDefaultWeekStartDay];
+
+    // Year & month keys (match “%Y Activities” and “%B '%y”)
+    fmtYear.dateFormat  = @"yyyy 'Activities'";
+    fmtMonth.dateFormat = @"MMMM ''yy";
+
+    // Date portion used in “Week of …”
+    fmtWeekD.dateFormat = @"MMM dd, yyyy";
+
     ++seqno;
-    for (i=0; i<numTracks; i++)
-    {
-        Track* track = [trackArray objectAtIndex:i];
-        NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMTAtSync]];
-        if ([self passesSearchCriteria:track])
-        {
-            trackDate = [track creationTime];
-            if (!trackDate)
-            {
-                NSLog(@"nil TRACK CREATION DATE MISSING!");
-                continue;
+
+    for (NSUInteger i = 0; i < numTracks; i++) {
+        Track *track = [trackArray objectAtIndex:i];
+
+        // Resolve timezone (prefer IANA name, else stored offset)
+        NSTimeZone *tz = nil;
+        if ([track respondsToSelector:@selector(timeZoneName)]) {
+            NSString *tzName = track.timeZoneName;
+            if (tzName.length) tz = [NSTimeZone timeZoneWithName:tzName];
+        }
+        if (!tz) tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
+
+        if (![self passesSearchCriteria:track]) continue;
+
+        NSDate *trackDate = [track creationTime];
+        if (!trackDate) { NSLog(@"nil TRACK CREATION DATE MISSING!"); continue; }
+
+        // Set per-track time zone on calendar & formatters
+        NSCalendar *cal = [baseCal copy];
+        cal.timeZone = tz;
+        fmtDay.timeZone = fmtLap.timeZone = fmtYear.timeZone = fmtMonth.timeZone = fmtWeekD.timeZone = tz;
+
+        // Start-of-day for track date in its zone
+        NSDate *startOfDay = [cal startOfDayForDate:trackDate];
+
+        // Components we still need (year/month/day/weekday)
+        NSDateComponents *dmwy = [cal components:(NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay|NSCalendarUnitWeekday)
+                                        fromDate:startOfDay];
+        NSInteger year  = dmwy.year;
+        NSInteger month = dmwy.month;
+
+        // -------- Compute first day of this week (respecting your weekStartDay 0/1) --------
+        // Apple weekday: 1=Sun … 7=Sat. Convert to 0..6.
+        NSInteger weekdayZero = dmwy.weekday - 1;     // 0=Sun … 6=Sat
+        NSInteger offset = ( (weekdayZero - weekStartDay) % 7 + 7 ) % 7; // days since week start
+        NSDateComponents *minus = [[[NSDateComponents alloc] init] autorelease];
+        minus.day = -offset;
+        NSDate *startOfWeek = [cal dateByAddingComponents:minus toDate:startOfDay options:0];
+
+        // -------- Keys/titles (formatted strings) --------
+        NSString *yearKey   = [fmtYear  stringFromDate:startOfDay];
+        NSString *monthKey  = [fmtMonth stringFromDate:startOfDay];
+        NSString *weekHuman = [NSString stringWithFormat:@"Week of %@", [fmtWeekD stringFromDate:startOfWeek]];
+        NSString *dayKey    = [fmtDay   stringFromDate:trackDate];
+
+        // Build hierarchy
+        NSMutableDictionary *curDict = topDict;
+        TrackBrowserItem *yearBI = nil, *monthBI = nil, *weekBI = nil;
+
+        if ((viewType == kViewTypeCurrent) || (viewType == kViewTypeYears)) {
+            yearBI = [flatBIDict objectForKey:yearKey];
+            if (!yearBI) {
+                yearBI = [[[TrackBrowserItem alloc] initWithData:nil
+                                                             lap:nil
+                                                            name:yearKey
+                                                            date:startOfDay
+                                                            type:kTypeYear
+                                                          parent:nil] autorelease];
+                [flatBIDict setObject:yearBI forKey:yearKey];
+            } else {
+                [yearBI invalidateCache:NO];
             }
-            NSDateComponents* comps = [cal components:(NSEraCalendarUnit|NSYearCalendarUnit|NSMonthCalendarUnit|NSWeekCalendarUnit|NSDayCalendarUnit)  fromDate:trackDate];
-            if (comps != nil)
-            {
-                NSInteger year = [comps year];
-                NSInteger month = [comps month];
-                caldate = [NSCalendarDate dateWithYear:year
-                                                 month:month
-                                                   day:[comps day]
-                                                  hour:0
-                                                minute:0
-                                                second:0
-                                              timeZone:tz];
-                
-                // get date of first day in week
-                int dayOfWeek = [caldate dayOfWeek];
-                if ((weekStartDay == 1) && (dayOfWeek == 0)) dayOfWeek = 7; // finagle for monday start
-                NSInteger ws = [comps day] - dayOfWeek + weekStartDay;    // weekStartDay is 0 for sunday
-                firstDayOfWeekDate = [NSCalendarDate dateWithYear:[comps year] month:[comps month] day:ws
-                                                             hour:0 minute:0 second:0 timeZone:tz];
-                yearKey  = [caldate descriptionWithCalendarFormat:@"%Y Activities"];
-                monthKey = [caldate descriptionWithCalendarFormat:@"%B '%y"];
-                weekKey  = [firstDayOfWeekDate descriptionWithCalendarFormat:[NSString stringWithFormat:@"Week of %@",[Utils dateFormat]]];
-                dayKey = [trackDate descriptionWithCalendarFormat:frm
-                                                         timeZone:tz
-                                                           locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]];
-                
-                NSMutableDictionary* curDict = topDict;
-                TrackBrowserItem* yearBI = nil;
-                TrackBrowserItem* monthBI = nil;
-                TrackBrowserItem* weekBI = nil;
-                if ((viewType == kViewTypeCurrent) || (viewType == kViewTypeYears))
-                {
-                    yearBI = [flatBIDict objectForKey:yearKey];
-                    if (yearBI == nil)
-                    {
-                        yearBI = [[[TrackBrowserItem alloc] initWithData:nil
-                                                                     lap:nil
-                                                                    name:yearKey
-                                                                    date:caldate
-                                                                    type:kTypeYear
-                                                                  parent:nil] autorelease];
-                        [flatBIDict setObject:yearBI
-                                       forKey:yearKey];
-                    }
-                    else
-                    {
-                        [yearBI invalidateCache:NO];
-                    }
-                    [curDict setObject:yearBI
-                                forKey:yearKey];
-                    curDict = [yearBI children];
-                    if (yearBI.seqno != seqno)
-                    {
-                        [curDict removeAllObjects];
-                        yearBI.seqno = seqno;
-                    }
-                }
-                
-                if ((viewType == kViewTypeCurrent) || (viewType == kViewTypeYears) || (viewType == kViewTypeMonths))
-                {
-                    // have to include year in key for cached objects since week
-                    // may span years (in Dec/Jan) and we need two unique entries
-                    // in this case
-                    monthBI = [flatBIDict objectForKey:monthKey];
-                    if (monthBI == nil)
-                    {
-                        monthBI = [[[TrackBrowserItem alloc] initWithData:nil
-                                                                      lap:nil
-                                                                     name:monthKey
-                                                                     date:caldate
-                                                                     type:kTypeMonth
-                                                                   parent:yearBI] autorelease];
-                        [flatBIDict setObject:monthBI
-                                       forKey:monthKey];
-                    }
-                    else
-                    {
-                        [monthBI invalidateCache:NO];
-                    }
-                    [curDict setObject:monthBI
-                                forKey:monthKey];
-                    curDict = [monthBI children];
-                    [monthBI setParentItem:yearBI];
-                    if (monthBI.seqno != seqno)
-                    {
-                        [curDict removeAllObjects];
-                        monthBI.seqno = seqno;
-                    }
-                }
-                
-                
-                if ((viewType == kViewTypeCurrent) || /*(viewType == kViewTypeYears) || (viewType == kViewTypeMonths) || */ (viewType == kViewTypeWeeks)  )
-                {
-                    // have to include year in key for cached objects since week
-                    // may span years (in Dec/Jan) and we need two unique entries
-                    // in this case
-                    NSString* userVisibileWeekName = [[weekKey copy] autorelease];
-                    if (viewType != kViewTypeWeeks) weekKey = [weekKey stringByAppendingFormat:@"_%d_%d", (int)year, (int)month];
-                    weekBI = [flatBIDict objectForKey:weekKey];
-                    if (weekBI == nil)
-                    {
-                        weekBI = [[[TrackBrowserItem alloc] initWithData:nil
-                                                                     lap:nil
-                                                                    name:userVisibileWeekName
-                                                                    date:caldate
-                                                                    type:kTypeWeek
-                                                                  parent:monthBI] autorelease];
-                        
-                        [flatBIDict setObject:weekBI
-                                       forKey:weekKey];
-                    }
-                    else
-                    {
-                        [weekBI invalidateCache:NO];
-                    }
-                    [weekBI setParentItem:monthBI];
-                    [curDict setObject:weekBI
-                                forKey:weekKey];
-                    curDict = [weekBI children];
-                    if (weekBI.seqno != seqno)
-                    {
-                        [curDict removeAllObjects];
-                        weekBI.seqno = seqno;
-                    }
-                }
-                
-                TrackBrowserItem* activityBI = [flatBIDict objectForKey:dayKey];
-                if (activityBI == nil)
-                {
-                    activityBI = [[[TrackBrowserItem alloc] initWithData:track
-                                                                     lap:nil
-                                                                    name:dayKey
-                                                                    date:trackDate
-                                                                    type:kTypeActivity
-                                                                  parent:weekBI] autorelease];
-                    [flatBIDict setObject:activityBI
-                                   forKey:dayKey];
-                }
-                else
-                {
-                    if (track != [activityBI track])
-                    {
-                        [activityBI invalidateCache:NO];
-                        [activityBI setTrack:track];
-                        [activityBI setDate:trackDate];
-                    }
-                }
-                [activityBI setParentItem:weekBI];
-                [curDict setObject:activityBI
-                            forKey:dayKey];
-                curDict = [activityBI children];
-                if (activityBI.seqno != seqno)
-                {
-                    [curDict removeAllObjects];
-                    activityBI.seqno = seqno;
-                }
-                
-                NSMutableDictionary* lapItems = [activityBI children];
-                NSArray* laps = [track laps];
-                NSUInteger numLaps = [laps count];
-                if (numLaps > 0)
-                {
-                    Lap* lap = [laps objectAtIndex:0];
-                    float lapEndTime = [lap startingWallClockTimeDelta] + [track durationOfLap:lap];
-                    if ((numLaps > 1) || (lapEndTime < [track duration]))
-                    {
-                        for (int i=0; i<numLaps; i++)
-                        {
-                            Lap* lap = [laps objectAtIndex:i];
-                            NSMutableString* s;
-                            if (i == (numLaps-1))
-                            {
-                                s = [NSMutableString stringWithFormat:@"Finish at "];
-                            }
-                            else
-                            {
-                                s = [NSMutableString stringWithFormat:@"Lap %d at ", i+1];
-                            }
-                            [s appendString:[[track lapEndTime:lap] descriptionWithCalendarFormat:lapFrm
-                                                                                         timeZone:tz
-                                                                                           locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]]];
-                            TrackBrowserItem* child = [[[TrackBrowserItem alloc] initWithData:track
-                                                                                          lap:(Lap*)lap
-                                                                                         name:s
-                                                                                         date:[track lapStartTime:lap]
-                                                                                         type:kTypeLap
-                                                                                       parent:activityBI] autorelease];
-                            [lapItems setObject:child
-                                         forKey:s];
-                            // don't store laps in flatBIdict, never need to be expanded which is what we use the flatDict for
-                        }
-                    }
+            [curDict setObject:yearBI forKey:yearKey];
+            curDict = [yearBI children];
+            if (yearBI.seqno != seqno) { [curDict removeAllObjects]; yearBI.seqno = seqno; }
+        }
+
+        if ((viewType == kViewTypeCurrent) || (viewType == kViewTypeYears) || (viewType == kViewTypeMonths)) {
+            monthBI = [flatBIDict objectForKey:monthKey];
+            if (!monthBI) {
+                monthBI = [[[TrackBrowserItem alloc] initWithData:nil
+                                                             lap:nil
+                                                            name:monthKey
+                                                            date:startOfDay
+                                                            type:kTypeMonth
+                                                          parent:yearBI] autorelease];
+                [flatBIDict setObject:monthBI forKey:monthKey];
+            } else {
+                [monthBI invalidateCache:NO];
+            }
+            [curDict setObject:monthBI forKey:monthKey];
+            curDict = [monthBI children];
+            [monthBI setParentItem:yearBI];
+            if (monthBI.seqno != seqno) { [curDict removeAllObjects]; monthBI.seqno = seqno; }
+        }
+
+        if ((viewType == kViewTypeCurrent) || (viewType == kViewTypeWeeks)) {
+            // Keep cache key unique when week spans years by suffixing year/month unless Weeks view
+            NSString *weekKey = weekHuman;
+            if (viewType != kViewTypeWeeks) {
+                weekKey = [weekKey stringByAppendingFormat:@"_%ld_%ld", (long)year, (long)month];
+            }
+            weekBI = [flatBIDict objectForKey:weekKey];
+            if (!weekBI) {
+                weekBI = [[[TrackBrowserItem alloc] initWithData:nil
+                                                           lap:nil
+                                                          name:weekHuman    // user-visible
+                                                          date:startOfWeek
+                                                          type:kTypeWeek
+                                                        parent:monthBI] autorelease];
+                [flatBIDict setObject:weekBI forKey:weekKey];
+            } else {
+                [weekBI invalidateCache:NO];
+            }
+            [weekBI setParentItem:monthBI];
+            [curDict setObject:weekBI forKey:weekKey];
+            curDict = [weekBI children];
+            if (weekBI.seqno != seqno) { [curDict removeAllObjects]; weekBI.seqno = seqno; }
+        }
+
+        // Activity node (day)
+        TrackBrowserItem *activityBI = [flatBIDict objectForKey:dayKey];
+        if (!activityBI) {
+            activityBI = [[[TrackBrowserItem alloc] initWithData:track
+                                                            lap:nil
+                                                           name:dayKey
+                                                           date:trackDate
+                                                           type:kTypeActivity
+                                                         parent:weekBI] autorelease];
+            [flatBIDict setObject:activityBI forKey:dayKey];
+        } else {
+            if (track != [activityBI track]) {
+                [activityBI invalidateCache:NO];
+                [activityBI setTrack:track];
+                [activityBI setDate:trackDate];
+            }
+        }
+        [activityBI setParentItem:weekBI];
+        [curDict setObject:activityBI forKey:dayKey];
+        curDict = [activityBI children];
+        if (activityBI.seqno != seqno) { [curDict removeAllObjects]; activityBI.seqno = seqno; }
+
+        // Laps (optional)
+        NSMutableDictionary *lapItems = [activityBI children];
+        NSArray *laps = [track laps];
+        NSUInteger numLaps = [laps count];
+        if (numLaps > 0) {
+            Lap *firstLap = [laps objectAtIndex:0];
+            float lapEndTime = [firstLap startingWallClockTimeDelta] + [track durationOfLap:firstLap];
+            if ((numLaps > 1) || (lapEndTime < [track duration])) {
+                for (NSUInteger li = 0; li < numLaps; li++) {
+                    Lap *lap = [laps objectAtIndex:li];
+
+                    NSString *prefix = (li == (numLaps - 1)) ? @"Finish at " : [NSString stringWithFormat:@"Lap %lu at ", (unsigned long)(li + 1)];
+                    NSString *timeStr = [fmtLap stringFromDate:[track lapEndTime:lap]];
+                    NSString *label = [prefix stringByAppendingString:timeStr];
+
+                    TrackBrowserItem *child = [[[TrackBrowserItem alloc] initWithData:track
+                                                                                  lap:(Lap *)lap
+                                                                                 name:label
+                                                                                 date:[track lapStartTime:lap]
+                                                                                 type:kTypeLap
+                                                                               parent:activityBI] autorelease];
+                    [lapItems setObject:child forKey:label];
                 }
             }
         }
+
+        [cal release]; // we copied baseCal
     }
-    //NSLog(@"build browser REBUILT");
+
     [self reloadTable];
-    //NSLog(@"build browser table RELOADED");
     [self resetInfoLabels];
-    if (expandLastItem == YES)
-    {
-        if (reverseSort)
-        {
-            [self expandFirstItem];
-        }
-        else
-        {
-            [self expandLastItem];
-        }
+    if (expandLastItem) {
+        if (reverseSort) [self expandFirstItem];
+        else             [self expandLastItem];
     }
 }
 
@@ -5490,6 +5482,76 @@ int searchTagToMask(int searchTag)
 }
 
 
+- (IBAction)saveSelectedTracks:(id)sender
+{
+    NSMutableArray *arr = [self prepareArrayOfSelectedTracks];
+    if (arr.count < 1) {
+        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        alert.messageText = @"Please select one or more tracks in the browser";
+        alert.alertStyle = NSAlertStyleInformational;
+        [alert addButtonWithTitle:@"OK"];
+        [alert runModal];
+        return;
+    }
+
+    // Propose a filename
+    NSString *fname = nil;
+    if (arr.count == 1) {
+        Track *firstTrack = [arr objectAtIndex:0];
+        fname = [self baseActivityFileName:firstTrack fileType:@"ascentdb"];
+    } else {
+        fname = @"Selected Activities.ascentdb";
+    }
+
+    NSSavePanel *sp = [NSSavePanel savePanel];
+
+    // Set initial directory (modern replacement for runModalForDirectory:)
+    NSString *dirPath = [self baseDirectoryForImportExport];
+    if (dirPath.length > 0) {
+        sp.directoryURL = [NSURL fileURLWithPath:dirPath isDirectory:YES];
+    }
+
+    // Set proposed name (modern replacement for the "file:" parameter)
+    if (fname.length > 0) {
+        [sp setNameFieldStringValue:fname];
+    }
+
+    sp.allowedContentTypes = @[ [UTType typeWithFilenameExtension:@"ascentdb"] ];
+    sp.allowsOtherFileTypes = NO;
+    sp.canCreateDirectories = YES;
+
+    // Modern, synchronous run
+    NSInteger result = [sp runModal];
+    if (result == NSModalResponseOK) {
+        NSURL *url = sp.URL;                       // modern replacement for -filename
+        if (url) {
+            NSError *err = nil;
+            TrackBrowserDocument *doc = [[[TrackBrowserDocument alloc] init] autorelease];
+            [doc setTracks:arr];
+
+            if (![doc writeToURL:url ofType:@"ascentdb" error:&err]) {
+                NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+                alert.messageText = @"Failed to save file.";
+                alert.informativeText = err.localizedDescription ?: @"An unknown error occurred.";
+                alert.alertStyle = NSAlertStyleWarning;
+                [alert addButtonWithTitle:@"OK"];
+                [alert runModal];
+            }
+        }
+    }
+}
+
+#if 0
+- (IBAction)cut:(id)sender
+{
+    [self copy:sender];
+    [self storeExpandedState];
+    [self delete:sender];
+    [self restoreExpandedState];
+    [trackTableView deselectAll:sender];
+}
+
+
 - (IBAction)copy:(id)sender
 {
     NSMutableArray* arr = [self prepareArrayOfSelectedTracks];
@@ -5501,80 +5563,13 @@ int searchTagToMask(int searchTag)
         [pb setData:[NSArchiver archivedDataWithRootObject:arr]
             forType:TrackPBoardType];
         //[pb setString:[self buildTextOutput:arr sep:'\t']
-        //	forType:NSStringPboardType];
+        //    forType:NSStringPboardType];
         NSString* txt = [self buildSummaryTextOutput:'\t'] ;
         [pb setString:txt
               forType:NSTabularTextPboardType];
         [pb setString:txt
               forType:NSStringPboardType];
     }
-}
-
-
-
-- (IBAction)saveSelectedTracks:(id)sender
-{
-    NSMutableArray* arr = [self prepareArrayOfSelectedTracks];
-    if ([arr count] < 1)
-    {
-        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-        [alert addButtonWithTitle:@"OK"];
-        [alert setMessageText:@"Please select one or more tracks in the browser"];
-        [alert setAlertStyle:NSAlertStyleInformational];
-        [alert runModal];
-    }
-    else
-    {
-        NSSavePanel *sp;
-        int runResult;
-        
-        /* create or get the shared instance of NSSavePanel */
-        sp = [NSSavePanel savePanel];
-        
-        /* set up new attributes */
-        //[sp setAccessoryView:newView];
-        [sp setRequiredFileType:@"tlp"];
-        
-        /* display the NSSavePanel */
-        NSString* fname;
-        if ([arr count] == 1)
-        {
-            Track* firstTrack = [arr objectAtIndex:0];
-            fname = [self baseActivityFileName:firstTrack
-                                      fileType:@"tlp"];
-        }
-        else
-        {
-            fname = @"Selected Activities.tlp";
-        }
-        
-        runResult = [sp runModalForDirectory:[self baseDirectoryForImportExport]
-                                        file:fname];
-        
-        /* if successful, save file under designated name */
-        if (runResult == NSModalResponseOK)
-        {
-            TrackBrowserDocument* doc = [[[TrackBrowserDocument alloc] init] autorelease];
-            [doc setTracks:arr];
-            NSError* err;
-            NSURL* url = [NSURL fileURLWithPath:[sp filename]];
-            
-            [doc writeToURL:url
-                     ofType:@"tlp"
-                      error:&err];
-            
-        }
-    }
-}
-
-
-- (IBAction)cut:(id)sender
-{
-    [self copy:sender];
-    [self storeExpandedState];
-    [self delete:sender];
-    [self restoreExpandedState];
-    [trackTableView deselectAll:sender];
 }
 
 
@@ -5601,6 +5596,83 @@ int searchTagToMask(int searchTag)
             [trackTableView deselectAll:sender];
         }
     }
+}
+#endif
+
+// Define a custom UTI (also register it in your Info.plist if you want inter-app paste)
+
+- (IBAction)cut:(id)sender
+{
+    [self copy:sender];
+    [self storeExpandedState];
+    [self delete:sender];
+    [self restoreExpandedState];
+    [trackTableView deselectAll:sender];
+}
+
+- (IBAction)copy:(id)sender
+{
+    NSMutableArray *arr = [self prepareArrayOfSelectedTracks];
+    if (arr.count == 0) return;
+
+    // Archive securely
+    NSError *archErr = nil;
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:arr
+                                       requiringSecureCoding:NO
+                                                       error:&archErr];
+    if (!data) {
+        NSLog(@"Copy: archive failed: %@", archErr.localizedDescription);
+        return;
+    }
+
+    NSString *txt = [self buildSummaryTextOutput:'\t'];
+
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    [pb clearContents];
+
+    // Our custom type payload
+    [pb setData:data forType:TrackPBoardType];
+
+    // Human-readable text
+    [pb setString:txt forType:NSPasteboardTypeString];
+
+    // Optional: add a tab-separated UTI flavor for apps that recognize it
+    if (@available(macOS 11.0, *)) {
+        UTType *tsv = [UTType typeWithIdentifier:@"public.utf8-tab-separated-values"] ?:
+                      [UTType typeWithIdentifier:@"public.tab-separated-values-text"] ?:
+                      nil;
+        if (tsv) {
+            [pb setString:txt forType:tsv.identifier];
+        }
+    }
+}
+
+- (IBAction)paste:(id)sender
+{
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    NSData *data = [pb dataForType:TrackPBoardType];
+    if (!data) return;
+
+    NSError *unarchErr = nil;
+    NSKeyedUnarchiver *ua = [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:&unarchErr];
+    if (!ua) { NSLog(@"Paste: %@", unarchErr); return; }
+    ua.requiresSecureCoding = NO; // <-- matches your copy path
+
+    id root = [ua decodeObjectForKey:NSKeyedArchiveRootObjectKey];
+    [ua finishDecoding];
+
+    NSArray<Track *> *arr = ([root isKindOfClass:NSArray.class] ? root : nil);
+    if (!arr) { NSLog(@"Paste: root is not NSArray"); return; }
+
+    NSInteger numNew = arr.count;
+    NSInteger numOld = tbDocument.trackArray.count;
+
+    [self storeExpandedState];
+    [tbDocument addTracks:arr];
+    [self.window setDocumentEdited:YES];
+    [tbDocument updateChangeCount:NSChangeDone];
+    [self restoreExpandedState];
+    [trackTableView deselectAll:sender];
 }
 
 
@@ -5730,7 +5802,7 @@ int searchTagToMask(int searchTag)
             s = [NSMutableString stringWithString:@"Ascent activity from %d-%b-%y attached"];
         }
         NSDate* date = [firstTrack creationTime];
-        NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[firstTrack secondsFromGMTAtSync]];
+        NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[firstTrack secondsFromGMT]];
         NSString* subject = [date descriptionWithCalendarFormat:s
                                                        timeZone:tz
                                                          locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]];
@@ -5948,18 +6020,23 @@ int searchTagToMask(int searchTag)
 }
 
 
-- (void) processFileDrag:(id < NSDraggingInfo >)info
+
+- (void)processFileDrag:(id<NSDraggingInfo>)info
 {
-    NSPasteboard* pboard = [info draggingPasteboard];
-    //NSData* rowData = [pboard dataForType:MyPrivateTableViewDataType];
-    //NSIndexSet* rowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:rowData];
-    if ( [[pboard types] containsObject:NSFilenamesPboardType] )
-    {
-        NSArray *files = [pboard propertyListForType:NSFilenamesPboardType];
-        // Depending on the dragging source and modifier keys,
-        // the file data may be copied or linked
-        [self addDataFromFiles:files];
-        
+    NSPasteboard *pboard = [info draggingPasteboard];
+
+    // Only read file URLs (not web URLs, etc.)
+    NSDictionary *opts = @{ NSPasteboardURLReadingFileURLsOnlyKey : @YES };
+
+    if ([pboard canReadObjectForClasses:@[NSURL.class] options:opts]) {
+        NSArray<NSURL *> *urls = [pboard readObjectsForClasses:@[NSURL.class] options:opts];
+
+        // If your existing code expects NSString paths:
+        NSArray<NSString *> *paths = [urls valueForKey:@"path"];
+        [self addDataFromFiles:paths];
+
+        // Or, better: make an NSURL-based variant and use it directly:
+        // [self addDataFromFileURLs:urls];
     }
 }
 
@@ -6031,12 +6108,19 @@ int searchTagToMask(int searchTag)
 }
 
 
--(void) selectLastImportedTrack:(Track*)lastImportedTrack
+- (void)selectLastImportedTrack:(Track *)lastImportedTrack
 {
-    if (lastImportedTrack && [self calendarViewActive])
-    {
-        NSCalendarDate* calDate = [[lastImportedTrack creationTime] dateWithCalendarFormat:nil
-                                                                                  timeZone:nil];
+    if (lastImportedTrack && [self calendarViewActive]) {
+        NSDate *date = lastImportedTrack.creationTime;
+
+        // Create an NSCalendarDate representing the same instant,
+        // without using -dateWithCalendarFormat:timeZone:
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        NSCalendarDate *calDate =
+            [NSCalendarDate dateWithTimeIntervalSinceReferenceDate:date.timeIntervalSinceReferenceDate];
+        #pragma clang diagnostic pop
+
         [calendarView setVisibleMonth:calDate];
         [calendarView setSelectedDay:calDate];
     }
@@ -6047,97 +6131,73 @@ int searchTagToMask(int searchTag)
 
 - (void) doGPXImportWithProgress:(NSArray*)files
 {
-    NSUInteger numOld = [[tbDocument trackArray] count];
-    if (!([RegController CHECK_REGISTRATION]) && (([files count] + numOld) > kNumUnregisteredTracks))
+    [self startProgressIndicator:@"Importing tracks..."];
+    NSUInteger num = [files count];
+    Track* lastTrack = nil;
+    for (int i=0; i<num; i++)
     {
-        [self postActivityImportLimitExeeded];
+        NSString* file = [files objectAtIndex:i];
+        [self updateProgressIndicator:[NSString stringWithFormat:@"Importing %@...", file ]];
+        lastTrack = [tbDocument importGPXFile:file];
     }
-    else
+    if (lastTrack != nil)
     {
-        [self startProgressIndicator:@"Importing tracks..."];
-        NSUInteger num = [files count];
-        Track* lastTrack = nil;
-        for (int i=0; i<num; i++)
-        {
-            NSString* file = [files objectAtIndex:i];
-            [self updateProgressIndicator:[NSString stringWithFormat:@"Importing %@...", file ]];
-            lastTrack = [tbDocument importGPXFile:file];
-        }
-        if (lastTrack != nil)
-        {
-            [self buildBrowser:YES];
-            [tbDocument updateChangeCount:NSChangeDone];
-            [[self window] setDocumentEdited:YES];
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:tbDocument];
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"InvalidateBrowserCache" object:nil];
-            [self  selectLastImportedTrack:lastTrack];
-        }
-        [self endProgressIndicator];
+        [self buildBrowser:YES];
+        [tbDocument updateChangeCount:NSChangeDone];
+        [[self window] setDocumentEdited:YES];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:tbDocument];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"InvalidateBrowserCache" object:nil];
+        [self  selectLastImportedTrack:lastTrack];
     }
+    [self endProgressIndicator];
 }
 
 
 - (void) doHRMImportWithProgress:(NSArray*)files
 {
-    NSUInteger numOld = [[tbDocument trackArray] count];
-    if (!([RegController CHECK_REGISTRATION]) && (([files count] + numOld) > kNumUnregisteredTracks))
+    [self startProgressIndicator:@"Importing tracks..."];
+    NSUInteger num = [files count];
+    Track* lastTrack = nil;
+    for (int i=0; i<num; i++)
     {
-        [self postActivityImportLimitExeeded];
+        NSString* file = [files objectAtIndex:i];
+        [self updateProgressIndicator:[NSString stringWithFormat:@"Importing %@...", file ]];
+        lastTrack = [tbDocument importHRMFile:file];
     }
-    else
+    if (lastTrack != nil)
     {
-        [self startProgressIndicator:@"Importing tracks..."];
-        NSUInteger num = [files count];
-        Track* lastTrack = nil;
-        for (int i=0; i<num; i++)
-        {
-            NSString* file = [files objectAtIndex:i];
-            [self updateProgressIndicator:[NSString stringWithFormat:@"Importing %@...", file ]];
-            lastTrack = [tbDocument importHRMFile:file];
-        }
-        if (lastTrack != nil)
-        {
-            [self buildBrowser:YES];
-            [tbDocument updateChangeCount:NSChangeDone];
-            [[self window] setDocumentEdited:YES];
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:tbDocument];
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"InvalidateBrowserCache" object:nil];
-            [self  selectLastImportedTrack:lastTrack];
-        }
-        [self endProgressIndicator];
+        [self buildBrowser:YES];
+        [tbDocument updateChangeCount:NSChangeDone];
+        [[self window] setDocumentEdited:YES];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:tbDocument];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"InvalidateBrowserCache" object:nil];
+        [self  selectLastImportedTrack:lastTrack];
     }
+    [self endProgressIndicator];
 }
 
 
 - (void) doFITImportWithProgress:(NSArray*)files
 {
-    NSUInteger numOld = [[tbDocument trackArray] count];
-    if (!([RegController CHECK_REGISTRATION]) && (([files count] + numOld) > kNumUnregisteredTracks))
+    [self startProgressIndicator:@"Importing FIT tracks..."];
+    NSUInteger num = [files count];
+    Track* lastTrack = nil;
+    for (int i=0; i<num; i++)
     {
-        [self postActivityImportLimitExeeded];
+        NSString* file = [files objectAtIndex:i];
+        [self updateProgressIndicator:[NSString stringWithFormat:@"Importing %@...", file ]];
+        lastTrack = [tbDocument importFITFile:file];
     }
-    else
+    if (lastTrack != nil)
     {
-        [self startProgressIndicator:@"Importing FIT tracks..."];
-        NSUInteger num = [files count];
-        Track* lastTrack = nil;
-        for (int i=0; i<num; i++)
-        {
-            NSString* file = [files objectAtIndex:i];
-            [self updateProgressIndicator:[NSString stringWithFormat:@"Importing %@...", file ]];
-            lastTrack = [tbDocument importFITFile:file];
-        }
-        if (lastTrack != nil)
-        {
-            [self buildBrowser:YES];
-            [tbDocument updateChangeCount:NSChangeDone];
-            [[self window] setDocumentEdited:YES];
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:tbDocument];
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"InvalidateBrowserCache" object:nil];
-            [self  selectLastImportedTrack:lastTrack];
-        }
-        [self endProgressIndicator];
+        [self buildBrowser:YES];
+        [tbDocument updateChangeCount:NSChangeDone];
+        [[self window] setDocumentEdited:YES];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:tbDocument];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"InvalidateBrowserCache" object:nil];
+        [self  selectLastImportedTrack:lastTrack];
     }
+    [self endProgressIndicator];
 }
 
 
@@ -6367,16 +6427,42 @@ int searchTagToMask(int searchTag)
 
 // This method is required of NSToolbar delegates.  It returns an array holding identifiers for the default
 // set of toolbar items.  It can also be called by the customization palette to display the default toolbar.
-- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar
+- (NSArray<NSToolbarItemIdentifier> *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar
 {
-    return [NSArray arrayWithObjects:@"BrowOrCal",@"SplitsOptions", @"LeftOptionsCog", NSToolbarSeparatorItemIdentifier,@"SearchBrowser", NSToolbarFlexibleSpaceItemIdentifier, @"CompareActivities", @"ActivityDetail", @"MapDetail", @"Summary", nil];
+    return @[
+        @"BrowOrCal",
+        @"SplitsOptions",
+        @"LeftOptionsCog",
+
+        // NSToolbarSeparatorItemIdentifier  ⟶  use a space instead
+        NSToolbarSpaceItemIdentifier,
+
+        @"SearchBrowser",
+        NSToolbarFlexibleSpaceItemIdentifier,
+        @"CompareActivities",
+        @"ActivityDetail",
+        @"MapDetail",
+        @"Summary"
+    ];
 }
 
 // This method is required of NSToolbar delegates.  It returns an array holding identifiers for all allowed
 // toolbar items in this toolbar.  Any not listed here will not be available in the customization palette.
-- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
+- (NSArray<NSToolbarItemIdentifier> *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar
 {
-    return [NSArray arrayWithObjects:@"BrowOrCal",@"SplitsOptions", @"LeftOptionsCog", @"CompareActivities",  @"ActivityDetail", @"MapDetail",  @"Summary", NSToolbarSeparatorItemIdentifier, @"SearchBrowser", NSToolbarSpaceItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,nil];
+    return @[
+        @"BrowOrCal",
+        @"SplitsOptions",
+        @"LeftOptionsCog",
+        @"CompareActivities",
+        @"ActivityDetail",
+        @"MapDetail",
+        @"Summary",
+        @"SearchBrowser",
+        NSToolbarSpaceItemIdentifier,
+        NSToolbarFlexibleSpaceItemIdentifier
+        // @"VerticalSeparator", // include if you implemented the custom NSBox separator item
+    ];
 }
 
 
@@ -6396,6 +6482,290 @@ int searchTagToMask(int searchTag)
         [self endProgressIndicator];
     }];
  }
+
+
+- (BOOL)applyStravaActivitiesCSVAtURL:(NSURL *)csvURL
+                             toTracks:(NSArray<Track *> *)tracks
+{
+    NSError *readErr = nil;
+    NSString *csv = [NSString stringWithContentsOfURL:csvURL
+                                             encoding:NSUTF8StringEncoding
+                                                error:&readErr];
+    if (!csv) {
+        NSLog(@"Strava CSV: read failed: %@", readErr.localizedDescription);
+        return NO;
+    }
+
+    // --- Minimal CSV parser that supports quoted fields and newlines inside quotes ---
+    NSArray<NSArray<NSString *> *> *rows = ASCParseCSV(csv);
+    if (rows.count == 0) return YES; // empty file: not an error
+
+    // --- Header map ---
+    NSDictionary<NSString *, NSNumber *> *col = ASCMapHeader(rows.firstObject);
+    NSInteger idxID   = ASCCol(col, @"Activity ID");
+    NSInteger idxDate = ASCCol(col, @"Activity Date");
+    NSInteger idxName = ASCCol(col, @"Activity Name");
+    NSInteger idxDesc = ASCCol(col, @"Activity Description");
+    NSInteger idxMedia= ASCCol(col, @"Media");
+
+    if (idxID < 0 || idxDate < 0 || idxName < 0 || idxDesc < 0) {
+        NSLog(@"Strava CSV: required headers missing");
+        return NO;
+    }
+
+    // --- Date formatter (exactly matches Strava CSV "Activity Date") ---
+    NSDateFormatter *fmt = [NSDateFormatter new];
+    fmt.locale   = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+    fmt.dateFormat = @"MMM d, yyyy, h:mm:ss a"; // e.g. "Jun 29, 2012, 4:01:24 PM"
+
+    // --- Build a fast lookup: Activity Date string -> candidate tracks ---
+    // We render each track's creationTime into the *same* string using the track's time zone.
+    NSMutableDictionary<NSString *, NSMutableArray<Track *> *> *byDate = [NSMutableDictionary dictionaryWithCapacity:tracks.count];
+
+    for (Track *t in tracks) {
+        NSDate *ct = t.creationTime;
+        if (!ct) continue;
+
+        NSTimeZone *tz = nil;
+#if 0
+        if ([t respondsToSelector:@selector(timeZoneName)] && t.timeZoneName.length) {
+            tz = [NSTimeZone timeZoneWithName:t.timeZoneName];
+        }
+        if (!tz) {
+            tz = [NSTimeZone timeZoneForSecondsFromGMT:t.secondsFromGMT];
+        }
+        if (!tz) {
+            tz = NSTimeZone.localTimeZone;
+        }
+#endif
+        NSTimeInterval offset = 0;
+        if ([t.points count] > 0)
+        {
+            TrackPoint* tp = [t.points firstObject];
+            offset = tp.wallClockDelta;
+        }
+        ct = [ct dateByAddingTimeInterval:offset];
+        tz = [NSTimeZone timeZoneForSecondsFromGMT:0];
+        
+        fmt.timeZone = tz;
+        NSString *key = [fmt stringFromDate:ct];
+        if (!key) continue;
+
+        NSMutableArray<Track *> *bucket = byDate[key];
+        if (!bucket) {
+            bucket = [NSMutableArray arrayWithObject:t];
+            byDate[key] = bucket;
+        } else {
+            [bucket addObject:t];
+        }
+    }
+
+    BOOL hadError = NO;
+
+    // --- Walk data rows ---
+    for (NSUInteger r = 1; r < rows.count; r++) {
+        NSArray<NSString *> *fields = rows[r];
+        if (fields.count == 0) continue;
+
+        // Guard for short/blank lines
+        NSString *dateStr = (idxDate < (NSInteger)fields.count) ? fields[idxDate] : nil;
+        if (dateStr.length == 0) continue;
+
+        NSArray<Track *> *candidates = byDate[dateStr];
+        if (candidates.count == 0) {
+            // not a match: not an error
+            continue;
+        }
+
+        // Pick the first candidate without a Strava ID (nil or 0)
+        Track *track = nil;
+        for (Track *t in candidates) {
+            NSNumber *sid = t.stravaActivityID;
+            if (!(sid && sid.longLongValue != 0)) { track = t; break; }
+        }
+        if (!track) {
+            // all candidates already linked: skip (not an error)
+            continue;
+        }
+
+        // --- Activity ID -> NSNumber ---
+        NSString *idStr = (idxID < (NSInteger)fields.count) ? fields[idxID] : @"";
+        long long actID = idStr.longLongValue; // handles quoted numeric strings too
+        if (actID <= 0) {
+            // malformed row (treat as non-fatal, but mark error and continue)
+            hadError = YES;
+            continue;
+        }
+        track.stravaActivityID = @(actID);
+
+        // --- Name ---
+        NSString *name = (idxName < (NSInteger)fields.count) ? fields[idxName] : @"";
+        if (name.length) {
+            [track setName:name];
+        }
+
+        // --- Notes (kNotes) ---
+        NSString *desc = (idxDesc < (NSInteger)fields.count) ? fields[idxDesc] : @"";
+        if (desc) {
+            [track setAttribute:kNotes usingString:desc];
+        }
+
+        // --- Media (optional, pipe-separated, strip "media/" prefix) ---
+        if (idxMedia >= 0 && idxMedia < (NSInteger)fields.count) {
+            NSString *media = fields[idxMedia];
+            if (media.length) {
+                NSArray<NSString *> *raw = [media componentsSeparatedByString:@"|"];
+                NSMutableArray<NSString *> *clean = [NSMutableArray arrayWithCapacity:raw.count];
+                for (NSString *m in raw) {
+                    if (m.length == 0) continue;
+                    NSString *f = [m hasPrefix:@"media/"] ? [m substringFromIndex:6] : m;
+                    if (f.length) [clean addObject:f];
+                }
+                if (clean.count &&
+                    [track respondsToSelector:@selector(setLocalMediaItems:)]) {
+                    // Silence ARC warning about performSelector leaks not needed; direct call is fine if method exists.
+                    [(id)track performSelector:@selector(setLocalMediaItems:) withObject:clean];
+                }
+            }
+        }
+    }
+
+    return !hadError;
+}
+
+#pragma mark - Small CSV helpers
+
+// Map header -> column index
+static NSDictionary<NSString *, NSNumber *> *ASCMapHeader(NSArray<NSString *> *header)
+{
+    NSMutableDictionary *m = [NSMutableDictionary dictionary];
+    for (NSInteger i = 0; i < (NSInteger)header.count; i++) {
+        NSString *key = header[i] ?: @"";
+        // Normalize common whitespace/quotes
+        key = [key stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        if (key.length) m[key] = @(i);
+    }
+    return m;
+}
+
+static NSInteger ASCCol(NSDictionary<NSString *, NSNumber *> *map, NSString *name)
+{
+    NSNumber *n = map[name];
+    return n ? n.integerValue : -1;
+}
+
+// CSV parser: handles quotes, commas/newlines inside quotes, and "" escapes.
+static NSArray<NSArray<NSString *> *> *ASCParseCSV(NSString *text)
+{
+    NSMutableArray<NSArray<NSString *> *> *rows = [NSMutableArray array];
+    NSMutableArray<NSString *> *fields = [NSMutableArray array];
+    NSMutableString *buf = [NSMutableString string];
+
+    BOOL inQuotes = NO;
+    NSUInteger len = text.length;
+
+    // Strip BOM if present
+    if (len && [text characterAtIndex:0] == 0xFEFF) {
+        text = [text substringFromIndex:1];
+        len = text.length;
+    }
+
+    for (NSUInteger i = 0; i < len; i++) {
+        unichar c = [text characterAtIndex:i];
+
+        if (inQuotes) {
+            if (c == '"') {
+                BOOL hasNext = (i + 1 < len);
+                unichar n = hasNext ? [text characterAtIndex:i + 1] : 0;
+                if (hasNext && n == '"') {
+                    [buf appendString:@"\""]; // escaped quote
+                    i++;
+                } else {
+                    inQuotes = NO; // closing quote
+                }
+            } else {
+                [buf appendFormat:@"%C", c];
+            }
+        } else {
+            if (c == '"') {
+                inQuotes = YES;
+            } else if (c == ',') {
+                [fields addObject:[buf copy]];
+                [buf setString:@""];
+            } else if (c == '\n') {
+                [fields addObject:[buf copy]];
+                [buf setString:@""];
+                [rows addObject:[fields copy]];
+                [fields removeAllObjects];
+            } else if (c == '\r') {
+                // Handle CR or CRLF
+                BOOL hasNext = (i + 1 < len);
+                if (hasNext && [text characterAtIndex:i + 1] == '\n') {
+                    // consume CR, loop will hit LF next
+                } else {
+                    [fields addObject:[buf copy]];
+                    [buf setString:@""];
+                    [rows addObject:[fields copy]];
+                    [fields removeAllObjects];
+                }
+            } else {
+                [buf appendFormat:@"%C", c];
+            }
+        }
+    }
+
+    // finalize last field/row
+    if (buf.length || fields.count) {
+        [fields addObject:[buf copy]];
+        [rows addObject:[fields copy]];
+    }
+
+    return rows;
+}
+
+
+- (IBAction)linkStravaActivitiesFromCSV:(id)sender
+{
+    NSOpenPanel *panel = [NSOpenPanel openPanel];
+    panel.canChooseFiles = YES;
+    panel.canChooseDirectories = NO;
+    panel.allowsMultipleSelection = NO;
+    panel.prompt  = @"Choose";
+    panel.message = @"Select your Strava ‘activities.csv’ file.";
+    panel.directoryURL = [NSURL fileURLWithPath:NSHomeDirectory() isDirectory:YES];
+
+    // Limit to CSV via UTType (no allowedFileTypes)
+    UTType *csvType = [UTType typeWithIdentifier:@"public.comma-separated-values-text"];
+    if (!csvType) csvType = [UTType typeWithFilenameExtension:@"csv"];
+    if (csvType) panel.allowedContentTypes = @[csvType];
+
+    void (^handleURL)(NSURL *) = ^(NSURL *url) {
+        if (!url) return;
+
+        NSArray<Track *> *tracks = [tbDocument trackArray];
+        BOOL ok = [self applyStravaActivitiesCSVAtURL:url toTracks:tracks];
+
+        if (!ok) {
+            NSAlert *a = [[[NSAlert alloc] init] autorelease];
+            a.alertStyle = NSAlertStyleWarning;
+            a.messageText = @"Couldn’t finish linking Strava activities";
+            a.informativeText = @"There was a problem reading or parsing the CSV. Some rows may still have been applied.";
+            [a runModal];
+        } else if ([tbDocument respondsToSelector:@selector(updateChangeCount:)]) {
+            [tbDocument updateChangeCount:NSChangeDone];
+        }
+    };
+
+    if (self.window) {
+        [panel beginSheetModalForWindow:self.window
+                      completionHandler:^(NSModalResponse result) {
+            if (result == NSModalResponseOK) handleURL(panel.URL);
+        }];
+    } else {
+        if ([panel runModal] == NSModalResponseOK) handleURL(panel.URL);
+    }
+}
+
 
 @end
 

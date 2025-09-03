@@ -351,7 +351,7 @@
             {
 #if 0
                 retVal = [[[track creationTime] addTimeInterval:[point wallClockDelta]] descriptionWithCalendarFormat:@"%H:%M:%S"
-                                                                                                             timeZone:[NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMTAtSync]]
+                                                                                                             timeZone:[NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]]
                                                                                                                locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]];
 #else
                 // thanks AI
@@ -361,7 +361,7 @@
                 NSDate *adjusted = [base dateByAddingTimeInterval:d];         // ✅ replace addTimeInterval:
                 NSDateFormatter *fmt = [NSDateFormatter new];
                 fmt.locale   = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"]; // stable for fixed pattern
-                fmt.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMTAtSync]];
+                fmt.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
                 fmt.dateFormat = @"HH:mm:ss";                                  // replaces descriptionWithCalendarFormat
 
                 NSString *retVal = [fmt stringFromDate:adjusted];

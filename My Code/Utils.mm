@@ -745,23 +745,23 @@ static BOOL                sThreshZoneInited[kMaxZoneType+1] = { NO, NO, NO, NO 
 	int v;
 	int top;
 	OFPreferenceWrapper* defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
-	v = [defaults integerForKey:RCBDefaultZone5Threshold];
+	v = (int)[defaults integerForKey:RCBDefaultZone5Threshold];
 	[arr addObject:[NSString stringWithFormat:@"≥%d", v]];
 	
 	top = v;
-	v = [defaults integerForKey:RCBDefaultZone4Threshold];
+	v = (int)[defaults integerForKey:RCBDefaultZone4Threshold];
 	[arr addObject:[NSString stringWithFormat:@"%d➔%d", v, top-1 ]];
 	
 	top = v;
-	v = [defaults integerForKey:RCBDefaultZone3Threshold];
+	v = (int)[defaults integerForKey:RCBDefaultZone3Threshold];
 	[arr addObject:[NSString stringWithFormat:@"%d➔%d", v, top-1 ]];
 	
 	top = v;
-	v = [defaults integerForKey:RCBDefaultZone2Threshold];
+	v = (int)[defaults integerForKey:RCBDefaultZone2Threshold];
 	[arr addObject:[NSString stringWithFormat:@"%d➔%d", v, top-1 ]];
 	
 	top = v;
-	v = [defaults integerForKey:RCBDefaultZone1Threshold];
+	v = (int)[defaults integerForKey:RCBDefaultZone1Threshold];
 	[arr addObject:[NSString stringWithFormat:@"%d➔%d", v, top-1  ]];
 	
 	[arr addObject:[NSString stringWithFormat:@"<%d",   v  ]];
@@ -1475,7 +1475,7 @@ static const int sNumSplitValues = sizeof(sSplitValues)/sizeof(float);
 	[p addItemWithTitle:@"Ues Laps"];
 }
 
-
+#if 0
 + (NSString*) buildTrackDisplayedName:(Track*)track  prePend:(NSString*)prepend;
 {
 	NSDate* ct = [track creationTime];
@@ -1499,12 +1499,55 @@ static const int sNumSplitValues = sizeof(sSplitValues)/sizeof(float);
 		  nameFmt = @"  (%A, %B %d, %Y at %H:%M)";
 		}
 		NSString* format =  ([name length] != 0) ? nameFmt : defFmt;
-		NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMTAtSync]];
+		NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
 		title = [title stringByAppendingString:[ct descriptionWithCalendarFormat:format
 																	   timeZone:tz
 																		 locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]]];
 	}
 	return title;
+}
+#endif
+
++ (NSString *)buildTrackDisplayedName:(Track *)track prePend:(NSString *)prepend
+{
+    NSDate *ct = [track creationTime];
+    if (!ct) return @"Track with no creation time";
+
+    NSString *name = [track attribute:kName] ?: @"";
+
+    // Resolve timezone: prefer stored IANA zone; fall back to saved offset
+    NSTimeZone *tz = nil;
+    if ([track respondsToSelector:@selector(timeZoneName)]) {
+        NSString *tzName = [track timeZoneName];
+        if (tzName.length) tz = [NSTimeZone timeZoneWithName:tzName];
+    }
+    if (!tz) tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
+
+    NSDateFormatter *df = [[[NSDateFormatter alloc] init] autorelease];
+    df.locale   = [NSLocale currentLocale];
+    df.timeZone = tz;
+
+    // Match old %I:%M%p (zero-padded 12h, no space before AM/PM) and %H:%M
+    int timeFormat = [Utils intFromDefaults:RCBDefaultTimeFormat];
+    if (timeFormat == 0) {
+        df.dateFormat = @"EEEE, MMMM dd, yyyy 'at' hh:mma";
+    } else {
+        df.dateFormat = @"EEEE, MMMM dd, yyyy 'at' HH:mm";
+    }
+    NSString *dateStr = [df stringFromDate:ct];
+
+    NSMutableString *title = [NSMutableString string];
+    if (prepend.length) [title appendString:prepend];
+    if (name.length)    [title appendString:name];
+
+    if (name.length) {
+        [title appendString:@"  ("];
+        [title appendString:dateStr];
+        [title appendString:@")"];
+    } else {
+        [title appendString:dateStr];
+    }
+    return title;
 }
 
 
@@ -1719,14 +1762,54 @@ static BOOL                sThreshInited = NO;
 }
 
 
++ (NSString *)activityNameFromDate:(Track *)track
+                 alternateStartTime:(NSDate *)altStartTime
+{
+    NSDate *startTime = altStartTime ?: [track creationTime];
+
+    // Prefer a stored IANA zone name if you have one; otherwise fall back to the saved offset
+    NSTimeZone *tz = nil;
+    if ([track respondsToSelector:@selector(timeZoneName)] && [[track timeZoneName] length] > 0) {
+        tz = [NSTimeZone timeZoneWithName:[track timeZoneName]];
+    }
+    if (!tz) {
+        tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
+    }
+
+    NSDateFormatter *df = [[[NSDateFormatter alloc] init] autorelease];
+    df.locale   = [NSLocale currentLocale];
+    df.timeZone = tz;
+
+    // 0 = 12-hour with AM/PM (no space before AM/PM, to match old %I:%M%p)
+    // else = 24-hour
+    int timeFormat = [Utils intFromDefaults:RCBDefaultTimeFormat];
+    if (timeFormat == 0) {
+        df.dateFormat = @"EEEE, MMMM d, yyyy 'at' h:mma";  // e.g. Friday, June 29, 2012 at 3:01PM
+    } else {
+        df.dateFormat = @"EEEE, MMMM d, yyyy 'at' HH:mm";  // e.g. Friday, June 29, 2012 at 15:01
+    }
+    return [df stringFromDate:startTime];
+}
+
++ (int)calculateAge:(NSDate *)birthDate
+{
+    if (!birthDate) return 0;
+    NSCalendar *cal = [NSCalendar currentCalendar];
+    NSDate *now = [NSDate date];
+    NSDateComponents *delta =
+        [cal components:NSCalendarUnitYear fromDate:birthDate toDate:now options:0];
+    return (int)delta.year;
+}
+
+#if 0
 + (NSString*) activityNameFromDate:(Track*)track alternateStartTime:(NSDate*)altStartTime
 {
-   NSString* dt;
+    NSString* dt;
 	NSDate* startTime = (altStartTime == nil) ? [track creationTime] : altStartTime;
-   NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMTAtSync]];
-   int timeFormat = [Utils intFromDefaults:RCBDefaultTimeFormat];
+    NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
+    int timeFormat = [Utils intFromDefaults:RCBDefaultTimeFormat];
 	if (timeFormat == 0)
-   {
+    {
       dt = [startTime 
             descriptionWithCalendarFormat:@"%A, %B %d, %Y at %I:%M%p"
                                  timeZone:tz 
@@ -1757,14 +1840,14 @@ static BOOL                sThreshInited = NO;
 	   minutes:&junk
 	   seconds:&junk
 	 sinceDate:bd];
-	return years;
+	return (int)years;
 }
-
+#endif
 
 
 + (void) selectMenuItem:(int)itemTag forMenu:(NSMenu*)menu
 {
-	int numMenuItems = [menu numberOfItems];
+    NSInteger numMenuItems = [menu numberOfItems];
 	for (int i=0; i<numMenuItems; i++)
 	{
 		NSMenuItem* mi = [menu itemAtIndex:i];
@@ -1918,7 +2001,7 @@ static int sPeakIntervals[] = { 5, 10, 20, 30, 60, 5*60, 10*60, 20*60, 30*60, 60
 
 + (void) updateEnabledPeaks:(NSPopUpButton*)p dict:(NSDictionary*)dict sortedKeys:(NSArray*)sortedKeys
 {
-	int num = [sortedKeys count];
+    NSUInteger num = [sortedKeys count];
 	NSMutableArray* enabledArr = [NSMutableArray arrayWithCapacity:num];
 	for (int i=0; i<num; i++)
 	{
@@ -1930,7 +2013,7 @@ static int sPeakIntervals[] = { 5, 10, 20, 30, 60, 5*60, 10*60, 20*60, 30*60, 60
 		[item setState:enabled];
 		if (enabled) [enabledArr addObject:intervalNum];
 	}
-	int numEnabled = [enabledArr count];
+    NSUInteger numEnabled = [enabledArr count];
 	NSMenuItem* item = [p itemAtIndex:0];
 	if (numEnabled == 0)
 	{
@@ -1957,7 +2040,7 @@ static int sPeakIntervals[] = { 5, 10, 20, 30, 60, 5*60, 10*60, 20*60, 30*60, 60
 		[p addItemWithTitle:@""];		// pull-down fills this with selected entry
 		NSArray* keys = [dict allKeys];
 		keys = [keys sortedArrayUsingSelector:@selector(compareAsNumbers:)];
-		int num = [keys count];
+        NSUInteger num = [keys count];
 		for (int i=0; i<num; i++)
 		{
 			NSString* k = [keys objectAtIndex:i];

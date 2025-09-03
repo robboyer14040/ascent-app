@@ -17,7 +17,6 @@
 	IBOutlet NSMenuItem*		copyKeyword2MenuItem;
 	TransportPanelController*	transportPanelController;
 	NSDocument*					initialDocument;
-	NSData*						fileURLData;
 	SyncController*				syncController;
 }
 - (IBAction)showActivityDetail:(id)sender;

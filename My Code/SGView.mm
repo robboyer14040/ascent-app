@@ -232,7 +232,7 @@ NSInteger compareDates(id dt1, id dt2, void* ctx)
             Track* track = [trackArray objectAtIndex:i];
             NSDate* d = [track creationTime];
             NSDateComponents* comps = [cal components:(NSEraCalendarUnit|NSYearCalendarUnit|NSMonthCalendarUnit|NSWeekCalendarUnit|NSDayCalendarUnit)  fromDate:d];
-            NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMTAtSync]];
+            NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
             if (comps != nil)
             {
                // calculate the date for the monday of the week that the track was created

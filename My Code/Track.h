@@ -96,7 +96,7 @@ struct tPeakIntervalData
 	float				altitudeSmoothingFactor;	
 	float				equipmentWeight;
     ///NSTimeInterval      deviceTotalTime;                // for use when no data points; does NOT include stops
-	int					secondsFromGMTAtSync;           // must be int!!!
+	int					secondsFromGMT;           // must be int!!!
 	OverrideData*		overrideData;                   // only present if one or more data items have been overridden
 	int					flags;
 	int					deviceID;					
@@ -137,6 +137,7 @@ struct tPeakIntervalData
 @property(nonatomic) float srcKilojoules;
 @property(nonatomic) NSTimeInterval srcElapsedTime;
 @property(nonatomic) NSTimeInterval srcMovingTime;
+@property(nonatomic, retain) NSString* timeZoneName;
 
 
 
@@ -154,6 +155,7 @@ struct tPeakIntervalData
 @property(nonatomic) BOOL movingSpeedOnly;
 @property(nonatomic) BOOL hasDistanceData;
 @property(nonatomic, retain) NSArray<NSURL *> *photoURLs;  // array of file or web URLs
+@property(nonatomic, retain) NSArray<NSURL *> *localMediaItems;  // array of filenames, stored somewhere locally
 
 - (NSComparisonResult) comparator:(Track*)track;
 -(void) doFixupAndCalcGradients;
@@ -192,8 +194,8 @@ struct tPeakIntervalData
 - (void)setCreationTimeOverride:(NSDate *)d;
 - (void)clearCreationTimeOverride;
 
-- (int)secondsFromGMTAtSync;
-- (void)setSecondsFromGMTAtSync:(int)value;
+- (int)secondsFromGMT;
+- (void)setSecondsFromGMT:(int)value;
 
 - (NSComparisonResult) compareByDate:(Track*)anotherTrack;
 - (NSComparisonResult) compareByMovingDuration:(Track*)anotherTrack;

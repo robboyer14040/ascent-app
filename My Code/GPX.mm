@@ -36,6 +36,8 @@
 
 -(void) dealloc
 {
+    [parser release];
+    [xmlURL release];
     [super dealloc];
 }
 
@@ -848,7 +850,7 @@
 	// start sequence of track points
 	NSXMLElement* trkseg = [NSXMLNode elementWithName:@"trkseg"];
 	NSArray* pts = [track goodPoints];
-	//NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMTAtSync]];
+	//NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
 	NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:0];
     NSUInteger num = [pts count];
 	for (int i=0; i<num; i++)

@@ -600,27 +600,6 @@ int kSearchEventType		= 0x0020;
 	return self;
 }
 
-#if 0
-- (id)initWithContentsOfURL:(NSURL *)absoluteURL ofType:(NSString *)typeName error:(NSError **)outError
-{
-    [[[NSUserDefaultsController sharedUserDefaultsController] values]
-     setValue:[NSArchiver archivedDataWithRootObject:absoluteURL] 
-        forKey:@"lastFileURL"];
-#if 1
-	NSLog(@"opening url:%@\n", absoluteURL);
-#endif
-    id ret = [super initWithContentsOfURL:absoluteURL
-								   ofType:typeName
-									error:outError];
-
-	if (ret)
-	{
-	}
-    
-    return ret;
-}
-#endif
-
 
 - (void) dealloc
 {
@@ -2166,9 +2145,9 @@ deviceIsPluggedIn:YES];
                     });
                 }];
 
-                [[[NSUserDefaultsController sharedUserDefaultsController] values]
-                 setValue:[NSArchiver archivedDataWithRootObject:url]
-                    forKey:@"lastFileURL"];
+//                [[[NSUserDefaultsController sharedUserDefaultsController] values]
+//                 setValue:[NSArchiver archivedDataWithRootObject:url]
+//                    forKey:@"lastFileURL"];
 
                 // loadDatabaseFile should set up/return the model; if not, pull it here
                 // e.g., browserData = [self builtBrowserData]; (adjust if needed)
@@ -3187,10 +3166,10 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 
 
 
--(void) addTracks:(NSMutableArray*)arr
+-(void) addTracks:(NSArray*)arr
 {
    NSMutableArray* trackArray = [browserData trackArray];
-    NSUInteger num = [arr count];
+  NSUInteger num = [arr count];
    if ((trackArray != nil) && (num > 0))
    {
       NSUndoManager* undo = [self undoManager];
@@ -3246,7 +3225,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 }
 
 
--(NSArray*) addTracksAfterStravaSync:(NSMutableArray*)arr
+-(NSArray*) addTracksAfterStravaSync:(NSArray*)arr
 {
     NSDate* newestCreatedTrack = [NSDate distantPast];
     NSDate* oldestCreatedTrack = [NSDate distantFuture];
@@ -3315,7 +3294,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 }
 
 
--(void) deleteTracks:(NSMutableArray*)arr;
+-(void) deleteTracks:(NSArray*)arr;
 {
 	NSMutableArray* trackArray = [browserData trackArray];
     NSUInteger num = [arr count];
@@ -3512,7 +3491,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 
             NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
             formatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
-            formatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMTAtSync]];
+            formatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
             formatter.dateFormat = @"dd-MMM-yy HH:mm";
 
             NSString *s = [formatter stringFromDate:date];
@@ -3841,7 +3820,17 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 }
 
 + (BOOL)autosavesInPlace {
-    return YES;  // opt in
+    return NO;  // opt in
+}
+
+// 2) Disable periodic draft autosaving
+- (NSTimeInterval)autosavingDelay {
+    return 0.0;   // 0 disables the autosave timer
+}
+
+// (Optional) also disable Versions UI if you don’t use it
++ (BOOL)preservesVersions {
+    return NO;
 }
 
 @end

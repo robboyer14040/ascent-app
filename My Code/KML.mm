@@ -84,7 +84,7 @@
 
 	NSDate* trackDate = [track creationTime];
 	NSString* frm = @"%d-%b-%y at %I:%M%p";
-	NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMTAtSync]];
+	NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
 	NSString* dayKey = [trackDate descriptionWithCalendarFormat:frm
 													   timeZone:tz 
 														 locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]];
@@ -322,7 +322,7 @@
 
 				NSMutableString* ld = [NSMutableString stringWithFormat:@"Lap start at "];
 				NSString* lapFrm = @"%H:%M";
-				NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMTAtSync]];
+				NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
 				[ld appendString:[[track lapStartTime:lap] descriptionWithCalendarFormat:lapFrm
 																				timeZone:tz 
 																				  locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]]];

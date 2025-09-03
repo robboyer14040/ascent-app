@@ -545,9 +545,9 @@ static NSDictionary<NSString*, ColumnInfo*> *ColumnInfoDictFromJSONText(const un
     BOOL   hasDist  = [track respondsToSelector:@selector(hasDistanceData)] ? [track hasDistanceData] : [[track valueForKey:@"hasDistanceData"] boolValue];
 
     // ---- NEW fields ----
-    int secondsFromGMTAtSync = [track respondsToSelector:@selector(secondsFromGMTAtSync)]
-                                ? [track secondsFromGMTAtSync]
-                                : [[track valueForKey:@"secondsFromGMTAtSync"] intValue];
+    int secondsFromGMT = [track respondsToSelector:@selector(secondsFromGMT)]
+                                ? [track secondsFromGMT]
+                                : [[track valueForKey:@"secondsFromGMT"] intValue];
     int flags           = [track respondsToSelector:@selector(flags)] ? [track flags] : [[track valueForKey:@"flags"] intValue];
     int deviceID        = [track respondsToSelector:@selector(deviceID)] ? [track deviceID] : [[track valueForKey:@"deviceID"] intValue];
     int firmwareVersion = [track respondsToSelector:@selector(firmwareVersion)] ? [track firmwareVersion] : [[track valueForKey:@"firmwareVersion"] intValue];
@@ -577,6 +577,17 @@ static NSDictionary<NSString*, ColumnInfo*> *ColumnInfoDictFromJSONText(const un
     if ([track respondsToSelector:@selector(stravaActivityID)]) stravaActivityID = [track stravaActivityID];
     else @try { stravaActivityID = [track valueForKey:@"stravaActivityID"]; } @catch (__unused id e) {}    // Arrays / JSON fields
     
+    NSString *tzName = nil;
+    if ([track respondsToSelector:@selector(timeZoneName)]) {
+        tzName = [track timeZoneName];
+    } else if ([track respondsToSelector:@selector(timeZone)]) {
+        id tz = [track timeZoneName];
+        if ([tz isKindOfClass:[NSTimeZone class]])       tzName = [(NSTimeZone *)tz name];
+        else if ([tz isKindOfClass:[NSString class]])     tzName = (NSString *)tz;
+    } else {
+        @try { tzName = [track valueForKey:@"timeZone"]; } @catch (__unused id e) {}
+    }
+
     NSArray *attrs   = [track respondsToSelector:@selector(attributes)] ? [track attributes] : [track valueForKey:@"attributes"];
     NSArray *markers = [track respondsToSelector:@selector(markers)]    ? [track markers]    : [track valueForKey:@"markers"];
     NSArray *points  = [track respondsToSelector:@selector(points)]     ? [track points]     : [track valueForKey:@"points"];
@@ -597,14 +608,15 @@ static NSDictionary<NSString*, ColumnInfo*> *ColumnInfoDictFromJSONText(const un
     " distance_mi,weight_lb,altitude_smooth_factor,equipment_weight_lb,"
     " device_total_time_s,moving_speed_only,has_distance_data,"
     " attributes_json,markers_json,override_json,"
-    " seconds_from_gmt_at_sync,flags,device_id,firmware_version,"
+    " seconds_from_gmt_at_sync,time_zone,"   // <--- NEW
+    " flags,device_id,firmware_version,"
     " photo_urls_json,strava_activity_id,"
     " src_distance,src_max_speed,src_avg_heartrate,src_max_heartrate,src_avg_temperature,"
     " src_max_elevation,src_min_elevation,src_avg_power,src_max_power,src_avg_cadence,"
     " src_total_climb,src_kilojoules,src_elapsed_time_s,src_moving_time_s"
     ") VALUES ("
     " ?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,"
-    " ?21,?22,?23,?24,?25,?26,?27,?28,?29,?30,?31,?32,?33,?34"
+    " ?21,?22,?23,?24,?25,?26,?27,?28,?29,?30,?31,?32,?33,?34,?35"
     ") ON CONFLICT(uuid) DO UPDATE SET "
     " name=excluded.name,"
     " creation_time_s=excluded.creation_time_s,"
@@ -620,6 +632,7 @@ static NSDictionary<NSString*, ColumnInfo*> *ColumnInfoDictFromJSONText(const un
     " markers_json=excluded.markers_json,"
     " override_json=excluded.override_json,"
     " seconds_from_gmt_at_sync=excluded.seconds_from_gmt_at_sync,"
+    " time_zone=excluded.time_zone,"              // <--- NEW
     " flags=excluded.flags,"
     " device_id=excluded.device_id,"
     " firmware_version=excluded.firmware_version,"
@@ -660,32 +673,35 @@ static NSDictionary<NSString*, ColumnInfo*> *ColumnInfoDictFromJSONText(const un
     sqlite3_bind_text  (act,12,  (attrsJSON    ?: @"").UTF8String,   -1, SQLITE_TRANSIENT);
     sqlite3_bind_text  (act,13,  (markersJSON  ?: @"").UTF8String,   -1, SQLITE_TRANSIENT);
     sqlite3_bind_text  (act,14,  (overrideJSON ?: @"").UTF8String,   -1, SQLITE_TRANSIENT);
-    sqlite3_bind_int   (act,15,  secondsFromGMTAtSync);
-    sqlite3_bind_int   (act,16,  flags);
-    sqlite3_bind_int   (act,17,  deviceID);
-    sqlite3_bind_int   (act,18,  firmwareVersion);
-    sqlite3_bind_text  (act,19, (photosJSON ?: @"").UTF8String, -1, SQLITE_TRANSIENT);
-    if (stravaActivityID) {
-        sqlite3_bind_int64(act,20, (sqlite3_int64)stravaActivityID.longLongValue);
-    } else {
-        sqlite3_bind_null(act,20);
-    }
-    // 21..34: NEW src* bindings (REAL)
-    sqlite3_bind_double(act, 21, srcDistance);
-    sqlite3_bind_double(act, 22, srcMaxSpeed);
-    sqlite3_bind_double(act, 23, srcAvgHeartrate);
-    sqlite3_bind_double(act, 24, srcMaxHeartrate);
-    sqlite3_bind_double(act, 25, srcAvgTemperature);
-    sqlite3_bind_double(act, 26, srcMaxElevation);
-    sqlite3_bind_double(act, 27, srcMinElevation);
-    sqlite3_bind_double(act, 28, srcAvgPower);
-    sqlite3_bind_double(act, 29, srcMaxPower);
-    sqlite3_bind_double(act, 30, srcAvgCadence);
-    sqlite3_bind_double(act, 31, srcTotalClimb);
-    sqlite3_bind_double(act, 32, srcKilojoules);
-    sqlite3_bind_double(act, 33, srcElapsedTime);
-    sqlite3_bind_double(act, 34, srcMovingTime);
-    
+    sqlite3_bind_int   (act,15,  secondsFromGMT);
+    // NEW ?16: time_zone string (nullable)
+    if (tzName.length) sqlite3_bind_text(act,16, tzName.UTF8String, -1, SQLITE_TRANSIENT);
+    else               sqlite3_bind_null(act,16);
+
+    sqlite3_bind_int   (act,17,  flags);
+    sqlite3_bind_int   (act,18,  deviceID);
+    sqlite3_bind_int   (act,19,  firmwareVersion);
+    sqlite3_bind_text  (act,20, (photosJSON ?: @"").UTF8String, -1, SQLITE_TRANSIENT);
+
+    // strava_activity_id now ?21
+    if (stravaActivityID) sqlite3_bind_int64(act,21, (sqlite3_int64)stravaActivityID.longLongValue);
+    else                  sqlite3_bind_null (act,21);
+
+    // src* shift by +1: now 22..35
+    sqlite3_bind_double(act, 22, srcDistance);
+    sqlite3_bind_double(act, 23, srcMaxSpeed);
+    sqlite3_bind_double(act, 24, srcAvgHeartrate);
+    sqlite3_bind_double(act, 25, srcMaxHeartrate);
+    sqlite3_bind_double(act, 26, srcAvgTemperature);
+    sqlite3_bind_double(act, 27, srcMaxElevation);
+    sqlite3_bind_double(act, 28, srcMinElevation);
+    sqlite3_bind_double(act, 29, srcAvgPower);
+    sqlite3_bind_double(act, 30, srcMaxPower);
+    sqlite3_bind_double(act, 31, srcAvgCadence);
+    sqlite3_bind_double(act, 32, srcTotalClimb);
+    sqlite3_bind_double(act, 33, srcKilojoules);
+    sqlite3_bind_double(act, 34, srcElapsedTime);
+    sqlite3_bind_double(act, 35, srcMovingTime);
     if (sqlite3_step(act) != SQLITE_DONE) goto fail;
     sqlite3_finalize(act); act = NULL;
  
@@ -988,14 +1004,15 @@ fail:
       " distance_mi,weight_lb,altitude_smooth_factor,equipment_weight_lb,"
       " device_total_time_s,moving_speed_only,has_distance_data,"
       " attributes_json, markers_json, override_json,"
-      " seconds_from_gmt_at_sync, flags, device_id, firmware_version,"
+      " seconds_from_gmt_at_sync, time_zone,"   // <--- NEW
+      " flags, device_id, firmware_version,"
       " photo_urls_json, strava_activity_id,"
-      /* NEW src* */
       " src_distance,src_max_speed,src_avg_heartrate,src_max_heartrate,src_avg_temperature,"
       " src_max_elevation,src_min_elevation,src_avg_power,src_max_power,src_avg_cadence,"
       " src_total_climb,src_kilojoules,src_elapsed_time_s,src_moving_time_s "
       "FROM activities ORDER BY creation_time_s;";
-
+    
+    
     sqlite3_stmt *a = NULL;
     if (sqlite3_prepare_v2(_db, selA, -1, &a, NULL) != SQLITE_OK) {
         if (error) *error = [NSError errorWithDomain:@"ActivityStore" code:sqlite3_errcode(_db)
@@ -1057,42 +1074,53 @@ fail:
             }
         }
         
-        //" seconds_from_gmt_at_sync INTEGER,"   /* NEW */
-        //" flags INTEGER,"                      /* NEW */
-        //" device_id INTEGER,"                  /* NEW */
-        //" firmware_version INTEGER"            /* NEW */
-        NSInteger secs = sqlite3_column_int(a,15)!=0;
-        NSInteger flags = sqlite3_column_int(a,16)!=0;
-        if ([t respondsToSelector:@selector(setSecondsFromGMTAtSync:)] )    [t setSecondsFromGMTAtSync:(int)secs];
-        if ([t respondsToSelector:@selector(setFlags:)])   [t setFlags:(int)flags];
-    
-        // photos
-        const unsigned char *photosTxt = sqlite3_column_text(a, 19);
-        NSArray<NSURL *> *photos = URLsFromJSONString(photosTxt);
-        if ([t respondsToSelector:@selector(setPhotoURLs:)]) [t setPhotoURLs:photos];
-        else @try { [t setValue:photos forKey:@"photoURLs"]; } @catch (__unused id e) {}
+        int secsFromGMT = sqlite3_column_int(a, 15);
 
-        // strava_activity_id (nullable)
-        NSNumber *sIDNum = nil;
-        if (sqlite3_column_type(a, 20) != SQLITE_NULL) {
-            sqlite3_int64 sID = sqlite3_column_int64(a, 20);
-            sIDNum = [NSNumber numberWithLongLong:(long long)sID];
+        // time_zone at col 16 (nullable)
+        NSString *tzNameLoaded = nil;
+        if (sqlite3_column_type(a,16) != SQLITE_NULL) {
+            tzNameLoaded = [NSString stringWithUTF8String:(const char *)sqlite3_column_text(a, 16)];
         }
 
-        SETF(setSrcDistance,       21);
-        SETF(setSrcMaxSpeed,       22);
-        SETF(setSrcAvgHeartrate,   23);
-        SETF(setSrcMaxHeartrate,   24);
-        SETF(setSrcAvgTemperature, 25);
-        SETF(setSrcMaxElevation,   26);
-        SETF(setSrcMinElevation,   27);
-        SETF(setSrcAvgPower,       28);
-        SETF(setSrcMaxPower,       29);
-        SETF(setSrcAvgCadence,     30);
-        SETF(setSrcTotalClimb,     31);
-        SETF(setSrcKilojoules,     32);
-        SETD(setSrcElapsedTime,    33); // NSTimeInterval (double)
-        SETD(setSrcMovingTime,     34);
+        // flags at col 17 (use int, not !=0)
+        int flags = sqlite3_column_int(a, 17);
+        int deviceID = sqlite3_column_int(a, 18);
+        int firmwareVersion = sqlite3_column_int(a, 19);
+
+        // photo_urls_json at 20, strava_activity_id at 21
+        const unsigned char *photosTxt = sqlite3_column_text(a, 20);
+        NSNumber *sIDNum = (sqlite3_column_type(a, 21) != SQLITE_NULL)
+                           ? [NSNumber numberWithLongLong:(long long)sqlite3_column_int64(a,21)]
+                           : nil;
+
+        // Apply to Track
+        if ([t respondsToSelector:@selector(setSecondsFromGMT:)]) [t setSecondsFromGMT:secsFromGMT];
+        if ([t respondsToSelector:@selector(setFlags:)])          [t setFlags:flags];
+        if ([t respondsToSelector:@selector(setDeviceID:)])       [t setDeviceID:deviceID];
+        if ([t respondsToSelector:@selector(setFirmwareVersion:)])[t setFirmwareVersion:firmwareVersion];
+
+        // NEW: set the time zone string if present
+        if (tzNameLoaded.length) {
+            if ([t respondsToSelector:@selector(setTimeZoneName:)])      [t setTimeZoneName:tzNameLoaded];
+            else if ([t respondsToSelector:@selector(setTimeZoneName:)])     [t setTimeZoneName:tzNameLoaded];
+            else @try { [t setValue:tzNameLoaded forKey:@"timeZone"]; } @catch (__unused id e) {}
+        }
+
+        // src* indices shift by +1 (22..35):
+        SETF(setSrcDistance,       22);
+        SETF(setSrcMaxSpeed,       23);
+        SETF(setSrcAvgHeartrate,   24);
+        SETF(setSrcMaxHeartrate,   25);
+        SETF(setSrcAvgTemperature, 26);
+        SETF(setSrcMaxElevation,   27);
+        SETF(setSrcMinElevation,   28);
+        SETF(setSrcAvgPower,       29);
+        SETF(setSrcMaxPower,       30);
+        SETF(setSrcAvgCadence,     31);
+        SETF(setSrcTotalClimb,     32);
+        SETF(setSrcKilojoules,     33);
+        SETD(setSrcElapsedTime,    34);
+        SETD(setSrcMovingTime,     35);
 
 #undef SETF
 #undef SETD
@@ -1230,6 +1258,7 @@ static BOOL ASCExecStrict(sqlite3 *db, const char *sql, NSError **outError) {
             " markers_json TEXT,"
             " override_json TEXT,"
             " seconds_from_gmt_at_sync INTEGER,"
+            " time_zone TEXT,"   /* NEW: IANA zone id string (e.g. "America/Los_Angeles") */
             " flags INTEGER,"
             " device_id INTEGER,"
             " firmware_version INTEGER,"
@@ -1274,7 +1303,7 @@ static BOOL ASCExecStrict(sqlite3 *db, const char *sql, NSError **outError) {
         if (!ASCExecStrict(_db, createActivities, error)) break;
         if (!ASCEnsureColumn(_db, "activities", "photo_urls_json", "TEXT", error)) break;
         if (!ASCEnsureColumn(_db, "activities", "strava_activity_id", "INTEGER", error)) break; // <-- NEW
-
+        if (!ASCEnsureColumn(_db, "activities", "time_zone", "TEXT", error)) break;
         const char *createLaps =
             "CREATE TABLE IF NOT EXISTS laps ("
             " id INTEGER PRIMARY KEY,"

@@ -1203,7 +1203,7 @@ static BOOL sDragging = NO;
 	for (i=0; i<num; i++)
 	{
 		Track* trk = [tracks objectAtIndex:i];
-		NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[trk secondsFromGMTAtSync]];
+		NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[trk secondsFromGMT]];
 		NSDate* calDate = [[trk creationTime] dateWithCalendarFormat:nil 
                                                             timeZone:tz];
 		
@@ -1470,7 +1470,7 @@ static BOOL sDragging = NO;
 	for (int i=num-1; i>=0; i--)
 	{	
 		Track* trk = [activityArray objectAtIndex:i];
-		NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[trk secondsFromGMTAtSync]];
+		NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[trk secondsFromGMT]];
 		NSCalendarDate* calDate = [[trk creationTime] dateWithCalendarFormat:nil 
 																	timeZone:tz];
 		NSString* s = [calDate descriptionWithCalendarFormat:(useTime24) ? @"%H:%M" : @"%I:%M%p" ];

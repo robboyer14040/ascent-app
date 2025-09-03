@@ -21,6 +21,28 @@ static const double kMPSToMPH  = 2.2369362921;
 
 
 
+// build an NSTimeZone from Strava fields
+static NSTimeZone *StravaTimeZoneForActivity(NSDictionary *act, NSDate *startDate) {
+    NSString *tzString = act[@"timezone"]; // e.g. "(GMT-08:00) America/Los_Angeles"
+    NSTimeZone *tz = nil;
+
+    if ([tzString isKindOfClass:NSString.class] && tzString.length) {
+        NSRange r = [tzString rangeOfString:@") "];
+        if (r.location != NSNotFound) {
+            NSString *iana = [tzString substringFromIndex:NSMaxRange(r)];
+            tz = [NSTimeZone timeZoneWithName:iana];
+        }
+    }
+    if (!tz) {
+        NSNumber *off = act[@"utc_offset"]; // seconds
+        if ([off isKindOfClass:NSNumber.class]) {
+            tz = [NSTimeZone timeZoneForSecondsFromGMT:off.intValue];
+        }
+    }
+    return tz ?: [NSTimeZone localTimeZone];
+}
+
+
 // ---- ISO8601 (UTC Z) -> NSDate
 static NSDate *ISO8601ToDate(NSString *iso) {
     if (!iso) return nil;
@@ -428,11 +450,26 @@ static NSArray<NSURL *> *ASCPhotoURLsFromStravaPhotos(id photosObj) {
                 NSString *name = Safe(act[@"name"]);
                 if (name) [track setName:name];
 
-                // Start date
+                // Start date (UTC)
                 NSString *startISO = Safe(act[@"start_date"]);
                 NSDate *startDate = ISO8601ToDate(startISO);
-                if (startDate) [track setCreationTime:startDate];
+                if (startDate) {
+                    [track setCreationTime:startDate];
 
+                    // Resolve the activity's local time zone
+                    NSTimeZone *tz = StravaTimeZoneForActivity(act, startDate);
+
+                    // Store both the zone id (for future formatting) and the offset at start time (DST-aware)
+                    // Adjust these setters to match your Track API
+                    if ([track respondsToSelector:@selector(setTimeZoneName:)]) {
+                        [track setTimeZoneName:tz.name]; // e.g. "America/Los_Angeles"
+                    }
+                    if ([track respondsToSelector:@selector(setSecondsFromGMT:)]) {
+                        NSInteger offset = [tz secondsFromGMTForDate:startDate];
+                        [track setSecondsFromGMT:(int)offset];
+                    }
+                }
+                
                 // Distance (m → miles)
                 NSNumber *distM = Safe(act[@"distance"]);
                 if (distM) [track setDistance:([distM doubleValue] * kMToMi)];

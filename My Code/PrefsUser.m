@@ -21,7 +21,7 @@ NSString*  RCBDefaultWeight      = @"DefaultWeight";
 NSString*  RCBDefaultHeight      = @"DefaultHeight";
 NSString*  RCBDefaultBirthday    = @"DefaultBirthday";
 
-NSString* TrackPBoardType = @"TrackPBoardType";
+NSString* TrackPBoardType = @"com.montebello.ascent.tracks";
 
 
 @implementation PrefsUser

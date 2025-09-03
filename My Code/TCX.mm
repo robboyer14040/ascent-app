@@ -16,12 +16,26 @@
 #define DO_PARSING							1
 #define TRACE_DEAD_ZONES        ASCENT_DBG&&0
 
+
+static NSData *TCXStripLeadingJunk(NSData *data) {
+    const uint8_t *b = (const uint8_t *)data.bytes;
+    NSUInteger n = data.length, i = 0;
+
+    // Skip UTF-8 BOM
+    if (n >= 3 && b[0] == 0xEF && b[1] == 0xBB && b[2] == 0xBF) i = 3;
+
+    // Skip leading whitespace
+    while (i < n && (b[i] == 0x20 || b[i] == 0x09 || b[i] == 0x0D || b[i] == 0x0A)) i++;
+
+    return (i > 0) ? [data subdataWithRange:NSMakeRange(i, n - i)] : data;
+}
+
+
 @implementation TCX
 
 
 -(void)commonInit
 {
-	[super init];
 	importData = nil;
 	xmlURL = nil;
 	currentImportTrack = nil;
@@ -42,25 +56,27 @@
 
 -(TCX*) initWithData:(NSData*)data
 {
-	[self commonInit];
-	importData = data;
+    if ((self = [super init])) {
+        [self commonInit];
+        importData = data;
+    }
 	return self;
 }
 
 
 -(TCX*) initWithFileURL:(NSURL*)url
 {
-#if _DEBUG
-	NSLog(@"IMPORTING %@", url);
-#endif
-	[self commonInit];
-	xmlURL = url;
-	return self;
+    if ((self = [super init])) {
+        [self commonInit];
+        xmlURL = [url copy];          // retain under MRC
+    }
+    return self;
 }
 
 
 -(void) dealloc
 {
+    [xmlURL release];
     [super dealloc];
 }
 
@@ -82,19 +98,32 @@
 	[self setCurrentActivity:[Utils stringFromDefaults:RCBDefaultActivity]];
 	[[NSURLCache sharedURLCache] setMemoryCapacity:0];
 	[[NSURLCache sharedURLCache] setDiskCapacity:0];	
-	NSXMLParser* parser = nil;
-	if (importData)
-	{
-		parser = [[NSXMLParser alloc] initWithData:importData];
-	}
-	else
-	{
-		parser = [[NSXMLParser alloc] initWithContentsOfURL:xmlURL];
-	}
-	[parser setDelegate:self];
-	[parser setShouldResolveExternalEntities:NO];
-	[parser setDelegate:nil];
-	[trackArray addObjectsFromArray:currentImportTrackArray];
+    
+    NSData *bytes = importData ?: [NSData dataWithContentsOfURL:xmlURL];
+    if (!bytes) { NSLog(@"No data"); return NO; }
+
+    // optional: reject compressed payloads
+    const uint8_t *p = (const uint8_t *)bytes.bytes;
+    if (bytes.length >= 2 && ((p[0] == 0x50 && p[1] == 0x4B) /*ZIP*/ || (p[0] == 0x1F && p[1] == 0x8B) /*GZIP*/)) {
+        NSLog(@"TCX appears compressed (ZIP/GZIP); decompress first.");
+        return NO;
+    }
+
+    NSData *trimmed = TCXStripLeadingJunk(bytes);
+    NSXMLParser *parser = [[NSXMLParser alloc] initWithData:trimmed];
+    parser.delegate = self;
+    parser.shouldResolveExternalEntities = NO;
+
+    BOOL ok = [parser parse];
+    if (!ok) {
+        NSError *err = parser.parserError;
+        NSLog(@"TCX parse failed: code=%ld line=%ld col=%ld msg=%@",
+              (long)err.code, (long)parser.lineNumber, (long)parser.columnNumber,
+              err.localizedDescription ?: @"(no message)");
+        [parser release];
+        return NO;
+    }
+    [trackArray addObjectsFromArray:currentImportTrackArray];
 	currentImportTrackArray= nil;
 	success = YES;
 	return success;
@@ -303,6 +332,16 @@
 	}
 }
 
+- (void)parser:(NSXMLParser *)parser parseErrorOccurred:(NSError *)err
+{
+    NSLog(@"TCX XML parse error %ld at line %ld col %ld: %@",
+          (long)err.code,
+          (long)[parser lineNumber],
+          (long)[parser columnNumber],
+          err.localizedDescription ?: @"(no message)");
+}
+
+
 - (void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string 
 {
 #if DO_PARSING
@@ -316,7 +355,8 @@
 }
 
 
-- (void)parser:(NSXMLParser *)parser didEndElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName 
+
+- (void)parser:(NSXMLParser *)parser didEndElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName
 {
 	//printf("end %s\n", [elementName UTF8String]);
 	if (([elementName isEqualToString:@"Activity"]) ||
@@ -1061,7 +1101,7 @@ donePoint:
 
 				elem = [NSXMLNode elementWithName:@"Time"
 									stringValue:[self utzStringFromDate:[[track creationTime] addTimeInterval:[pt wallClockDelta]]
-															  gmtOffset:[track secondsFromGMTAtSync]]];
+															  gmtOffset:[track secondsFromGMT]]];
 				[tpElem addChild:elem];
 				BOOL isDeadZoneMarker = [pt importFlagState:kImportFlagDeadZoneMarker] /*|| [pt isDeadZoneMarker]*/;
 				if (!isDeadZoneMarker)
@@ -1206,7 +1246,7 @@ next:
 	NSXMLElement* lapElem = [NSXMLNode elementWithName:@"Lap"];
 	[lapElem addAttribute:[NSXMLNode attributeWithName:@"StartTime"
 										   stringValue:[self utzStringFromDate:[track creationTime]
-																	 gmtOffset:[track secondsFromGMTAtSync]]]];
+																	 gmtOffset:[track secondsFromGMT]]]];
 	
 	NSXMLElement* elem = [NSXMLNode elementWithName:@"TotalTimeSeconds"
 										stringValue:[NSString stringWithFormat:@"%1.6f", [track duration]]];
@@ -1301,7 +1341,7 @@ next:
 	for (int i=0; i<count; i++)
 	{
 		Track* track = [trackArray objectAtIndex:i];
-		NSTimeInterval gmtOffset = [track secondsFromGMTAtSync];
+		NSTimeInterval gmtOffset = [track secondsFromGMT];
 		NSXMLElement* activity = [NSXMLNode elementWithName:@"Activity"];
 		NSString* atype = @"Other";
 		NSString* s = [track attribute:kActivity];

@@ -208,6 +208,27 @@ static inline NSDate * _Nullable epochToDate(sqlite3_int64 v) {
 static inline int b(BOOL x) { return x ? 1 : 0; }
 
 // --- JSON helpers ---
+// Strings (NSArray<NSString*>) <-> JSON text -------------------------------
+static NSString *StringsToJSON(NSArray<NSString *> *arr) {
+    if (![arr isKindOfClass:[NSArray class]] || arr.count == 0) return @"[]";
+    NSMutableArray *out = [NSMutableArray arrayWithCapacity:arr.count];
+    for (id v in arr) {
+        [out addObject:[v isKindOfClass:NSString.class] ? v : [v description]];
+    }
+    NSError *err = nil;
+    NSData *d = [NSJSONSerialization dataWithJSONObject:out options:0 error:&err];
+    return d ? [[[NSString alloc] initWithData:d encoding:NSUTF8StringEncoding] autorelease] : @"[]";
+}
+
+static NSArray<NSString *> *StringsFromJSONString(const unsigned char *txt) {
+    if (!txt) return @[];
+    NSData *d = [NSData dataWithBytes:txt length:strlen((const char *)txt)];
+    id obj = [NSJSONSerialization JSONObjectWithData:d options:0 error:NULL];
+    if (![obj isKindOfClass:[NSArray class]]) return @[];
+    NSMutableArray<NSString *> *out = [NSMutableArray array];
+    for (id v in (NSArray *)obj) if ([v isKindOfClass:NSString.class]) [out addObject:v];
+    return out;
+}
 
 static NSData *JSONData(id obj) {
     if (!obj) return nil;
@@ -557,6 +578,11 @@ static NSDictionary<NSString*, ColumnInfo*> *ColumnInfoDictFromJSONText(const un
     else @try { photoURLs = [track valueForKey:@"photoURLs"]; } @catch (__unused id e) {}
     NSString *photosJSON = URLsToJSON(photoURLs);
 
+    NSArray<NSString *> *localMedia = nil;
+    if ([track respondsToSelector:@selector(localMediaItems)]) localMedia = [track localMediaItems];
+    else @try { localMedia = [track valueForKey:@"localMediaItems"]; } @catch (__unused id e) {}
+    NSString *localMediaJSON = StringsToJSON(localMedia);   // "[]" if nil/empty
+
     // ---- NEW: source stats on the Track ----
     double srcDistance       = [track respondsToSelector:@selector(srcDistance)]       ? [track srcDistance]       : [[track valueForKey:@"srcDistance"] doubleValue];
     double srcMaxSpeed       = [track respondsToSelector:@selector(srcMaxSpeed)]       ? [track srcMaxSpeed]       : [[track valueForKey:@"srcMaxSpeed"] doubleValue];
@@ -608,15 +634,16 @@ static NSDictionary<NSString*, ColumnInfo*> *ColumnInfoDictFromJSONText(const un
     " distance_mi,weight_lb,altitude_smooth_factor,equipment_weight_lb,"
     " device_total_time_s,moving_speed_only,has_distance_data,"
     " attributes_json,markers_json,override_json,"
-    " seconds_from_gmt_at_sync,time_zone,"   // <--- NEW
+    " seconds_from_gmt_at_sync,time_zone,"
     " flags,device_id,firmware_version,"
     " photo_urls_json,strava_activity_id,"
     " src_distance,src_max_speed,src_avg_heartrate,src_max_heartrate,src_avg_temperature,"
     " src_max_elevation,src_min_elevation,src_avg_power,src_max_power,src_avg_cadence,"
-    " src_total_climb,src_kilojoules,src_elapsed_time_s,src_moving_time_s"
+    " src_total_climb,src_kilojoules,src_elapsed_time_s,src_moving_time_s,"
+    " local_media_items_json"                     /* <-- NEW */
     ") VALUES ("
     " ?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,"
-    " ?21,?22,?23,?24,?25,?26,?27,?28,?29,?30,?31,?32,?33,?34,?35"
+    " ?21,?22,?23,?24,?25,?26,?27,?28,?29,?30,?31,?32,?33,?34,?35,?36"         /* <-- NEW ?36 */
     ") ON CONFLICT(uuid) DO UPDATE SET "
     " name=excluded.name,"
     " creation_time_s=excluded.creation_time_s,"
@@ -632,7 +659,7 @@ static NSDictionary<NSString*, ColumnInfo*> *ColumnInfoDictFromJSONText(const un
     " markers_json=excluded.markers_json,"
     " override_json=excluded.override_json,"
     " seconds_from_gmt_at_sync=excluded.seconds_from_gmt_at_sync,"
-    " time_zone=excluded.time_zone,"              // <--- NEW
+    " time_zone=excluded.time_zone,"
     " flags=excluded.flags,"
     " device_id=excluded.device_id,"
     " firmware_version=excluded.firmware_version,"
@@ -651,7 +678,8 @@ static NSDictionary<NSString*, ColumnInfo*> *ColumnInfoDictFromJSONText(const un
     " src_total_climb=excluded.src_total_climb,"
     " src_kilojoules=excluded.src_kilojoules,"
     " src_elapsed_time_s=excluded.src_elapsed_time_s,"
-    " src_moving_time_s=excluded.src_moving_time_s";
+    " src_moving_time_s=excluded.src_moving_time_s,"
+    " local_media_items_json=excluded.local_media_items_json"; /* <-- NEW */
 
     NSArray *laps = [track respondsToSelector:@selector(laps)] ? [track laps] : [track valueForKey:@"laps"];
     sqlite3_stmt *sel = NULL;
@@ -702,6 +730,7 @@ static NSDictionary<NSString*, ColumnInfo*> *ColumnInfoDictFromJSONText(const un
     sqlite3_bind_double(act, 33, srcKilojoules);
     sqlite3_bind_double(act, 34, srcElapsedTime);
     sqlite3_bind_double(act, 35, srcMovingTime);
+    sqlite3_bind_text(act, 36, (localMediaJSON ?: @"[]").UTF8String, -1, SQLITE_TRANSIENT);
     if (sqlite3_step(act) != SQLITE_DONE) goto fail;
     sqlite3_finalize(act); act = NULL;
  
@@ -1004,14 +1033,15 @@ fail:
       " distance_mi,weight_lb,altitude_smooth_factor,equipment_weight_lb,"
       " device_total_time_s,moving_speed_only,has_distance_data,"
       " attributes_json, markers_json, override_json,"
-      " seconds_from_gmt_at_sync, time_zone,"   // <--- NEW
+      " seconds_from_gmt_at_sync, time_zone,"
       " flags, device_id, firmware_version,"
       " photo_urls_json, strava_activity_id,"
       " src_distance,src_max_speed,src_avg_heartrate,src_max_heartrate,src_avg_temperature,"
       " src_max_elevation,src_min_elevation,src_avg_power,src_max_power,src_avg_cadence,"
-      " src_total_climb,src_kilojoules,src_elapsed_time_s,src_moving_time_s "
+      " src_total_climb,src_kilojoules,src_elapsed_time_s,src_moving_time_s,"
+      " local_media_items_json "                         /* <-- NEW */
       "FROM activities ORDER BY creation_time_s;";
-    
+
     
     sqlite3_stmt *a = NULL;
     if (sqlite3_prepare_v2(_db, selA, -1, &a, NULL) != SQLITE_OK) {
@@ -1126,6 +1156,16 @@ fail:
 #undef SETD
         if ([t respondsToSelector:@selector(setStravaActivityID:)]) [t setStravaActivityID:sIDNum];
         else @try { [t setValue:sIDNum forKey:@"stravaActivityID"]; } @catch (__unused id e) {}
+ 
+        const unsigned char *mediaTxt = sqlite3_column_text(a, 36);   // NEW
+        NSArray<NSString *> *localMediaItems = StringsFromJSONString(mediaTxt);
+        if ([t respondsToSelector:@selector(setLocalMediaItems:)]) {
+            [t setLocalMediaItems:localMediaItems];
+        } else {
+            @try { [t setValue:localMediaItems forKey:@"localMediaItems"]; } @catch (__unused id e) {}
+        }
+
+        
         
         // Laps
         NSMutableArray *laps = [NSMutableArray array];
@@ -1240,6 +1280,7 @@ static BOOL ASCExecStrict(sqlite3 *db, const char *sql, NSError **outError) {
     BOOL ok = NO;
     do {
         // ---- Tables ----
+        // CREATE TABLE ... activities (append at the end)
         const char *createActivities =
             "CREATE TABLE IF NOT EXISTS activities ("
             " id INTEGER PRIMARY KEY,"
@@ -1258,13 +1299,12 @@ static BOOL ASCExecStrict(sqlite3 *db, const char *sql, NSError **outError) {
             " markers_json TEXT,"
             " override_json TEXT,"
             " seconds_from_gmt_at_sync INTEGER,"
-            " time_zone TEXT,"   /* NEW: IANA zone id string (e.g. "America/Los_Angeles") */
+            " time_zone TEXT,"
             " flags INTEGER,"
             " device_id INTEGER,"
             " firmware_version INTEGER,"
             " photo_urls_json TEXT,"
             " strava_activity_id INTEGER,"
-            /* ---- NEW src* fields ---- */
             " src_distance REAL,"
             " src_max_speed REAL,"
             " src_avg_heartrate REAL,"
@@ -1278,7 +1318,8 @@ static BOOL ASCExecStrict(sqlite3 *db, const char *sql, NSError **outError) {
             " src_total_climb REAL,"
             " src_kilojoules REAL,"
             " src_elapsed_time_s REAL,"
-            " src_moving_time_s REAL"
+            " src_moving_time_s REAL,"
+            " local_media_items_json TEXT"          /* <-- NEW */
             ");";
         if (!ASCExecStrict(_db, createActivities, error)) break;
 
@@ -1304,7 +1345,9 @@ static BOOL ASCExecStrict(sqlite3 *db, const char *sql, NSError **outError) {
         if (!ASCEnsureColumn(_db, "activities", "photo_urls_json", "TEXT", error)) break;
         if (!ASCEnsureColumn(_db, "activities", "strava_activity_id", "INTEGER", error)) break; // <-- NEW
         if (!ASCEnsureColumn(_db, "activities", "time_zone", "TEXT", error)) break;
-        const char *createLaps =
+        if (!ASCEnsureColumn(_db, "activities", "local_media_items_json", "TEXT", error)) break;
+        
+       const char *createLaps =
             "CREATE TABLE IF NOT EXISTS laps ("
             " id INTEGER PRIMARY KEY,"
             " track_id INTEGER NOT NULL REFERENCES activities(id) ON DELETE CASCADE,"

@@ -19,6 +19,7 @@
 		D457D2B52E61FE4300D1DF73 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = D457D2B42E61FE4300D1DF73 /* Fonts */; };
 		D457D2ED2E6488B400D1DF73 /* StravaAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = D457D2EB2E6488B400D1DF73 /* StravaAPI.m */; };
 		D457D2EF2E64894F00D1DF73 /* StravaImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D457D2EE2E64894F00D1DF73 /* StravaImporter.m */; };
+		D473BB172E692FB200B504DC /* FullImageBrowserWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = D473BB162E692FB200B504DC /* FullImageBrowserWindowController.m */; };
 		D490A52E2E4F8E48005BAD01 /* TrackBrowserDocument.xib in Resources */ = {isa = PBXBuildFile; fileRef = D490A52C2E4F8E48005BAD01 /* TrackBrowserDocument.xib */; };
 		D4C0CE8F2E5BE2C4003B55C4 /* fit_example.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C0CE8B2E5BE2C4003B55C4 /* fit_example.c */; };
 		D4C0CE902E5BE2C4003B55C4 /* fit_ram.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C0CE8E2E5BE2C4003B55C4 /* fit_ram.c */; };
@@ -371,6 +372,8 @@
 		D457D2EB2E6488B400D1DF73 /* StravaAPI.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = StravaAPI.m; sourceTree = "<group>"; };
 		D457D2EE2E64894F00D1DF73 /* StravaImporter.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = StravaImporter.m; sourceTree = "<group>"; };
 		D457D2F02E64896B00D1DF73 /* StravaImporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StravaImporter.h; sourceTree = "<group>"; };
+		D473BB162E692FB200B504DC /* FullImageBrowserWindowController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = FullImageBrowserWindowController.m; path = "My Code/FullImageBrowserWindowController.m"; sourceTree = "<group>"; };
+		D473BB182E69300200B504DC /* FullImageBrowserWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FullImageBrowserWindowController.h; path = "My Code/FullImageBrowserWindowController.h"; sourceTree = "<group>"; };
 		D4C0CE8A2E5BE2C4003B55C4 /* fit_example.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = fit_example.h; path = "My Code/FIT/fit_example.h"; sourceTree = "<group>"; };
 		D4C0CE8B2E5BE2C4003B55C4 /* fit_example.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fit_example.c; path = "My Code/FIT/fit_example.c"; sourceTree = "<group>"; };
 		D4C0CE8C2E5BE2C4003B55C4 /* fit_include.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = fit_include.h; path = "My Code/FIT/fit_include.h"; sourceTree = "<group>"; };
@@ -971,6 +974,10 @@
 				D4F13A082E4EAE4600462944 /* DistanceMethodController.mm */,
 				D4F13A092E4EAE4600462944 /* EditNotesController.h */,
 				D4F13A0A2E4EAE4600462944 /* EditNotesController.mm */,
+				D4F13A242E4EAE4600462944 /* EquipmentBoxView.h */,
+				D4F13A252E4EAE4600462944 /* EquipmentBoxView.mm */,
+				D473BB182E69300200B504DC /* FullImageBrowserWindowController.h */,
+				D473BB162E692FB200B504DC /* FullImageBrowserWindowController.m */,
 				D4F13A0B2E4EAE4600462944 /* GMTOffsetController.h */,
 				D4F13A0C2E4EAE4600462944 /* GMTOffsetController.mm */,
 				D4F13A0D2E4EAE4600462944 /* ImportDateEntryController.h */,
@@ -996,8 +1003,6 @@
 				D4F13A212E4EAE4600462944 /* TrackDataEntryController.mm */,
 				D4F13A222E4EAE4600462944 /* TransparentView.h */,
 				D4F13A232E4EAE4600462944 /* TransparentView.mm */,
-				D4F13A242E4EAE4600462944 /* EquipmentBoxView.h */,
-				D4F13A252E4EAE4600462944 /* EquipmentBoxView.mm */,
 			);
 			name = "Track Browser";
 			sourceTree = "<group>";
@@ -1996,6 +2001,7 @@
 				D4F13CED2E4EAE4600462944 /* BackupDelegate.mm in Sources */,
 				D4F13CEE2E4EAE4600462944 /* MiniProfileView.mm in Sources */,
 				D4F13CEF2E4EAE4600462944 /* MapPathView.mm in Sources */,
+				D473BB172E692FB200B504DC /* FullImageBrowserWindowController.m in Sources */,
 				D4F13CF02E4EAE4600462944 /* TransparentMapView.mm in Sources */,
 				D4F13CF12E4EAE4600462944 /* PrefsAdvanced.mm in Sources */,
 				D4F13CF22E4EAE4600462944 /* GMTOffsetController.mm in Sources */,

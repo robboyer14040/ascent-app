@@ -48,8 +48,9 @@
 #import "StravaAPI.h"
 #import "StravaImporter.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#import "FullImageBrowserWindowController.h"
 
-///#import "DBComm.h"
+
 
 #import <unistd.h>			// for sleep
 
@@ -370,6 +371,13 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 - (NSURL * _Nullable)resolvedStravaRootURLAllowingPrompt:(BOOL)allowPrompt
                                                   window:(NSWindow * _Nullable)win
                                                    error:(NSError * _Nullable __autoreleasing *)outError;
+- (void)showImageBrowser:(id)sender;
+- (void)imageBrowserWillClose:(NSNotification *)note;
+- (NSURL*) getRootMediaURL;
+
+-(NSString *)filenameShownInThumbnailIfKnown;
+
+@property (strong) FullImageBrowserWindowController *imageBrowser;
 
 @end
 
@@ -619,6 +627,8 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
     [splitArray release];
     [currentlySelectedLap release];
     [currentlySelectedTrack release];
+    [_imageBrowser release];
+    _imageBrowser = nil;
     [super dealloc];
 #if DEBUG_LEAKS
     NSLog(@"tbwc END DEALLOC");
@@ -1431,6 +1441,16 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
     [toolbar setDisplayMode: NSToolbarDisplayModeIconOnly];
     [toolbar setShowsBaselineSeparator:NO];
     [[self window] setToolbar:toolbar];
+    
+
+    NSClickGestureRecognizer *click =
+         [[NSClickGestureRecognizer alloc] initWithTarget:self
+                                                   action:@selector(showImageBrowser:)];
+     [self.trackPicImageView addGestureRecognizer:click];
+     [click release];
+
+     [self.trackPicImageView setEnabled:YES];
+    
     
     int vt = [Utils intFromDefaults:RCBDefaultBrowserViewType];
     if (IS_BETWEEN(0, vt, kNumViewTypes-1))
@@ -4490,6 +4510,10 @@ NSString*      gCompareString = nil;         // @@FIXME@@
             if (![self hasValidStravaRootBookmark]) {
                 [self chooseStravaRootFolderAndSaveBookmarkFromWindow:self.window];
             }
+            
+            
+            
+            NSImage* img = nil;
             if (currentlySelectedTrack.localMediaItems.count > 0)
             {
                 NSArray *items = currentlySelectedTrack.localMediaItems;
@@ -4516,17 +4540,14 @@ NSString*      gCompareString = nil;         // @@FIXME@@
                     id hit = items[idx];
                     firstPicName = [hit isKindOfClass:NSURL.class] ? ((NSURL *)hit).lastPathComponent : (NSString *)hit;
                     NSError* err = nil;
-                    NSImage* img = [self imageUnderStravaRootForRelativePath:firstPicName
-                                                                       error:&err];
-                    if (img)
-                    {
-                        _trackPicImageView.imageScaling = NSImageScaleProportionallyUpOrDown;
-                        _trackPicImageView.image = img;
-                        [_trackPicImageView setNeedsDisplay:YES];
-                    }
-                }
-           }
-        }
+                    img = [self imageUnderStravaRootForRelativePath:firstPicName
+                                                              error:&err];
+                    _trackPicImageView.imageScaling = NSImageScaleProportionallyUpOrDown;
+                 }
+            }
+            _trackPicImageView.image = img; // if nil, should erase image
+            [_trackPicImageView setNeedsDisplay:YES];
+       }
         else
         {
             [activityDetailButton setEnabled:NO];
@@ -4595,25 +4616,9 @@ static NSString * const kStravaRootBookmarkKey = @"StravaRootBookmarkData";
 
 // 2) Later: resolve bookmark, access children (no new UI):
 - (NSImage *)imageUnderStravaRootForRelativePath:(NSString *)relPath error:(NSError **)error {
-    NSData *bm = [[NSUserDefaults standardUserDefaults] objectForKey:kStravaRootBookmarkKey];
-    if (!bm) { if (error) *error = [NSError errorWithDomain:NSCocoaErrorDomain code:1 userInfo:@{NSLocalizedDescriptionKey:@"No saved folder permission"}]; return nil; }
-
-    BOOL stale = NO;
-    NSError *err = nil;
-    NSURL *root = [NSURL URLByResolvingBookmarkData:bm
-                                            options:NSURLBookmarkResolutionWithSecurityScope
-                                      relativeToURL:nil
-                                bookmarkDataIsStale:&stale
-                                              error:&err];
-    if (!root) { if (error) *error = err; return nil; }
-    if (stale) {
-        NSData *nbm = [root bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope
-                       includingResourceValuesForKeys:nil
-                                        relativeToURL:nil
-                                                error:&err];
-        if (nbm) [[NSUserDefaults standardUserDefaults] setObject:nbm forKey:kStravaRootBookmarkKey];
-    }
-
+    
+    NSURL* root = [self getRootMediaURL];
+    
     BOOL ok = [root startAccessingSecurityScopedResource];
     NSURL *child = [root URLByAppendingPathComponent:relPath];
     NSImage *img = [[NSImage alloc] initWithContentsOfURL:child];
@@ -6957,6 +6962,114 @@ static NSArray<NSArray<NSString *> *> *ASCParseCSV(NSString *text)
     } else {
         if ([panel runModal] == NSModalResponseOK) handleURL(panel.URL);
     }
+}
+
+- (NSURL*) getRootMediaURL
+{
+    NSArray<NSString *> *filenames = currentlySelectedTrack.localMediaItems ?: @[];
+    NSError *error = nil;
+    
+    NSData *bm = [[NSUserDefaults standardUserDefaults] objectForKey:kStravaRootBookmarkKey];
+    if (!bm) { if (error) error = [NSError errorWithDomain:NSCocoaErrorDomain code:1 userInfo:@{NSLocalizedDescriptionKey:@"No saved folder permission"}]; return nil; }
+
+    BOOL stale = NO;
+    NSError *err = nil;
+    NSURL *root = [NSURL URLByResolvingBookmarkData:bm
+                                            options:NSURLBookmarkResolutionWithSecurityScope
+                                      relativeToURL:nil
+                                bookmarkDataIsStale:&stale
+                                              error:&err];
+    if (!root) { if (error) error = err; return nil; }
+    if (stale) {
+        NSData *nbm = [root bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope
+                       includingResourceValuesForKeys:nil
+                                        relativeToURL:nil
+                                                error:&err];
+        if (nbm) [[NSUserDefaults standardUserDefaults] setObject:nbm forKey:kStravaRootBookmarkKey];
+    }
+    return root;
+}
+
+
+- (void)showImageBrowser:(id)sender {
+    // Supply your filenames array (e.g. from the currently selected track)
+    NSArray<NSString *> *filenames = currentlySelectedTrack.localMediaItems ?: @[];
+#if 0
+    NSError *error = nil;
+    
+    NSData *bm = [[NSUserDefaults standardUserDefaults] objectForKey:kStravaRootBookmarkKey];
+    if (!bm) { if (error) error = [NSError errorWithDomain:NSCocoaErrorDomain code:1 userInfo:@{NSLocalizedDescriptionKey:@"No saved folder permission"}]; return; }
+    
+    BOOL stale = NO;
+    NSError *err = nil;
+    NSURL *root = [NSURL URLByResolvingBookmarkData:bm
+                                            options:NSURLBookmarkResolutionWithSecurityScope
+                                      relativeToURL:nil
+                                bookmarkDataIsStale:&stale
+                                              error:&err];
+    if (!root) { if (error) error = err; return; }
+    if (stale) {
+        NSData *nbm = [root bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope
+                     includingResourceValuesForKeys:nil
+                                      relativeToURL:nil
+                                              error:&err];
+        if (nbm) [[NSUserDefaults standardUserDefaults] setObject:nbm forKey:kStravaRootBookmarkKey];
+    }
+#endif
+    NSURL* root = [self getRootMediaURL];
+    
+    if (filenames.count == 0 || !root) return;
+    
+    // Determine which image is currently shown in the thumbnail (optional)
+    // If you know the filename, compute its index; otherwise just start at 0
+    NSString *currentName = [self filenameShownInThumbnailIfKnown]; // or nil
+    NSInteger startIndex = 0;
+    if (currentName.length) {
+        NSInteger i = [filenames indexOfObject:currentName];
+        if (i != NSNotFound) startIndex = i;
+    }
+    
+    if (!self.imageBrowser) {
+         FullImageBrowserWindowController *wc =
+             [[FullImageBrowserWindowController alloc] initWithBaseURL:root
+                                                            mediaNames:filenames
+                                                            startIndex:0
+                                                                 title:nil];
+         self.imageBrowser = wc;          // retain (MRC)
+         [wc release];
+
+         [[NSNotificationCenter defaultCenter] addObserver:self
+                                                  selector:@selector(imageBrowserWillClose:)
+                                                      name:NSWindowWillCloseNotification
+                                                    object:[self.imageBrowser window]];
+     } else {
+         [self.imageBrowser showWindow:self];
+         [self.imageBrowser showMediaAtIndex:0];
+     }
+     [self.imageBrowser showWindow:self];
+}
+
+
+- (void)imageBrowserWillClose:(NSNotification *)note
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                     name:NSWindowWillCloseNotification
+                                                   object:[self.imageBrowser window]];
+
+     // Defer destruction until AppKit finishes closing
+     FullImageBrowserWindowController *wc = [self.imageBrowser retain];
+     self.imageBrowser = nil;
+
+     dispatch_async(dispatch_get_main_queue(), ^{
+         [wc release];
+     });
+}
+
+- (NSString *)filenameShownInThumbnailIfKnown {
+    // If you keep the current filename, return it here; otherwise return nil.
+    // For example, if you just showed the first image from localMediaItems:
+    // return self.currentlySelectedTrack.localMediaItems.firstObject;
+    return nil;
 }
 
 

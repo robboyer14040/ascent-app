@@ -172,7 +172,7 @@ enum
 	IBOutlet NSTabView*             infoStatsTabView;
 	
 	IBOutlet CalendarView*			calendarView;
-	
+
 	int                             currentTrackPos, numPos;
 	TransparentMapView*				transparentMapAnimView;
 	TransparentMapView*				transparentMiniProfileAnimView;
@@ -218,6 +218,7 @@ enum
 
 
 @property(nonatomic, retain) NSArray* topSortedKeys;
+@property (weak) IBOutlet NSImageView *trackPicImageView;
 
 - (IBAction)setMapDataType:(id)sender;
 - (IBAction)setSplitLength:(id)sender;

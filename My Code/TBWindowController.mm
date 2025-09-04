@@ -364,6 +364,12 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 - (void)doToggleCalendarAndBrowser:(int)v;
 - (void)splitDragComplete:(NSNotification *)notification;
 - (void)_fetchMissingItemsForTrack:(Track*)track lap:(Lap*)lap;
+- (BOOL)chooseStravaRootFolderAndSaveBookmarkFromWindow:(NSWindow *)win;
+- (NSImage *)imageUnderStravaRootForRelativePath:(NSString *)relPath error:(NSError **)error;
+- (BOOL)hasValidStravaRootBookmark;
+- (NSURL * _Nullable)resolvedStravaRootURLAllowingPrompt:(BOOL)allowPrompt
+                                                  window:(NSWindow * _Nullable)win
+                                                   error:(NSError * _Nullable __autoreleasing *)outError;
 
 @end
 
@@ -711,9 +717,17 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
         [metricsEventTable reloadData];
         [miniProfileView setNeedsDisplay:YES];
         [mapPathView forceRedraw];
-        [equipmentBox update];
-    }
+       ///[equipmentBox update];
+        ///- (void)windowDidLoad {
+
+        NSURL *url = [NSURL fileURLWithPath:@"/Volumes/Lion2/Documents/Strava_export_668557/media/0C527121-B6C7-4B5B-BB52-D87E6654EF27.jpg"];
+        NSImage *img = [[NSImage alloc] initWithContentsOfURL:url];
+        _trackPicImageView.imageScaling = NSImageScaleProportionallyUpOrDown;
+        _trackPicImageView.image = img;
+        [_trackPicImageView setNeedsDisplay:YES];
+     }
 }
+
 
 -(void)expandBrowserItemByName:(NSString*)name
 {
@@ -4472,6 +4486,46 @@ NSString*      gCompareString = nil;         // @@FIXME@@
             currentTrackPos = 0;
             currentlySelectedTrack.animTimeBegin = 0.0;
             currentlySelectedTrack.animTimeEnd = currentlySelectedTrack.movingDuration;
+            
+            if (![self hasValidStravaRootBookmark]) {
+                [self chooseStravaRootFolderAndSaveBookmarkFromWindow:self.window];
+            }
+            if (currentlySelectedTrack.localMediaItems.count > 0)
+            {
+                NSArray *items = currentlySelectedTrack.localMediaItems;
+                __block NSString *firstPicName = nil;
+
+                NSSet<NSString *> *imageExts = [NSSet setWithArray:@[
+                    @"jpg", @"jpeg", @"png", @"gif", @"tif", @"tiff", @"bmp", @"heic", @"heif", @"webp"
+                ]];
+
+                NSUInteger idx = [items indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+                    NSString *ext = nil;
+                    if ([obj isKindOfClass:NSString.class]) {
+                        ext = [(NSString *)obj pathExtension].lowercaseString;
+                    } else if ([obj isKindOfClass:NSURL.class]) {
+                        ext = [(NSURL *)obj pathExtension].lowercaseString;
+                    }
+                    BOOL isImage = (ext.length > 0) && [imageExts containsObject:ext];
+                    if (isImage) *stop = YES;
+                    return isImage;
+                }];
+
+                if (idx != NSNotFound)
+                {
+                    id hit = items[idx];
+                    firstPicName = [hit isKindOfClass:NSURL.class] ? ((NSURL *)hit).lastPathComponent : (NSString *)hit;
+                    NSError* err = nil;
+                    NSImage* img = [self imageUnderStravaRootForRelativePath:firstPicName
+                                                                       error:&err];
+                    if (img)
+                    {
+                        _trackPicImageView.imageScaling = NSImageScaleProportionallyUpOrDown;
+                        _trackPicImageView.image = img;
+                        [_trackPicImageView setNeedsDisplay:YES];
+                    }
+                }
+           }
         }
         else
         {
@@ -4514,6 +4568,145 @@ NSString*      gCompareString = nil;         // @@FIXME@@
         [splitsTableView reloadData];
     }
 }
+
+
+// Where you saved the bookmark the first time
+static NSString * const kStravaRootBookmarkKey = @"StravaRootBookmarkData";
+
+- (BOOL)chooseStravaRootFolderAndSaveBookmarkFromWindow:(NSWindow *)win {
+    NSOpenPanel *p = [NSOpenPanel openPanel];
+    p.canChooseFiles = NO;
+    p.canChooseDirectories = YES;
+    p.allowsMultipleSelection = NO;
+    p.directoryURL = [NSURL fileURLWithPath:NSHomeDirectory()];
+    if ([p runModal] != NSModalResponseOK) return NO;
+
+    NSURL *folder = p.URL;
+    NSError *err = nil;
+    NSData *bm = [folder bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope
+                 includingResourceValuesForKeys:nil
+                                  relativeToURL:nil
+                                          error:&err];
+    if (!bm) { NSLog(@"bookmark error: %@", err); return NO; }
+
+    [[NSUserDefaults standardUserDefaults] setObject:bm forKey:kStravaRootBookmarkKey];
+    return YES;
+}
+
+// 2) Later: resolve bookmark, access children (no new UI):
+- (NSImage *)imageUnderStravaRootForRelativePath:(NSString *)relPath error:(NSError **)error {
+    NSData *bm = [[NSUserDefaults standardUserDefaults] objectForKey:kStravaRootBookmarkKey];
+    if (!bm) { if (error) *error = [NSError errorWithDomain:NSCocoaErrorDomain code:1 userInfo:@{NSLocalizedDescriptionKey:@"No saved folder permission"}]; return nil; }
+
+    BOOL stale = NO;
+    NSError *err = nil;
+    NSURL *root = [NSURL URLByResolvingBookmarkData:bm
+                                            options:NSURLBookmarkResolutionWithSecurityScope
+                                      relativeToURL:nil
+                                bookmarkDataIsStale:&stale
+                                              error:&err];
+    if (!root) { if (error) *error = err; return nil; }
+    if (stale) {
+        NSData *nbm = [root bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope
+                       includingResourceValuesForKeys:nil
+                                        relativeToURL:nil
+                                                error:&err];
+        if (nbm) [[NSUserDefaults standardUserDefaults] setObject:nbm forKey:kStravaRootBookmarkKey];
+    }
+
+    BOOL ok = [root startAccessingSecurityScopedResource];
+    NSURL *child = [root URLByAppendingPathComponent:relPath];
+    NSImage *img = [[NSImage alloc] initWithContentsOfURL:child];
+    if (ok) [root stopAccessingSecurityScopedResource];
+    return img;
+}
+
+
+
+#pragma mark - Resolve / check bookmark
+- (NSURL * _Nullable)resolvedStravaRootURLAllowingPrompt:(BOOL)allowPrompt
+                                                  window:(NSWindow * _Nullable)win
+                                                   error:(NSError * _Nullable __autoreleasing *)outError
+{
+    NSData *bmData = [[NSUserDefaults standardUserDefaults] dataForKey:kStravaRootBookmarkKey];
+    if (!bmData) {
+        if (allowPrompt && win) {
+            [self chooseStravaRootFolderAndSaveBookmarkFromWindow:win];
+            bmData = [[NSUserDefaults standardUserDefaults] dataForKey:kStravaRootBookmarkKey];
+        }
+        if (!bmData) return nil;
+    }
+
+    BOOL stale = NO;
+    NSError *err = nil;
+    NSURL *url = [NSURL URLByResolvingBookmarkData:bmData
+                                           options:NSURLBookmarkResolutionWithSecurityScope
+                                     relativeToURL:nil
+                               bookmarkDataIsStale:&stale
+                                             error:&err];
+    if (!url) {
+        if (allowPrompt && win) {
+            [self chooseStravaRootFolderAndSaveBookmarkFromWindow:win];
+            return [self resolvedStravaRootURLAllowingPrompt:NO window:nil error:outError];
+        }
+        if (outError) *outError = err;
+        return nil;
+    }
+
+    // If stale, refresh the stored bookmark (best effort)
+    if (stale) {
+        NSData *fresh = [url bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope
+                       includingResourceValuesForKeys:nil
+                                        relativeToURL:nil
+                                                error:NULL];
+        if (fresh) {
+            [[NSUserDefaults standardUserDefaults] setObject:fresh forKey:kStravaRootBookmarkKey];
+        }
+    }
+
+    // Verify we truly have access (TCC “Files & Folders” can still deny)
+    if (![url startAccessingSecurityScopedResource]) {
+        if (allowPrompt && win) {
+            [self chooseStravaRootFolderAndSaveBookmarkFromWindow:win];
+            return [self resolvedStravaRootURLAllowingPrompt:NO window:nil error:outError];
+        }
+        return nil;
+    }
+
+    // Lightweight reachability test (actually touches the folder)
+    BOOL reachable = [url checkResourceIsReachableAndReturnError:&err];
+    if (!reachable) {
+        // Some denials show up only when enumerating; try that too
+        NSFileManager *fm = NSFileManager.defaultManager;
+        NSDirectoryEnumerator *en = [fm enumeratorAtURL:url
+                             includingPropertiesForKeys:nil
+                                                options:0
+                                           errorHandler:^BOOL(NSURL *badURL, NSError *error) {
+            return NO;
+        }];
+        (void)[en nextObject]; // forces one access
+        // If still not reachable, fall back to prompting
+        if (allowPrompt && win) {
+            [url stopAccessingSecurityScopedResource];
+            [self chooseStravaRootFolderAndSaveBookmarkFromWindow:win];
+            return [self resolvedStravaRootURLAllowingPrompt:NO window:nil error:outError];
+        }
+    }
+
+    [url stopAccessingSecurityScopedResource];
+    if (outError) *outError = nil;
+    return url;
+}
+
+#pragma mark - Quick “has it been set?” helper
+
+- (BOOL)hasValidStravaRootBookmark
+{
+    NSError *err = nil;
+    NSURL *url = [self resolvedStravaRootURLAllowingPrompt:NO window:nil error:&err];
+    return (url != nil);
+}
+
 
 
 -(void) doSelChange

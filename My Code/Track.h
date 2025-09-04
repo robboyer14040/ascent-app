@@ -155,7 +155,7 @@ struct tPeakIntervalData
 @property(nonatomic) BOOL movingSpeedOnly;
 @property(nonatomic) BOOL hasDistanceData;
 @property(nonatomic, retain) NSArray<NSURL *> *photoURLs;  // array of file or web URLs
-@property(nonatomic, retain) NSArray<NSURL *> *localMediaItems;  // array of filenames, stored somewhere locally
+@property(nonatomic, retain) NSArray<NSString*> *localMediaItems;  // array of filenames, stored somewhere locally
 
 - (NSComparisonResult) comparator:(Track*)track;
 -(void) doFixupAndCalcGradients;

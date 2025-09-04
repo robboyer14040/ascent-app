@@ -27,7 +27,6 @@
                 <outlet property="editNotesWC" destination="926" id="wGN-Uk-7el"/>
                 <outlet property="editWeightField" destination="2486" id="2518"/>
                 <outlet property="effortPopup" destination="2440" id="2474"/>
-                <outlet property="equipmentBox" destination="2396" id="2397"/>
                 <outlet property="eventTypePopup" destination="2436" id="2472"/>
                 <outlet property="infoStatsTabView" destination="1282" id="1839"/>
                 <outlet property="keyword1Popup" destination="2477" id="2522"/>
@@ -60,6 +59,7 @@
                 <outlet property="statsInfoSplitSubView" destination="1256" id="1812"/>
                 <outlet property="summaryButton" destination="1909" id="2041"/>
                 <outlet property="summaryButtonView" destination="1905" id="1907"/>
+                <outlet property="trackPicImageView" destination="jxv-I6-1pm" id="SHV-sH-Lrn"/>
                 <outlet property="trackTableView" destination="1797" id="1915"/>
                 <outlet property="weatherPopup" destination="2476" id="2523"/>
                 <outlet property="weightUnitsField" destination="2483" id="2519"/>
@@ -530,15 +530,6 @@ DQ
                                                                                 <action selector="showEquipmentSelector:" target="-2" id="2315"/>
                                                                             </connections>
                                                                         </button>
-                                                                        <box focusRingType="none" fixedFrame="YES" borderType="bezel" title="Equipment" translatesAutoresizingMaskIntoConstraints="NO" id="2396" customClass="EquipmentBoxView">
-                                                                            <rect key="frame" x="266" y="-2" width="150" height="146"/>
-                                                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
-                                                                            <view key="contentView" id="Fey-1H-zA7">
-                                                                                <rect key="frame" x="4" y="5" width="142" height="127"/>
-                                                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                                            </view>
-                                                                            <font key="titleFont" metaFont="systemBold" size="10"/>
-                                                                        </box>
                                                                         <scrollView focusRingType="none" fixedFrame="YES" borderType="groove" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2400">
                                                                             <rect key="frame" x="0.0" y="150" width="414" height="71"/>
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
@@ -832,6 +823,11 @@ DQ
                                                                                 </textField>
                                                                             </subviews>
                                                                         </customView>
+                                                                        <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" id="jxv-I6-1pm" userLabel="TrackPic">
+                                                                            <rect key="frame" x="265" y="0.0" width="150" height="154"/>
+                                                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES"/>
+                                                                            <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="v27-et-imZ"/>
+                                                                        </imageView>
                                                                     </subviews>
                                                                 </view>
                                                             </tabViewItem>
@@ -882,7 +878,7 @@ DQ
             <connections>
                 <outlet property="delegate" destination="-2" id="2240"/>
             </connections>
-            <point key="canvasLocation" x="-93" y="-692"/>
+            <point key="canvasLocation" x="-93.5" y="-692"/>
         </window>
         <customView id="1669" userLabel="SearcherView">
             <rect key="frame" x="0.0" y="0.0" width="210" height="32"/>

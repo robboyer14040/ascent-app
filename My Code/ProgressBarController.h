@@ -15,7 +15,6 @@
 	IBOutlet NSProgressIndicator*   progressInd;
 	IBOutlet NSTextField*           textMessageField;
 	IBOutlet NSButton*				cancelButton;
-	NSString*                       textMessage;
 	int                             numDivisions;
 	int                             curDiv;
 	SEL								cancelSelector;

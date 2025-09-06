@@ -28,6 +28,7 @@
 #import "StringAdditions.h"
 #import "EquipmentLog.h"
 #import "ActivityStore.h"
+#import "SplashPanelController.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 
@@ -2145,13 +2146,6 @@ deviceIsPluggedIn:YES];
                     });
                 }];
 
-//                [[[NSUserDefaultsController sharedUserDefaultsController] values]
-//                 setValue:[NSArchiver archivedDataWithRootObject:url]
-//                    forKey:@"lastFileURL"];
-
-                // loadDatabaseFile should set up/return the model; if not, pull it here
-                // e.g., browserData = [self builtBrowserData]; (adjust if needed)
-
             } else if ([typeName isEqualToString:AscentUTIDatabaseOLD]) {
 
                 NSData *data = [NSData dataWithContentsOfURL:url];
@@ -2213,43 +2207,92 @@ deviceIsPluggedIn:YES];
              ofType:(NSString *)typeName
               error:(NSError **)outError
 {
-    // Show progress on MAIN right away
-    ProgressBarController *pbc = [[[SharedProgressBar sharedInstance] controller] retain];
-    NSWindow *docWin = self.windowForSheet ?: self.windowControllers.firstObject.window;
-    NSWindow *pbWin  = pbc.window; // load nib
-    [pbc begin:[NSString stringWithFormat:@"Opening activity document “%@”…",
-                self.displayName ?: url.lastPathComponent]
-       divisions:0]; // start indeterminate; you can switch to determinate later
-    if (docWin) {
-        NSRect fr = docWin.frame, pfr = pbWin.frame;
-        [pbWin setFrameOrigin:NSMakePoint(NSMidX(fr)-pfr.size.width/2.0,
-                                          NSMidY(fr)-pfr.size.height/2.0)];
+    NSLog(@"readFromURL: %s", [[url description] UTF8String]);
+    
+    // 0) Bring the app to front so our windows actually show
+    if (![NSApp isActive]) {
+        [NSApp activateIgnoringOtherApps:YES];
     }
-    [pbc showWindow:self];
-    [pbWin displayIfNeeded];
 
+    // 1) If the splash is visible, mirror status there, but we will STILL
+    //    show the progress panel below it so there’s always a UI.
+    SplashPanelController *sp = [SplashPanelController sharedInstance];
+    BOOL splashWanted = sp && sp.window && sp.window.isVisible;
+
+    NSString *name = [[url URLByDeletingPathExtension] lastPathComponent];
+    NSString *displayName = [name stringByRemovingPercentEncoding] ?: name;
+    NSModalSession splashSession = NULL;
+    if (splashWanted)
+    {
+         // Make absolutely sure this window is eligible
+        NSWindow *w = sp.window;
+        [w setLevel:NSStatusWindowLevel + 1];
+        w.collectionBehavior |= (NSWindowCollectionBehaviorCanJoinAllSpaces |
+                                 NSWindowCollectionBehaviorFullScreenAuxiliary);
+        [w orderFrontRegardless];
+       [sp updateMessage:[NSString stringWithFormat:@"opening “%@”…", displayName]];
+
+        // Kick a modal session so AppKit will *definitely* show it now.
+        splashSession = [NSApp beginModalSessionForWindow:w];
+       // Run a couple of steps immediately to flush it onto screen
+        for (int i = 0; i < 4; i++) {
+            [NSApp runModalSession:splashSession];
+        }
+    }
+    else
+    {
+        // 2) Show a standalone progress window (kept below the splash if present)
+        ProgressBarController *pbc = [[[SharedProgressBar sharedInstance] controller] retain];
+        NSWindow *pbWin = [pbc window]; // ensure nib loads
+        pbWin.collectionBehavior |= (NSWindowCollectionBehaviorCanJoinAllSpaces |
+                                     NSWindowCollectionBehaviorFullScreenAuxiliary);
+        pbWin.level = NSStatusWindowLevel;
+        [pbc showWindow:self];
+
+        [pbc begin:[NSString stringWithFormat:@"opening “%@”…",displayName]
+         divisions:(int)0];
+
+        // Don’t rely on makeKey during launch; force it in front visually:
+        [pbWin orderFrontRegardless];
+        [pbWin displayIfNeeded];
+    }
+     
+
+    // Give AppKit a tick to paint *now* so you can actually see the window
+    CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.01, false);
+
+    // 3) Kick heavy work off-main
     __block NSError *bgErr = nil;
-    __block BOOL      ok   = NO;
+    __block BOOL ok = NO;
 
-    // Use a semaphore to block this sync method while work happens off-main
     dispatch_semaphore_t done = dispatch_semaphore_create(0);
 
-    // PHASE A: do the heavy parse off-main
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
         @autoreleasepool {
             @try {
                 if ([typeName isEqualToString:AscentUTIDatabase]) {
-                    // If your loader can report total, flip bar to determinate on first tick
                     __block BOOL madeDeterminate = NO;
                     ok = [self loadDatabaseFile:url
-                                       progress:^(NSInteger done, NSInteger total) {
+                                       progress:^(NSInteger doneCount, NSInteger total) {
                         dispatch_async(dispatch_get_main_queue(), ^{
-                            if (!madeDeterminate && total > 0) {
-                                madeDeterminate = YES;
-                                [[ [SharedProgressBar sharedInstance] controller]
-                                    begin:@"Opening activity document…" divisions:(int)total];
+                            // Flip to determinate as soon as total is known
+ 
+                            if ([sp.window isVisible]) {
+                                if (total > 0) {
+                                    [sp updateProgress:(int)doneCount total:(int)total];
+                                }
                             }
-                            [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                            else
+                            {
+                                if (!madeDeterminate && total > 0) {
+                                    madeDeterminate = YES;
+                                    [[[SharedProgressBar sharedInstance] controller]
+                                            begin:[NSString stringWithFormat:@"opening “%@”…",displayName]
+                                        divisions:(int)total];
+                                }
+                                [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+
+                            }
                         });
                     }];
                 } else if ([typeName isEqualToString:AscentUTIDatabaseOLD]) {
@@ -2268,205 +2311,70 @@ deviceIsPluggedIn:YES];
                         ok = YES;
 
                         dispatch_async(dispatch_get_main_queue(), ^{
-                            [[[SharedProgressBar sharedInstance] controller] incrementDiv];
-                            [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                            if (splashWanted)
+                            {
+                                [sp updateMessage:@"Opening…"];
+                            }
+                            else
+                            {
+                                [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                                [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                            }
                         });
                     }
                 } else {
                     bgErr = [NSError errorWithDomain:NSCocoaErrorDomain
                                                 code:NSFileReadUnknownError
-                                            userInfo:@{NSLocalizedDescriptionKey:@"Unsupported document type"}];
+                                            userInfo:@{ NSLocalizedDescriptionKey : @"Unsupported document type" }];
                 }
             } @catch (NSException *ex) {
                 bgErr = [NSError errorWithDomain:NSCocoaErrorDomain
                                             code:-3
-                                        userInfo:@{NSLocalizedDescriptionKey:@"Exception while reading document",
-                                                   @"exception": ex.reason ?: @""}];
+                                        userInfo:@{ NSLocalizedDescriptionKey : @"Exception while reading document",
+                                                    @"exception" : ex.reason ?: @"" }];
             }
             dispatch_semaphore_signal(done);
         }
     });
 
-    // Keep the progress window alive & responsive while we wait
+    // 4) Keep UI responsive while waiting for background work
     while (dispatch_semaphore_wait(done, dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_MSEC))) {
-        [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode
-                              beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.005]];
+        if (splashSession) {
+            // Drive the splash modal session; this *forces* paint
+            [NSApp runModalSession:splashSession];
+        } else {
+            // Fallback if not using splash
+            [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode
+                                  beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.005]];
+        }
+    }
+    
+    
+    if (splashWanted) {
+        [sp updateProgress:100 total:100];
+        [sp updateMessage:@"building browser..."];
+        [sp canDismiss:YES];
+        [sp startFade:nil];
+    } else {
+        ProgressBarController *pbc = [[SharedProgressBar sharedInstance] controller];
+        [pbc updateMessage:@"building browser..."];
+        [[pbc window] orderOut:self];
+        [pbc end];
+    }
+    if (splashSession) {
+        [NSApp endModalSession:splashSession];
+        splashSession = NULL;
     }
 
-    // Hide progress
-    [[pbc window] orderOut:self];
-    [pbc end];
-    [pbc autorelease];
-    
-    if (!ok && outError) *outError = bgErr ?: [NSError errorWithDomain:NSCocoaErrorDomain
-                                                                  code:NSFileReadUnknownError
-                                                              userInfo:nil];
+    if (!ok && outError) {
+        *outError = bgErr ?: [NSError errorWithDomain:NSCocoaErrorDomain
+                                                 code:NSFileReadUnknownError
+                                             userInfo:nil];
+    }
     return ok;
 }
 
     
-    
-#if 0
-- (BOOL)readFromURL:(NSURL *)url
-             ofType:(NSString *)typeName
-              error:(NSError **)outError
-{
-    __block ProgressBarController *pbc = nil;
-
-    // Present the progress window on the MAIN thread
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        pbc = [[SharedProgressBar sharedInstance] controller];
-        NSWindow *docWin = self.windowForSheet ?: self.windowControllers.firstObject.window;
-        NSWindow *pbWin  = pbc.window; // forces nib load
-
-        // If you know an exact count, pass it; otherwise 0 = indeterminate spinner
-        [pbc begin:[NSString stringWithFormat:@"Opening activity document “%@”…", self.displayName ?: url.lastPathComponent]
-           divisions:0];
-
-        // Center over document window if available
-        if (docWin) {
-            NSRect fr = docWin.frame, pfr = pbWin.frame;
-            NSPoint origin = NSMakePoint(NSMidX(fr) - pfr.size.width/2.0,
-                                         NSMidY(fr) - pfr.size.height/2.0);
-            [pbWin setFrameOrigin:origin];
-        }
-        [pbc showWindow:self];
-        [pbWin displayIfNeeded];
-    });
-
-    // We are on a BACKGROUND thread here (because canAsynchronouslyRead... returned YES)
-    NSError *err = nil;
-
-    // Do the heavy work; tick progress back to MAIN
- 
-    @try {
-        if ([typeName isEqualToString:AscentUTIDatabase]) {
-            [self loadDatabaseFile:url
-                          progress:^(NSInteger done, NSInteger total) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    // Tick progress safely on main
-                    // If you know 'total', call [pbc setDivs:(int)done]; else just increment
-                    [[[SharedProgressBar sharedInstance] controller] incrementDiv];
-                });
-            }];
-        } else if ([typeName isEqualToString:AscentUTIDatabaseOLD]) {
-            NSData *data = [NSData dataWithContentsOfURL:url];
-            if (!data) {
-                err = [NSError errorWithDomain:NSCocoaErrorDomain code:-2
-                                      userInfo:@{NSLocalizedDescriptionKey:@"Unable to read legacy file"}];
-                goto done;
-            }
-            browserData = [NSUnarchiver unarchiveObjectWithData:data];  /// fixme, create setBrowserData
-            if (![browserData isKindOfClass:[TrackBrowserData class]])
-            {
-                // old school, before TrackBrowserData
-                browserData = [[TrackBrowserData alloc] init];
-                NSMutableArray* ta = [NSUnarchiver unarchiveObjectWithData:data];
-                [browserData setTrackArray:ta];
-            }
-            else
-            {
-                [browserData retain];
-            }
-            // Give a couple of visible ticks for legacy loads
-            dispatch_async(dispatch_get_main_queue(), ^{ [pbc incrementDiv]; });
-            dispatch_async(dispatch_get_main_queue(), ^{ [pbc incrementDiv]; });
-        } else {
-            err = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileReadUnknownError
-                                  userInfo:@{NSLocalizedDescriptionKey:@"Unsupported document type"}];
-            goto done;
-        }
-    }
-    @catch (NSException *ex) {
-        err = [NSError errorWithDomain:NSCocoaErrorDomain code:-3
-                              userInfo:@{NSLocalizedDescriptionKey:@"Exception while reading document",
-                                         @"exception": ex.reason ?: @""}];
-    }
-
-done:
-
-    // Hide progress on MAIN
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[pbc window] orderOut:self];
-        [pbc end];
-    });
-
-    if (err && outError) *outError = err;
-    return (err == nil);
-}
-#endif
-    
-    
-
-#if 0
-// NSDocument subclass
-- (BOOL) readFromURL:(NSURL *) url
-              ofType:(NSString *) typeName
-               error:(NSError * *) outError;
-{
-    BOOL ret = YES;
-    browserData = nil;
-    [self setDatabaseFileURL:url];
-    [self startProgressIndicator:[NSString stringWithFormat:@"opening activity document \"%@\"...", [self displayName]]];
-
-    @try
-    {
-        if ([typeName isEqualToString:AscentUTIDatabase])
-        {
-            if (databaseFileURL)
-            {
-                ActivityStore *store = [[ActivityStore alloc] initWithURL:databaseFileURL];
-                if (store)
-                {
-                    browserData = [[TrackBrowserData alloc] init];
-                    [browserData loadMetaStuffUsingStore:store];
-                }
-            }
-            
-        } else if ([typeName isEqualToString:AscentUTIDatabaseOLD])
-        {
-            NSData *data = [NSData dataWithContentsOfURL:url];
-            if (data)
-            {
-                browserData = [NSUnarchiver unarchiveObjectWithData:data];  /// fixme, create setBrowserData
-                if (![browserData isKindOfClass:[TrackBrowserData class]])
-                {
-                    browserData = [[TrackBrowserData alloc] init];
-                    NSMutableArray* ta = [NSUnarchiver unarchiveObjectWithData:data];
-                    [browserData setTrackArray:ta];
-                }
-                else
-                {
-                    [browserData retain];
-                }
-            }
-        }
-    }
-    @catch (NSException* ex)
-    {
-    }
-    
-    if (browserData == nil)
-    {
-      ret =  NO;
-    }
-    else
-    {
-        if (tbWindowController == nil)
-        {
-            tbWindowController = [[[TBWindowController alloc] initWithDocument:self] autorelease];     // does this go here?
-            [self addWindowController:tbWindowController];
-        }
-        [self updateProgressIndicator:@"updating main browser and equipment log..."];
-        //[tbWindowController buildBrowser:YES];
-        [equipmentLog buildEquipmentListFromDefaultAttributes:self];
-    }
-    [self endProgressIndicator];
-    return YES;
-}
-#endif
-
-
 - (BOOL)keepBackupFile
 {
     return NO;

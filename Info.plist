@@ -2,18 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleURLTypes</key>
-    <array>
-      <dict>
-        <key>CFBundleURLName</key>
-        <string>com.montebellosoftware.ascent.oauth</string>
-        <key>CFBundleURLSchemes</key>
-        <array>
-          <string>ascent</string>
-        </array>
-      </dict>
-    </array>	
-    <key>CFBundleDocumentTypes</key>
+	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleTypeName</key>
@@ -50,6 +39,17 @@
 	<string>Ascent.icns</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.montebellosoftware.ascent.oauth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ascent</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>
@@ -63,6 +63,8 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSDocumentControllerClass</key>
+	<string>AscentDocumentController</string>
 	<key>OFRegistrations</key>
 	<dict>
 		<key>OAPreferenceController</key>

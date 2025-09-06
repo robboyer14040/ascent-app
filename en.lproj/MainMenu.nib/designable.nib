@@ -78,7 +78,7 @@
                         <items>
                             <menuItem title="New" keyEquivalent="n" id="82">
                                 <connections>
-                                    <action selector="makeANewDocument:" target="216" id="bAV-tR-x1H"/>
+                                    <action selector="newDocument:" target="-1" id="DAj-ut-pGo"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Open Recent" id="124">
@@ -563,5 +563,6 @@ CA
         </window>
         <customObject id="ktY-oX-7gB" customClass="TrackBrowserDocument"/>
         <menuItem title="Refresh Map" keyEquivalent="r" id="456" userLabel="Menu Item (Refresh Map)"/>
+        <customObject id="aD8-Hn-Y6w" customClass="SplashPanelController"/>
     </objects>
 </document>

@@ -11,11 +11,12 @@
 
 static id appDelegate; // retain for MRR; ARC will hold it strongly too
 
+#import "AscentApplication.h"
+
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
-        [NSApplication sharedApplication];
-        appDelegate = [[AppController alloc] init];   // retained (MRR-safe)
-        [NSApp setDelegate:appDelegate];
+        // This guarantees NSApp is an AscentApplication instance.
+        [AscentApplication sharedApplication];
         return NSApplicationMain(argc, argv);
     }
 }

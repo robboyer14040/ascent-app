@@ -824,7 +824,7 @@ DQ
                                                                             </subviews>
                                                                         </customView>
                                                                         <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" id="jxv-I6-1pm" userLabel="TrackPic">
-                                                                            <rect key="frame" x="265" y="0.0" width="150" height="154"/>
+                                                                            <rect key="frame" x="264" y="0.0" width="151" height="154"/>
                                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES"/>
                                                                             <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="v27-et-imZ"/>
                                                                         </imageView>

@@ -20,7 +20,12 @@
 		D457D2ED2E6488B400D1DF73 /* StravaAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = D457D2EB2E6488B400D1DF73 /* StravaAPI.m */; };
 		D457D2EF2E64894F00D1DF73 /* StravaImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D457D2EE2E64894F00D1DF73 /* StravaImporter.m */; };
 		D473BB172E692FB200B504DC /* FullImageBrowserWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = D473BB162E692FB200B504DC /* FullImageBrowserWindowController.m */; };
+		D489E0E62E6B32BF0076E5DC /* SplashPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = D489E0E42E6B32BF0076E5DC /* SplashPanel.xib */; };
+		D489E0E72E6B32BF0076E5DC /* SplashPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = D489E0E42E6B32BF0076E5DC /* SplashPanel.xib */; };
 		D490A52E2E4F8E48005BAD01 /* TrackBrowserDocument.xib in Resources */ = {isa = PBXBuildFile; fileRef = D490A52C2E4F8E48005BAD01 /* TrackBrowserDocument.xib */; };
+		D49F293F2E69FAB100C5B87C /* AscentApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = D49F293E2E69FAB100C5B87C /* AscentApplication.m */; };
+		D49F29442E6A52C500C5B87C /* AscentDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = D49F29432E6A52C500C5B87C /* AscentDocumentController.m */; };
+		D49F29482E6A61CA00C5B87C /* NSDocumentController+AscentForceSubclass.m in Sources */ = {isa = PBXBuildFile; fileRef = D49F29472E6A61CA00C5B87C /* NSDocumentController+AscentForceSubclass.m */; };
 		D4C0CE8F2E5BE2C4003B55C4 /* fit_example.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C0CE8B2E5BE2C4003B55C4 /* fit_example.c */; };
 		D4C0CE902E5BE2C4003B55C4 /* fit_ram.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C0CE8E2E5BE2C4003B55C4 /* fit_ram.c */; };
 		D4CCE92A2E5049B900B46DB2 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4CCE9282E5049B900B46DB2 /* MainMenu.nib */; };
@@ -115,7 +120,6 @@
 		D4F13C5F2E4EAE4600462944 /* DetailedMapWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B0B2E4EAE4600462944 /* DetailedMapWindow.nib */; };
 		D4F13C602E4EAE4600462944 /* line_solid.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BCD2E4EAE4600462944 /* line_solid.png */; };
 		D4F13C662E4EAE4600462944 /* PrefsBackup.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B252E4EAE4600462944 /* PrefsBackup.nib */; };
-		D4F13C682E4EAE4600462944 /* SplashPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B372E4EAE4600462944 /* SplashPanel.nib */; };
 		D4F13C692E4EAE4600462944 /* bike chain.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB22E4EAE4600462944 /* bike chain.png */; };
 		D4F13C6B2E4EAE4600462944 /* walking shoes.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BE62E4EAE4600462944 /* walking shoes.png */; };
 		D4F13C6C2E4EAE4600462944 /* GeneralPreferences.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC32E4EAE4600462944 /* GeneralPreferences.tiff */; };
@@ -180,7 +184,6 @@
 		D4F13CC12E4EAE4600462944 /* RegController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A4A2E4EAE4600462944 /* RegController.mm */; };
 		D4F13CC22E4EAE4600462944 /* EquipmentListWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A802E4EAE4600462944 /* EquipmentListWindowController.mm */; };
 		D4F13CC32E4EAE4600462944 /* GarminSyncWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A782E4EAE4600462944 /* GarminSyncWindowController.mm */; };
-		D4F13CC42E4EAE4600462944 /* SplashPanelView.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A472E4EAE4600462944 /* SplashPanelView.mm */; };
 		D4F13CC52E4EAE4600462944 /* AppController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A9D2E4EAE4600462944 /* AppController.mm */; };
 		D4F13CC62E4EAE4600462944 /* ADView.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13AB92E4EAE4600462944 /* ADView.mm */; };
 		D4F13CC72E4EAE4600462944 /* SyncController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A372E4EAE4600462944 /* SyncController.mm */; };
@@ -374,6 +377,13 @@
 		D457D2F02E64896B00D1DF73 /* StravaImporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StravaImporter.h; sourceTree = "<group>"; };
 		D473BB162E692FB200B504DC /* FullImageBrowserWindowController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = FullImageBrowserWindowController.m; path = "My Code/FullImageBrowserWindowController.m"; sourceTree = "<group>"; };
 		D473BB182E69300200B504DC /* FullImageBrowserWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FullImageBrowserWindowController.h; path = "My Code/FullImageBrowserWindowController.h"; sourceTree = "<group>"; };
+		D489E0E52E6B32BF0076E5DC /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/SplashPanel.xib; sourceTree = "<group>"; };
+		D49F293E2E69FAB100C5B87C /* AscentApplication.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = AscentApplication.m; path = "My Code/AscentApplication.m"; sourceTree = "<group>"; };
+		D49F29422E69FB7000C5B87C /* AscentApplication.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AscentApplication.h; path = "My Code/AscentApplication.h"; sourceTree = "<group>"; };
+		D49F29432E6A52C500C5B87C /* AscentDocumentController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = AscentDocumentController.m; path = "My Code/AscentDocumentController.m"; sourceTree = "<group>"; };
+		D49F29452E6A52DA00C5B87C /* AscentDocumentController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AscentDocumentController.h; path = "My Code/AscentDocumentController.h"; sourceTree = "<group>"; };
+		D49F29462E6A5B1D00C5B87C /* ADQueuedRequest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ADQueuedRequest.h; sourceTree = "<group>"; };
+		D49F29472E6A61CA00C5B87C /* NSDocumentController+AscentForceSubclass.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "NSDocumentController+AscentForceSubclass.m"; path = "My Code/NSDocumentController+AscentForceSubclass.m"; sourceTree = "<group>"; };
 		D4C0CE8A2E5BE2C4003B55C4 /* fit_example.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = fit_example.h; path = "My Code/FIT/fit_example.h"; sourceTree = "<group>"; };
 		D4C0CE8B2E5BE2C4003B55C4 /* fit_example.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fit_example.c; path = "My Code/FIT/fit_example.c"; sourceTree = "<group>"; };
 		D4C0CE8C2E5BE2C4003B55C4 /* fit_include.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = fit_include.h; path = "My Code/FIT/fit_include.h"; sourceTree = "<group>"; };
@@ -406,7 +416,6 @@
 		D4CCE9202E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/PrefsSync.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9212E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/TransparentMapWindow.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9222E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/GMTOffset.nib; sourceTree = SOURCE_ROOT; };
-		D4CCE9232E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/SplashPanel.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9242E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/EditMarkers.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9252E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/EquipmentLogInitialValues.xib; sourceTree = SOURCE_ROOT; };
 		D4CCE9262E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = SOURCE_ROOT; };
@@ -1175,24 +1184,15 @@
 		D4F13AA72E4EAE4600462944 /* Misc */ = {
 			isa = PBXGroup;
 			children = (
-				D4F13A8C2E4EAE4600462944 /* TransparentWindowController.h */,
-				D4F13A8D2E4EAE4600462944 /* TransparentWindowController.mm */,
-				D4F13A8E2E4EAE4600462944 /* TransportPanelController.h */,
-				D4F13A8F2E4EAE4600462944 /* TransportPanelController.mm */,
-				D4F13A902E4EAE4600462944 /* TransportPanelView.h */,
-				D4F13A912E4EAE4600462944 /* TransportPanelView.mm */,
-				D4F13A922E4EAE4600462944 /* ProgressBarController.h */,
-				D4F13A932E4EAE4600462944 /* ProgressBarController.mm */,
-				D4F13A942E4EAE4600462944 /* GetPasswordController.h */,
-				D4F13A952E4EAE4600462944 /* GetPasswordController.mm */,
-				D4F13A962E4EAE4600462944 /* main.m */,
-				D4F13A972E4EAE4600462944 /* DBComm.h */,
-				D4F13A982E4EAE4600462944 /* DBComm.mm */,
-				D4F13A992E4EAE4600462944 /* Defs.h */,
 				D4F13A9A2E4EAE4600462944 /* AnimTimer.h */,
 				D4F13A9B2E4EAE4600462944 /* AnimTimer.mm */,
 				D4F13A9C2E4EAE4600462944 /* AppController.h */,
 				D4F13A9D2E4EAE4600462944 /* AppController.mm */,
+				D49F29422E69FB7000C5B87C /* AscentApplication.h */,
+				D49F293E2E69FAB100C5B87C /* AscentApplication.m */,
+				D49F29452E6A52DA00C5B87C /* AscentDocumentController.h */,
+				D49F29432E6A52C500C5B87C /* AscentDocumentController.m */,
+				D49F29462E6A5B1D00C5B87C /* ADQueuedRequest.h */,
 				D4F13A9E2E4EAE4600462944 /* AscentTextField.h */,
 				D4F13A9F2E4EAE4600462944 /* AscentTextField.mm */,
 				D4F13AA02E4EAE4600462944 /* ColorBoxView.h */,
@@ -1201,6 +1201,21 @@
 				D4F13AA32E4EAE4600462944 /* ColumnInfo.mm */,
 				D4F13AA42E4EAE4600462944 /* DataHUDWindowController.h */,
 				D4F13AA52E4EAE4600462944 /* DataHUDWindowController.mm */,
+				D4F13A972E4EAE4600462944 /* DBComm.h */,
+				D4F13A982E4EAE4600462944 /* DBComm.mm */,
+				D4F13A992E4EAE4600462944 /* Defs.h */,
+				D4F13A942E4EAE4600462944 /* GetPasswordController.h */,
+				D4F13A952E4EAE4600462944 /* GetPasswordController.mm */,
+				D4F13A962E4EAE4600462944 /* main.m */,
+				D4F13A922E4EAE4600462944 /* ProgressBarController.h */,
+				D4F13A932E4EAE4600462944 /* ProgressBarController.mm */,
+				D4F13A8C2E4EAE4600462944 /* TransparentWindowController.h */,
+				D4F13A8D2E4EAE4600462944 /* TransparentWindowController.mm */,
+				D4F13A8E2E4EAE4600462944 /* TransportPanelController.h */,
+				D4F13A8F2E4EAE4600462944 /* TransportPanelController.mm */,
+				D4F13A902E4EAE4600462944 /* TransportPanelView.h */,
+				D4F13A912E4EAE4600462944 /* TransportPanelView.mm */,
+				D49F29472E6A61CA00C5B87C /* NSDocumentController+AscentForceSubclass.m */,
 			);
 			name = Misc;
 			sourceTree = "<group>";
@@ -1387,7 +1402,7 @@
 				D4F18D042E5248980032E51D /* ProgressBar.xib */,
 				D4F13B332E4EAE4600462944 /* Reg.nib */,
 				D4F13B352E4EAE4600462944 /* SelectAndApplyAction.nib */,
-				D4F13B372E4EAE4600462944 /* SplashPanel.nib */,
+				D489E0E42E6B32BF0076E5DC /* SplashPanel.xib */,
 				D4F13B392E4EAE4600462944 /* SplitActivity.nib */,
 				D4F13B3B2E4EAE4600462944 /* SummaryWindow.nib */,
 				D490A52C2E4F8E48005BAD01 /* TrackBrowserDocument.xib */,
@@ -1811,6 +1826,7 @@
 				D4F13C232E4EAE4600462944 /* GreenDot.png in Resources */,
 				D4F13C252E4EAE4600462944 /* bike tires.png in Resources */,
 				D4F13C262E4EAE4600462944 /* ww.jpg in Resources */,
+				D489E0E62E6B32BF0076E5DC /* SplashPanel.xib in Resources */,
 				D4F13C272E4EAE4600462944 /* running shoes.jpg in Resources */,
 				D4F13C292E4EAE4600462944 /* iphone.png in Resources */,
 				D4F13C2A2E4EAE4600462944 /* play_off.png in Resources */,
@@ -1858,7 +1874,6 @@
 				D4F13C5F2E4EAE4600462944 /* DetailedMapWindow.nib in Resources */,
 				D4F13C602E4EAE4600462944 /* line_solid.png in Resources */,
 				D4F13C662E4EAE4600462944 /* PrefsBackup.nib in Resources */,
-				D4F13C682E4EAE4600462944 /* SplashPanel.nib in Resources */,
 				D4F13C692E4EAE4600462944 /* bike chain.png in Resources */,
 				D4F13C6B2E4EAE4600462944 /* walking shoes.png in Resources */,
 				D4F13C6C2E4EAE4600462944 /* GeneralPreferences.tiff in Resources */,
@@ -1912,6 +1927,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D489E0E72E6B32BF0076E5DC /* SplashPanel.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1943,6 +1959,7 @@
 				D4F13CB32E4EAE4600462944 /* ProgressBarController.mm in Sources */,
 				D4F13CB42E4EAE4600462944 /* AscentDistanceFormatter.m in Sources */,
 				D4F13CB52E4EAE4600462944 /* WeightValueTransformer.m in Sources */,
+				D49F29482E6A61CA00C5B87C /* NSDocumentController+AscentForceSubclass.m in Sources */,
 				D4F13CB62E4EAE4600462944 /* EquipmentSelectorWindowController.mm in Sources */,
 				D4F13CB72E4EAE4600462944 /* AscentIntervalFormatter.mm in Sources */,
 				D4F13CB82E4EAE4600462944 /* BrowserColumnsWindowController.mm in Sources */,
@@ -1960,7 +1977,6 @@
 				D4F13CC12E4EAE4600462944 /* RegController.mm in Sources */,
 				D4F13CC22E4EAE4600462944 /* EquipmentListWindowController.mm in Sources */,
 				D4F13CC32E4EAE4600462944 /* GarminSyncWindowController.mm in Sources */,
-				D4F13CC42E4EAE4600462944 /* SplashPanelView.mm in Sources */,
 				D4F13CC52E4EAE4600462944 /* AppController.mm in Sources */,
 				D4F13CC62E4EAE4600462944 /* ADView.mm in Sources */,
 				D4F13CC72E4EAE4600462944 /* SyncController.mm in Sources */,
@@ -1976,6 +1992,7 @@
 				D4F13CD22E4EAE4600462944 /* DistanceMethodController.mm in Sources */,
 				D4F13CD32E4EAE4600462944 /* PrefsSharing.mm in Sources */,
 				D4F13CD42E4EAE4600462944 /* NetUtilities.m in Sources */,
+				D49F29442E6A52C500C5B87C /* AscentDocumentController.m in Sources */,
 				D4F13CD52E4EAE4600462944 /* ProfilesContainerView.mm in Sources */,
 				D4F13CD62E4EAE4600462944 /* CWSummaryPanelView.mm in Sources */,
 				D4F13CD72E4EAE4600462944 /* PrefsUser.m in Sources */,
@@ -2036,6 +2053,7 @@
 				D4F13D0A2E4EAE4600462944 /* Track.mm in Sources */,
 				D4F13D0B2E4EAE4600462944 /* ADWindowController.mm in Sources */,
 				D4F13D0C2E4EAE4600462944 /* TCPService.m in Sources */,
+				D49F293F2E69FAB100C5B87C /* AscentApplication.m in Sources */,
 				D4F13D0D2E4EAE4600462944 /* TrackBrowserDocument.mm in Sources */,
 				D4F13D0E2E4EAE4600462944 /* StringAdditions.mm in Sources */,
 				D4F13D0F2E4EAE4600462944 /* PrefsGeneral.mm in Sources */,
@@ -2081,6 +2099,14 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
+		D489E0E42E6B32BF0076E5DC /* SplashPanel.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				D489E0E52E6B32BF0076E5DC /* en */,
+			);
+			name = SplashPanel.xib;
+			sourceTree = "<group>";
+		};
 		D490A52C2E4F8E48005BAD01 /* TrackBrowserDocument.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -2289,14 +2315,6 @@
 			name = SelectAndApplyAction.nib;
 			sourceTree = "<group>";
 		};
-		D4F13B372E4EAE4600462944 /* SplashPanel.nib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				D4CCE9232E5048D300B46DB2 /* en */,
-			);
-			name = SplashPanel.nib;
-			sourceTree = "<group>";
-		};
 		D4F13B392E4EAE4600462944 /* SplitActivity.nib */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -2448,7 +2466,7 @@
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Montebello Software, LLC. All rights reserved.";
 				INFOPLIST_KEY_NSMainNibFile = MainMenu;
-				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				INFOPLIST_KEY_NSPrincipalClass = AscentApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -2534,7 +2552,7 @@
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Montebello Software, LLC. All rights reserved.";
 				INFOPLIST_KEY_NSMainNibFile = MainMenu;
-				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				INFOPLIST_KEY_NSPrincipalClass = AscentApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

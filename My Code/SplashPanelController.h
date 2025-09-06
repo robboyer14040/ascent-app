@@ -1,39 +1,33 @@
-//
-//  SplashPanelController.h
-//  TLP
-//
-//  Created by Rob Boyer on 10/1/06.
-//  Copyright 2006 Montebello Software. All rights reserved.
-//
+// SplashPanelController.h  (MRC / non-ARC)
 
 #import <Cocoa/Cocoa.h>
 
-@class SplashPanelView;
-
 @interface SplashPanelController : NSWindowController <NSWindowDelegate>
-{
-   IBOutlet NSPanel*          splashPanelInNib;
-   IBOutlet SplashPanelView*  splashView;
-   NSPanel*                   panelToDisplay;
-   NSTimer*                   fadeTimer;
-   float                      alphaVal;
-   BOOL                       canDismiss;
-}
 
+// Singleton
++ (SplashPanelController *)sharedInstance;
 
-+ (SplashPanelController *) sharedInstance;
+#pragma mark - Public API (match existing interface)
+// Show the panel (centered on main screen) and be visible now.
+- (void)showPanel;
+// Hide the panel immediately.
+- (void)hidePanel;
+// Update the message at the bottom of the splash.
+- (void)updateMessage:(NSString *)msg;
+// Update the mini progress bar within the splash pane
+- (void)updateProgress:(int)current total:(int)total;
+// Control whether the user can dismiss the splash by closing or clicking.
+- (void)canDismiss:(BOOL)yessno;
+// Fade the splash out and hide it when finished.
+- (void)startFade:(id)dummy;
+// Convenience: show centered on main screen, default level.
+- (void)showPanelCenteredOnMainScreen;
+// Same, but pick a higher level when `high` is YES.
+- (void)showPanelCenteredOnMainScreenWithHighLevel:(BOOL)high;
 
-
-#pragma mark PUBLIC INSTANCE METHODS
-
-   //	Show the panel, starting the text at the top with the animation going
-- (void) showPanel;
-
-   //	Stop scrolling and hide the panel.
-- (void) hidePanel;
-
-- (void) updateProgress:(NSString*)msg;
-- (void) canDismiss:(BOOL)yessno;
--(void) startFade:(id)dummy;
+#pragma mark - IBOutlets from SplashPanel.xib
+@property(assign) IBOutlet NSImageView  *imageView;     // filled by nib
+@property(assign) IBOutlet NSTextField  *messageField;  // filled by nib
+@property(assign) IBOutlet NSView       *miniProgress;  // filled by nib
 
 @end

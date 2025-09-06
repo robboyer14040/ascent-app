@@ -1,3 +1,8 @@
+//
+//  AppController.m
+//  Ascent
+//
+
 #import "AppController.h"
 #import "ADWindowController.h"
 #import "ALWindowController.h"
@@ -18,10 +23,9 @@
 #import <OmniAppKit/OAPreferenceController.h>
 #import "Utils.h"
 #import <Quartz/Quartz.h>
-#import <unistd.h>			// for sleep
+#import <unistd.h>
 #import <AddressBook/ABAddressBook.h>
 #import <AddressBook/ABPerson.h>
-///#import "RBSplitSubview.h"
 #import "RBSplitView.h"
 #import "SyncController.h"
 #import "BackupNagController.h"
@@ -29,6 +33,7 @@
 #import "GarminSyncWindowController.h"
 #import "WeightValueTransformer.h"
 #import <CoreText/CoreText.h>
+#import "AscentDocumentController.h"
 
 #if __has_include(<UniformTypeIdentifiers/UniformTypeIdentifiers.h>)
   #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
@@ -38,7 +43,8 @@
   #define HAVE_UTTYPE 0
 #endif
 
-/// FIXME move this MakeRecord method somewhere better
+// MARK: - Helpers / Records
+static NSMutableArray<NSURL *> *gLaunchOpenURLs = nil;
 
 static OAPreferenceClientRecord *
 MakeRecord(NSString *category,
@@ -46,25 +52,21 @@ MakeRecord(NSString *category,
            NSString *className,
            NSString *title,
            NSString *shortTitle,
-           NSString *iconName,   // system name or name in your bundle
-           NSString *nibName,    // the nib you load in your client
+           NSString *iconName,
+           NSString *nibName,
            NSInteger ordering)
 {
     OAPreferenceClientRecord *r = [[OAPreferenceClientRecord alloc] initWithCategoryName:category];
     r.identifier   = identifier;
-    r.className    = className;               // e.g. @"GeneralPrefsClient"
+    r.className    = className;
     r.title        = title;
     r.shortTitle   = shortTitle;
-    r.iconName     = iconName;                // e.g. NSImageNamePreferencesGeneral
-    r.nibName      = nibName;                 // e.g. @"GeneralPrefs"
-    r.ordering     = @(ordering);             // sort within category
-    // Optional defaults (shown in your header):
-    // r.defaultsArray = @[ /* OFPreference keys you want this pane to own */ ];
-    // r.defaultsDictionary = @{ /* seed defaults */ };
+    r.iconName     = iconName;
+    r.nibName      = nibName;
+    r.ordering     = @(ordering);
     return r;
 }
 
-// AI generated this method
 static BOOL RegisterFontsInFolder(NSURL *fontsURL) {
     NSFileManager *fm = NSFileManager.defaultManager;
     NSError *lsErr = nil;
@@ -80,32 +82,28 @@ static BOOL RegisterFontsInFolder(NSURL *fontsURL) {
 
     NSMutableArray<NSURL *> *fontURLs = [NSMutableArray array];
 
-    if (@available(macOS 11.0, *)) {
-        // Modern: UTType (UniformTypeIdentifiers)
-        for (NSURL *url in items) {
-            UTType *type = [UTType typeWithFilenameExtension:url.pathExtension];
-            if (type && [type conformsToType:UTTypeFont]) {
-                [fontURLs addObject:url];
-            }
-        }
-    } else {
-        // Legacy fallback (deprecated CoreServices C APIs) — gated and silenced
+#if __has_include(<UniformTypeIdentifiers/UniformTypeIdentifiers.h>)
+    for (NSURL *url in items) {
+        UTType *type = [UTType typeWithFilenameExtension:url.pathExtension];
+        if (type && [type conformsToType:UTTypeFont]) [fontURLs addObject:url];
+    }
+#else
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        for (NSURL *url in items) {
-            CFStringRef ext = (__bridge CFStringRef)url.pathExtension;
-            if (!ext) continue;
-            CFStringRef uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, ext, NULL);
-            if (uti) {
-                Boolean isFont = UTTypeConformsTo(uti, CFSTR("public.font"));
-                CFRelease(uti);
-                if (isFont) [fontURLs addObject:url];
-            }
+    for (NSURL *url in items) {
+        CFStringRef ext = (__bridge CFStringRef)url.pathExtension;
+        if (!ext) continue;
+        CFStringRef uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, ext, NULL);
+        if (uti) {
+            Boolean isFont = UTTypeConformsTo(uti, CFSTR("public.font"));
+            CFRelease(uti);
+            if (isFont) [fontURLs addObject:url];
         }
-#pragma clang diagnostic pop
     }
+#pragma clang diagnostic pop
+#endif
 
-    if (fontURLs.count == 0) return YES; // nothing to do, but not a failure
+    if (fontURLs.count == 0) return YES;
 
     BOOL allOK = YES;
     for (NSURL *url in fontURLs) {
@@ -116,7 +114,6 @@ static BOOL RegisterFontsInFolder(NSURL *fontsURL) {
         if (!ok) {
             allOK = NO;
             NSError *err = CFBridgingRelease(ce);
-            // Optional: ignore “already registered” errors
             if (![err.domain isEqualToString:(__bridge NSString *)kCTFontManagerErrorDomain] ||
                 err.code != kCTFontManagerErrorAlreadyRegistered) {
                 NSLog(@"Font register failed for %@: %@", url.lastPathComponent, err);
@@ -126,209 +123,170 @@ static BOOL RegisterFontsInFolder(NSURL *fontsURL) {
     return (BOOL)allOK;
 }
 
+// MARK: - Private interface
 
+static NSString * const kLastDocBookmarkKey = @"AscentLastOpenedDocBookmark";
 
 @interface AboutBoxWC : NSWindowController <NSWindowDelegate>
-
 @end
 
-
 @interface AppController ()
-- (void)afterDocOpened:(NSNotification *)notification;
+//@property(nonatomic, assign) BOOL deferringOpens;
+//@property(nonatomic, retain) NSMutableArray<NSURL *> *pendingOpenURLs;
+
+// Bookmarks for last-opened document
 - (void)rememberLastOpenedDocumentURL:(NSURL *)url;
 - (void)forgetLastOpenedDocumentURL;
 - (NSURL *)restoreLastOpenedDocumentURL;
+
+// Launch flow
+- (void)_startLaunchWork; // main-thread only
+- (void)processDeferredOpensThenDismissSplash;
+- (void)afterDocOpened:(NSNotification *)notification;
 @end
 
 @implementation AppController
 
-void setColorDefault(NSMutableDictionary* dict,
-                     NSString* theKey,
-                     float r, float g, float b, float a)
+
+// MARK: Defaults / Utilities
+
+static void setColorDefault(NSMutableDictionary* dict,
+                            NSString* theKey,
+                            float r, float g, float b, float a)
 {
-   NSData* colorAsData = [NSKeyedArchiver archivedDataWithRootObject:
-      [NSColor colorWithCalibratedRed:r/255.0 
-                                green:g/255.0 
-                                 blue:b/255.0 
-                                alpha:a]];
-   [dict setObject:colorAsData forKey:theKey];
-   
+    NSData* colorAsData = [NSKeyedArchiver archivedDataWithRootObject:
+                           [NSColor colorWithCalibratedRed:r/255.0
+                                                     green:g/255.0
+                                                      blue:b/255.0
+                                                     alpha:a]];
+    [dict setObject:colorAsData forKey:theKey];
 }
 
-
-+ (void) initialize
++ (void)initialize
 {
-   NSMutableDictionary* defaultValues = [NSMutableDictionary dictionary];
+    if (self != [AppController class]) return;
 
-	NSString* value = [[NSBundle mainBundle] objectForInfoDictionaryKey: @"CFBundleVersion"];
-	if (value != nil)
-	{
-		value = [@"Version " stringByAppendingString : value];
-	}
-	printf("Ascent %s\n", [value UTF8String]);
-	
-	//NSLog(@"This machine has %u processor(s).", OFNumberOfProcessors());
-	[[NSUserDefaults standardUserDefaults] registerDefaults:defaultValues];
-   
-	[Utils setBackupDefaults];
-	
-	//NSLog(@"registered default prefs: %@", defaultValues);
-	NSPasteboard* pb = [NSPasteboard generalPasteboard];
-	NSArray *types = [NSArray arrayWithObjects:TrackPBoardType, NSTabularTextPboardType, NSStringPboardType, nil];
-	[pb declareTypes:types owner:self];
+    NSMutableDictionary* defaultValues = [NSMutableDictionary dictionary];
 
-	
-    NSString *fontsFolder = [[[NSBundle mainBundle] resourcePath]
-                             stringByAppendingPathComponent:@"Fonts"];
-	if (fontsFolder)
-    {
-		NSURL *fontsURL = [NSURL fileURLWithPath:fontsFolder];
-		if (fontsURL) 
-		{
-#if 0
-// ATS... is deprecated
-			FSRef fsRef;
-			//FSSpec fsSpec;
-			(void)CFURLGetFSRef((CFURLRef)fontsURL, &fsRef);
-			//OSStatus status = FSGetCatalogInfo(&fsRef, kFSCatInfoNone, NULL,
-			//								NULL, &fsSpec, NULL);
-			OSStatus status = noErr;
-			if (noErr == status) {
-				ATSGeneration generationCount = ATSGetGeneration();
-				ATSFontContainerRef container;
-				//status = ATSFontActivateFromFileSpecification(&fsSpec, kATSFontContextLocal, kATSFontFormatUnspecified, NULL, kATSOptionFlagsDefault, &container);
-				status = ATSFontActivateFromFileReference(&fsRef, kATSFontContextLocal, kATSFontFormatUnspecified, NULL, kATSOptionFlagsDefault, &container);
-				generationCount = ATSGetGeneration() - generationCount;
-				if (generationCount) {
-					// NSLog(@"app - %@ added %u font file%s", @"", generationCount, 
-					//      (generationCount == 1 ? "" : "s"));
-					ItemCount count;
-					status = ATSFontFindFromContainer (container, 
-													   kATSOptionFlagsDefault, 0, NULL,&count);
-					ATSFontRef *ioArray=(ATSFontRef *)malloc(count * sizeof(ATSFontRef));
-					status = ATSFontFindFromContainer (container, 
-													kATSOptionFlagsDefault, count, ioArray, &count);
-					int i;
-					for (i=0; i<count; i++)
-					{
-						CFStringRef fontName=NULL;
-						status = ATSFontGetName (ioArray[i], kATSOptionFlagsDefault, 
-										  &fontName);
-						CFRelease(fontName);
-						//if (fontName) f = [NSFont fontWithName:(NSString*)fontName size:24];
-						// NSLog(@"added %@", (NSString*) fontName);
-					}
-					free(ioArray);
-				}
-			}
-#else
-            RegisterFontsInFolder(fontsURL);
-//            CFArrayRef errors;
-//            CTFontManagerRegisterFontsForURLs((CFArrayRef)((^{
-//                NSFileManager *fileManager = [NSFileManager defaultManager];
-//                NSArray *resourceURLs = [fileManager contentsOfDirectoryAtURL:fontsURL includingPropertiesForKeys:nil options:0 error:nil];
-//                return [resourceURLs filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(NSURL *url, NSDictionary *bindings) {
-//                    CFStringRef pathExtension = (CFStringRef)[url pathExtension];
-//                    NSArray *allIdentifiers = (NSArray *)UTTypeCreateAllIdentifiersForTag(kUTTagClassFilenameExtension, pathExtension, CFSTR("public.font"));
-//                    if (![allIdentifiers count]) {
-//                        return NO;
-//                    }
-//                    CFStringRef utType = (CFStringRef)[allIdentifiers lastObject];
-//                    return (!CFStringHasPrefix(utType, CFSTR("dyn.")) && UTTypeConformsTo(utType, CFSTR("public.font")));
-//                }]];
-//            })()), kCTFontManagerScopeProcess, &errors);
-#endif
-            
-		}
-	}
-    
-	WeightValueTransformer *tf;
-	
-	// create an autoreleased instance of our value transformer
-	tf = [[[WeightValueTransformer alloc] init] autorelease];
-	
-	// register it with the name that we refer to it with
-	[NSValueTransformer setValueTransformer:tf
-									forName:@"WeightValueTransformer"];
-	
+    NSString* value = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
+    if (value) value = [@"Version " stringByAppendingString:value];
+    if (value) printf("Ascent %s\n", [value UTF8String]);
+
+    [[NSUserDefaults standardUserDefaults] registerDefaults:defaultValues];
+    [Utils setBackupDefaults];
+
+    // Register pasteboard types once
+    NSPasteboard* pb = [NSPasteboard generalPasteboard];
+    NSArray *types = [NSArray arrayWithObjects:TrackPBoardType, NSTabularTextPboardType, NSStringPboardType, nil];
+    [pb declareTypes:types owner:self];
+
+    // Register bundled fonts
+    NSString *fontsFolder = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Fonts"];
+    if (fontsFolder) {
+        NSURL *fontsURL = [NSURL fileURLWithPath:fontsFolder];
+        if (fontsURL) (void)RegisterFontsInFolder(fontsURL);
+    }
+
+    // Value transformer
+    WeightValueTransformer *tf = [[[WeightValueTransformer alloc] init] autorelease];
+    [NSValueTransformer setValueTransformer:tf forName:@"WeightValueTransformer"];
 }
-
 
 - (id)init
 {
-	[super init];
-	transportPanelController = nil;
-	initialDocument = nil;
-	return self;
+    if ((self = [super init])) {
+        transportPanelController = nil;
+        initialDocument = nil;
+        _deferringOpens = NO;
+        _pendingOpenURLs = nil;
+    }
+    return self;
 }
-
 
 - (void)dealloc
 {
-	[transportPanelController release];
-	[syncController release];
-	[super dealloc];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [transportPanelController release];
+    [syncController release];
+    [_pendingOpenURLs release];
+    [super dealloc];
 }
 
-- (void)didCloseAllFunc:(NSDocumentController *)docController  didCloseAll: (BOOL)didCloseAll contextInfo:(void *)contextInfo
+// MARK: App termination
+
+- (void)applicationWillTerminate:(NSNotification *)note
 {
-   //volatile int f = 42;
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    NSError* error = nil;
+    [[[EquipmentLog sharedInstance] managedObjectContext] save:&error];
+
+    NSDocumentController *dc = [NSDocumentController sharedDocumentController];
+    [dc closeAllDocumentsWithDelegate:self
+                  didCloseAllSelector:@selector(didCloseAllFunc:didCloseAll:contextInfo:)
+                          contextInfo:NULL];
 }
 
-- (void)applicationWillTerminate:(NSNotification *)aNotification
+- (void)didCloseAllFunc:(NSDocumentController *)dc didCloseAll:(BOOL)didCloseAll contextInfo:(void *)ctx
 {
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	NSError* error;
-	[[[EquipmentLog sharedInstance] managedObjectContext] save:&error];
-	NSDocumentController *dc = [NSDocumentController sharedDocumentController];
-	[dc closeAllDocumentsWithDelegate:self 
-				 didCloseAllSelector:@selector(didCloseAllFunc:didCloseAll:contextInfo:)
-						 contextInfo:nil];
+    (void)dc; (void)didCloseAll; (void)ctx;
 }
 
-- (void)application:(NSApplication *)app openURLs:(NSArray<NSURL *> *)urls {
+// MARK: URL handling (Strava callback)
+
+- (void)application:(NSApplication *)app openURLs:(NSArray<NSURL *> *)urls
+{
     for (NSURL *url in urls) {
-        if ([url.scheme.lowercaseString isEqualToString:@"ascent"]) {
+        if ([[url.scheme lowercaseString] isEqualToString:@"ascent"]) {
             NSError *err = nil;
             BOOL ok = [[StravaAPI shared] handleCallbackURL:url error:&err];
-            if (!ok) {
-                NSLog(@"Strava callback error: %@", err);
-            }
-            break; // handled one; stop looping
+            if (!ok) NSLog(@"Strava callback error: %@", err);
+            break;
         }
     }
 }
 
+// MARK: Open-file deferral
 
-- (BOOL)application:(NSApplication *)theApplication
-           openFile:(NSString *)filename
+- (BOOL)application:(NSApplication *)app openFile:(NSString *)filename
 {
-	NSDocumentController *dc;
-	id doc;
+//    if (!self.pendingOpenURLs) self.pendingOpenURLs = [[NSMutableArray alloc] init];
+//    NSURL *u = [NSURL fileURLWithPath:filename];
+//    if (u) [self.pendingOpenURLs addObject:u];
+    // Do NOT open it yet; we’ll open after splash
+    return YES; // tell AppKit we handled it
+}
 
-	dc = [NSDocumentController sharedDocumentController];
-	NSError* error;
-	NSURL* url = [[[NSURL alloc] initFileURLWithPath:filename] autorelease];
-	doc = [dc openDocumentWithContentsOfURL:url 
-									display:YES
-									  error:&error];
-	[[[NSUserDefaultsController sharedUserDefaultsController] values]  setValue:[NSArchiver archivedDataWithRootObject:url] 
-																		 forKey:@"lastFileURL"];
-#ifdef DEBUG
-	NSLog(@"opened file %@, lastFileURL:%@\n", filename, url);
-#endif
-	return ( doc != nil);
+- (void)application:(NSApplication *)app openFiles:(NSArray<NSString *> *)filenames
+{
+//    if (!self.pendingOpenURLs) self.pendingOpenURLs = [[NSMutableArray alloc] init];
+//    for (NSString *p in filenames) {
+//        NSURL *u = [NSURL fileURLWithPath:p];
+//        if (u) [self.pendingOpenURLs addObject:u];
+//    }
+    // Do NOT open now
+    [app replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
 }
 
 
-
-#if 0// AppDelegate.m
-- (IBAction)openTheDocument:(id)sender {
-    NSLog(@"DocTypes = %@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDocumentTypes"]);
-    [[NSDocumentController sharedDocumentController] openDocument:sender];
+// Guard untitled opens while splash is up.
+- (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender
+{
+    return !self.deferringOpens;
 }
-#endif
 
+- (BOOL)applicationShouldRestoreWindows:(NSApplication *)app {
+    return NO; // prevent macOS from auto-reopening last docs at launch
+}
+
+
+- (BOOL)applicationOpenUntitledFile:(NSApplication *)theApplication
+{
+    if (self.deferringOpens) return NO;
+    [[NSDocumentController sharedDocumentController] newDocument:self];
+    return YES;
+}
+
+// MARK: UI Hooks
 
 - (IBAction)openTheDocument:(id)sender
 {
@@ -339,63 +297,40 @@ void setColorDefault(NSMutableDictionary* dict,
     panel.canChooseDirectories = NO;
     panel.allowsMultipleSelection = NO;
 
-    // Build allowed types from your Info.plist (CFBundleDocumentTypes)
-
+#if HAVE_UTTYPE
     NSMutableArray<UTType *> *contentTypes = [NSMutableArray array];
     NSArray *docTypes = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDocumentTypes"];
-
     for (NSDictionary *t in docTypes) {
         BOOL added = NO;
-
-        // 1) Try declared UTIs
         for (NSString *uti in (t[@"LSItemContentTypes"] ?: @[])) {
-            if (UTType *u = [UTType typeWithIdentifier:uti]) {
-                [contentTypes addObject:u]; added = YES;
-            }
+            UTType *u = [UTType typeWithIdentifier:uti];
+            if (u) { [contentTypes addObject:u]; added = YES; }
         }
-
-        // 2) Fallback: map declared extensions -> UTType
         if (!added) {
             for (NSString *ext in (t[@"CFBundleTypeExtensions"] ?: @[])) {
-                if (UTType *u = [UTType typeWithFilenameExtension:ext]) {
-                    [contentTypes addObject:u]; added = YES;
-                }
+                UTType *u = [UTType typeWithFilenameExtension:ext];
+                if (u) { [contentTypes addObject:u]; added = YES; }
             }
         }
-
-        // 3) Last-ditch: create a dynamic type from the extension, conforming to data
         if (@available(macOS 11.0, *)) {
             if (!added) {
                 for (NSString *ext in (t[@"CFBundleTypeExtensions"] ?: @[])) {
-                    if (UTType *u = [UTType typeWithTag:UTTagClassFilenameExtension
-                                                  value:ext
-                                           conformingTo:UTTypeData]) {
-                        [contentTypes addObject:u];
-                    }
+                    UTType *u = [UTType typeWithTag:UTTagClassFilenameExtension value:ext conformingTo:UTTypeData];
+                    if (u) [contentTypes addObject:u];
                 }
             }
         }
     }
-    panel.allowedContentTypes = [NSOrderedSet orderedSetWithArray:contentTypes].array;
-    if (contentTypes.count > 0) {
-        panel.allowedContentTypes = contentTypes; // NSOpenPanel API
-    }
-    // else leave unfiltered; user can still pick anything your app can open
+    if (contentTypes.count > 0) panel.allowedContentTypes = contentTypes;
+#endif
 
     NSWindow *host = NSApp.mainWindow ?: NSApp.keyWindow;
     void (^openURL)(NSURL *) = ^(NSURL *url) {
         [dc openDocumentWithContentsOfURL:url
                                   display:YES
-                        completionHandler:^(NSDocument * _Nullable doc,
-                                            BOOL documentWasAlreadyOpen,
-                                            NSError * _Nullable error)
+                        completionHandler:^(NSDocument *doc, BOOL alreadyOpen, NSError *error)
         {
             if (error) { [NSApp presentError:error]; return; }
-            // NSDocumentController records recents automatically on success.
-            // (Optional belt-and-suspenders:)
-            NSLog(@"max recents = %ld",
-                  (long)[NSDocumentController sharedDocumentController].maximumRecentDocumentCount);
-            NSLog(@"bundle id = %@", [[NSBundle mainBundle] bundleIdentifier]);
             if (doc.fileURL) [dc noteNewRecentDocumentURL:doc.fileURL];
         }];
     };
@@ -409,87 +344,167 @@ void setColorDefault(NSMutableDictionary* dict,
     }
 }
 
+// MARK: Launch sequence with splash
 
-- (BOOL) applicationShouldOpenUntitledFile: (NSApplication *) sender
+
+- (void)applicationWillFinishLaunching:(NSNotification *)note
 {
-   if ([[NSUserDefaults standardUserDefaults]  objectForKey:@"lastFileURL"])
-      return NO;
-	sleep(2);
-   return YES;
+    // Ensure nib is loaded very early
+    (void)[SplashPanelController sharedInstance].window;
+
+    self.deferringOpens = YES;
+    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+
 }
 
 
-- (BOOL)applicationOpenUntitledFile:(NSApplication *)theApplication
+- (void)applicationDidFinishLaunching:(NSNotification *)note
 {
-   NSDocumentController *dc;
-   dc = [NSDocumentController sharedDocumentController];
-   [dc newDocument:self];
-   return YES;
-}
+    SplashPanelController *sp = [SplashPanelController sharedInstance];
+    [sp showPanelCenteredOnMainScreenWithHighLevel:YES];
 
-- (IBAction)makeANewDocument:(id)sender
-{
-   NSDocumentController *dc;
-   dc = [NSDocumentController sharedDocumentController];
-   [dc newDocument:self];
-}
+    // Ensure app is active and the splash is actually ordered in
+    [NSApp activateIgnoringOtherApps:YES];
+    [sp.window makeKeyAndOrderFront:nil];     // now allowed (SplashKeyWindow)
+    [sp.window orderFrontRegardless];
+    [sp.window displayIfNeeded];              // draw immediately
 
--(IBAction)saveADocument:(id)sender
-{
+    [CATransaction flush];
+    [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                             beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.0]];
     
-    
+    // Turn 1: allow Core Animation / window-server to commit the splash
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Turn 2: now kick off deferred opens
+        AscentDocumentController *dc =
+           (AscentDocumentController *)[NSDocumentController sharedDocumentController];
+
+        [dc drainDeferredOpensWithCompletion:^{
+            self.deferringOpens = NO;        // <-- IMPORTANT
+            // fade/close splash when your docs are up
+            [sp startFade:nil];
+        }];
+    });
 }
 
 
--(IBAction)showAboutBox:(id)sender
+- (void)_startLaunchWork
 {
-#if 0
-    /************ BEGIN QUARTZ COMPOSER *************/
-    NSRect fr = [aboutContentView bounds];
-    QCView* aboutView = [[QCView alloc] initWithFrame:fr];
-    [aboutContentView addSubview:aboutView];
-    [aboutView release];
-    // If we were to load the composition from the application's resources into the QCView of the about window...
-    [aboutView loadCompositionFromFile:[[NSBundle mainBundle]
-                                        pathForResource:@"AboutBox"
-                                        ofType:@"qtz"]];
-    [aboutView setEraseColor:[NSColor colorWithCalibratedRed:0.0 green:0.0 blue:0.0 alpha:1.0]];
-    [aboutView setAutostartsRendering:YES];
-    NSString	*value;
-    value = [[NSBundle mainBundle] objectForInfoDictionaryKey: @"CFBundleVersion"];
-    if (value != nil)
-    {
-        value = [@"Version " stringByAppendingString : value];
+    // All AppKit calls here are on main
+    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+
+    (void)[NSDocumentController sharedDocumentController];
+
+    // Notifications you need during/after launch
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [nc addObserver:self selector:@selector(afterSplashPanelDone:) name:@"AfterSplashPanelDone" object:nil];
+    [nc addObserver:self selector:@selector(afterDocOpened:) name:@"AfterDocOpened" object:nil];
+    [nc addObserver:self selector:@selector(showActivityDetail:) name:@"OpenActivityDetail" object:nil];
+    [nc addObserver:self selector:@selector(showDetailedMap:) name:@"OpenMapDetail" object:nil];
+    [nc addObserver:self selector:@selector(showActivityDataList:) name:@"OpenDataDetail" object:nil];
+    [nc addObserver:self selector:@selector(showSummaryGraph:) name:@"OpenSummaryGraph" object:nil];
+    ///[nc addObserver:self selector:@selector(transportPanelClosed:) name:@"TransportPanelClosed" object:nil];
+
+    initialDocument = nil;
+
+    NSString* title = [NSString stringWithFormat:@"Move \"%@\" values to \"%@\" field",
+                       [Utils stringFromDefaults:RCBDefaultKeyword1Label],
+                       [Utils stringFromDefaults:RCBDefaultCustomFieldLabel]];
+    [copyKeyword1MenuItem setTitle:title];
+
+    title = [NSString stringWithFormat:@"Move \"%@\" values to \"%@\" field",
+             [Utils stringFromDefaults:RCBDefaultKeyword2Label],
+             [Utils stringFromDefaults:RCBDefaultCustomFieldLabel]];
+    [copyKeyword2MenuItem setTitle:title];
+
+    [Utils createPowerActivityArrayIfDoesntExist];
+
+//    NSURL *fileURL = [self restoreLastOpenedDocumentURL];
+//    if (fileURL) {
+//        if (!self.pendingOpenURLs) self.pendingOpenURLs = [[[NSMutableArray alloc] init] autorelease];
+//        [self.pendingOpenURLs addObject:fileURL];
+//    }
+}
+
+
+- (void)processDeferredOpensThenDismissSplash
+{
+    NSDocumentController *dc = [NSDocumentController sharedDocumentController];
+
+    void (^done)(void) = ^{
+    };
+
+    if (self.pendingOpenURLs.count == 0) { done(); return; }
+
+    __block NSUInteger remaining = self.pendingOpenURLs.count;
+    for (NSURL *u in [[self.pendingOpenURLs copy] autorelease]) {
+        [dc openDocumentWithContentsOfURL:u display:YES completionHandler:
+         ^(NSDocument *doc, BOOL wasAlreadyOpen, NSError *error) {
+             if (--remaining == 0) done();
+         }];
     }
-    
-    // Set the parameters of the composition played by the QCView in the about window
-    [aboutView setValue:PROGRAM_NAME forInputKey:@"ProgramName"];
-    [aboutView setValue:value forInputKey:@"Version"];
-    [aboutView setValue:@"Programming:\n\nRob Boyer" forInputKey:@"ProgrammingBy"];
-    [aboutView setValue:@"Interface Design:\n\nRob Boyer\nChris Konovaliv" forInputKey:@"InterfaceBy"];
-    [aboutView setValue:@"Testing:\n\nRon Goodman\nMichael Gould\nChris Konovaliv\nKevin Ohler\nRick Oshlo\nScott Ruda\nByron Sheppard\nBob Wagner" forInputKey:@"TestingBy"];
-    [aboutView setValue:@"Maps courtesy of Microsoft\nGPS I/O courtesy of GPSBabel" forInputKey:@"MapsBy"];
-    [aboutView setValue:@"Special thanks to:\n\nAndy Matuschak for Sparkle\n(http://andymatuschak.org/)\nMatt Gemmell for HUDWindow\n(http://mattgemmell.com)\nRBSplitView by Rainer Brokerhoff\n(http://www.brokerhoff.net)\nThe Omni Group for OmniFoundation\nLos Gatos Bicycle Racing Club (LGBRC)" forInputKey:@"ThanksTo"];
-    [[aboutView window] center];
-    //[qcView setValue:[NSApp applicationIconImage] forInputKey:@"Image"];
-    //[qcView setValue:[NSColor redColor] forInputKey:@"Color"];
-    
-    /************* END QUARTZ COMPOSER **************/
-    ///[[aboutView window] makeKeyAndOrderFront:aboutView];
-    
-    
-    //./[aboutPanel makeKeyAndOrderFront:self];
-    AboutBoxWC* abc = [[AboutBoxWC alloc] initWithWindow:aboutPanel];
-    [aboutPanel setDelegate:abc];
-    [NSApp runModalForWindow:aboutPanel];
-    [aboutPanel orderOut:self];
-    [aboutView unloadComposition];
-    [aboutView removeFromSuperview];	// should release/free aboutView here
-    [abc release];
-#endif
 }
 
 
+// MARK: Post-splash
+
+- (void)afterDocOpened:(NSNotification *)notification
+{
+    // currently unused; keep if other components post it
+}
+
+
+- (void)afterSplashPanelDone:(NSNotification *)notification
+{
+    BOOL ok = YES; // (registration check omitted)
+
+    if (!ok) {
+        RegController* rc = [[RegController alloc] init];
+        [[rc window] center];
+        [rc showWindow:self];
+        [NSApp runModalForWindow:[rc window]];
+        [[rc window] orderOut:self];
+        [rc release];
+    }
+
+    if ([Utils boolFromDefaults:RCBDefaultShowTransportPanel]) {
+        [self showTransportPanel:self];
+    }
+
+    TrackBrowserDocument* tbd = [self currentTrackBrowserDocument];
+    if (tbd) {
+        NSArray* wcs = [tbd windowControllers];
+        if (wcs.count > 0) {
+            TBWindowController* sc = [wcs objectAtIndex:0];
+            if (sc) [[sc window] makeKeyAndOrderFront:nil];
+        }
+    }
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(selectionDoubleClickedInOutlineView:)
+                                                 name:@"TBSelectionDoubleClicked"
+                                               object:nil];
+
+    // Birthday / age update (legacy AddressBook)
+    NSDate* birthDate = [Utils objectFromDefaults:RCBDefaultBirthday];
+    if (!birthDate) {
+        ABPerson* curPerson = [[ABAddressBook sharedAddressBook] me];
+        if (curPerson) {
+            birthDate = [curPerson valueForProperty:kABBirthdayProperty];
+            if (birthDate) [Utils setObjectDefault:birthDate forKey:RCBDefaultBirthday];
+        }
+    }
+    if (!birthDate) {
+        birthDate = [NSDate dateWithString:@"1980-01-01 10:00:00 +0600"];
+        [Utils setObjectDefault:birthDate forKey:RCBDefaultBirthday];
+    }
+    int age = [Utils calculateAge:birthDate];
+    [Utils setIntDefault:age forKey:RCBDefaultAge];
+
+    // (Updater / backup nag omitted)
+}
+
+// MARK: Misc UI commands
 
 -(IBAction)showDetailedMap:(id)sender
 {
@@ -499,7 +514,6 @@ void setColorDefault(NSMutableDictionary* dict,
     [sc showMapDetail:sender];
 }
 
-
 -(IBAction)showSummaryGraph:(id)sender
 {
     TrackBrowserDocument* tbd = (TrackBrowserDocument*)
@@ -508,7 +522,6 @@ void setColorDefault(NSMutableDictionary* dict,
     [sc showSummaryGraph:sender];
 }
 
-
 - (IBAction) showActivityDetail:(id) sender
 {
     TrackBrowserDocument* tbd = (TrackBrowserDocument*)
@@ -516,51 +529,52 @@ void setColorDefault(NSMutableDictionary* dict,
     TBWindowController* sc = [tbd windowController];
     [sc stopAnimations];
     Track* track = [tbd currentlySelectedTrack];
-    if (nil != track)
-    {
+    if (track) {
         Lap* lap = [tbd selectedLap];
-        ADWindowController* adWindowController = [[ADWindowController alloc] initWithDocument:tbd];
-        [tbd addWindowController:adWindowController];
-        [adWindowController autorelease];
-        [adWindowController showWindow:self];
-        [adWindowController setTrack:track];
-        [adWindowController setLap:lap];
+        ADWindowController* ad = [[ADWindowController alloc] initWithDocument:tbd];
+        [tbd addWindowController:ad];
+        [ad autorelease];
+        [ad showWindow:self];
+        [ad setTrack:track];
+        [ad setLap:lap];
     }
 }
 
-
 - (IBAction) showActivityDataList:(id) sender
 {
-	TrackBrowserDocument* tbd = (TrackBrowserDocument*)
-		[[NSDocumentController sharedDocumentController] currentDocument];
-	TBWindowController* sc = [tbd windowController];
-	[sc stopAnimations];
-	Track* track = [tbd currentlySelectedTrack];
-	if (nil != track)
-	{
-		ALWindowController* alWindowController = [[ALWindowController alloc] initWithDocument:tbd];
-		[tbd addWindowController:alWindowController];
-		[alWindowController autorelease];
-		NSWindow* wind = [alWindowController window];
-		[alWindowController setTrack:track];
-		NSDate* ct = [track creationTime];
-		NSString* name = [track attribute:kName];
-		NSString* title = @"Activity Data - ";
-		title = [title stringByAppendingString:name];
-		NSString* format = @"%A, %B %d  %I:%M%p";
-		if ([name length] != 0)
-		{
-			format = @"  (%A, %B %d  %I:%M%p)";
-		}
-		NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
-		title = [title stringByAppendingString:[ct descriptionWithCalendarFormat:format
-																	  timeZone:tz
-																		locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]]];
-		[wind setTitle:title];
-		[alWindowController showWindow:self];
-	}
-}
+    TrackBrowserDocument* tbd = (TrackBrowserDocument*)
+        [[NSDocumentController sharedDocumentController] currentDocument];
+    TBWindowController* sc = [tbd windowController];
+    [sc stopAnimations];
+    Track* track = [tbd currentlySelectedTrack];
+    if (track) {
+        ALWindowController* al = [[ALWindowController alloc] initWithDocument:tbd];
+        [tbd addWindowController:al];
+        [al autorelease];
+        NSWindow* wind = [al window]; (void)wind;
 
+        [al setTrack:track];
+
+        NSDate* ct = [track creationTime];
+        NSString* name = [track attribute:kName] ?: @"";
+        NSString* title = @"Activity Data - ";
+        title = [title stringByAppendingString:name];
+
+        NSString* format = @"%A, %B %d  %I:%M%p";
+        if (name.length != 0) format = @"  (%A, %B %d  %I:%M%p)";
+
+        NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        title = [title stringByAppendingString:
+                 [ct descriptionWithCalendarFormat:format
+                                          timeZone:tz
+                                            locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]]];
+#pragma clang diagnostic pop
+        [[al window] setTitle:title];
+        [al showWindow:self];
+    }
+}
 
 - (void)selectionDoubleClickedInOutlineView:(NSNotification *)notification
 {
@@ -568,323 +582,72 @@ void setColorDefault(NSMutableDictionary* dict,
     switch (defaultAction)
     {
         default:
-        case 0:
-            [self showActivityDetail:self];
-            break;
-        
-        case 1:
-        {
-           TrackBrowserDocument* tbd = (TrackBrowserDocument*)[[NSDocumentController sharedDocumentController] currentDocument];
-           TBWindowController* wc = [tbd windowController];
-           [wc showMapDetail:self];
-        }
-        break;
-        
-        case 2:
-            [self showActivityDataList:self];
-            break;
+        case 0: [self showActivityDetail:self]; break;
+        case 1: {
+            TrackBrowserDocument* tbd = (TrackBrowserDocument*)[[NSDocumentController sharedDocumentController] currentDocument];
+            TBWindowController* wc = [tbd windowController];
+            [wc showMapDetail:self];
+        } break;
+        case 2: [self showActivityDataList:self]; break;
     }
-}
-
-
-
--(void) openLastDoc:(id)junk
-{
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	// do open on the main thread, otherwise drag/drop operations don't seem
-	// to work correctly.  Don't know why.
-	[self performSelectorOnMainThread:@selector(afterDocOpened:) 
-						   withObject:nil 
-						waitUntilDone:NO];
-   [pool release];
-}   
-
-- (void)afterDocOpened:(NSNotification *)notification
-{
-    // Prefer bookmark-based restore
-    NSURL *fileURL = [self restoreLastOpenedDocumentURL];
-
-    if (fileURL) {
-        [[NSDocumentController sharedDocumentController]
-            openDocumentWithContentsOfURL:fileURL
-                                  display:YES
-                        completionHandler:^(NSDocument *doc,
-                                            BOOL documentWasAlreadyOpen,
-                                            NSError *error)
-        {
-            if (error) {
-                // Stop the launch loop: forget the bad URL immediately
-                [self forgetLastOpenedDocumentURL];
-
-                // Optionally present once
-                [[NSApplication sharedApplication] presentError:error];
-                return;
-            }
-
-            // Successful open: refresh the bookmark (path may have moved)
-            [self rememberLastOpenedDocumentURL:doc.fileURL];
-        }];
-    }
-
-    [[SplashPanelController sharedInstance] canDismiss:YES];
-    [[SplashPanelController sharedInstance] updateProgress:@"data loaded"];
-    [[SplashPanelController sharedInstance] performSelectorOnMainThread:@selector(startFade:)
-                                                             withObject:nil
-                                                          waitUntilDone:NO];
-}
-
-- (void)transportPanelClosed:(NSNotification *)notification
-{
-   //[transportPanelController release];
-   //transportPanelController = nil;
-}
-
-
-- (void)applicationWillResignActive:(NSNotification *)aNotification
-{
-	[syncController setDocument:[self currentTrackBrowserDocument]];
-}
-
-
-- (void)applicationDidUpdate:(NSNotification *)aNotification
-{
-	//printf("did update! %x\n", [self currentTrackBrowserDocument]);
-}
-
-- (void)applicationWillFinishLaunching:(NSNotification *)aNotification
-{
-	[[SplashPanelController sharedInstance] showPanel];
-	[[SplashPanelController sharedInstance] updateProgress:@"initializing..."];
-}
-
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
-{
-    [NSDocumentController sharedDocumentController];
-    
-
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											selector:@selector(afterSplashPanelDone:)
-												name:@"AfterSplashPanelDone"
-											  object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											selector:@selector(afterDocOpened:)
-												name:@"AfterDocOpened"
-											  object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											selector:@selector(showActivityDetail:)
-												name:@"OpenActivityDetail"
-											  object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											selector:@selector(showDetailedMap:)
-												name:@"OpenMapDetail"
-											  object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											selector:@selector(showActivityDataList:)
-												name:@"OpenDataDetail"
-											  object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(showSummaryGraph:)
-												 name:@"OpenSummaryGraph"
-											   object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											selector:@selector(transportPanelClosed:)
-												name:@"TransportPanelClosed"
-											  object:nil];
-
-
-	initialDocument = nil;
-
-	NSString* title = [NSString stringWithFormat:@"Move \"%@\" values to \"%@\" field",
-                       [Utils stringFromDefaults:RCBDefaultKeyword1Label],
-                       [Utils stringFromDefaults:RCBDefaultCustomFieldLabel]];
-	[copyKeyword1MenuItem setTitle:title];
-
-	title = [NSString stringWithFormat:@"Move \"%@\" values to \"%@\" field", 
-	[Utils stringFromDefaults:RCBDefaultKeyword2Label],
-	[Utils stringFromDefaults:RCBDefaultCustomFieldLabel]];
-	[copyKeyword2MenuItem setTitle:title];
-	[Utils createPowerActivityArrayIfDoesntExist];
-
-}
-
-
-- (void)afterSplashPanelDone:(NSNotification *)notification
-{
-    ///BOOL ok = [RegController CHECK_REGISTRATION];
-    BOOL ok = YES;
-    if (!ok)
-    {
-        RegController* rc = [[RegController alloc] init];
-        [[rc window] center];
-        [rc showWindow:self];
-        [NSApp runModalForWindow:[rc window]];
-        [[rc window] orderOut:self];
-        [rc release];
-    }
-    if ([Utils boolFromDefaults:RCBDefaultShowTransportPanel])
-    {
-        [self showTransportPanel:self];
-    }
-    TrackBrowserDocument* tbd = [self currentTrackBrowserDocument];
-    if (tbd)
-    {
-        NSArray* wcs = [tbd windowControllers];
-        if (wcs)
-        {
-            TBWindowController* sc = [wcs objectAtIndex:0];
-            if (sc) [[sc window] makeKeyAndOrderFront:nil];
-        }
-    }
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(selectionDoubleClickedInOutlineView:)
-                                                 name:@"TBSelectionDoubleClicked"
-                                               object:nil];
-    
-    // update the user's birthday and age...
-    NSDate* birthDate = [Utils objectFromDefaults:RCBDefaultBirthday];
-    if (!birthDate)
-    {
-        ABPerson* curPerson = [[ABAddressBook sharedAddressBook] me];
-        if (curPerson)
-        {
-            birthDate = [curPerson valueForProperty:kABBirthdayProperty];
-            if (birthDate)
-            {
-                [Utils setObjectDefault:birthDate forKey:RCBDefaultBirthday];
-            }
-        }
-    }
-    if (!birthDate)
-    {
-        birthDate = [NSDate dateWithString:@"1980-01-01 10:00:00 +0600"];
-        [Utils setObjectDefault:birthDate forKey:RCBDefaultBirthday];
-    }
-    int age = [Utils calculateAge:birthDate];
-    [Utils setIntDefault:age forKey:RCBDefaultAge];
-    
-#if 0
-    NSLog(@"UPDATER IS BROKEN");
-    // FIXME if ([Utils boolFromDefaults:RCBCheckForUpdateAtStartup])
-    //	[suUpdater checkForUpdatesInBackground];
-    
-    if (ok)
-    {
-        BOOL nag = [Utils boolFromDefaults:RCBDefaultShowBackupNagDialog];
-        if (nag)
-        {
-            BackupNagController* bnc = [[BackupNagController alloc] init];
-            [[bnc window] center];
-            [NSApp runModalForWindow:[bnc window]];
-            [[bnc window] orderOut:self];
-            [bnc release];
-        }
-    }
-#endif
-}
-
-
-
-- (IBAction)gotoAscentWebSite:(id)sender
-{
-   [[NSWorkspace sharedWorkspace] 
-      openURL:[NSURL URLWithString:@"http://www.montebellosoftware.com/index.html"]];
-}
-
-
-- (IBAction)gotoAscentForum:(id)sender
-{
-   [[NSWorkspace sharedWorkspace] 
-      openURL:[NSURL URLWithString:@"http://www.montebellosoftware.com/cgi-bin/forum/ikonboard.cgi?"]];
 }
 
 - (TrackBrowserDocument*) currentTrackBrowserDocument
 {
-	return  (TrackBrowserDocument*) [[NSDocumentController sharedDocumentController] currentDocument];
+    return (TrackBrowserDocument*)[[NSDocumentController sharedDocumentController] currentDocument];
 }
 
 - (IBAction)print:(id)sender
 {
-	TrackBrowserDocument* tbd = [self currentTrackBrowserDocument];
-	NSArray* wcs = [tbd windowControllers];
-	TBWindowController* sc = [wcs objectAtIndex:0];
-   
-	NSPrintInfo* printInfo = [NSPrintInfo sharedPrintInfo];
-	NSPrintOperation* printOp;
-	NSView* v = [sc mapPathView];
-	printOp = [NSPrintOperation printOperationWithView:v 
-										   printInfo:printInfo];
-	[printOp setShowsPrintPanel:YES];
-	[printOp runOperation];
+    TrackBrowserDocument* tbd = [self currentTrackBrowserDocument];
+    NSArray* wcs = [tbd windowControllers];
+    TBWindowController* sc = [wcs objectAtIndex:0];
+
+    NSPrintInfo* printInfo = [NSPrintInfo sharedPrintInfo];
+    NSView* v = [sc mapPathView];
+    NSPrintOperation* op = [NSPrintOperation printOperationWithView:v printInfo:printInfo];
+    [op setShowsPrintPanel:YES];
+    [op runOperation];
 }
-   
+
 -(IBAction) gotoPreferences:(id)sender
 {
     [[OAPreferenceController sharedPreferenceController] showPreferencesPanel:nil];
 }
 
-- (IBAction)showTransportPanel:(id)sender;
+- (IBAction)showTransportPanel:(id)sender
 {
-   BOOL shown;
-   if (transportPanelController == nil)
-   {
-      transportPanelController = [[TransportPanelController alloc] init];
-      [transportPanelController showWindow:self];
-      shown = YES;
-      //NSWindow* wind = [transportPanelController window];
-      //NSLog(@"show transport panel, window:%@, tpc:%@", wind, transportPanelController);
-   }
-   else
-   {
-      NSWindow* wind = [transportPanelController window];
-      //NSLog(@"show transport panel, window:%@, tpc:%@", wind, transportPanelController);
-      if ([wind isVisible])
-      {
-         [wind performClose:self];
-         shown = NO;
-      }
-      else
-      {
-         [transportPanelController showWindow:self];
-         shown = YES;
-     }
-   }
-   [transportPanelController connectToTimer];
-   [Utils setBoolDefault:shown
-                  forKey:RCBDefaultShowTransportPanel];
+    BOOL shown;
+    if (transportPanelController == nil)
+    {
+        transportPanelController = [[TransportPanelController alloc] init];
+        [transportPanelController showWindow:self];
+        shown = YES;
+    }
+    else
+    {
+        NSWindow* wind = [transportPanelController window];
+        if ([wind isVisible]) { [wind performClose:self]; shown = NO; }
+        else { [transportPanelController showWindow:self]; shown = YES; }
+    }
+    [transportPanelController connectToTimer];
+    [Utils setBoolDefault:shown forKey:RCBDefaultShowTransportPanel];
 }
-
-
-
 
 - (BOOL) validateMenuItem:(NSMenuItem*) mi
 {
-   if ([mi action] == @selector(showTransportPanel:))
-   {
-      if ([[transportPanelController window] isVisible] )
-      {
-         [mi setTitle:@"Hide Animation Control Panel"];
-      }
-      else
-      {
-         [mi setTitle:@"Show Animation Control Panel"];
-      }
-   }
-   else if ([mi action] == @selector(copyKeywordToCustom:))
-   {
-      
-      return ([[NSDocumentController sharedDocumentController] currentDocument] != nil);
-   }
-
-   return YES;
+    if ([mi action] == @selector(showTransportPanel:)) {
+        if ([[transportPanelController window] isVisible])
+            [mi setTitle:@"Hide Animation Control Panel"];
+        else
+            [mi setTitle:@"Show Animation Control Panel"];
+    } else if ([mi action] == @selector(copyKeywordToCustom:)) {
+        return ([[NSDocumentController sharedDocumentController] currentDocument] != nil);
+    }
+    return YES;
 }
 
-
-- (void)fileManager:(NSFileManager *)manager willProcessPath:(NSString *)path
-{
-   //NSLog(@"deleting %@", path);
-}
-
+// MARK: FS operations logging (optional)
 
 - (BOOL)fileManager:(NSFileManager *)fm
 shouldProceedAfterError:(NSError *)error
@@ -892,11 +655,9 @@ shouldProceedAfterError:(NSError *)error
              toURL:(NSURL *)dstURL
 {
     NSLog(@"Copy error %@ → %@: %@", srcURL, dstURL, error);
-    // return YES to keep going, NO to abort the operation
     return YES;
 }
 
-// Move
 - (BOOL)fileManager:(NSFileManager *)fm
 shouldProceedAfterError:(NSError *)error
   movingItemAtURL:(NSURL *)srcURL
@@ -906,7 +667,6 @@ shouldProceedAfterError:(NSError *)error
     return YES;
 }
 
-// Remove
 - (BOOL)fileManager:(NSFileManager *)fm
 shouldProceedAfterError:(NSError *)error
  removingItemAtURL:(NSURL *)url
@@ -915,7 +675,6 @@ shouldProceedAfterError:(NSError *)error
     return YES;
 }
 
-// Link (if you use it)
 - (BOOL)fileManager:(NSFileManager *)fm
 shouldProceedAfterError:(NSError *)error
   linkingItemAtURL:(NSURL *)srcURL
@@ -925,6 +684,7 @@ shouldProceedAfterError:(NSError *)error
     return YES;
 }
 
+// MARK: Map cache
 
 - (IBAction)clearMapCache:(id)sender
 {
@@ -934,98 +694,91 @@ shouldProceedAfterError:(NSError *)error
     [alert setMessageText:@"Clearing the map cache will delete all saved maps, resulting in slower performance until the same maps are retrieved again (a connection to the internet will also be required to re-fetch the maps)"];
     [alert setInformativeText:@"Continue clearing the map cache?"];
     [alert setAlertStyle:NSAlertStyleInformational];
-    if ([alert runModal] == NSAlertFirstButtonReturn) 
+
+    if ([alert runModal] == NSAlertFirstButtonReturn)
     {
         NSString* cacheFilePath = [Utils getMapTilesPath];
-        if (cacheFilePath != nil)
-        {
-            NSFileManager* fm = [NSFileManager defaultManager];
-            NSError* error;
-            [fm removeItemAtPath:cacheFilePath 
-                           error:&error];
-            cacheFilePath = [Utils getMapTilesPath];     // re-create empty directory
+        if (cacheFilePath) {
+            NSError* error = nil;
+            [[NSFileManager defaultManager] removeItemAtPath:cacheFilePath error:&error];
+            (void)[Utils getMapTilesPath]; // recreate folder
         }
     }
     [alert release];
 }
 
+// MARK: Keyword moves (unchanged)
 
 -(void) doCopyKeywordToKeyword:(int)src dest:(int)dst sourceName:(NSString*)srcName destName:(NSString*)dstName
 {
-  	TrackBrowserDocument* tbd = [self currentTrackBrowserDocument];
-	if (tbd)
-	{
-		NSUndoManager* undo = [tbd undoManager];
-		if (![undo isUndoing])
-		{
-			NSString* s = [NSString stringWithFormat:@"Move field values from \"%@\" to \"%@\"", srcName, dstName];
-			[undo setActionName:s];
-		}
-		[[undo prepareWithInvocationTarget:self] doCopyKeywordToKeyword:dst dest:src sourceName:dstName destName:srcName];
-		NSArray* trackArray = [tbd trackArray];
-		int num = [trackArray count];
-		int i;
-		for (i=0; i<num; i++)
-		{
-			Track* trk = [trackArray objectAtIndex:i];
-			NSString* ss = [trk attribute:src];
-			if (ss && ![ss isEqualToString:@""])
-			{
-				[trk setAttribute:dst
-					  usingString:ss];
-				[trk setAttribute:src
-					  usingString:@""];
-				[[tbd windowController] syncTrackToAttributesAndEditWindow:trk];
-			}
-		}
-		[[[tbd windowController] window] setDocumentEdited:YES];
-		[tbd updateChangeCount:NSChangeDone];
-	}
+    TrackBrowserDocument* tbd = [self currentTrackBrowserDocument];
+    if (tbd)
+    {
+        NSUndoManager* undo = [tbd undoManager];
+        if (![undo isUndoing]) {
+            NSString* s = [NSString stringWithFormat:@"Move field values from \"%@\" to \"%@\"", srcName, dstName];
+            [undo setActionName:s];
+        }
+        [[undo prepareWithInvocationTarget:self] doCopyKeywordToKeyword:dst dest:src sourceName:dstName destName:srcName];
+        NSArray* trackArray = [tbd trackArray];
+        for (Track* trk in trackArray) {
+            NSString* ss = [trk attribute:src];
+            if (ss && ![ss isEqualToString:@""]) {
+                [trk setAttribute:dst usingString:ss];
+                [trk setAttribute:src usingString:@""];
+                [[tbd windowController] syncTrackToAttributesAndEditWindow:trk];
+            }
+        }
+        [[[tbd windowController] window] setDocumentEdited:YES];
+        [tbd updateChangeCount:NSChangeDone];
+    }
 }
 
-   
 - (IBAction)copyKeywordToCustom:(id)sender
 {
-   int src = kKeyword1;
-   NSString* srcName = [Utils stringFromDefaults:RCBDefaultKeyword1Label];
-   NSString* dstName = [Utils stringFromDefaults:RCBDefaultCustomFieldLabel];
-   if (sender == copyKeyword2MenuItem) 
-   {
-      src = kKeyword2;
-      srcName = [Utils stringFromDefaults:RCBDefaultKeyword2Label];
-   }
-   NSAlert *alert = [[NSAlert alloc] init];
-   [alert addButtonWithTitle:@"Proceed"];
-   [alert addButtonWithTitle:@"Cancel"];
-   NSString* s = [NSString stringWithFormat:@"If the \"%@\" field is not blank for an activity, it will be copied to and replace any existing entry in the \"%@\" field.  The value in the \"%@\" field will then be cleared.\n\nThis operation will be applied to all activities.", 
-      srcName, [Utils stringFromDefaults:RCBDefaultCustomFieldLabel], srcName ];
-   [alert setMessageText:s];
-   [alert setInformativeText:@"Use this feature to convert one of the custom popup fields to instead use the custom text entry field.\n"];
-   [alert setAlertStyle:NSWarningAlertStyle];
-   if ([alert runModal] == NSAlertFirstButtonReturn) 
-   {
-      [self doCopyKeywordToKeyword:src 
-                              dest:kKeyword3       // "custom" text entry field is stored in kKeyword3
-                        sourceName:srcName
-                          destName:dstName];
-   }
-   [alert release];
+    int src = kKeyword1;
+    NSString* srcName = [Utils stringFromDefaults:RCBDefaultKeyword1Label];
+    NSString* dstName = [Utils stringFromDefaults:RCBDefaultCustomFieldLabel];
+    if (sender == copyKeyword2MenuItem) {
+        src = kKeyword2;
+        srcName = [Utils stringFromDefaults:RCBDefaultKeyword2Label];
+    }
+    NSAlert *alert = [[NSAlert alloc] init];
+    [alert addButtonWithTitle:@"Proceed"];
+    [alert addButtonWithTitle:@"Cancel"];
+    NSString* s = [NSString stringWithFormat:
+                   @"If the \"%@\" field is not blank for an activity, it will be copied to and replace any existing entry in the \"%@\" field.  The value in the \"%@\" field will then be cleared.\n\nThis operation will be applied to all activities.",
+                   srcName, [Utils stringFromDefaults:RCBDefaultCustomFieldLabel], srcName ];
+    [alert setMessageText:s];
+    [alert setInformativeText:@"Use this feature to convert one of the custom popup fields to instead use the custom text entry field.\n"];
+    [alert setAlertStyle:NSAlertStyleWarning];
+    if ([alert runModal] == NSAlertFirstButtonReturn) {
+        [self doCopyKeywordToKeyword:src dest:kKeyword3 sourceName:srcName destName:dstName];
+    }
+    [alert release];
 }
 
-static NSString * const kLastDocBookmarkKey = @"AscentLastOpenedDocBookmark";
+// MARK: Website
+
+- (IBAction)gotoAscentWebSite:(id)sender
+{
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://www.montebellosoftware.com/index.html"]];
+}
+
+- (IBAction)gotoAscentForum:(id)sender
+{
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://www.montebellosoftware.com/cgi-bin/forum/ikonboard.cgi?"]];
+}
+
+// MARK: Last-document bookmark helpers
 
 - (void)rememberLastOpenedDocumentURL:(NSURL *)url {
     if (!url) return;
     NSError *err = nil;
-    NSData *bm = [url bookmarkDataWithOptions:
-#if __has_feature(objc_arc) // (you’re on MRC; leaving for completeness)
-                  0
-#else
-                  0
-#endif
-        includingResourceValuesForKeys:nil
-                         relativeToURL:nil
-                                 error:&err];
+    NSData *bm = [url bookmarkDataWithOptions:0
+             includingResourceValuesForKeys:nil
+                              relativeToURL:nil
+                                      error:&err];
     if (bm) {
         [[NSUserDefaults standardUserDefaults] setObject:bm forKey:kLastDocBookmarkKey];
         [[NSUserDefaults standardUserDefaults] synchronize];
@@ -1045,7 +798,6 @@ static NSString * const kLastDocBookmarkKey = @"AscentLastOpenedDocBookmark";
                                              error:&err];
     if (!url) { [self forgetLastOpenedDocumentURL]; return nil; }
 
-    // Make sure it actually exists
     if (![url checkResourceIsReachableAndReturnError:&err] || stale) {
         [self forgetLastOpenedDocumentURL];
         return nil;
@@ -1058,18 +810,11 @@ static NSString * const kLastDocBookmarkKey = @"AscentLastOpenedDocBookmark";
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-
 @end
 
-
 @implementation AboutBoxWC
-
 - (void)windowWillClose:(NSNotification *)aNotification
 {
     [NSApp stopModal];
 }
-
-
-
 @end
-

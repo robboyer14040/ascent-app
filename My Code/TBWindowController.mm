@@ -377,8 +377,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 
 -(NSString *)filenameShownInThumbnailIfKnown;
 
-@property (strong) FullImageBrowserWindowController *imageBrowser;
-
+@property (nonatomic, retain) FullImageBrowserWindowController *imageBrowser;
 @end
 
 

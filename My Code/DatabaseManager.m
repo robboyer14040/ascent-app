@@ -135,6 +135,7 @@ static BOOL DirIsWritable(NSURL *dirURL) {
             sqlite3_exec(_db, "PRAGMA foreign_keys=ON;", NULL, NULL, NULL);
             sqlite3_exec(_db, "PRAGMA page_size=8192;", NULL, NULL, NULL);
         }
+        NSLog(@"DB OPENED...");
 
         _isOpen = YES;
     });
@@ -150,6 +151,7 @@ static BOOL DirIsWritable(NSURL *dirURL) {
         sqlite3_close(_db);
         _db = NULL;
         _isOpen = NO;
+        NSLog(@"DB CLOSED...");
     });
 }
 

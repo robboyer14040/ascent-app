@@ -1586,7 +1586,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
     [[AnimTimer defaultInstance] registerForTimerUpdates:self];
     
     [mapPathView setTransparentView:transparentMapAnimView];
-    [miniProfileView setTransparentView:transparentMiniProfileAnimView];
+    
     NSRect fr = [mapPathView frame];
     //NSLog(@"vf: %1.0f, %1.0f %x", fr.origin.x, fr.origin.y, [self window]);
     fr.origin = [[self window] convertPointToScreen:fr.origin];

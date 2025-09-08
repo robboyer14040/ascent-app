@@ -2528,7 +2528,8 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
         [activities release];
         [points release];
         [idents release];
-        [dbm close]; [dbm release];
+        [dbm close];
+        [dbm release];
         return nil;
     }
     [browserData storeMetaData:activities];
@@ -2573,7 +2574,6 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
                 }
             }
         }
-  
         NSString *uuid = [t uuid];
         int64_t trackID = 0;
         {
@@ -2665,9 +2665,70 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
         stagedOwnedHere = YES;
     }
 
+    
+    
+    __block BOOL ok = NO;
+    __block NSError *err = nil;
+
+    NSFileManager *fm = [NSFileManager defaultManager];
+    __block NSURL *resultURL = nil;
+
+    NSFileCoordinator *coord = [[NSFileCoordinator alloc] initWithFilePresenter:self];
+    [coord coordinateWritingItemAtURL:destURL
+                              options:NSFileCoordinatorWritingForReplacing
+                                error:&err
+                           byAccessor:^(NSURL *newURL) {
+
+        // 1) Create a same-volume replacement dir
+        NSError *locErr = nil;
+        NSURL *repDir = [fm URLForDirectory:NSItemReplacementDirectory
+                                   inDomain:NSUserDomainMask
+                          appropriateForURL:newURL
+                                     create:YES
+                                      error:&locErr];
+        if (!repDir) { err = locErr; return; }
+
+        // 2) Copy staged DB into that dir (same filesystem)
+        NSURL *sibling = [repDir URLByAppendingPathComponent:newURL.lastPathComponent];
+        if (![fm copyItemAtURL:staged toURL:sibling error:&locErr]) { err = locErr; return; }
+
+        // 3) Atomically replace
+        if (![fm replaceItemAtURL:newURL
+                      withItemAtURL:sibling
+                     backupItemName:nil
+                            options:0
+                   resultingItemURL:&resultURL
+                              error:&locErr]) { err = locErr; return; }
+
+        // 4) Best-effort cleanup
+        [fm removeItemAtURL:repDir error:NULL];
+
+        ok = YES;
+    }];
+    [coord release];
+
+    if (!ok)
+    {
+        if (outError)
+            *outError = err;
+        return NO;
+    }
+
+    // IMPORTANT: tell NSDocument about the new mod date
+    NSDate *mod = [[NSFileManager defaultManager] attributesOfItemAtPath:(resultURL ?: destURL).path error:NULL][NSFileModificationDate];
+    [self setFileModificationDate:mod];
+
+    // Clear dirty state (you already do this)
+    [self updateChangeCount:NSChangeCleared];
+
+#if 0
+    
+    
     NSFileManager *fm = [NSFileManager defaultManager];
     NSError *err = nil;
 
+    
+    
     // Try atomic replace first.
     NSURL *resultURL = nil;
     if (![fm replaceItemAtURL:destURL
@@ -2690,9 +2751,13 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
     if (stagedOwnedHere) {
         [fm removeItemAtURL:staged error:NULL];
     }
+    [self updateChangeCount:NSChangeCleared];
+#endif
+
 
     return YES;
 }
+
 
 #if 1
 - (BOOL)writeToURL:(NSURL *)absoluteURL

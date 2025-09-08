@@ -141,8 +141,6 @@ static NSString * const kLastDocBookmarkKey = @"AscentLastOpenedDocBookmark";
 
 // Launch flow
 - (void)_startLaunchWork; // main-thread only
-- (void)processDeferredOpensThenDismissSplash;
-- (void)afterDocOpened:(NSNotification *)notification;
 @end
 
 @implementation AppController
@@ -383,7 +381,9 @@ static void setColorDefault(NSMutableDictionary* dict,
             self.deferringOpens = NO;        // <-- IMPORTANT
             // fade/close splash when your docs are up
             [sp startFade:nil];
-        }];
+            [self afterSplashPanelDone:nil];
+            [self _startLaunchWork];
+       }];
     });
 }
 
@@ -398,7 +398,6 @@ static void setColorDefault(NSMutableDictionary* dict,
     // Notifications you need during/after launch
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     [nc addObserver:self selector:@selector(afterSplashPanelDone:) name:@"AfterSplashPanelDone" object:nil];
-    [nc addObserver:self selector:@selector(afterDocOpened:) name:@"AfterDocOpened" object:nil];
     [nc addObserver:self selector:@selector(showActivityDetail:) name:@"OpenActivityDetail" object:nil];
     [nc addObserver:self selector:@selector(showDetailedMap:) name:@"OpenMapDetail" object:nil];
     [nc addObserver:self selector:@selector(showActivityDataList:) name:@"OpenDataDetail" object:nil];
@@ -418,40 +417,10 @@ static void setColorDefault(NSMutableDictionary* dict,
     [copyKeyword2MenuItem setTitle:title];
 
     [Utils createPowerActivityArrayIfDoesntExist];
-
-//    NSURL *fileURL = [self restoreLastOpenedDocumentURL];
-//    if (fileURL) {
-//        if (!self.pendingOpenURLs) self.pendingOpenURLs = [[[NSMutableArray alloc] init] autorelease];
-//        [self.pendingOpenURLs addObject:fileURL];
-//    }
-}
-
-
-- (void)processDeferredOpensThenDismissSplash
-{
-    NSDocumentController *dc = [NSDocumentController sharedDocumentController];
-
-    void (^done)(void) = ^{
-    };
-
-    if (self.pendingOpenURLs.count == 0) { done(); return; }
-
-    __block NSUInteger remaining = self.pendingOpenURLs.count;
-    for (NSURL *u in [[self.pendingOpenURLs copy] autorelease]) {
-        [dc openDocumentWithContentsOfURL:u display:YES completionHandler:
-         ^(NSDocument *doc, BOOL wasAlreadyOpen, NSError *error) {
-             if (--remaining == 0) done();
-         }];
-    }
 }
 
 
 // MARK: Post-splash
-
-- (void)afterDocOpened:(NSNotification *)notification
-{
-    // currently unused; keep if other components post it
-}
 
 
 - (void)afterSplashPanelDone:(NSNotification *)notification

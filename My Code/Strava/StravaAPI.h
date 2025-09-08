@@ -81,6 +81,11 @@ typedef void (^StravaPhotosCompletion)(NSArray<NSDictionary *> * _Nullable photo
                       queue:(dispatch_queue_t _Nullable)queue
                  completion:(StravaPhotosCompletion)completion;
 
+
+- (BOOL)fetchPhotosForActivity:(NSNumber*)stravaActivityID
+                  rootMediaURL:(NSURL *)mediaURL
+                    completion:(void (^)(NSArray<NSString *> * photoFilenames, NSError * error))completion;
+
 @end
 
 NS_ASSUME_NONNULL_END

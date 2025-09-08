@@ -49,7 +49,6 @@
                 <outlet property="searchCategoryMenu" destination="1959" id="1980"/>
                 <outlet property="searchField" destination="1862" id="1872"/>
                 <outlet property="searchView" destination="1669" id="1887"/>
-                <outlet property="setEquipmentButton" destination="2313" id="2394"/>
                 <outlet property="splitOptionsControl" destination="1895" id="1903"/>
                 <outlet property="splitOptionsView" destination="1894" id="1896"/>
                 <outlet property="splitsGraphSubView" destination="1738" id="1914"/>
@@ -519,17 +518,6 @@ DQ
                                                                     <rect key="frame" x="0.0" y="0.0" width="415" height="221"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <subviews>
-                                                                        <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2313">
-                                                                            <rect key="frame" x="370" y="131" width="44" height="17"/>
-                                                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                                                            <buttonCell key="cell" type="squareTextured" title="Set..." bezelStyle="texturedSquare" alignment="center" controlSize="mini" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="2314">
-                                                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                                                <font key="font" metaFont="miniSystem"/>
-                                                                            </buttonCell>
-                                                                            <connections>
-                                                                                <action selector="showEquipmentSelector:" target="-2" id="2315"/>
-                                                                            </connections>
-                                                                        </button>
                                                                         <scrollView focusRingType="none" fixedFrame="YES" borderType="groove" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2400">
                                                                             <rect key="frame" x="0.0" y="150" width="414" height="71"/>
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES"/>

@@ -721,7 +721,8 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
 
 - (void)enrichTrack:(Track *)track
     withSummaryDict:(NSDictionary * _Nullable )summary
-         completion:(void (^)(NSError * _Nullable error))completion
+       rootMediaURL:(NSURL*)mediaURL
+        completion:(void (^)(NSError * _Nullable error))completion
 {
     // Pull the Strava activity id from the Track (already present per your note)
     NSNumber *activityID = nil;
@@ -757,6 +758,7 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
                     dispatch_group_leave(g);
                 }];
 
+#if 0
                 dispatch_group_enter(g);
                 [[StravaAPI shared] fetchActivityPhotos:activityID
                                                    size:2048
@@ -766,7 +768,17 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
                     if (e && !firstError) firstError = [e retain];
                     dispatch_group_leave(g);
                 }];
-            }
+                
+#endif
+                dispatch_group_enter(g);
+                [[StravaAPI shared] fetchPhotosForActivity:activityID
+                                              rootMediaURL:mediaURL
+                                                completion:^(NSArray<NSString *> * photoFilenames, NSError * error) {
+                    track.localMediaItems = photoFilenames;
+                    
+                    dispatch_group_leave(g);
+                }];
+           }
 
             dispatch_group_notify(g, dispatch_get_main_queue(), ^{
                 // Description: prefer summary, else detail
@@ -792,6 +804,8 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
                     }
                     [photosPayload release]; photosPayload = nil;
                 }
+                
+                
 
                 // Streams → PointsFromStreams → Track.points
                 if (streamsByType) {

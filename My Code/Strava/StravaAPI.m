@@ -562,36 +562,6 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
 }
 
 
-#if 0
-// New, queue-aware API
-- (void)fetchActivityDetail:(NSNumber *)activityID
-                      queue:(dispatch_queue_t)queue
-                 completion:(void (^)(NSDictionary * _Nullable, NSError * _Nullable))completion
-{
-    if (!activityID) { ASCOnQueue(queue, ^{ if (completion) completion(nil, [NSError errorWithDomain:@"Strava" code:-20 userInfo:@{NSLocalizedDescriptionKey:@"Missing activity id"}]); }); return; }
-    [self _ensureFreshAccessToken:^(NSError * _Nullable err) {
-        if (err) { ASCOnQueue(queue, ^{ if (completion) completion(nil, err); }); return; }
-        NSString *url = [NSString stringWithFormat:@"https://www.strava.com/api/v3/activities/%@?include_all_efforts=true", activityID];
-        NSURLRequest *req = [self _GET:url bearer:_accessToken];
-
-        __unsafe_unretained StravaAPI *unretainedSelf = self;
-        __block NSURLSessionDataTask *task = nil;
-        task = [_session dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-            [unretainedSelf _untrackTask:task];
-            if (error) { ASCOnQueue(queue, ^{ if (completion) completion(nil, error); }); return; }
-            NSError *jsonErr = nil;
-            id obj = ASCJSON(data, &jsonErr);
-            if (jsonErr || ![obj isKindOfClass:[NSDictionary class]]) {
-                NSError *e = jsonErr ?: [NSError errorWithDomain:@"Strava" code:-21 userInfo:@{NSLocalizedDescriptionKey:@"Malformed activity detail"}];
-                ASCOnQueue(queue, ^{ if (completion) completion(nil, e); }); return;
-            }
-            ASCOnQueue(queue, ^{ if (completion) completion((NSDictionary *)obj, nil); });
-        }];
-        [self _trackTask:task];
-        [task resume];
-    }];
-}
-#endif
 
 // Streams (arrays of aligned samples; use key_by_type for {type: [..]} map)
 - (void)fetchActivityStreams:(NSNumber *)activityID
@@ -884,6 +854,217 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
         [self _trackTask:task];
         [task resume];
     }];
+}
+
+
+
+#pragma mark - Internal helpers
+
+static NSString * _SAN_sanitizeFilename(NSString *name) {
+    NSCharacterSet *ok = [NSCharacterSet characterSetWithCharactersInString:
+                          @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_"];
+    NSMutableString *out = [NSMutableString stringWithCapacity:name.length];
+    for (NSUInteger i = 0; i < [name length]; i++) {
+        unichar c = [name characterAtIndex:i];
+        [out appendFormat:@"%C", [ok characterIsMember:c] ? c : '_'];
+    }
+    if ([out length] == 0) return @"unnamed";
+    if ([out length] > 80) return [out substringToIndex:80];
+    return out;
+}
+
+static NSData * _SAN_JPEGDataFromImageData(NSData *data) {
+    if (!data) return nil;
+    NSImage *img = [[[NSImage alloc] initWithData:data] autorelease];
+    if (!img) return nil;
+
+    NSData *tiff = [img TIFFRepresentation];
+    if (!tiff) return nil;
+
+    NSBitmapImageRep *rep = [[[NSBitmapImageRep alloc] initWithData:tiff] autorelease];
+    if (!rep) return nil;
+
+    NSDictionary *props = [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:0.9f]
+                                                       forKey:NSImageCompressionFactor];
+    return [rep representationUsingType:NSBitmapImageFileTypeJPEG properties:props];
+}
+
+#pragma mark - Public
+
+- (BOOL)fetchPhotosForActivity:(NSNumber*)stravaActivityID
+                  rootMediaURL:(NSURL *)mediaURL
+                    completion:(void (^)(NSArray<NSString *> * photoFilenames, NSError * error))completion
+{
+    if (!completion) return NO;
+    if (stravaActivityID == 0 || mediaURL == nil) {
+        NSError *paramErr = [NSError errorWithDomain:@"StravaAPI"
+                                                code:400
+                                            userInfo:[NSDictionary dictionaryWithObject:@"Invalid parameters"
+                                                                                 forKey:NSLocalizedDescriptionKey]];
+        completion([NSArray array], paramErr);
+        return NO;
+    }
+
+    BOOL didStartAccess = NO;
+    @try {
+        if ([mediaURL respondsToSelector:@selector(startAccessingSecurityScopedResource)]) {
+            didStartAccess = [mediaURL startAccessingSecurityScopedResource];
+        }
+    } @catch (__unused NSException *ex) {}
+
+    NSFileManager *fm = [[[NSFileManager alloc] init] autorelease];
+    NSError *dirErr = nil;
+
+    ///NSString *actFolderName = [NSString stringWithFormat:@"%lu", (unsigned long)[stravaActivityID longValue]];
+    //NSURL *actFolderURL = [mediaURL URLByAppendingPathComponent:actFolderName isDirectory:YES];
+//    NSURL *actFolderURL = mediaURL;
+//    if (![fm createDirectoryAtURL:actFolderURL withIntermediateDirectories:YES attributes:nil error:&dirErr]) {
+//         if (didStartAccess) { @try { [mediaURL stopAccessingSecurityScopedResource]; } @catch (__unused NSException *ex) {} }
+//        completion([NSArray array], dirErr ?: [NSError errorWithDomain:@"StravaAPI" code:500 userInfo:
+//                                               [NSDictionary dictionaryWithObject:@"Failed to create media directory"
+//                                                                           forKey:NSLocalizedDescriptionKey]]);
+//        return NO;
+//    }
+
+    // Retain captured objects (MRC)
+    [fm retain];
+    [mediaURL retain];
+   /// [actFolderURL retain];
+
+    NSNumber *activityNum = [NSNumber numberWithUnsignedInteger:[stravaActivityID longValue]];
+    NSUInteger desiredSize = 2048;
+
+    // Use a background queue for the initial metadata fetch and downloads
+    dispatch_queue_t bg = dispatch_get_global_queue(QOS_CLASS_UTILITY, 0);
+
+    [self fetchActivityPhotos:activityNum
+                         size:desiredSize
+                        queue:bg
+                   completion:^(NSArray<NSDictionary *> *photos, NSError *error)
+    {
+        if (error) {
+            if (didStartAccess) { @try { [mediaURL stopAccessingSecurityScopedResource]; } @catch (__unused NSException *ex) {} }
+            [fm release];
+            [mediaURL release];
+ ///           [actFolderURL release];
+            ASCOnMain(^{ completion([NSArray array], error); });
+            return;
+        }
+
+        if (!photos || [photos count] == 0) {
+            if (didStartAccess) { @try { [mediaURL stopAccessingSecurityScopedResource]; } @catch (__unused NSException *ex) {} }
+            [fm release];
+            [mediaURL release];
+ ///           [actFolderURL release];
+            ASCOnMain(^{ completion([NSArray array], nil); });
+            return;
+        }
+
+        dispatch_group_t group = dispatch_group_create();
+        NSURLSession *session = [NSURLSession sharedSession];
+        NSMutableArray *writtenNames = [[[NSMutableArray alloc] initWithCapacity:[photos count]] autorelease];
+        __block NSError *firstErr = nil;
+
+        [photos enumerateObjectsUsingBlock:^(NSDictionary *photo, NSUInteger idx, BOOL *stop) {
+
+            // Your endpoint returns an array of dicts; prefer photo[@"urls"][@"<size>"] if present.
+            NSString *bestURLString = nil;
+            NSDictionary *urls = ([photo objectForKey:@"urls"] && [[photo objectForKey:@"urls"] isKindOfClass:[NSDictionary class]])
+                               ? (NSDictionary *)[photo objectForKey:@"urls"] : nil;
+            if (urls) {
+                NSString *exactKey = [NSString stringWithFormat:@"%lu", (unsigned long)desiredSize];
+                bestURLString = [urls objectForKey:exactKey] ?: [urls objectForKey:@"2048"] ?: [urls objectForKey:@"1024"] ?: [urls objectForKey:@"600"];
+                if (!bestURLString && [urls count] > 0) bestURLString = [[urls allValues] firstObject];
+            }
+            if (!bestURLString && [[photo objectForKey:@"url"] isKindOfClass:[NSString class]]) {
+                bestURLString = [photo objectForKey:@"url"];
+            }
+            if (!bestURLString || [bestURLString length] == 0) {
+                return; // skip quietly
+            }
+
+            // Stable-ish basename from id / unique_id / fallback hash
+            NSString *pid = nil;
+            id rawID = [photo objectForKey:@"id"];
+            if ([rawID respondsToSelector:@selector(stringValue)]) pid = [rawID stringValue];
+            else if ([rawID isKindOfClass:[NSString class]]) pid = (NSString *)rawID;
+            if (!pid) {
+                id uid = [photo objectForKey:@"unique_id"];
+                if ([uid isKindOfClass:[NSString class]]) pid = (NSString *)uid;
+            }
+            if (!pid) pid = [NSString stringWithFormat:@"%lu", (unsigned long)[bestURLString hash]];
+
+            NSString *base = [NSString stringWithFormat:@"photo_%04lu_%@", (unsigned long)(idx + 1), _SAN_sanitizeFilename(pid)];
+            NSString *filename = [base stringByAppendingPathExtension:@"jpg"];
+            ///NSURL *destURL = [actFolderURL URLByAppendingPathComponent:filename];
+            NSURL *destURL = [mediaURL URLByAppendingPathComponent:filename];
+
+            if ([fm fileExistsAtPath:[destURL path]]) {
+                @synchronized (writtenNames) {
+                    [writtenNames addObject:[[filename copy] autorelease]];
+                }
+                return;
+            }
+
+            NSURL *srcURL = [NSURL URLWithString:bestURLString];
+            if (!srcURL) return;
+
+            dispatch_group_enter(group);
+            NSURLSessionDataTask *task = [session dataTaskWithURL:srcURL
+                                                completionHandler:^(NSData *data, NSURLResponse *resp, NSError *dlErr)
+            {
+                if (dlErr || !data) {
+                    if (!firstErr && dlErr) firstErr = [dlErr retain];
+                    dispatch_group_leave(group);
+                    return;
+                }
+
+                NSData *jpeg = _SAN_JPEGDataFromImageData(data);
+                if (!jpeg) {
+                    if (!firstErr) {
+                        firstErr = [[NSError errorWithDomain:@"StravaAPI" code:422
+                                                    userInfo:[NSDictionary dictionaryWithObject:@"Failed to render JPEG"
+                                                                                         forKey:NSLocalizedDescriptionKey]] retain];
+                    }
+                    dispatch_group_leave(group);
+                    return;
+                }
+
+                NSError *wErr = nil;
+                if (![jpeg writeToURL:destURL options:NSDataWritingAtomic error:&wErr]) {
+                    if (!firstErr && wErr) firstErr = [wErr retain];
+                    dispatch_group_leave(group);
+                    return;
+                }
+
+                @synchronized (writtenNames) {
+                    [writtenNames addObject:[[filename copy] autorelease]];
+                }
+                dispatch_group_leave(group);
+            }];
+            [task resume];
+        }];
+
+        dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+            if (didStartAccess) { @try { [mediaURL stopAccessingSecurityScopedResource]; } @catch (__unused NSException *ex) {} }
+
+            [fm release];
+            [mediaURL release];
+            ///[actFolderURL release];
+
+#if !OS_OBJECT_USE_OBJC
+            dispatch_release(group);
+#endif
+            if (firstErr) {
+                NSError *e = [firstErr autorelease];
+                completion([NSArray arrayWithArray:writtenNames], e);
+            } else {
+                completion([NSArray arrayWithArray:writtenNames], nil);
+            }
+        });
+    }];
+
+    return YES; // async work successfully started
 }
 
 

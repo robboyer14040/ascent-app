@@ -4972,8 +4972,8 @@ int searchTagToMask(int searchTag)
         if (!lastSyncTime || ([lastSyncTime compare:[NSDate distantPast]] == NSOrderedSame))
         {
             NSDate *now = [NSDate date];
-            lastSyncTime = [cal dateByAddingUnit:NSCalendarUnitDayOfYear
-                                           value:-365
+            lastSyncTime = [cal dateByAddingUnit:NSCalendarUnitMonth
+                                           value:-36
                                           toDate:now
                                          options:0];
         }
@@ -4988,7 +4988,7 @@ int searchTagToMask(int searchTag)
         __block BOOL madeDeterminate = NO;
         [importer importTracksSince:since
                             perPage:200
-                           maxPages:4
+                           maxPages:20
                            progress:^(NSUInteger pagesFetched, NSUInteger totalSoFar) {
             // already on main
             if (!madeDeterminate && totalSoFar > 0) {
@@ -6734,9 +6734,11 @@ int searchTagToMask(int searchTag)
     [self startProgressIndicator:@"fetching track data..."];
     [[StravaImporter shared] enrichTrack:track
                          withSummaryDict:nil
+                            rootMediaURL:[self getRootMediaURL]
                               completion:^(NSError * _Nullable error) {
         [self resetSelectedTrack:track lap:lap];
         [self simpleUpdateBrowserTrack:track];
+        [tbDocument updateChangeCount:NSChangeDone];
         [self endProgressIndicator];
     }];
  }

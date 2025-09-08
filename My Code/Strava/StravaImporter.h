@@ -33,6 +33,7 @@ typedef void (^StravaImportCompletion)(NSArray * _Nullable tracks, NSError * _Nu
 
 - (void)enrichTrack:(Track *)track
     withSummaryDict:(NSDictionary * _Nullable )summary
+       rootMediaURL:(NSURL*)mediaURL
          completion:(void (^)(NSError * _Nullable error))completion;
 
 @end

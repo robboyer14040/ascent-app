@@ -98,6 +98,4 @@ NSString * const AscentUTIDatabase      = @"com.montebellosoftware.ascent.db";
 -(NSArray*)documentDateRange;
 -(NSString*)uuid;
 -(void)setDatabaseFileURL:(NSURL*) url;
-- (void)_presentProgress:(ProgressBarController *)pbc total:(int)total;
-- (void)_dismissProgress;
 @end

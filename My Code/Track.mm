@@ -121,6 +121,7 @@
 @synthesize srcKilojoules;
 @synthesize srcElapsedTime;
 @synthesize srcMovingTime;
+@synthesize gpxFileName;
 
 
 - (id)init
@@ -211,6 +212,7 @@
     [points release];
     [markers release];
     [equipmentUUIDs release];
+    [gpxFileName release];
     [overrideData release];
      free(peakIntervalData);
     [_photoURLs release];

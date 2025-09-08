@@ -14,7 +14,6 @@
 		D4450B5C2E5BD33A00AB39C3 /* SingletonBase.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4450B5A2E5BD33A00AB39C3 /* SingletonBase.mm */; };
 		D4450B5D2E5BD33A00AB39C3 /* LatLong-UTMconversion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4450B562E5BD33A00AB39C3 /* LatLong-UTMconversion.cpp */; };
 		D4450B702E5BDB8300AB39C3 /* ActivityStore.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B6F2E5BDB8300AB39C3 /* ActivityStore.m */; };
-		D4450B722E5BDBB500AB39C3 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4450B712E5BDBB400AB39C3 /* libsqlite3.tbd */; };
 		D4450B7D2E5BDC1C00AB39C3 /* OverrideData.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B7B2E5BDC1C00AB39C3 /* OverrideData.m */; };
 		D457D2B52E61FE4300D1DF73 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = D457D2B42E61FE4300D1DF73 /* Fonts */; };
 		D457D2ED2E6488B400D1DF73 /* StravaAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = D457D2EB2E6488B400D1DF73 /* StravaAPI.m */; };
@@ -22,6 +21,11 @@
 		D473BB172E692FB200B504DC /* FullImageBrowserWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = D473BB162E692FB200B504DC /* FullImageBrowserWindowController.m */; };
 		D489E0E62E6B32BF0076E5DC /* SplashPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = D489E0E42E6B32BF0076E5DC /* SplashPanel.xib */; };
 		D489E0E72E6B32BF0076E5DC /* SplashPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = D489E0E42E6B32BF0076E5DC /* SplashPanel.xib */; };
+		D489E0ED2E6D11840076E5DC /* DatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D489E0EC2E6D11840076E5DC /* DatabaseManager.m */; };
+		D489E0F02E6D12100076E5DC /* TrackPointStore.m in Sources */ = {isa = PBXBuildFile; fileRef = D489E0EF2E6D12100076E5DC /* TrackPointStore.m */; };
+		D489E0F32E6D13C60076E5DC /* IdentifierStore.m in Sources */ = {isa = PBXBuildFile; fileRef = D489E0F22E6D13C60076E5DC /* IdentifierStore.m */; };
+		D489E0F62E6D13D20076E5DC /* LibraryController.m in Sources */ = {isa = PBXBuildFile; fileRef = D489E0F52E6D13D20076E5DC /* LibraryController.m */; };
+		D489E0FB2E6E03570076E5DC /* sqlite3.c in Sources */ = {isa = PBXBuildFile; fileRef = D489E0F92E6E03570076E5DC /* sqlite3.c */; };
 		D490A52E2E4F8E48005BAD01 /* TrackBrowserDocument.xib in Resources */ = {isa = PBXBuildFile; fileRef = D490A52C2E4F8E48005BAD01 /* TrackBrowserDocument.xib */; };
 		D49F293F2E69FAB100C5B87C /* AscentApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = D49F293E2E69FAB100C5B87C /* AscentApplication.m */; };
 		D49F29442E6A52C500C5B87C /* AscentDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = D49F29432E6A52C500C5B87C /* AscentDocumentController.m */; };
@@ -195,7 +199,6 @@
 		D4F13CCD2E4EAE4600462944 /* ListEditorController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A102E4EAE4600462944 /* ListEditorController.mm */; };
 		D4F13CCF2E4EAE4600462944 /* ADTransparentWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13AB72E4EAE4600462944 /* ADTransparentWindow.mm */; };
 		D4F13CD02E4EAE4600462944 /* GetPasswordController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A952E4EAE4600462944 /* GetPasswordController.mm */; };
-		D4F13CD12E4EAE4600462944 /* ActivityDocument.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A602E4EAE4600462944 /* ActivityDocument.xcdatamodel */; };
 		D4F13CD22E4EAE4600462944 /* DistanceMethodController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A082E4EAE4600462944 /* DistanceMethodController.mm */; };
 		D4F13CD32E4EAE4600462944 /* PrefsSharing.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A572E4EAE4600462944 /* PrefsSharing.mm */; };
 		D4F13CD42E4EAE4600462944 /* NetUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A2E2E4EAE4600462944 /* NetUtilities.m */; };
@@ -352,8 +355,8 @@
 		D4450B582E5BD33A00AB39C3 /* NDRunLoopMessenger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = NDRunLoopMessenger.m; path = OtherCode/NDRunLoopMessenger.m; sourceTree = SOURCE_ROOT; };
 		D4450B592E5BD33A00AB39C3 /* SingletonBase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SingletonBase.h; path = OtherCode/SingletonBase.h; sourceTree = SOURCE_ROOT; };
 		D4450B5A2E5BD33A00AB39C3 /* SingletonBase.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = SingletonBase.mm; path = OtherCode/SingletonBase.mm; sourceTree = SOURCE_ROOT; };
-		D4450B6E2E5BDB8300AB39C3 /* ActivityStore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ActivityStore.h; path = "My Code/ActivityStore.h"; sourceTree = "<group>"; };
-		D4450B6F2E5BDB8300AB39C3 /* ActivityStore.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = ActivityStore.m; path = "My Code/ActivityStore.m"; sourceTree = "<group>"; };
+		D4450B6E2E5BDB8300AB39C3 /* ActivityStore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ActivityStore.h; path = "../My Code/ActivityStore.h"; sourceTree = "<group>"; };
+		D4450B6F2E5BDB8300AB39C3 /* ActivityStore.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = ActivityStore.m; path = "../My Code/ActivityStore.m"; sourceTree = "<group>"; };
 		D4450B712E5BDBB400AB39C3 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		D4450B7A2E5BDC1C00AB39C3 /* OverrideData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = OverrideData.h; path = "My Code/OverrideData.h"; sourceTree = "<group>"; };
 		D4450B7B2E5BDC1C00AB39C3 /* OverrideData.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = OverrideData.m; path = "My Code/OverrideData.m"; sourceTree = "<group>"; };
@@ -378,6 +381,17 @@
 		D473BB162E692FB200B504DC /* FullImageBrowserWindowController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = FullImageBrowserWindowController.m; path = "My Code/FullImageBrowserWindowController.m"; sourceTree = "<group>"; };
 		D473BB182E69300200B504DC /* FullImageBrowserWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FullImageBrowserWindowController.h; path = "My Code/FullImageBrowserWindowController.h"; sourceTree = "<group>"; };
 		D489E0E52E6B32BF0076E5DC /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/SplashPanel.xib; sourceTree = "<group>"; };
+		D489E0EB2E6D113A0076E5DC /* DatabaseManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DatabaseManager.h; path = "My Code/DatabaseManager.h"; sourceTree = SOURCE_ROOT; };
+		D489E0EC2E6D11840076E5DC /* DatabaseManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = DatabaseManager.m; path = "My Code/DatabaseManager.m"; sourceTree = SOURCE_ROOT; };
+		D489E0EE2E6D11B90076E5DC /* TrackPointStore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TrackPointStore.h; path = "My Code/TrackPointStore.h"; sourceTree = SOURCE_ROOT; };
+		D489E0EF2E6D12100076E5DC /* TrackPointStore.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = TrackPointStore.m; path = "My Code/TrackPointStore.m"; sourceTree = SOURCE_ROOT; };
+		D489E0F12E6D13C60076E5DC /* IdentifierStore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = IdentifierStore.h; path = "My Code/IdentifierStore.h"; sourceTree = SOURCE_ROOT; };
+		D489E0F22E6D13C60076E5DC /* IdentifierStore.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = IdentifierStore.m; path = "My Code/IdentifierStore.m"; sourceTree = SOURCE_ROOT; };
+		D489E0F42E6D13D20076E5DC /* LibraryController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = LibraryController.h; path = "My Code/LibraryController.h"; sourceTree = SOURCE_ROOT; };
+		D489E0F52E6D13D20076E5DC /* LibraryController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = LibraryController.m; path = "My Code/LibraryController.m"; sourceTree = SOURCE_ROOT; };
+		D489E0F82E6E03570076E5DC /* sqlite3.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sqlite3.h; sourceTree = "<group>"; };
+		D489E0F92E6E03570076E5DC /* sqlite3.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = sqlite3.c; sourceTree = "<group>"; };
+		D489E0FA2E6E03570076E5DC /* sqlite3ext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sqlite3ext.h; sourceTree = "<group>"; };
 		D49F293E2E69FAB100C5B87C /* AscentApplication.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = AscentApplication.m; path = "My Code/AscentApplication.m"; sourceTree = "<group>"; };
 		D49F29422E69FB7000C5B87C /* AscentApplication.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AscentApplication.h; path = "My Code/AscentApplication.h"; sourceTree = "<group>"; };
 		D49F29432E6A52C500C5B87C /* AscentDocumentController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = AscentDocumentController.m; path = "My Code/AscentDocumentController.m"; sourceTree = "<group>"; };
@@ -542,7 +556,6 @@
 		D4F13A5C2E4EAE4600462944 /* PrefsZones.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PrefsZones.h; path = "My Code/PrefsZones.h"; sourceTree = SOURCE_ROOT; };
 		D4F13A5D2E4EAE4600462944 /* PrefsZones.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = PrefsZones.mm; path = "My Code/PrefsZones.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13A5F2E4EAE4600462944 /* StatDefs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = StatDefs.h; path = "My Code/StatDefs.h"; sourceTree = SOURCE_ROOT; };
-		D4F13A602E4EAE4600462944 /* ActivityDocument.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; name = ActivityDocument.xcdatamodel; path = "My Code/ActivityDocument.xcdatamodel"; sourceTree = SOURCE_ROOT; };
 		D4F13A612E4EAE4600462944 /* Lap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Lap.h; path = "My Code/Lap.h"; sourceTree = SOURCE_ROOT; };
 		D4F13A622E4EAE4600462944 /* Lap.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Lap.m; path = "My Code/Lap.m"; sourceTree = SOURCE_ROOT; };
 		D4F13A632E4EAE4600462944 /* TrackPoint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TrackPoint.h; path = "My Code/TrackPoint.h"; sourceTree = SOURCE_ROOT; };
@@ -830,7 +843,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D4450B722E5BDBB500AB39C3 /* libsqlite3.tbd in Frameworks */,
 				D4D51AFB2E4E490D0003E47F /* libcurl.tbd in Frameworks */,
 				D4D51AF72E4E3E630003E47F /* Foundation.framework in Frameworks */,
 				D4D51AF62E4E3E630003E47F /* CoreData.framework in Frameworks */,
@@ -868,6 +880,23 @@
 			);
 			name = Strava;
 			path = "My Code/Strava";
+			sourceTree = "<group>";
+		};
+		D489E0EA2E6D10D60076E5DC /* Database */ = {
+			isa = PBXGroup;
+			children = (
+				D4450B6E2E5BDB8300AB39C3 /* ActivityStore.h */,
+				D4450B6F2E5BDB8300AB39C3 /* ActivityStore.m */,
+				D489E0EB2E6D113A0076E5DC /* DatabaseManager.h */,
+				D489E0EC2E6D11840076E5DC /* DatabaseManager.m */,
+				D489E0F12E6D13C60076E5DC /* IdentifierStore.h */,
+				D489E0F22E6D13C60076E5DC /* IdentifierStore.m */,
+				D489E0F42E6D13D20076E5DC /* LibraryController.h */,
+				D489E0F52E6D13D20076E5DC /* LibraryController.m */,
+				D489E0EE2E6D11B90076E5DC /* TrackPointStore.h */,
+				D489E0EF2E6D12100076E5DC /* TrackPointStore.m */,
+			);
+			path = Database;
 			sourceTree = "<group>";
 		};
 		D4A783F22E4EE0D8001F7940 /* Products */ = {
@@ -1108,10 +1137,7 @@
 				D4450B7A2E5BDC1C00AB39C3 /* OverrideData.h */,
 				D4450B7B2E5BDC1C00AB39C3 /* OverrideData.m */,
 				D4450B7C2E5BDC1C00AB39C3 /* OverrideDefs.h */,
-				D4450B6E2E5BDB8300AB39C3 /* ActivityStore.h */,
-				D4450B6F2E5BDB8300AB39C3 /* ActivityStore.m */,
 				D4F13A5F2E4EAE4600462944 /* StatDefs.h */,
-				D4F13A602E4EAE4600462944 /* ActivityDocument.xcdatamodel */,
 				D4F13A612E4EAE4600462944 /* Lap.h */,
 				D4F13A622E4EAE4600462944 /* Lap.m */,
 				D4F13A632E4EAE4600462944 /* TrackPoint.h */,
@@ -1338,6 +1364,7 @@
 		D4F13AF42E4EAE4600462944 /* Mainline Code */ = {
 			isa = PBXGroup;
 			children = (
+				D489E0EA2E6D10D60076E5DC /* Database */,
 				D457D2EC2E6488B400D1DF73 /* Strava */,
 				D4F139F42E4EAE4600462944 /* Utilities */,
 				D4F13A262E4EAE4600462944 /* Track Browser */,
@@ -1661,6 +1688,9 @@
 		D4F13D2A2E4EAF2D00462944 /* OtherCode */ = {
 			isa = PBXGroup;
 			children = (
+				D489E0F82E6E03570076E5DC /* sqlite3.h */,
+				D489E0F92E6E03570076E5DC /* sqlite3.c */,
+				D489E0FA2E6E03570076E5DC /* sqlite3ext.h */,
 				D4450B382E5BCF1700AB39C3 /* HUDWindow.h */,
 				D4450B392E5BCF1700AB39C3 /* HUDWindow.m */,
 				D4450B3A2E5BCF1700AB39C3 /* interp.h */,
@@ -1965,9 +1995,11 @@
 				D4F13CB82E4EAE4600462944 /* BrowserColumnsWindowController.mm in Sources */,
 				D4450B702E5BDB8300AB39C3 /* ActivityStore.m in Sources */,
 				D4F13CB92E4EAE4600462944 /* TCPServer.m in Sources */,
+				D489E0F62E6D13D20076E5DC /* LibraryController.m in Sources */,
 				D4C0CE8F2E5BE2C4003B55C4 /* fit_example.c in Sources */,
 				D4C0CE902E5BE2C4003B55C4 /* fit_ram.c in Sources */,
 				D4F13CBA2E4EAE4600462944 /* EquipmentItem.mm in Sources */,
+				D489E0FB2E6E03570076E5DC /* sqlite3.c in Sources */,
 				D4F13CBB2E4EAE4600462944 /* TrackBrowserItem.mm in Sources */,
 				D4F13CBC2E4EAE4600462944 /* ALWindowController.mm in Sources */,
 				D4F13CBD2E4EAE4600462944 /* EquipmentLog.mm in Sources */,
@@ -1978,6 +2010,7 @@
 				D4F13CC22E4EAE4600462944 /* EquipmentListWindowController.mm in Sources */,
 				D4F13CC32E4EAE4600462944 /* GarminSyncWindowController.mm in Sources */,
 				D4F13CC52E4EAE4600462944 /* AppController.mm in Sources */,
+				D489E0F32E6D13C60076E5DC /* IdentifierStore.m in Sources */,
 				D4F13CC62E4EAE4600462944 /* ADView.mm in Sources */,
 				D4F13CC72E4EAE4600462944 /* SyncController.mm in Sources */,
 				D4F13CC82E4EAE4600462944 /* TCX.mm in Sources */,
@@ -1988,7 +2021,6 @@
 				D4F13CCD2E4EAE4600462944 /* ListEditorController.mm in Sources */,
 				D4F13CCF2E4EAE4600462944 /* ADTransparentWindow.mm in Sources */,
 				D4F13CD02E4EAE4600462944 /* GetPasswordController.mm in Sources */,
-				D4F13CD12E4EAE4600462944 /* ActivityDocument.xcdatamodel in Sources */,
 				D4F13CD22E4EAE4600462944 /* DistanceMethodController.mm in Sources */,
 				D4F13CD32E4EAE4600462944 /* PrefsSharing.mm in Sources */,
 				D4F13CD42E4EAE4600462944 /* NetUtilities.m in Sources */,
@@ -2032,6 +2064,7 @@
 				D4F13CFA2E4EAE4600462944 /* CWTransparentView.mm in Sources */,
 				D4F13CFB2E4EAE4600462944 /* AltSmoothingController.mm in Sources */,
 				D4F13CFC2E4EAE4600462944 /* PathMarker.mm in Sources */,
+				D489E0ED2E6D11840076E5DC /* DatabaseManager.m in Sources */,
 				D4F13CFD2E4EAE4600462944 /* ProfilesTransparentView.mm in Sources */,
 				D4F13CFE2E4EAE4600462944 /* CWTransparentMapView.mm in Sources */,
 				D4F13CFF2E4EAE4600462944 /* PrefsZones.mm in Sources */,
@@ -2049,6 +2082,7 @@
 				D4450B5D2E5BD33A00AB39C3 /* LatLong-UTMconversion.cpp in Sources */,
 				D4F13D072E4EAE4600462944 /* ColorBoxView.m in Sources */,
 				D4F13D082E4EAE4600462944 /* KML.mm in Sources */,
+				D489E0F02E6D12100076E5DC /* TrackPointStore.m in Sources */,
 				D4F13D092E4EAE4600462944 /* SplitsTableView.mm in Sources */,
 				D4F13D0A2E4EAE4600462944 /* Track.mm in Sources */,
 				D4F13D0B2E4EAE4600462944 /* ADWindowController.mm in Sources */,

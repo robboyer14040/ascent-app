@@ -12,16 +12,16 @@
 
 enum tImportFlag
 {
-	kImportFlagMissingCadence,
-	kImportFlagMissingHeartRate,
-	kImportFlagMissingDistance,
-	kImportFlagMissingAltitude,
-	kImportFlagMissingLocation,
-	kImportFlagMissingSpeed,
-	kImportFlagMissingPower,
-	kImportFlagDeadZoneMarker,		// entire point was synthesized during import but not in import data
-	kImportFlagHasFootpod,	
-	// add new items here and adjust kMissingImportFlags mask and DATA_ITEM_TO_FLAG macro if necessary!
+    kImportFlagMissingCadence,
+    kImportFlagMissingHeartRate,
+    kImportFlagMissingDistance,
+    kImportFlagMissingAltitude,
+    kImportFlagMissingLocation,
+    kImportFlagMissingSpeed,
+    kImportFlagMissingPower,
+    kImportFlagDeadZoneMarker,      // entire point was synthesized during import but not in import data
+    kImportFlagHasFootpod,
+    // add new items here and adjust kMissingImportFlags mask and DATA_ITEM_TO_FLAG macro if necessary!
 };
 
 
@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 // sequence index
-@property (nonatomic) NSInteger seq;
+//@property (nonatomic) NSInteger seq;
 
 @property (nonatomic) NSTimeInterval wallClockDelta;
 @property (nonatomic) NSTimeInterval activeTimeDelta;
@@ -54,9 +54,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) float gradient;
 @property (nonatomic) int flags;
 
-+ (void) resetStartTime:(NSDate*)startTime;			// for use in converting old point data that had dates instead of delta times
++ (void) resetStartTime:(NSDate*)startTime;         // for use in converting old point data that had dates instead of delta times
 
-- (id)initWithGPSData:(NSTimeInterval)wallClockDelta 
+- (id)initWithGPSData:(NSTimeInterval)wallClockDelta
            activeTime:(NSTimeInterval)activeTimeDelta
              latitude:(float)lat
             longitude:(float)lon
@@ -139,8 +139,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)endOfDeadZone;
 - (BOOL)setEndOfDeadZone;
 
-
 @end
-
 
 NS_ASSUME_NONNULL_END

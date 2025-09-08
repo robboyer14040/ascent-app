@@ -437,6 +437,12 @@ startTimeSecsSince1970:(time_t)sts
 }
 
 
+- (int)lapCalories
+{
+   return calories;
+}
+
+
 - (void)setCalories:(int)value 
 {
    if (calories != value) 
@@ -475,6 +481,10 @@ startTimeSecsSince1970:(time_t)sts
    }
 }
 
+- (int) lapIndex
+{
+   return index;
+}
 
 
 - (int) index

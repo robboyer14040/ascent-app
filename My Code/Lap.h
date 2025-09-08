@@ -55,6 +55,7 @@ startTimeSecsSince1970:(time_t)sts
 ///- (id)copyWithZone:(NSZone *)zone;
 - (id)mutableCopyWithZone:(NSZone *)zone;
 
+- (int)lapIndex;
 - (int)index;
 - (void)setIndex:(int)idx;
 
@@ -111,6 +112,7 @@ startTimeSecsSince1970:(time_t)sts
 - (BOOL)isDeltaTimeDuringLap:(NSTimeInterval)delta;
 
 - (int)calories;
+- (int)lapCalories;
 - (void)setCalories:(int)value;
 
 - (int)intensity;

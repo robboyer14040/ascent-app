@@ -156,6 +156,7 @@ struct tPeakIntervalData
 @property(nonatomic) BOOL hasDistanceData;
 @property(nonatomic, retain) NSArray<NSURL *> *photoURLs;  // array of file or web URLs
 @property(nonatomic, retain) NSArray<NSString*> *localMediaItems;  // array of filenames, stored somewhere locally
+@property(nonatomic, retain) NSString* gpxFileName;  // points storage
 
 - (NSComparisonResult) comparator:(Track*)track;
 -(void) doFixupAndCalcGradients;

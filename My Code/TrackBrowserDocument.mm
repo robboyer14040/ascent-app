@@ -28,6 +28,9 @@
 #import "StringAdditions.h"
 #import "EquipmentLog.h"
 #import "ActivityStore.h"
+#import "TrackPointStore.h"
+#import "DatabaseManager.h"
+#import "IdentifierStore.h"
 #import "SplashPanelController.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
@@ -529,6 +532,8 @@ NSString* getTracksPath()
 -(Track*) splitTrack:(Track*)track atIndices:(NSIndexSet*)is;
 -(void) addTracksToDB:(NSArray*)arr alsoAddToTrackArray:(BOOL)ata;
 -(void)syncDirect:(int*)numLoadedPtr lastTrackLoaded:(Track**)lastTrackLoadedPtr;
+- (void)_presentProgress:(ProgressBarController *)pbc total:(int)total message:(NSString*)msg;
+- (void)_dismissProgress;
 @end
 
 
@@ -1622,11 +1627,13 @@ getOut:
 		{
 			TCX* tcx = [[[TCX alloc] initWithFileURL:[NSURL fileURLWithPath:fileToImport]] autorelease];
 			sts = [tcx import:importedTrackArray laps:importedLapArray];
+            [tcx release];
 		}
 		else if ([ext caseInsensitiveCompare:@"fit"] == NSOrderedSame)
 		{
 			GarminFIT* fit = [[[GarminFIT alloc] initWithFileURL:[NSURL fileURLWithPath:fileToImport]] autorelease];
 			sts = [fit import:importedTrackArray laps:importedLapArray];
+            [fit release];
 		}
 		if (sts == YES)
 		{
@@ -2006,76 +2013,101 @@ deviceIsPluggedIn:YES];
 }
 
 
--(BOOL)loadDatabaseFile:(NSURL*)url progress:(ASProgress)prog
-{
-    ActivityStore *store = [[[ActivityStore alloc] initWithURL:url] autorelease];
-    NSError* err;
+- (BOOL)loadDatabaseFile:(NSURL *)url progress:(ASProgress)prog {
+    NSError *err = nil;
     BOOL worked = NO;
-    NSInteger iflags = 0;
-    NSDate *startDate = nil;
-    NSDate *endDate = nil;
-    NSDate *lastSyncTime = nil;
-    NSDictionary* d1 = nil;
-    NSDictionary* d2 = nil;
-    NSString* sid = nil;
-    NSInteger numTracks = 0;
-    @try
-    {
-        [store open:&err];
-        NSInteger i4, i3;
-        worked = [store loadMetaTableInfo:&d1
-                          splitsTableInfo:&d2
-                                     uuid:&sid
+
+    BOOL started = NO;
+    if ([url respondsToSelector:@selector(startAccessingSecurityScopedResource)]) {
+        started = [url startAccessingSecurityScopedResource];
+    }
+
+    @try {
+        // Open read-only + immutable
+        DatabaseManager *dbm = [[DatabaseManager alloc] initWithURL:url readOnly:YES];
+        if (![dbm open:&err]) {
+            NSLog(@"[Ascent] DB open failed: %@", err);
+            [dbm release];
+            return NO;
+        }
+
+        ActivityStore *store = [[[ActivityStore alloc] initWithDatabaseManager:dbm] autorelease];
+        // DO NOT call createSchemaIfNeeded on a read-only handle.
+
+        NSDictionary *tableInfo = nil, *splitsInfo = nil;
+        NSString *uuid = nil;
+        NSDate *startDate = nil, *endDate = nil, *lastSyncTime = nil;
+        NSInteger flags = 0, totalTracks = 0, i3 = 0, i4 = 0;
+
+        worked = [store loadMetaTableInfo:&tableInfo
+                          splitsTableInfo:&splitsInfo
+                                     uuid:&uuid
                                 startDate:&startDate
                                   endDate:&endDate
                              lastSyncTime:&lastSyncTime
-                                    flags:&iflags
-                              totalTracks:&numTracks
+                                    flags:&flags
+                              totalTracks:&totalTracks
                                      int3:&i3
                                      int4:&i4
                                     error:&err];
+
+        if (!worked) {
+            NSLog(@"[Ascent] Failed to load META info: %@", err);
+        } else {
+            // Push META to browserData
+            if (tableInfo)       [browserData setTableInfoDict:[NSMutableDictionary dictionaryWithDictionary:tableInfo]];
+            if (splitsInfo)      [browserData setSplitsTableInfoDict:[NSMutableDictionary dictionaryWithDictionary:splitsInfo]];
+            if (uuid)            [browserData setUuid:uuid];
+            if (startDate && endDate)
+                                 [browserData setStartEndDateArray:@[startDate, endDate]];
+            [browserData setFlags:(int)flags];
+
+            // ---- Load TRACKS only (no points) ----
+            NSArray *tracks = [store loadAllTracks:&err totalTracks:totalTracks progressBlock:prog];
+            if (tracks) {
+                [browserData setTrackArray:[NSMutableArray arrayWithArray:tracks]];
+                worked = YES;
+            } else {
+                NSLog(@"[Ascent] No tracks loaded (err=%@)", err);
+                worked = NO;
+            }
+            
+            if (worked)
+            {
+                TrackPointStore* tpStore = [[TrackPointStore alloc] initWithDatabaseManager:dbm];
+                NSUInteger count = [tracks count];
+                for (int i=0; i<count ; i++)
+                {
+                    Track* t = tracks[i];
+                    if (t)
+                    {
+                        NSArray* pts = [tpStore loadPointsForTrackUUID:t.uuid
+                                                                 error:&err];
+                        if (err)
+                        {
+                            NSLog(@"[Ascent] DB open failed: %@", err);
+                            break;
+                        }
+                        else
+                        {
+                            [t setPoints:[pts mutableCopy]];
+                            [t fixupTrack];
+                            
+                        }
+                        [pts release];
+                    }
+                }
+            }
+        }
+
+        [dbm close];
+        [dbm release];
     }
-    @catch (NSException* ex)
-    {
-        
-    }
-    
-    if (worked)
-    {
-        if (d1)
-        {
-            [browserData setTableInfoDict:[NSMutableDictionary dictionaryWithDictionary:d1]];
-        }
-        if (d2)
-        {
-            [browserData setSplitsTableInfoDict:[NSMutableDictionary dictionaryWithDictionary:d2]];
-        }
-        if (sid)
-        {
-            [browserData setUuid:sid];
-        }
-        if (startDate && endDate)
-        {
-            [browserData setStartEndDateArray:[NSArray arrayWithObjects:startDate, endDate, nil]];
-        }
-        
-        [browserData setFlags:(int)iflags];
-        NSArray *trackArray = nil;
-        trackArray = [store loadAllTracks:&err totalTracks:numTracks progressBlock:prog];
-        if (trackArray)
-        {
-            [browserData setTrackArray:[NSMutableArray arrayWithArray:trackArray]];
-        }
-        else
-        {
-            NSLog(@"...NO TRACKS LOADED!...");
+    @finally {
+        if (started) {
+            [url stopAccessingSecurityScopedResource];
         }
     }
-    else
-    {
-        NSLog(@"Failed to load META info");
-    }
-    [store close];
     return worked;
 }
 
@@ -2380,10 +2412,11 @@ deviceIsPluggedIn:YES];
     return NO;
 }
 
-- (void)_presentProgress:(ProgressBarController *)pbc total:(int)total {
+- (void)_presentProgress:(ProgressBarController *)pbc total:(int)total  message:(NSString*)msg
+{
     NSWindow *docWin = self.windowForSheet ?: self.windowControllers.firstObject.window;
     NSWindow *pbWin  = pbc.window;
-    [pbc begin:@"Saving activity document…" divisions:total];
+    [pbc begin:msg divisions:total];
     NSRect fr = docWin.frame, pfr = pbWin.frame;
     [pbWin setFrameOrigin:NSMakePoint(NSMidX(fr)-pfr.size.width/2.0, NSMidY(fr)-pfr.size.height/2.0)];
     [pbc showWindow:self];
@@ -2396,18 +2429,18 @@ deviceIsPluggedIn:YES];
 }
 
 
-#if 1
-
 - (void)saveToURL:(NSURL *)url
            ofType:(NSString *)type
  forSaveOperation:(NSSaveOperationType)op
 completionHandler:(void (^)(NSError * _Nullable error))handler
 {
     // 0) Show progress now
-    NSLog(@"Saving doc %s", [[url path] UTF8String]);
     
     ProgressBarController *pbc = [[SharedProgressBar sharedInstance] controller];
-    [self _presentProgress:pbc total:(int)browserData.trackArray.count];
+    NSString *name = [[url URLByDeletingPathExtension] lastPathComponent];
+    NSString *displayName = [name stringByRemovingPercentEncoding] ?: name;
+    NSLog(@"Saving doc %s", [[url path] UTF8String]);
+    [self _presentProgress:pbc total:(int)browserData.trackArray.count message:[NSString stringWithFormat:@"saving “%@”…", displayName]];
 
     // 1) Phase A: export to a temp file on a background queue
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
@@ -2465,70 +2498,133 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
 }
 
 
-#else
-
-- (void)saveToURL:(NSURL *)url
-           ofType:(NSString *)type
- forSaveOperation:(NSSaveOperationType)op
-completionHandler:(void (^)(NSError * _Nullable error))handler
-{
-    // 0) Show progress now
-    ProgressBarController *pbc = [[SharedProgressBar sharedInstance] controller];
-    [self _presentProgress:pbc total:(int)browserData.trackArray.count];
-
-    // 1) Phase A: export to a temp file on a background queue
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-        NSError *exportErr = nil;
-        NSURL *tmp = [self _exportDocumentToTemporaryURLWithProgress:^(NSInteger done, NSInteger total){
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [pbc setDivs:(int)done];
-            });
-        } error:&exportErr];
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (!tmp || exportErr) {
-                // Hide progress and finish with error
-                [self _dismissProgress];
-                if (handler) handler(exportErr);
-                return;
-            }
-
-            // 2) Phase B: tell NSDocument to perform the (short) coordinated commit.
-            self.stagedExportURL = tmp;
-
-            [super saveToURL:url ofType:type forSaveOperation:op completionHandler:^(NSError *err) {
-                // Clean up temp & UI
-                if (self.stagedExportURL) {
-                    [[NSFileManager defaultManager] removeItemAtURL:self.stagedExportURL error:NULL];
-                    self.stagedExportURL = nil;
-                }
-                [self _dismissProgress];
-                if (handler) handler(err);
-            }];
-        });
-    });
-}
-
-#endif
-
 - (NSURL *)_exportDocumentToTemporaryURLWithProgress:(ASProgress)progress
                                                error:(NSError **)outError
 {
     NSURL *tmpDir = [NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES];
-    NSURL *tmpURL = [tmpDir URLByAppendingPathComponent:[[NSUUID UUID].UUIDString stringByAppendingPathExtension:@"ascentdb"]];
+    NSURL *tmpURL = [tmpDir URLByAppendingPathComponent:
+                     [[NSUUID UUID].UUIDString stringByAppendingPathExtension:@"ascentdb"]];
 
     NSError *err = nil;
-    ActivityStore *store = [[ActivityStore alloc] initWithURL:tmpURL];
-    [store open:&err];
-    ///if (!err) [store createSchema:&err];
-    if (!err) [browserData storeMetaData:store];
-    if (!err) {
-        NSArray *tracks = browserData.trackArray;
-        [store saveAllTracks:tracks error:&err progressBlock:^(NSInteger done, NSInteger total){
-            if (progress) progress(done, total);
-        }];
+
+    // 1) Open a brand-new DB using DatabaseManager
+    DatabaseManager *dbm = [[DatabaseManager alloc] initWithURL:tmpURL];
+    if (![dbm open:&err]) {
+        if (outError) *outError = err;
+        [dbm release];
+        return nil;
     }
-    [store close];
+
+    // 2) Create stores on top of that connection
+    ActivityStore   *activities = [[ActivityStore alloc]   initWithDatabaseManager:dbm];
+    TrackPointStore *points     = [[TrackPointStore alloc] initWithDatabaseManager:dbm];
+    IdentifierStore *idents     = [[IdentifierStore alloc] initWithDatabaseManager:dbm];
+
+    // 3) Ensure schema on each store
+    if (![activities createSchemaIfNeeded:&err] ||
+        ![points createSchemaIfNeeded:&err] ||
+        ![idents createSchemaIfNeeded:&err]) {
+        if (outError) *outError = err;
+        [activities release];
+        [points release];
+        [idents release];
+        [dbm close]; [dbm release];
+        return nil;
+    }
+    [browserData storeMetaData:activities];
+
+    NSArray *tracks = browserData.trackArray; // your source objects
+    NSUInteger total = tracks.count, idx = 0;
+
+    for (Track *t in tracks) {
+        @autoreleasepool {
+            if (progress) progress(idx, total);
+
+            // 5a) Upsert activity + laps
+            if (![activities saveTrack:t error:&err]) {
+                break;
+            }
+
+            // 5b) OPTIONAL: save identifiers for this track (if you have them on the Track)
+            // Example: link a Strava activity id
+            if ([t respondsToSelector:@selector(stravaActivityID)]) {
+                NSNumber *sid = [t stravaActivityID];
+                if (sid != nil) {
+                    // Need the DB track_id to link identifiers; resolve by uuid
+                    NSString *uuid = [t respondsToSelector:@selector(uuid)] ? [t uuid] : nil;
+                    if (uuid.length) {
+                        // small helper query to get activities.id for uuid
+                        sqlite3_stmt *st = NULL;
+                        sqlite3 *db = [dbm rawSQLite];
+                        int rc = sqlite3_prepare_v2(db, "SELECT id FROM activities WHERE uuid=?1;", -1, &st, NULL);
+                        if (rc == SQLITE_OK) {
+                            rc = sqlite3_bind_text(st, 1, uuid.UTF8String, -1, SQLITE_TRANSIENT);
+                            rc = (sqlite3_step(st));
+                            if (rc == SQLITE_ROW) {
+                                int64_t trackID = sqlite3_column_int64(st, 0);
+                                // Source label is up to you (e.g. @"strava")
+                                if (![idents linkExternalID:sid.stringValue source:@"strava" toTrackID:trackID error:&err]) {
+                                    // non-fatal; decide if you want to break
+                                }
+                            }
+                        }
+                        if (st) sqlite3_finalize(st);
+                    }
+                }
+            }
+        }
+  
+        NSString *uuid = [t uuid];
+        int64_t trackID = 0;
+        {
+            sqlite3_stmt *st = NULL;
+            sqlite3 *db = [dbm rawSQLite];
+            if (sqlite3_prepare_v2(db, "SELECT id FROM activities WHERE uuid=?1;", -1, &st, NULL) == SQLITE_OK) {
+                sqlite3_bind_text(st, 1, uuid.UTF8String, -1, SQLITE_TRANSIENT);
+                if (sqlite3_step(st) == SQLITE_ROW)
+                    trackID = sqlite3_column_int64(st, 0);
+            }
+            if (st)
+                sqlite3_finalize(st);
+        }
+        
+        if (trackID) {
+            NSArray *pts = [t respondsToSelector:@selector(points)] ? [t points] : nil;
+            NSUInteger n = pts.count;
+            if (n) {
+                TPRow *rows = (TPRow *)calloc(n, sizeof(TPRow));
+                for (NSUInteger i = 0; i < n; i++) {
+                    TrackPoint* p = (TrackPoint*)pts[i];
+                    rows[i].wall_clock_delta_s = [p wallClockDelta];
+                    rows[i].active_time_delta_s = [p activeTimeDelta];
+                    rows[i].latitude_e7 = [p latitude];
+                    rows[i].longitude_e7 = [p longitude];
+                    rows[i].orig_altitude_cm = [p origAltitude];
+                    rows[i].orig_distance_m = [p origDistance];
+                    rows[i].heartrate_bpm = [p heartrate];
+                    rows[i].cadence_rpm = [p cadence];
+                    rows[i].temperature_c10 = [p temperature];  // fixme
+                    rows[i].speed_mps = [p speed];
+                    rows[i].power_w = [p power];
+                    rows[i].flags = [p flags];
+                }
+                BOOL ok = [points replacePointsForTrackID:trackID fromRows:rows count:n error:&err];
+                free(rows);
+                if (!ok) break;
+            }
+        }
+
+        if (err) break;
+        idx++;
+    }
+
+    // 6) Close and return
+    [activities release];
+    [points release];
+    [idents release];
+
+    [dbm close];
+    [dbm release];
 
     if (err) {
         if (outError) *outError = err;
@@ -3420,11 +3516,10 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 -(Track*) importTCXFile:(NSString*)fileName;
 {
 	Track* lastTrack = nil;
-	TCX* tcx = [[TCX alloc] initWithFileURL:[NSURL fileURLWithPath:fileName]];
+	TCX* tcx = [[[TCX alloc] initWithFileURL:[NSURL fileURLWithPath:fileName]] autorelease];
 	NSMutableArray* importedTrackArray = [NSMutableArray array];
 	NSMutableArray* importedLapArray = [NSMutableArray array];
 	BOOL sts = [tcx import:importedTrackArray laps:importedLapArray];
-	[tcx release];
 	if (sts == YES)
 	{
 		NSArray* arr = [importedTrackArray sortedArrayUsingSelector:@selector(comparator:)];
@@ -3573,25 +3668,25 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 
 -(void) exportGPXFile:(Track*)track fileName:(NSString*)fileName
 {
-   NSLog(@"export GPX: %@\n", fileName);
-   GPX* gpxie = [[[GPX alloc] initGPXWithFileURL:[NSURL fileURLWithPath:fileName] windowController:tbWindowController] autorelease];
-   [gpxie exportTrack:track];
+    NSLog(@"export GPX: %@\n", fileName);
+    GPX* gpxie = [[[GPX alloc] initGPXWithFileURL:[NSURL fileURLWithPath:fileName] windowController:tbWindowController] autorelease];
+    [gpxie release];
 }
 
 
 -(void) exportKMLFile:(Track*)track fileName:(NSString*)fileName
 {
-   NSLog(@"export KML: %@\n", fileName);
-   KML* kmlie = [[[KML alloc] initKMLWithFileURL:[NSURL fileURLWithPath:fileName]] autorelease];
-   [kmlie exportTrack:track];
+    NSLog(@"export KML: %@\n", fileName);
+    KML* kmlie = [[[KML alloc] initKMLWithFileURL:[NSURL fileURLWithPath:fileName]] autorelease];
+     [kmlie release];
 }
 
 
 -(void) exportTCXFile:(NSArray*)tracks fileName:(NSString*)fileName
 {
-   NSLog(@"export TCX: %@\n", fileName);
-   TCX* tcxie = [[[TCX alloc] initWithFileURL:[NSURL fileURLWithPath:fileName]] autorelease];
-   [tcxie export:tracks];
+    NSLog(@"export TCX: %@\n", fileName);
+    TCX* tcxie = [[[TCX alloc] initWithFileURL:[NSURL fileURLWithPath:fileName]] autorelease];
+    [tcxie release];
 }
 
 

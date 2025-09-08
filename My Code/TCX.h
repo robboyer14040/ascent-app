@@ -13,61 +13,16 @@
 @class TrackPoint;
 
 @interface TCX : NSObject <NSXMLParserDelegate>
-{
-	// used during import operations
-	BOOL							inHR;
-	BOOL                            inPoint;
-	BOOL                            inLap;
-	BOOL                            inActivity;
-	BOOL                            isHST;
-	BOOL                            haveGoodAltitude;
-	BOOL                            haveGoodDistance;
-	BOOL                            haveGoodLatLon;
-	BOOL							haveGoodSpeed;
-	BOOL							haveGoodCadence;
-	BOOL							haveGoodHeartRate;
-	BOOL							haveGoodPower;
-	BOOL                            isDeadMarker;
-	BOOL							inDeadZone;
-	BOOL							insertDeadZone;
-	Track*                          currentImportTrack;
-	Lap*                            currentImportLap;
-    Lap*                            lastLap;
-	TrackPoint*                     currentImportPoint;
-	NSMutableArray*                 currentImportLapArray;
-	NSMutableArray*                 currentImportPointArray;
-	NSMutableArray*                 currentImportTrackArray;
-	NSMutableString*                currentStringValue;
-	NSString*						currentActivity;
-	NSURL*                          xmlURL;
-	NSData*							importData;
-	NSTimeInterval                  ignoreInterval;
-	NSTimeInterval                  startDeadZoneWallClockDelta;
-	NSDate*							currentPointStartTime;
-	NSDate*							lastPointStartTime;
-	NSDate*							currentLapStartTime;
-	NSDate*							currentTrackStartTime;
-	float                           lastGoodDistance;
-	float                           distanceSoFar;
-	float                           lapStartDistance; // activity-wide distance where lap starts
-	float                           lapFirstDistance; // first distance reading for lap (may always be 0)
-	float							lastHeartRate;
-	float							lastCadence;
-	float							lastPower;
-	float							lastSpeed;
-	float							lastAltitude;
-	float							lastLatitude, lastLongitude;
-	int                             numLapPoints;
-	int								numTracksWithinLap;
-	int								versionMajor, versionMinor, buildMajor, buildMinor;
-	int								tracksInLap;
-}
 
+// Designated initializers
+- (instancetype)initWithData:(NSData *)data;
+- (instancetype)initWithFileURL:(NSURL *)url;
 
--(TCX*)initWithData:(NSData*)data;
--(TCX*)initWithFileURL:(NSURL*)url;
--(BOOL)import:(NSMutableArray*)trackArray laps:(NSMutableArray*)lapArray;
--(BOOL)export:(NSArray*)trackArray;
--(void)setCurrentActivity:(NSString*)a;
+// Import / Export
+- (BOOL)import:(NSMutableArray *)trackArray laps:(NSMutableArray *)lapArray;
+- (BOOL)export:(NSArray *)trackArray;
+
+// Optional override of activity string (e.g., @"Running", @"Biking", etc.)
+- (void)setCurrentActivity:(NSString *)activity;
 
 @end

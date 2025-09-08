@@ -4973,7 +4973,7 @@ int searchTagToMask(int searchTag)
         {
             NSDate *now = [NSDate date];
             lastSyncTime = [cal dateByAddingUnit:NSCalendarUnitDayOfYear
-                                           value:-5
+                                           value:-365
                                           toDate:now
                                          options:0];
         }
@@ -6374,27 +6374,88 @@ int searchTagToMask(int searchTag)
 }
 
 
-- (void) doFITImportWithProgress:(NSArray*)files
+- (void)doFITImportWithProgress:(NSArray *)files
 {
-    [self startProgressIndicator:@"Importing FIT tracks..."];
-    NSUInteger num = [files count];
-    Track* lastTrack = nil;
-    for (int i=0; i<num; i++)
-    {
-        NSString* file = [files objectAtIndex:i];
-        [self updateProgressIndicator:[NSString stringWithFormat:@"Importing %@...", file ]];
-        lastTrack = [tbDocument importFITFile:file];
+    // Ensure the progress UI starts on the main thread
+    if ([NSThread isMainThread]) {
+        [self startProgressIndicator:@"importing FIT tracks..."];
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            [self startProgressIndicator:@"importing FIT tracks..."];
+        });
     }
-    if (lastTrack != nil)
-    {
-        [self buildBrowser:YES];
-        [tbDocument updateChangeCount:NSChangeDone];
-        [[self window] setDocumentEdited:YES];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:tbDocument];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"InvalidateBrowserCache" object:nil];
-        [self  selectLastImportedTrack:lastTrack];
+
+    dispatch_queue_t workQ = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_semaphore_t doneSem = dispatch_semaphore_create(0);
+
+    __block Track *lastTrack = nil; // Will be retained inside the worker
+
+    // Kick off the work on a background queue
+    dispatch_async(workQ, ^{
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+        NSUInteger num = [files count];
+        for (NSUInteger i = 0; i < num; i++) {
+            NSString *file = [files objectAtIndex:i];
+
+            // Update the progress text on the main thread
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSString *name = [file lastPathComponent];
+                [self updateProgressIndicator:[NSString stringWithFormat:@"importing %@...", name]];
+            });
+
+            // Heavy work off the main thread
+            Track *t = [tbDocument importFITFile:file];
+            if (t) {
+                // Keep the most recent imported track
+                if (lastTrack) [lastTrack release];
+                lastTrack = [t retain];
+            }
+        }
+
+        // Wrap up on the main thread (UI + notifications)
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (lastTrack != nil) {
+                [self buildBrowser:YES];
+                [tbDocument updateChangeCount:NSChangeDone];
+                [[self window] setDocumentEdited:YES];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:tbDocument];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"InvalidateBrowserCache" object:nil];
+                [self selectLastImportedTrack:lastTrack];
+            }
+
+            [self endProgressIndicator];
+
+            // Balance our retain
+            if (lastTrack) {
+                [lastTrack release];
+                lastTrack = nil;
+            }
+
+            // Signal completion
+            dispatch_semaphore_signal(doneSem);
+        });
+
+        [pool drain];
+    });
+
+    // Wait for completion:
+    // If we're on the main thread, spin the runloop so UI stays responsive
+    if ([NSThread isMainThread]) {
+        while (dispatch_semaphore_wait(doneSem, DISPATCH_TIME_NOW) != 0) {
+            // Allow UI updates, progress text, etc.
+            [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                     beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+        }
+    } else {
+        // Off-main callers can block directly
+        dispatch_semaphore_wait(doneSem, DISPATCH_TIME_FOREVER);
     }
-    [self endProgressIndicator];
+
+    // Clean up semaphore for MRC
+#if !OS_OBJECT_USE_OBJC
+    dispatch_release(doneSem);
+#endif
 }
 
 

@@ -23,8 +23,6 @@ typedef void (^StravaImportCompletion)(NSArray * _Nullable tracks, NSError * _Nu
 
 + (instancetype)shared;
 
-- (id)initWithAccessToken:(NSString *)accessToken;
-
 - (void)importTracksSince:(NSDate *)since
                   perPage:(NSUInteger)perPage
                  maxPages:(NSUInteger)maxPages
@@ -35,6 +33,7 @@ typedef void (^StravaImportCompletion)(NSArray * _Nullable tracks, NSError * _Nu
     withSummaryDict:(NSDictionary * _Nullable )summary
        rootMediaURL:(NSURL*)mediaURL
          completion:(void (^)(NSError * _Nullable error))completion;
+
 
 @end
 

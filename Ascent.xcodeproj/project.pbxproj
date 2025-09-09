@@ -290,6 +290,9 @@
 		D4F18D0C2E5248980032E51D /* PrefsZones.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F18D032E5248980032E51D /* PrefsZones.xib */; };
 		D4F18D0D2E5248980032E51D /* ProgressBar.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F18D042E5248980032E51D /* ProgressBar.xib */; };
 		D4F18D0E2E5248980032E51D /* PrefsSharing.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F18D012E5248980032E51D /* PrefsSharing.xib */; };
+		D4F779142E6FD00E0032D5EE /* NSImage+Tint.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F779132E6FD00E0032D5EE /* NSImage+Tint.m */; };
+		D4F779172E705C220032D5EE /* WeatherAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F779162E705C220032D5EE /* WeatherAPI.m */; };
+		D4F779192E706E820032D5EE /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4F779182E706E820032D5EE /* CoreLocation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -832,6 +835,11 @@
 		D4F18D082E5248980032E51D /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/PrefsHeartrate.xib; sourceTree = "<group>"; };
 		D4F18D092E5248980032E51D /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/PrefsZones.xib; sourceTree = "<group>"; };
 		D4F18D182E525DB20032E51D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D4F779122E6FCFE30032D5EE /* NSImage+Tint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "NSImage+Tint.h"; path = "My Code/NSImage+Tint.h"; sourceTree = "<group>"; };
+		D4F779132E6FD00E0032D5EE /* NSImage+Tint.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "NSImage+Tint.m"; path = "My Code/NSImage+Tint.m"; sourceTree = "<group>"; };
+		D4F779152E705BF90032D5EE /* WeatherAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = WeatherAPI.h; path = "My Code/WeatherAPI.h"; sourceTree = "<group>"; };
+		D4F779162E705C220032D5EE /* WeatherAPI.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp.preprocessed; name = WeatherAPI.m; path = "My Code/WeatherAPI.m"; sourceTree = "<group>"; };
+		D4F779182E706E820032D5EE /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -845,6 +853,7 @@
 			files = (
 				D4D51AFB2E4E490D0003E47F /* libcurl.tbd in Frameworks */,
 				D4D51AF72E4E3E630003E47F /* Foundation.framework in Frameworks */,
+				D4F779192E706E820032D5EE /* CoreLocation.framework in Frameworks */,
 				D4D51AF62E4E3E630003E47F /* CoreData.framework in Frameworks */,
 				D4D51AF52E4E3E630003E47F /* AppKit.framework in Frameworks */,
 				D4D51AF92E4E48600003E47F /* WebKit.framework in Frameworks */,
@@ -937,6 +946,7 @@
 		D4EFE9D016B5D0BC00A5305B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D4F779182E706E820032D5EE /* CoreLocation.framework */,
 				D4450B712E5BDBB400AB39C3 /* libsqlite3.tbd */,
 				D4D51AFA2E4E490C0003E47F /* libcurl.tbd */,
 				D4D51AF82E4E48600003E47F /* WebKit.framework */,
@@ -983,6 +993,10 @@
 				D4F139F12E4EAE4600462944 /* WeightValueTransformer.m */,
 				D4F139F22E4EAE4600462944 /* USBDeviceAccess.h */,
 				D4F139F32E4EAE4600462944 /* USBDeviceAccess.cpp */,
+				D4F779122E6FCFE30032D5EE /* NSImage+Tint.h */,
+				D4F779132E6FD00E0032D5EE /* NSImage+Tint.m */,
+				D4F779152E705BF90032D5EE /* WeatherAPI.h */,
+				D4F779162E705C220032D5EE /* WeatherAPI.m */,
 			);
 			name = Utilities;
 			sourceTree = "<group>";
@@ -1989,6 +2003,7 @@
 				D4F13CB32E4EAE4600462944 /* ProgressBarController.mm in Sources */,
 				D4F13CB42E4EAE4600462944 /* AscentDistanceFormatter.m in Sources */,
 				D4F13CB52E4EAE4600462944 /* WeightValueTransformer.m in Sources */,
+				D4F779142E6FD00E0032D5EE /* NSImage+Tint.m in Sources */,
 				D49F29482E6A61CA00C5B87C /* NSDocumentController+AscentForceSubclass.m in Sources */,
 				D4F13CB62E4EAE4600462944 /* EquipmentSelectorWindowController.mm in Sources */,
 				D4F13CB72E4EAE4600462944 /* AscentIntervalFormatter.mm in Sources */,
@@ -2074,6 +2089,7 @@
 				D4F13D022E4EAE4600462944 /* GarminFIT.mm in Sources */,
 				D4F13D032E4EAE4600462944 /* TCPConnection.m in Sources */,
 				D4F13D042E4EAE4600462944 /* HRM.mm in Sources */,
+				D4F779172E705C220032D5EE /* WeatherAPI.m in Sources */,
 				D4F13D052E4EAE4600462944 /* CalendarView.mm in Sources */,
 				D4F13D062E4EAE4600462944 /* ColumnInfo.mm in Sources */,
 				D4450B5B2E5BD33A00AB39C3 /* NDRunLoopMessenger.m in Sources */,

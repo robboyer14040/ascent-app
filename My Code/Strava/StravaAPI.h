@@ -34,30 +34,11 @@ typedef void (^StravaProgress)(NSUInteger pagesFetched, NSUInteger totalSoFar);
 /// Returns YES if we have a valid (or refreshable) token.
 - (BOOL)isAuthorized;
 
-/// Fetch a single page of recent activities (as raw dictionaries)
-/// sinceDate: pass nil for "Strava default", or a date to set the `after` param.
-/// page: 1-based page index; perPage: up to 200 (Strava max).
-- (void)fetchActivitiesSince:(NSDate * _Nullable)sinceDate
-                        page:(NSUInteger)page
-                     perPage:(NSUInteger)perPage
-                  completion:(StravaActivitiesPageCompletion)completion;
-
-/// Convenience that auto-paginates until fewer than perPage are returned.
-/// Calls progress for each page fetched.
-- (void)fetchAllActivitiesSince:(NSDate * _Nullable)sinceDate
-                        perPage:(NSUInteger)perPage
-                       progress:(StravaProgress _Nullable)progress
-                     completion:(StravaActivitiesAllCompletion)completion;
 
 // Detail + Streams helpers
 - (void)fetchActivityDetail:(NSNumber *)activityID
                  completion:(void (^)(NSDictionary * _Nullable activity, NSError * _Nullable error))completion;
 
-// Convenience: deliver completion on the given queue (nil => main)
-//- (void)fetchActivityDetail:(NSNumber *)activityID
-//                      queue:(dispatch_queue_t _Nullable)queue
-//                 completion:(void (^)(NSDictionary * _Nullable activity,
-//                                      NSError * _Nullable error))completion;
 - (void)fetchActivityStreams:(NSNumber *)activityID
                        types:(NSArray<NSString *> *)types
                   completion:(void (^)(NSDictionary<NSString *, NSArray *> * _Nullable streams, NSError * _Nullable error))completion;
@@ -75,16 +56,25 @@ typedef void (^StravaProgress)(NSUInteger pagesFetched, NSUInteger totalSoFar);
 
 typedef void (^StravaPhotosCompletion)(NSArray<NSDictionary *> * _Nullable photos, NSError * _Nullable error);
 
-// Get all photos for an activity (Strava + external). `size` is the longest edge (e.g. 1024 or 2048).
-- (void)fetchActivityPhotos:(NSNumber *)activityID
-                       size:(NSUInteger)size
-                      queue:(dispatch_queue_t _Nullable)queue
-                 completion:(StravaPhotosCompletion)completion;
-
-
 - (BOOL)fetchPhotosForActivity:(NSNumber*)stravaActivityID
                   rootMediaURL:(NSURL *)mediaURL
                     completion:(void (^)(NSArray<NSString *> * photoFilenames, NSError * error))completion;
+
+
+typedef void (^StravaGearMapCompletion)(NSDictionary<NSString *, NSString *> * _Nullable gearByID,
+                                        NSError * _Nullable error);
+
+- (void)fetchGearMap:(StravaGearMapCompletion)completion;
+
+
+// Synchronous helpers (call from a background thread)
+- (NSArray<NSDictionary *> * _Nullable)fetchActivitiesSince:(NSDate *)since
+                                                    perPage:(NSUInteger)perPage
+                                                       page:(NSUInteger)page
+                                                      error:(NSError * _Nullable * _Nullable)outError;
+
+- (NSDictionary<NSString *, NSArray *> * _Nullable)fetchStreamsForActivityID:(NSNumber *)actID
+                                                                       error:(NSError * _Nullable * _Nullable)outError;
 
 @end
 

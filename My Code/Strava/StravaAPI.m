@@ -28,16 +28,36 @@ static NSString * const kStravaClientID     = @"174788";         // your numeric
 static NSString * const kStravaClientSecret = @"b55a74d43f1b54f210141998bc236f94945fcedf";    // from Strava dashboard
 static NSString * const kStravaRedirectURI  = @"http://127.0.0.1:63429/strava-callback"; // full loopback URL
 
-static inline void ASCOnMain(void (^ _Nullable block)(void)) {
-    if (!block) return;
-    if ([NSThread isMainThread]) block();
-    else dispatch_async(dispatch_get_main_queue(), block);
+
+// One dedicated serial queue for ALL Strava work
+static dispatch_queue_t ASCStravaQueue(void) {
+    static dispatch_queue_t q;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        q = dispatch_queue_create("com.montebello.ascent.strava", DISPATCH_QUEUE_SERIAL);
+    });
+    return q;
 }
 
-static inline void ASCOnQueue(dispatch_queue_t q, void (^block)(void)) {
+// MRC-safe async dispatch (copies the block so it survives enqueue)
+static inline void ASCDispatch(dispatch_queue_t q, void (^ _Nullable block)(void)) {
     if (!block) return;
-    if (!q) ASCOnMain(block);
-    else dispatch_async(q, block);
+    void (^heap)(void) = Block_copy(block);
+    dispatch_async(q ?: dispatch_get_main_queue(), ^{
+        if (heap) heap();
+        if (heap) Block_release(heap);
+    });
+}
+
+// Keep ASCOnMain around, but make it MRC-safe too
+static inline void ASCOnMain(void (^ _Nullable block)(void)) {
+    if (!block) return;
+    if ([NSThread isMainThread]) { block(); return; }
+    void (^heap)(void) = Block_copy(block);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (heap) heap();
+        if (heap) Block_release(heap);
+    });
 }
 
 static id _Nullable ASCJSON(NSData * _Nullable data, NSError ** _Nullable err) {
@@ -118,6 +138,13 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
 - (void)_trackTask:(NSURLSessionTask *)t;
 - (void)_untrackTask:(NSURLSessionTask *)t;
 - (void)_teardownLoopback;
+// Get all photos for an activity (Strava + external). `size` is the longest edge (e.g. 1024 or 2048).
+- (void)_fetchActivityPhotos:(NSNumber *)activityID
+                       size:(NSUInteger)size
+                      queue:(dispatch_queue_t _Nullable)queue
+                 completion:(StravaPhotosCompletion)completion;
+
+
 
 //- (void)_ensureFreshAccessTokenOnQueue:(dispatch_queue_t)q
 //                            completion:(StravaAuthCompletion)completion;
@@ -177,6 +204,7 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
         _loopReadSrc = NULL;
         _authInProgress = NO;
         _accessExpiresAt = 0;
+#if 1
         NSDictionary *tok = [[NSUserDefaults standardUserDefaults] objectForKey:@"StravaTokens"];
         if ([tok isKindOfClass:[NSDictionary class]]) {
             NSString *a = tok[@"access"];
@@ -185,7 +213,9 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
             if ([a isKindOfClass:[NSString class]]) { ASC_RELEASE(_accessToken);  _accessToken  = [a copy]; }
             if ([r isKindOfClass:[NSString class]]) { ASC_RELEASE(_refreshToken); _refreshToken = [r copy]; }
             if ([e isKindOfClass:[NSNumber class]]) _accessExpiresAt = [e doubleValue];
-        }   }
+        }
+#endif
+    }
     return self;
 }
 
@@ -375,12 +405,14 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
     NSAssert(_clientSecret.length, @"Strava clientSecret not set");
     NSAssert(_redirectURI.length,  @"Strava redirectURI not set");
 
-    NSString *scope           = @"read,activity:read_all";
+    NSString *scope           = @"read,profile:read_all,activity:read,activity:read_all";
     NSString *encodedRedirect = [_redirectURI stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
     NSString *authURLString   = [NSString stringWithFormat:
         @"https://www.strava.com/oauth/authorize?client_id=%@&response_type=code&redirect_uri=%@&approval_prompt=auto&scope=%@",
         _clientID, encodedRedirect, scope];
-
+    
+    NSLog(@"setting auth scope to %s",[scope UTF8String]);
+     
     // 3) Open the user's browser to complete the flow
     ASCOnMain(^{
         NSWindow *hostWin = window ?: (NSApp.keyWindow ?: NSApp.mainWindow);
@@ -406,136 +438,22 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
     return [self _hasValidAccessToken] || (_refreshToken.length > 0);
 }
 
-- (void)fetchActivitiesSince:(NSDate * _Nullable)sinceDate
-                        page:(NSUInteger)page
-                     perPage:(NSUInteger)perPage
-                  completion:(StravaActivitiesPageCompletion)completion
-{
-    [self _ensureFreshAccessToken:^(NSError * _Nullable err) {
-        if (err) { ASCOnMain(^{ if (completion) completion(nil, nil, err); }); return; }
 
-        NSTimeInterval afterEpoch = (sinceDate ? floor([sinceDate timeIntervalSince1970]) : 0);
-        NSString *url = [NSString stringWithFormat:
-            @"https://www.strava.com/api/v3/athlete/activities?after=%.0f&page=%lu&per_page=%lu",
-            afterEpoch, (unsigned long)page, (unsigned long)perPage];
-
-        NSURLRequest *req = [self _GET:url bearer:_accessToken];
-
-        __unsafe_unretained StravaAPI *unretainedSelf = self;
-        __block NSURLSessionDataTask *task = nil;
-        task = [_session dataTaskWithRequest:req
-                           completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-            [unretainedSelf _untrackTask:task];
-
-            if (error && [error.domain isEqualToString:NSURLErrorDomain] && error.code == NSURLErrorCancelled) return;
-            if (error) { ASCOnMain(^{ if (completion) completion(nil, response, error); }); return; }
-
-            NSHTTPURLResponse *http = (NSHTTPURLResponse *)response;
-            if (http.statusCode == 401) {
-                ASC_RELEASE(unretainedSelf->_accessToken); unretainedSelf->_accessToken = [@"" copy];
-                NSError *e = [NSError errorWithDomain:@"Strava" code:401 userInfo:@{NSLocalizedDescriptionKey:@"Unauthorized"}];
-                ASCOnMain(^{ if (completion) completion(nil, response, e); });
-                return;
-            }
-
-            NSError *jsonErr = nil;
-            id obj = ASCJSON(data, &jsonErr);
-            if (jsonErr || ![obj isKindOfClass:[NSArray class]]) {
-                NSError *e = jsonErr ?: [NSError errorWithDomain:@"Strava" code:-2 userInfo:@{NSLocalizedDescriptionKey:@"Malformed response"}];
-                ASCOnMain(^{ if (completion) completion(nil, response, e); });
-                return;
-            }
-
-            ASCOnMain(^{ if (completion) completion((NSArray *)obj, response, nil); });
-        }];
-
-        [self _trackTask:task];
-        [task resume];
-    }];
-}
-
-- (void)fetchAllActivitiesSince:(NSDate * _Nullable)sinceDate
-                        perPage:(NSUInteger)perPage
-                       progress:(StravaProgress _Nullable)progress
-                     completion:(StravaActivitiesAllCompletion)completion
-{
-    // MRC: copy blocks so they live across async calls (nil-safe)
-    StravaProgress progressCopy = [progress copy];
-    StravaActivitiesAllCompletion completionCopy = [completion copy];
-
-    if (perPage == 0) perPage = 50;
-    __block NSUInteger page = 1;
-    __block NSMutableArray *accum = [[NSMutableArray alloc] init];
-
-    NSDate *sinceCopy = [sinceDate copy];
-
-    __block void (^fetchNext)(void) = nil;
-    fetchNext = [^{
-        [self fetchActivitiesSince:sinceCopy
-                              page:page
-                           perPage:perPage
-                        completion:^(NSArray<NSDictionary *> * _Nullable activities,
-                                     NSURLResponse * _Nullable response,
-                                     NSError * _Nullable error)
-        {
-            if (error) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    if (completionCopy) completionCopy(nil, error);
-                    [accum release];
-                    [progressCopy release];
-                    [completionCopy release];
-                    [fetchNext release];
-                    /* DO NOT release sinceCopy here; the copied block retains it */
-                });
-                return;
-            }
-
-            if (![activities isKindOfClass:[NSArray class]]) activities = (NSArray *)[NSArray array];
-
-            if ([activities count] > 0) {
-                [accum addObjectsFromArray:activities];
-            }
-
-            if (progressCopy) {
-                NSUInteger pagesFetched = page;
-                NSUInteger totalSoFar   = (NSUInteger)[accum count];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    progressCopy(pagesFetched, totalSoFar);
-                });
-            }
-
-            if ([activities count] < perPage) {
-                NSArray *finalResult = [[accum copy] autorelease];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    if (completionCopy) completionCopy(finalResult, nil);
-                    [accum release];
-                    [progressCopy release];
-                    [completionCopy release];
-                    [fetchNext release];
-                    /* DO NOT release sinceCopy here; the copied block retains it */
-                });
-                return;
-            }
-
-            page++;
-            fetchNext();
-        }];
-    } copy];
-
-    fetchNext();
-
-    // Release our local reference; the copied block retains sinceCopy.
-    [sinceCopy release];
-}
-
-// Detailed activity (one object, richer than summary)
 - (void)fetchActivityDetail:(NSNumber *)activityID
                  completion:(void (^)(NSDictionary * _Nullable activity, NSError * _Nullable error))completion
 {
-    if (activityID == nil) { if (completion) completion(nil, [NSError errorWithDomain:@"Strava" code:-20 userInfo:@{NSLocalizedDescriptionKey:@"Missing activity id"}]); return; }
+    if (!activityID) { if (completion) completion(nil, [NSError errorWithDomain:@"Strava" code:-20 userInfo:@{NSLocalizedDescriptionKey:@"Missing activity id"}]); return; }
+
+    void (^completionCopy)(NSDictionary *, NSError *) = [completion copy];
 
     [self _ensureFreshAccessToken:^(NSError * _Nullable err) {
-        if (err) { if (completion) completion(nil, err); return; }
+        if (err) {
+            ASCDispatch(ASCStravaQueue(), ^{
+                if (completionCopy) completionCopy(nil, err);
+                if (completionCopy) Block_release(completionCopy);
+            });
+            return;
+        }
 
         NSString *url = [NSString stringWithFormat:@"https://www.strava.com/api/v3/activities/%@?include_all_efforts=true", activityID];
         NSURLRequest *req = [self _GET:url bearer:_accessToken];
@@ -544,17 +462,31 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
         __block NSURLSessionDataTask *task = nil;
         task = [_session dataTaskWithRequest:req
                            completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-              [unretainedSelf _untrackTask:task];
+            [unretainedSelf _untrackTask:task];
 
-            if (error) { ASCOnMain(^{ if (completion) completion(nil, error); }); return; }
+            if (error) {
+                ASCDispatch(ASCStravaQueue(), ^{
+                    if (completionCopy) completionCopy(nil, error);
+                    if (completionCopy) Block_release(completionCopy);
+                });
+                return;
+            }
+
             NSError *jsonErr = nil;
             id obj = ASCJSON(data, &jsonErr);
             if (jsonErr || ![obj isKindOfClass:[NSDictionary class]]) {
                 NSError *e = jsonErr ?: [NSError errorWithDomain:@"Strava" code:-21 userInfo:@{NSLocalizedDescriptionKey:@"Malformed activity detail"}];
-                ASCOnMain(^{ if (completion) completion(nil, e); });
+                ASCDispatch(ASCStravaQueue(), ^{
+                    if (completionCopy) completionCopy(nil, e);
+                    if (completionCopy) Block_release(completionCopy);
+                });
                 return;
             }
-            ASCOnMain(^{ if (completion) completion((NSDictionary *)obj, nil); });
+
+            ASCDispatch(ASCStravaQueue(), ^{
+                if (completionCopy) completionCopy((NSDictionary *)obj, nil);
+                if (completionCopy) Block_release(completionCopy);
+            });
         }];
         [self _trackTask:task];
         [task resume];
@@ -563,18 +495,25 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
 
 
 
-// Streams (arrays of aligned samples; use key_by_type for {type: [..]} map)
 - (void)fetchActivityStreams:(NSNumber *)activityID
                        types:(NSArray<NSString *> *)types
                   completion:(void (^)(NSDictionary<NSString *, NSArray *> * _Nullable streams, NSError * _Nullable error))completion
 {
-    if (activityID == nil) { if (completion) completion(nil, [NSError errorWithDomain:@"Strava" code:-22 userInfo:@{NSLocalizedDescriptionKey:@"Missing activity id"}]); return; }
+    if (!activityID) { if (completion) completion(nil, [NSError errorWithDomain:@"Strava" code:-22 userInfo:@{NSLocalizedDescriptionKey:@"Missing activity id"}]); return; }
+
+    void (^completionCopy)(NSDictionary *, NSError *) = [completion copy];
 
     NSString *keys = [types count] ? [types componentsJoinedByString:@","]
                                    : @"latlng,heartrate,velocity_smooth,time,cadence,altitude,distance";
 
     [self _ensureFreshAccessToken:^(NSError * _Nullable err) {
-        if (err) { if (completion) completion(nil, err); return; }
+        if (err) {
+            ASCDispatch(ASCStravaQueue(), ^{
+                if (completionCopy) completionCopy(nil, err);
+                if (completionCopy) Block_release(completionCopy);
+            });
+            return;
+        }
 
         NSString *url = [NSString stringWithFormat:
             @"https://www.strava.com/api/v3/activities/%@/streams?keys=%@&key_by_type=true",
@@ -588,16 +527,28 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
                            completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
             [unretainedSelf _untrackTask:task];
 
-            if (error) { ASCOnMain(^{ if (completion) completion(nil, error); }); return; }
+            if (error) {
+                ASCDispatch(ASCStravaQueue(), ^{
+                    if (completionCopy) completionCopy(nil, error);
+                    if (completionCopy) Block_release(completionCopy);
+                });
+                return;
+            }
             NSError *jsonErr = nil;
             id obj = ASCJSON(data, &jsonErr);
             if (jsonErr || ![obj isKindOfClass:[NSDictionary class]]) {
                 NSError *e = jsonErr ?: [NSError errorWithDomain:@"Strava" code:-23 userInfo:@{NSLocalizedDescriptionKey:@"Malformed streams response"}];
-                ASCOnMain(^{ if (completion) completion(nil, e); });
+                ASCDispatch(ASCStravaQueue(), ^{
+                    if (completionCopy) completionCopy(nil, e);
+                    if (completionCopy) Block_release(completionCopy);
+                });
                 return;
             }
-            NSDictionary *dict = (NSDictionary *)obj;
-            ASCOnMain(^{ if (completion) completion(dict, nil); });
+
+            ASCDispatch(ASCStravaQueue(), ^{
+                if (completionCopy) completionCopy((NSDictionary *)obj, nil);
+                if (completionCopy) Block_release(completionCopy);
+            });
         }];
         [self _trackTask:task];
         [task resume];
@@ -715,19 +666,35 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
     }
 }
 
-- (void)fetchFreshAccessToken:(void (^)(NSString * _Nullable token, NSError * _Nullable error))completion {
+
+- (void)fetchFreshAccessToken:(void (^)(NSString * _Nullable token, NSError * _Nullable error))completion
+{
+    if (!completion) return;
+    void (^completionCopy)(NSString *, NSError *) = [completion copy]; // MRC
+
     [self _ensureFreshAccessToken:^(NSError * _Nullable err) {
-        if (err) { ASCOnMain(^{ if (completion) completion(nil, err); }); return; }
+        if (err) {
+            if (completionCopy) completionCopy(nil, err);
+            if (completionCopy) Block_release(completionCopy);
+            return;
+        }
         NSString *tok = nil;
         @synchronized (self) { tok = [[_accessToken copy] autorelease]; }
-        ASCOnMain(^{ if (completion) completion(tok, nil); });
+        if (completionCopy) completionCopy(tok, nil);
+        if (completionCopy) Block_release(completionCopy);
     }];
 }
 
 
 - (void)_ensureFreshAccessToken:(StravaAuthCompletion)completion
 {
-    if ([self _accessTokenIsFresh]) { ASCOnMain(^{ if (completion) completion(nil); }); return; }
+    StravaAuthCompletion completionCopy = [completion copy]; // MRC retain
+
+    if ([self _accessTokenIsFresh]) {
+        if (completionCopy) completionCopy(nil);
+        if (completionCopy) Block_release(completionCopy);
+        return;
+    }
 
     if (_refreshToken.length > 0) {
         NSDictionary *form = @{
@@ -741,23 +708,30 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
         __unsafe_unretained StravaAPI *unretainedSelf = self;
         __block NSURLSessionDataTask *task = nil;
         task = [_session dataTaskWithRequest:req
-                           completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+                           completionHandler:^(NSData *data, NSURLResponse *response, NSError *error)
+        {
             [unretainedSelf _untrackTask:task];
 
-            if (error) { ASCOnMain(^{ if (completion) completion(error); }); return; }
+            if (error) {
+                if (completionCopy) completionCopy(error);
+                if (completionCopy) Block_release(completionCopy);
+                return;
+            }
 
             NSError *jsonErr = nil;
-            id obj = ASCJSON(data, &jsonErr);
+            id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonErr];
             if (jsonErr || ![obj isKindOfClass:[NSDictionary class]]) {
-                NSError *e = jsonErr ?: [NSError errorWithDomain:@"Strava" code:-3 userInfo:@{NSLocalizedDescriptionKey:@"Malformed token refresh"}];
-                ASCOnMain(^{ if (completion) completion(e); });
+                NSError *e = jsonErr ?: [NSError errorWithDomain:@"Strava" code:-3
+                                                        userInfo:@{NSLocalizedDescriptionKey:@"Malformed token refresh"}];
+                if (completionCopy) completionCopy(e);
+                if (completionCopy) Block_release(completionCopy);
                 return;
             }
 
             NSDictionary *dict = (NSDictionary *)obj;
             NSString *access  = dict[@"access_token"];
             NSString *refresh = dict[@"refresh_token"];
-            NSNumber *exp     = dict[@"expires_at"];   // seconds since epoch
+            NSNumber *exp     = dict[@"expires_at"];
 
             ASC_RELEASE(unretainedSelf->_accessToken);
             unretainedSelf->_accessToken = [access copy];
@@ -769,25 +743,29 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
             unretainedSelf->_accessExpiresAt = [exp isKindOfClass:[NSNumber class]] ? exp.doubleValue : 0;
 
             [unretainedSelf _persistTokens];
-            ASCOnMain(^{ if (completion) completion(nil); });
+
+            if (completionCopy) completionCopy(nil);
+            if (completionCopy) Block_release(completionCopy);
         }];
         [self _trackTask:task];
         [task resume];
         return;
     }
 
-    // No valid/refreshable token -> do full auth (your existing code)
-    ASCOnMain(^{
+    // No refresh token — kick UI auth on main, then invoke completionCopy ONCE.
+    dispatch_async(dispatch_get_main_queue(), ^{
         NSWindow *host = [NSApp keyWindow] ?: [NSApp mainWindow];
         if (!host) {
-            host = [[[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 1, 1)
+            host = [[[NSWindow alloc] initWithContentRect:NSMakeRect(0,0,1,1)
                                                styleMask:NSWindowStyleMaskBorderless
                                                  backing:NSBackingStoreBuffered
                                                    defer:YES] autorelease];
         }
         [self startAuthorizationFromWindow:host completion:^(NSError * _Nullable err) {
-            if (!err) [self _persistTokens]; // startAuthorization sets tokens on success
-            if (completion) completion(err);
+            // (Re)persist if success
+            if (!err) [self _persistTokens];
+            if (completionCopy) completionCopy(err);
+            if (completionCopy) Block_release(completionCopy);
         }];
     });
 }
@@ -815,19 +793,24 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
 }
 
 
-- (void)fetchActivityPhotos:(NSNumber *)activityID
+- (void)_fetchActivityPhotos:(NSNumber *)activityID
                        size:(NSUInteger)size
                       queue:(dispatch_queue_t)queue
                  completion:(StravaPhotosCompletion)completion
 {
-    if (!activityID) {
-        if (completion) completion(nil, [NSError errorWithDomain:@"Strava" code:-30 userInfo:@{NSLocalizedDescriptionKey:@"Missing activity id"}]);
-        return;
-    }
+    if (!activityID) { if (completion) completion(nil, [NSError errorWithDomain:@"Strava" code:-30 userInfo:@{NSLocalizedDescriptionKey:@"Missing activity id"}]); return; }
     if (size == 0) size = 1024;
 
+    StravaPhotosCompletion completionCopy = [completion copy];
+
     [self _ensureFreshAccessToken:^(NSError * _Nullable err) {
-        if (err) { if (completion) completion(nil, err); return; }
+        if (err) {
+            ASCDispatch(queue ?: ASCStravaQueue(), ^{
+                if (completionCopy) completionCopy(nil, err);
+                if (completionCopy) Block_release(completionCopy);
+            });
+            return;
+        }
 
         NSString *url = [NSString stringWithFormat:
             @"https://www.strava.com/api/v3/activities/%@/photos?photo_sources=true&size=%lu",
@@ -840,16 +823,29 @@ static OSStatus ASCKeychainUpsert(NSString *service, NSString *account, NSData *
         task = [_session dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
             [unretainedSelf _untrackTask:task];
 
-            if (error) { (queue ? dispatch_async(queue, ^{ if (completion) completion(nil, error); }) : ASCOnMain(^{ if (completion) completion(nil, error); })); return; }
+            if (error) {
+                ASCDispatch(queue ?: ASCStravaQueue(), ^{
+                    if (completionCopy) completionCopy(nil, error);
+                    if (completionCopy) Block_release(completionCopy);
+                });
+                return;
+            }
 
             NSError *jsonErr = nil;
             id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonErr];
             if (jsonErr || ![obj isKindOfClass:[NSArray class]]) {
                 NSError *e = jsonErr ?: [NSError errorWithDomain:@"Strava" code:-31 userInfo:@{NSLocalizedDescriptionKey:@"Malformed photos response"}];
-                (queue ? dispatch_async(queue, ^{ if (completion) completion(nil, e); }) : ASCOnMain(^{ if (completion) completion(nil, e); }));
+                ASCDispatch(queue ?: ASCStravaQueue(), ^{
+                    if (completionCopy) completionCopy(nil, e);
+                    if (completionCopy) Block_release(completionCopy);
+                });
                 return;
             }
-            (queue ? dispatch_async(queue, ^{ if (completion) completion((NSArray *)obj, nil); }) : ASCOnMain(^{ if (completion) completion((NSArray *)obj, nil); }));
+
+            ASCDispatch(queue ?: ASCStravaQueue(), ^{
+                if (completionCopy) completionCopy((NSArray *)obj, nil);
+                if (completionCopy) Block_release(completionCopy);
+            });
         }];
         [self _trackTask:task];
         [task resume];
@@ -937,10 +933,10 @@ static NSData * _SAN_JPEGDataFromImageData(NSData *data) {
     // Use a background queue for the initial metadata fetch and downloads
     dispatch_queue_t bg = dispatch_get_global_queue(QOS_CLASS_UTILITY, 0);
 
-    [self fetchActivityPhotos:activityNum
-                         size:desiredSize
-                        queue:bg
-                   completion:^(NSArray<NSDictionary *> *photos, NSError *error)
+    [self _fetchActivityPhotos:activityNum
+                          size:desiredSize
+                         queue:bg
+                    completion:^(NSArray<NSDictionary *> *photos, NSError *error)
     {
         if (error) {
             if (didStartAccess) { @try { [mediaURL stopAccessingSecurityScopedResource]; } @catch (__unused NSException *ex) {} }
@@ -1065,6 +1061,367 @@ static NSData * _SAN_JPEGDataFromImageData(NSData *data) {
     }];
 
     return YES; // async work successfully started
+}
+
+
+// StravaAPI.m  (add inside @implementation StravaAPI)
+
+- (void)fetchGearMap:(StravaGearMapCompletion)completion
+{
+    if (!completion) return;
+    StravaGearMapCompletion completionCopy = [completion copy]; // MRC retain
+
+    [self _ensureFreshAccessToken:^(NSError * _Nullable authErr) {
+        if (authErr) {
+            ASCOnMain(^{ if (completionCopy) completionCopy(nil, authErr); if (completionCopy) Block_release(completionCopy); });
+            return;
+        }
+
+        NSString *url = @"https://www.strava.com/api/v3/athlete";
+        NSURLRequest *req = [self _GET:url bearer:_accessToken];
+
+        __unsafe_unretained StravaAPI *unretainedSelf = self;
+        __block NSURLSessionDataTask *task = nil;
+        task = [_session dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+            [unretainedSelf _untrackTask:task];
+
+            // Network-level error
+            if (error) {
+                ASCOnMain(^{ if (completionCopy) completionCopy(nil, error); if (completionCopy) Block_release(completionCopy); });
+                return;
+            }
+
+            // HTTP status check
+            NSHTTPURLResponse *http = (NSHTTPURLResponse *)response;
+            if (![http isKindOfClass:[NSHTTPURLResponse class]] || http.statusCode < 200 || http.statusCode >= 300) {
+                NSError *e = [NSError errorWithDomain:@"StravaHTTP"
+                                                 code:(http ? http.statusCode : -1)
+                                             userInfo:@{ NSLocalizedDescriptionKey:
+                                                             [NSString stringWithFormat:@"HTTP %ld fetching /athlete",
+                                                                 (long)(http ? http.statusCode : -1)] }];
+                ASCOnMain(^{ if (completionCopy) completionCopy(nil, e); if (completionCopy) Block_release(completionCopy); });
+                return;
+            }
+
+            // Parse JSON
+            NSError *jsonErr = nil;
+            id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonErr];
+            if (jsonErr || ![obj isKindOfClass:[NSDictionary class]]) {
+                NSError *e = jsonErr ?: [NSError errorWithDomain:@"StravaAPI"
+                                                            code:-1001
+                                                        userInfo:@{NSLocalizedDescriptionKey:@"Malformed /athlete JSON"}];
+                ASCOnMain(^{ if (completionCopy) completionCopy(nil, e); if (completionCopy) Block_release(completionCopy); });
+                return;
+            }
+
+            NSDictionary *athlete = (NSDictionary *)obj;
+            NSArray *bikes = ([[athlete objectForKey:@"bikes"] isKindOfClass:[NSArray class]] ? [athlete objectForKey:@"bikes"] : nil);
+            NSArray *shoes = ([[athlete objectForKey:@"shoes"] isKindOfClass:[NSArray class]] ? [athlete objectForKey:@"shoes"] : nil);
+
+            NSMutableDictionary *map = [NSMutableDictionary dictionaryWithCapacity:8];
+
+            void (^accum)(NSArray *) = ^(NSArray *items) {
+                for (id it in items) {
+                    if (![it isKindOfClass:[NSDictionary class]]) continue;
+                    NSDictionary *g = (NSDictionary *)it;
+
+                    NSString *gid  = [[g objectForKey:@"id"]   isKindOfClass:[NSString class]] ? [g objectForKey:@"id"]   : nil;
+                    NSString *name = [[g objectForKey:@"name"] isKindOfClass:[NSString class]] ? [g objectForKey:@"name"] : nil;
+
+                    if (!name.length) {
+                        NSString *brand = [[g objectForKey:@"brand_name"] isKindOfClass:[NSString class]] ? [g objectForKey:@"brand_name"] : nil;
+                        NSString *model = [[g objectForKey:@"model_name"] isKindOfClass:[NSString class]] ? [g objectForKey:@"model_name"] : nil;
+                        if (brand.length || model.length) {
+                            name = [NSString stringWithFormat:@"%@%@%@",
+                                    brand ?: @"", (brand.length && model.length) ? @" " : @"", model ?: @""];
+                        } else {
+                            name = @"(Unnamed Gear)";
+                        }
+                    }
+
+                    if (gid.length) [map setObject:name forKey:gid];
+                }
+            };
+
+            if (bikes) accum(bikes);
+            if (shoes) accum(shoes);
+
+#if 0   // OPTIONAL FALLBACK: harvest gear from recent activities if /athlete has no gear arrays
+            if ([map count] == 0) {
+                // Collect gear_ids from a small page of recent activities
+                __block NSMutableSet *gearIDs = [NSMutableSet set];
+                dispatch_semaphore_t semActs = dispatch_semaphore_create(0);
+
+                NSString *actsURL = @"https://www.strava.com/api/v3/athlete/activities?per_page=30&page=1";
+                NSURLRequest *actsReq = [unretainedSelf _GET:actsURL bearer:unretainedSelf->_accessToken];
+
+                __block NSURLSessionDataTask *t2 = nil;
+                t2 = [unretainedSelf->_session dataTaskWithRequest:actsReq
+                                                completionHandler:^(NSData *d2, NSURLResponse *r2, NSError *e2)
+                {
+                    if (!e2) {
+                        id arr = [NSJSONSerialization JSONObjectWithData:d2 options:0 error:NULL];
+                        if ([arr isKindOfClass:[NSArray class]]) {
+                            for (id a in (NSArray *)arr) {
+                                if (![a isKindOfClass:[NSDictionary class]]) continue;
+                                NSString *gid = ([[a objectForKey:@"gear_id"] isKindOfClass:[NSString class]]
+                                                 ? [a objectForKey:@"gear_id"] : nil);
+                                if (gid.length) [gearIDs addObject:gid];
+                            }
+                        }
+                    }
+                    dispatch_semaphore_signal(semActs);
+                }];
+                [t2 resume];
+                (void)dispatch_semaphore_wait(semActs, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)));
+            #if !OS_OBJECT_USE_OBJC
+                dispatch_release(semActs);
+            #endif
+
+                // Resolve each gear_id → name via /gear/{id}
+                for (NSString *gid in gearIDs) {
+                    dispatch_semaphore_t semGear = dispatch_semaphore_create(0);
+                    NSString *gurl = [NSString stringWithFormat:@"https://www.strava.com/api/v3/gear/%@", gid];
+                    NSURLRequest *greq = [unretainedSelf _GET:gurl bearer:unretainedSelf->_accessToken];
+
+                    __block NSURLSessionDataTask *tg = nil;
+                    tg = [unretainedSelf->_session dataTaskWithRequest:greq
+                                                    completionHandler:^(NSData *gd, NSURLResponse *gr, NSError *ge)
+                    {
+                        if (!ge) {
+                            id gobj = [NSJSONSerialization JSONObjectWithData:gd options:0 error:NULL];
+                            if ([gobj isKindOfClass:[NSDictionary class]]) {
+                                NSString *name = ([[gobj objectForKey:@"name"] isKindOfClass:[NSString class]]
+                                                  ? [gobj objectForKey:@"name"] : nil);
+                                if (!name.length) {
+                                    NSString *brand = [[gobj objectForKey:@"brand_name"] isKindOfClass:[NSString class]] ? [gobj objectForKey:@"brand_name"] : nil;
+                                    NSString *model = [[gobj objectForKey:@"model_name"] isKindOfClass:[NSString class]] ? [gobj objectForKey:@"model_name"] : nil;
+                                    if (brand.length || model.length) {
+                                        name = [NSString stringWithFormat:@"%@%@%@",
+                                                brand ?: @"", (brand.length && model.length) ? @" " : @"", model ?: @""];
+                                    } else {
+                                        name = @"(Unnamed Gear)";
+                                    }
+                                }
+                                if (gid.length && name.length) { @synchronized(map) { [map setObject:name forKey:gid]; } }
+                            }
+                        }
+                        dispatch_semaphore_signal(semGear);
+                    }];
+                    [tg resume];
+                    (void)dispatch_semaphore_wait(semGear, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)));
+                #if !OS_OBJECT_USE_OBJC
+                    dispatch_release(semGear);
+                #endif
+                }
+            }
+#endif
+
+            NSDictionary *outMap = [[map copy] autorelease];
+            ASCOnMain(^{ if (completionCopy) completionCopy(outMap, nil); if (completionCopy) Block_release(completionCopy); });
+        }];
+
+        [unretainedSelf _trackTask:task];
+        [task resume];
+    }];
+}
+
+
+// Synchronous page fetch of activities.
+// IMPORTANT: Call from a background queue; blocks the caller until the request completes.
+- (NSArray<NSDictionary *> *)fetchActivitiesSince:(NSDate *)since
+                                          perPage:(NSUInteger)perPage
+                                             page:(NSUInteger)page
+                                            error:(NSError **)outError
+{
+    NSParameterAssert(since != nil);
+    if ([NSThread isMainThread]) {
+        NSLog(@"[StravaAPI] WARNING: fetchActivitiesSince: called on main thread; this method blocks.");
+    }
+
+    __block NSError *authErr = nil;
+    dispatch_semaphore_t semAuth = dispatch_semaphore_create(0);
+    [self _ensureFreshAccessToken:^(NSError * _Nullable err) {
+        if (err) authErr = [err retain];
+        dispatch_semaphore_signal(semAuth);
+    }];
+    (void)dispatch_semaphore_wait(semAuth, DISPATCH_TIME_FOREVER);
+#if !OS_OBJECT_USE_OBJC
+    dispatch_release(semAuth);
+#endif
+    if (authErr) {
+        if (outError) *outError = [authErr autorelease];
+        return nil;
+    }
+
+    NSTimeInterval afterEpoch = floor([since timeIntervalSince1970]);
+    NSString *url = [NSString stringWithFormat:
+                     @"https://www.strava.com/api/v3/athlete/activities?after=%.0f&per_page=%lu&page=%lu",
+                     afterEpoch, (unsigned long)perPage, (unsigned long)page];
+
+    NSURLRequest *req = [self _GET:url bearer:_accessToken];
+
+    __block NSArray *result = nil;
+    __block NSError *reqErr = nil;
+
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+
+    __unsafe_unretained StravaAPI *unretainedSelf = self;
+    __block NSURLSessionDataTask *task = nil;
+    task = [_session dataTaskWithRequest:req
+                       completionHandler:^(NSData *data, NSURLResponse *response, NSError *error)
+    {
+        [unretainedSelf _untrackTask:task];
+
+        if (error) {
+            reqErr = [error retain];
+            dispatch_semaphore_signal(sem);
+            return;
+        }
+
+        NSHTTPURLResponse *http = (NSHTTPURLResponse *)response;
+        if (![http isKindOfClass:[NSHTTPURLResponse class]] || http.statusCode < 200 || http.statusCode >= 300) {
+            reqErr = [[NSError errorWithDomain:@"StravaHTTP"
+                                          code:(http ? http.statusCode : -1)
+                                      userInfo:@{ NSLocalizedDescriptionKey:
+                                                      [NSString stringWithFormat:@"HTTP %ld fetching /athlete/activities",
+                                                       (long)(http ? http.statusCode : -1)],
+                                                  NSURLErrorFailingURLErrorKey: url }] retain];
+            dispatch_semaphore_signal(sem);
+            return;
+        }
+
+        NSError *jsonErr = nil;
+        id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonErr];
+        if (jsonErr || ![obj isKindOfClass:[NSArray class]]) {
+            reqErr = [(jsonErr ?: [NSError errorWithDomain:@"StravaAPI"
+                                                      code:-2001
+                                                  userInfo:@{NSLocalizedDescriptionKey:@"Malformed activities JSON"}]) retain];
+            dispatch_semaphore_signal(sem);
+            return;
+        }
+
+        result = [obj retain]; // NSArray<NSDictionary *>
+        dispatch_semaphore_signal(sem);
+    }];
+    [self _trackTask:task];
+    [task resume];
+
+    (void)dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+#if !OS_OBJECT_USE_OBJC
+    dispatch_release(sem);
+#endif
+
+    if (outError) *outError = [reqErr autorelease];
+    return [result autorelease];
+}
+
+
+// Synchronous fetch of streams for one activity, returning a by-type dictionary.
+// IMPORTANT: Call from a background queue; blocks the caller until the request completes.
+- (NSDictionary<NSString *, NSArray *> *)fetchStreamsForActivityID:(NSNumber *)actID
+                                                             error:(NSError **)outError
+{
+    if (!actID) {
+        if (outError) *outError = [NSError errorWithDomain:@"StravaAPI" code:-22
+                                                  userInfo:@{NSLocalizedDescriptionKey:@"Missing activity id"}];
+        return nil;
+    }
+    if ([NSThread isMainThread]) {
+        NSLog(@"[StravaAPI] WARNING: fetchStreamsForActivityID: called on main thread; this method blocks.");
+    }
+
+    __block NSError *authErr = nil;
+    dispatch_semaphore_t semAuth = dispatch_semaphore_create(0);
+    [self _ensureFreshAccessToken:^(NSError * _Nullable err) {
+        if (err) authErr = [err retain];
+        dispatch_semaphore_signal(semAuth);
+    }];
+    (void)dispatch_semaphore_wait(semAuth, DISPATCH_TIME_FOREVER);
+#if !OS_OBJECT_USE_OBJC
+    dispatch_release(semAuth);
+#endif
+    if (authErr) {
+        if (outError) *outError = [authErr autorelease];
+        return nil;
+    }
+
+    // Request the common keys; key_by_type=true returns a dictionary of {type: streamObject}
+    NSString *keys = @"time,latlng,distance,velocity_smooth,altitude,heartrate,cadence,temp,watts,grade_smooth,moving";
+    NSString *url  = [NSString stringWithFormat:
+                      @"https://www.strava.com/api/v3/activities/%@/streams?keys=%@&key_by_type=true",
+                      actID, keys];
+
+    NSURLRequest *req = [self _GET:url bearer:_accessToken];
+
+    __block NSDictionary *result = nil;
+    __block NSError *reqErr = nil;
+
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+
+    __unsafe_unretained StravaAPI *unretainedSelf = self;
+    __block NSURLSessionDataTask *task = nil;
+    task = [_session dataTaskWithRequest:req
+                       completionHandler:^(NSData *data, NSURLResponse *response, NSError *error)
+    {
+        [unretainedSelf _untrackTask:task];
+
+        if (error) {
+            reqErr = [error retain];
+            dispatch_semaphore_signal(sem);
+            return;
+        }
+
+        NSHTTPURLResponse *http = (NSHTTPURLResponse *)response;
+        if (![http isKindOfClass:[NSHTTPURLResponse class]] || http.statusCode < 200 || http.statusCode >= 300) {
+            reqErr = [[NSError errorWithDomain:@"StravaHTTP"
+                                          code:(http ? http.statusCode : -1)
+                                      userInfo:@{ NSLocalizedDescriptionKey:
+                                                      [NSString stringWithFormat:@"HTTP %ld fetching /activities/%@/streams",
+                                                               (long)(http ? http.statusCode : -1),
+                                                               actID],
+                                                  NSURLErrorFailingURLErrorKey: url }] retain];
+            dispatch_semaphore_signal(sem);
+            return;
+        }
+
+        NSError *jsonErr = nil;
+        id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonErr];
+        if (!jsonErr && [obj isKindOfClass:[NSDictionary class]]) {
+            result = [obj retain]; // key_by_type response
+            dispatch_semaphore_signal(sem);
+            return;
+        }
+
+        if (!jsonErr && [obj isKindOfClass:[NSArray class]]) {
+            // Convert array-form into by-type dict
+            NSArray *arr = (NSArray *)obj;
+            NSMutableDictionary *byType = [NSMutableDictionary dictionaryWithCapacity:[arr count]];
+            for (id item in arr) {
+                if (![item isKindOfClass:[NSDictionary class]]) continue;
+                NSString *type = [(NSDictionary *)item objectForKey:@"type"];
+                if (type) [byType setObject:item forKey:type];
+            }
+            result = [byType retain];
+            dispatch_semaphore_signal(sem);
+            return;
+        }
+
+        reqErr = [(jsonErr ?: [NSError errorWithDomain:@"StravaAPI"
+                                                  code:-2002
+                                              userInfo:@{NSLocalizedDescriptionKey:@"Malformed streams JSON"}]) retain];
+        dispatch_semaphore_signal(sem);
+    }];
+    [self _trackTask:task];
+    [task resume];
+
+    (void)dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+#if !OS_OBJECT_USE_OBJC
+    dispatch_release(sem);
+#endif
+
+    if (outError) *outError = [reqErr autorelease];
+    return [result autorelease];
 }
 
 

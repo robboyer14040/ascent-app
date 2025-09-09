@@ -523,7 +523,7 @@ DQ
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                                                             <clipView key="contentView" id="Ua7-Pe-iQ3">
                                                                                 <rect key="frame" x="2" y="2" width="410" height="67"/>
-                                                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                                <autoresizingMask key="autoresizingMask"/>
                                                                                 <subviews>
                                                                                     <textView importsGraphics="NO" horizontallyResizable="YES" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" linkDetection="YES" spellingCorrection="YES" smartInsertDelete="YES" id="2403" customClass="TextViewWithPlaceholder">
                                                                                         <rect key="frame" x="0.0" y="0.0" width="410" height="67"/>
@@ -914,7 +914,7 @@ DQ
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
             <subviews>
                 <segmentedControl verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1866" customClass="FixedSegmentedControl">
-                    <rect key="frame" x="109" y="108" width="75" height="25"/>
+                    <rect key="frame" x="108" y="108" width="77" height="24"/>
                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                     <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="2271">
                         <font key="font" metaFont="system"/>
@@ -1149,12 +1149,12 @@ DQ
             </items>
             <point key="canvasLocation" x="-93" y="-341"/>
         </menu>
-        <customView id="2527" userLabel="CAButton">
+        <customView appearanceType="aqua" id="2527" userLabel="CAButton">
             <rect key="frame" x="0.0" y="0.0" width="44" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
             <subviews>
                 <segmentedControl verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2528" customClass="FixedSegmentedControl">
-                    <rect key="frame" x="1" y="3" width="38" height="25"/>
+                    <rect key="frame" x="1" y="3" width="38" height="24"/>
                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                     <segmentedCell key="cell" state="on" borderStyle="border" alignment="left" style="rounded" trackingMode="momentary" id="2529">
                         <font key="font" metaFont="system"/>
@@ -1174,6 +1174,7 @@ DQ
             <autoresizingMask key="autoresizingMask"/>
             <point key="canvasLocation" x="-509" y="-213"/>
         </view>
+        <userDefaultsController representsSharedInstance="YES" id="eRH-Da-xHV"/>
     </objects>
     <resources>
         <image name="ABAction_Trans.png" width="128" height="128"/>

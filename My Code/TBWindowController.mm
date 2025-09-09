@@ -49,8 +49,8 @@
 #import "StravaImporter.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import "FullImageBrowserWindowController.h"
-
-
+#import "NSImage+Tint.h"
+#import "WeatherAPI.h"
 
 #import <unistd.h>			// for sleep
 
@@ -378,6 +378,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 -(NSString *)filenameShownInThumbnailIfKnown;
 
 @property (nonatomic, retain) FullImageBrowserWindowController *imageBrowser;
+
 @end
 
 
@@ -569,6 +570,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
     [boldLineMediumFont retain];
     boldLineSmallFont = [NSFont fontWithName:@"Lucida Grande Bold" size:10.0];
     [boldLineSmallFont retain];
+     _imageBrowser = nil;
     return self;
 }
 
@@ -4489,9 +4491,21 @@ NSString*      gCompareString = nil;         // @@FIXME@@
         if (currentlySelectedTrack != nil)
         {
             [activityDetailButton setEnabled:YES];
+            NSImage *icon = [NSImage imageNamed:@"AGButton_Trans"];
+            NSImage *whiteIcon = [icon imageTintedWithColor:[NSColor whiteColor]];
+            [activityDetailButton setImage:whiteIcon forSegment:0];
+            activityDetailButton.needsDisplay = YES;
+ 
             [detailedMapButton setEnabled:YES];
+
             [compareActivitiesButton setEnabled:YES];
+            icon = [NSImage imageNamed:@"CompareButtonIcon"];
+            whiteIcon = [icon imageTintedWithColor:[NSColor whiteColor]];
+            [compareActivitiesButton setImage:whiteIcon forSegment:0];
+            compareActivitiesButton.needsDisplay = YES;
+            
             [self enableControlsRequiringASelectedTrack:YES];
+            
             BOOL hasPoints = [[trk goodPoints] count] > 1;
             [transparentMapAnimView setHidden:!hasPoints];
             [transparentMiniProfileAnimView setHidden:!hasPoints];
@@ -4946,138 +4960,132 @@ int searchTagToMask(int searchTag)
 - (IBAction)syncStravaActivities:(id)sender
 {
     NSWindow *host = self.window ?: NSApp.keyWindow ?: NSApp.mainWindow;
-    
-    // Helper so we don't duplicate import start logic
-    void (^startImportWithToken)(NSString *) = ^(NSString *token) {
-        [self startProgressIndicator:@"checking if Strava is home…"];
-        
-        
-        StravaImporter *importer = [[StravaImporter alloc] initWithAccessToken:token];
-        NSDate* lastSyncTime = [tbDocument lastSyncTime];
-        
-        if (lastSyncTime == [NSDate distantPast])
-        {
-            // use the newest date in the document
-            NSArray* dateRange = [tbDocument documentDateRange];
-            if (dateRange && ([dateRange count] == 2))
-            {
-                NSDate* newestDate = [dateRange objectAtIndex:1];
-                if (newestDate && ([newestDate compare:[NSDate distantFuture]] != NSOrderedSame))
-                {
-                    lastSyncTime = newestDate;
-                }
+   // Get a fresh token (StravaAPI will refresh or re-auth as needed)
+    [[StravaAPI shared] fetchFreshAccessToken:^(NSString * _Nullable token, NSError * _Nullable error) {
+
+        // Always hop to main for any UI work
+        dispatch_async(dispatch_get_main_queue(), ^{
+
+            if (error || token.length == 0) {
+                NSLog(@"Token fetch error: %@", error);
+                NSAlert *a = [[[NSAlert alloc] init] autorelease];
+                a.messageText = @"Strava Authorization Failed";
+                a.informativeText = error.localizedDescription ?: @"Could not obtain a Strava access token.";
+                [a beginSheetModalForWindow:host completionHandler:nil];
+                return;
             }
-        }
-        NSCalendar *cal = [NSCalendar currentCalendar];
-        if (!lastSyncTime || ([lastSyncTime compare:[NSDate distantPast]] == NSOrderedSame))
-        {
-            NSDate *now = [NSDate date];
-            lastSyncTime = [cal dateByAddingUnit:NSCalendarUnitMonth
-                                           value:-36
-                                          toDate:now
-                                         options:0];
-        }
-        NSDateComponents *dc = [cal components:(NSCalendarUnitYear |
-                                                NSCalendarUnitMonth |
-                                                NSCalendarUnitDay)
-                                      fromDate:lastSyncTime];
-        
-        NSDate *since = [[NSCalendar currentCalendar] dateFromComponents:dc];
-        NSLog(@"syncing activites later than %s", [[since description] UTF8String]);
-        
-        __block BOOL madeDeterminate = NO;
-        [importer importTracksSince:since
-                            perPage:200
-                           maxPages:20
-                           progress:^(NSUInteger pagesFetched, NSUInteger totalSoFar) {
-            // already on main
-            if (!madeDeterminate && totalSoFar > 0) {
-                madeDeterminate = YES;
-                [[[SharedProgressBar sharedInstance] controller]
-                 begin:@"syncing Strava activities…"
-                 divisions:(int)totalSoFar];
-            } else {
-                [[[SharedProgressBar sharedInstance] controller] incrementDiv];
-            }
-        }
-                         completion:^(NSArray *tracks, NSError *error) {
-            // main thread
-            if (error) {
-                NSLog(@"Strava import failed: %@", error);
-            } else {
-                if ([tracks count] > 0)
-                {
-                    [self updateProgressIndicator:@"updating browser..."];
-                    NSArray* beginEndDates = [tbDocument addTracksAfterStravaSync:[tracks mutableCopy]];
-                    if (beginEndDates && [beginEndDates count] == 2)
-                    {
-                        NSDate* oldestDate = [beginEndDates objectAtIndex:0];
-                        NSDate* newestDate = [beginEndDates objectAtIndex:1];
-                        if (oldestDate && newestDate)
-                        {
-                            [tbDocument setLastSyncTime:newestDate];
-                            NSArray* dateRange = [tbDocument documentDateRange];
-                            if ([dateRange count] == 2)
-                            {
-                                NSDate* docBeginDate = [dateRange objectAtIndex:0];
-                                NSDate* docEndDate = [dateRange objectAtIndex:1];
-                                if (([docBeginDate compare:[NSDate distantPast]]== NSOrderedSame) ||
-                                    ([oldestDate compare:docBeginDate] == NSOrderedAscending))
-                                {
-                                    docBeginDate = oldestDate;
-                                }
-                                
-                                if (([docEndDate compare:[NSDate distantFuture]] == NSOrderedSame) ||
-                                    ([newestDate compare:docEndDate] == NSOrderedDescending))
-                                {
-                                    docEndDate = newestDate;
-                                }
-                                [tbDocument setDocumentDateRange:[NSArray arrayWithObjects:docBeginDate, docEndDate, nil]];
-                                NSLog(@"setting document begin/end dates to %s and %s",
-                                      [[docBeginDate description] UTF8String],
-                                      [[docEndDate description] UTF8String]);
-                            }
+
+            // Ensure "Bearer " prefix for StravaImporter
+            NSString *bearer = [token hasPrefix:@"Bearer "] ? token : [@"Bearer " stringByAppendingString:token];
+
+            // Helper to start the import (runs on main; importer will use its own queue internally)
+            void (^startImportWithToken)(NSString *) = ^(NSString *tok) {
+                [self startProgressIndicator:@"checking if Strava is home…"];
+
+                StravaImporter *importer = [[StravaImporter alloc] init];
+
+                NSDate *lastSyncTime = [tbDocument lastSyncTime];
+
+                // If lastSyncTime is distantPast, try document's newest date
+                if (lastSyncTime == [NSDate distantPast]) {
+                    NSArray *dateRange = [tbDocument documentDateRange];
+                    if (dateRange.count == 2) {
+                        NSDate *newestDate = [dateRange objectAtIndex:1];
+                        if (newestDate && ([newestDate compare:[NSDate distantFuture]] != NSOrderedSame)) {
+                            lastSyncTime = newestDate;
                         }
                     }
-                    [[self window] setDocumentEdited:YES];
                 }
-                // [self buildBrowser:YES];
-            }
-            [importer release];
-            [self endProgressIndicator];
-        }];
-    };
-    
-    // 1) Try to reuse/refresh token silently.
-    [[StravaAPI shared] fetchFreshAccessToken:^(NSString * _Nullable token, NSError * _Nullable error) {
-        if (!error && token.length) {
-            // We already have a fresh token (either reused or silently refreshed).
-            startImportWithToken(token);
-            return;
-        }
-        
-        // 2) If we get 401/“authorization required”, *then* run the browser flow.
-        if ([error.domain isEqualToString:@"Strava"] && error.code == 401) {
-            [[StravaAPI shared] startAuthorizationFromWindow:host completion:^(NSError * _Nullable authErr) {
-                if (authErr) {
-                    NSLog(@"Error authorizing with Strava: %@", authErr);
-                    return;
+
+                // Default to “last 3 days” if still unset
+                NSCalendar *cal = [NSCalendar currentCalendar];
+                if (!lastSyncTime || ([lastSyncTime compare:[NSDate distantPast]] == NSOrderedSame)) {
+                    NSDate *now = [NSDate date];
+                    lastSyncTime = [cal dateByAddingUnit:NSCalendarUnitMonth
+                                                   value:-1
+                                                  toDate:now options:0];
                 }
-                // After browser auth, the API has stored fresh tokens;
-                // fetch the token (fast path) and start import.
-                [[StravaAPI shared] fetchFreshAccessToken:^(NSString * _Nullable token2, NSError * _Nullable err2) {
-                    if (err2 || token2.length == 0) {
-                        NSLog(@"Could not obtain token after auth: %@", err2);
-                        return;
-                    }
-                    startImportWithToken(token2);
+
+                // Truncate to midnight (local)
+                NSDateComponents *dc = [cal components:(NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay)
+                                              fromDate:lastSyncTime];
+                NSDate *since = [[NSCalendar currentCalendar] dateFromComponents:dc];
+
+                NSLog(@"syncing activites later than %s", [[since description] UTF8String]);
+
+                __block BOOL madeDeterminate = NO;
+
+                [importer importTracksSince:since
+                                    perPage:200
+                                   maxPages:20
+                                   progress:^(NSUInteger pagesFetched, NSUInteger totalSoFar)
+                {
+                    // This block may already be on main; keep UI safe anyway.
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (!madeDeterminate && totalSoFar > 0) {
+                            madeDeterminate = YES;
+                            [[[SharedProgressBar sharedInstance] controller]
+                                begin:@"syncing Strava activities…"
+                                divisions:(int)totalSoFar];
+                        } else {
+                            [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                        }
+                    });
+                }
+                                 completion:^(NSArray *tracks, NSError *error)
+                {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (error) {
+                            NSLog(@"Strava import failed: %@", error);
+                        } else {
+                            if ([tracks count] > 0) {
+                                [self updateProgressIndicator:@"updating browser..."];
+
+                                // Avoid MRC leak: autorelease the mutableCopy
+                                NSMutableArray *tracksCopy = [[tracks mutableCopy] autorelease];
+                                NSArray *beginEndDates = [tbDocument addTracksAfterStravaSync:tracksCopy];
+
+                                if (beginEndDates.count == 2) {
+                                    NSDate *oldestDate = [beginEndDates objectAtIndex:0];
+                                    NSDate *newestDate = [beginEndDates objectAtIndex:1];
+
+                                    if (oldestDate && newestDate) {
+                                        [tbDocument setLastSyncTime:newestDate];
+
+                                        NSArray *docRange = [tbDocument documentDateRange];
+                                        if (docRange.count == 2) {
+                                            NSDate *docBeginDate = [docRange objectAtIndex:0];
+                                            NSDate *docEndDate   = [docRange objectAtIndex:1];
+
+                                            if (([docBeginDate compare:[NSDate distantPast]] == NSOrderedSame) ||
+                                                ([oldestDate compare:docBeginDate] == NSOrderedAscending)) {
+                                                docBeginDate = oldestDate;
+                                            }
+                                            if (([docEndDate compare:[NSDate distantFuture]] == NSOrderedSame) ||
+                                                ([newestDate compare:docEndDate] == NSOrderedDescending)) {
+                                                docEndDate = newestDate;
+                                            }
+
+                                            [tbDocument setDocumentDateRange:[NSArray arrayWithObjects:docBeginDate, docEndDate, nil]];
+                                            NSLog(@"setting document begin/end dates to %s and %s",
+                                                  [[docBeginDate description] UTF8String],
+                                                  [[docEndDate description] UTF8String]);
+                                        }
+                                    }
+                                }
+
+                                [[self window] setDocumentEdited:YES];
+                            }
+                        }
+
+                        [importer release];
+                        [self endProgressIndicator];
+                    });
                 }];
-            }];
-            return;
-        }
-        
-        // Other error (network, parse, etc.)
-        NSLog(@"Token fetch error: %@", error);
+            };
+
+            startImportWithToken(bearer);
+        });
     }];
 }
 
@@ -6740,7 +6748,30 @@ int searchTagToMask(int searchTag)
         [self simpleUpdateBrowserTrack:track];
         [tbDocument updateChangeCount:NSChangeDone];
         [self endProgressIndicator];
+        //        NSError* err = nil;
+        //        NSArray* weather = [WeatherAPI fetchWeatherTimelineForTrack:track
+        //                                                              error:&err];
+        //        int i=0;
+        //        i++;
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+            __block NSError *err = nil;
+            NSDictionary *locs = [WeatherAPI startEndCityCountryForTrack:track error:&err];
+            // update UI on main after
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (locs) {
+                    NSDictionary *start = [locs objectForKey:kGeoStart];
+                    NSDictionary *end   = [locs objectForKey:kGeoEnd];
+                    NSLog(@"Start: %@, %@  End: %@, %@",
+                          [start objectForKey:kGeoCity], [start objectForKey:kGeoCountry],
+                          [end objectForKey:kGeoCity],   [end objectForKey:kGeoCountry]);
+                } else {
+                    NSLog(@"Geo failed: %@", [err localizedDescription]);
+                }
+            });
+        });
+        
     }];
+    
  }
 
 

@@ -88,7 +88,11 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
     return self;
 }
 
-- (void)dealloc { _dbm = nil; [super dealloc]; }
+- (void)dealloc
+{
+    _dbm = nil;
+    [super dealloc];
+}
 
 #pragma mark Schema
 
@@ -96,13 +100,16 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
     if (_dbm.readOnly) return YES;  // no-op in read-only sessions
     __block BOOL ok = YES; __block NSError *err = nil;
 
-    // Do schema changes under a WRITE
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
     [_dbm performWrite:^(sqlite3 *db, DBErrorBlock fail) {
+        // Nuke any old composite-PK/WITHOUT ROWID table and its index.
         const char *sql =
-        // WITHOUT ROWID composite PK: (track_id, wall_clock_delta_s)
-        "CREATE TABLE IF NOT EXISTS points ("
-        "  track_id            INTEGER NOT NULL,"
+        "DROP INDEX IF EXISTS i_points_track_time;"
+        "DROP TABLE IF EXISTS points;"
+        // Recreate with a surrogate key; duplicates for (track_id, wall_clock_delta_s) are now allowed.
+        "CREATE TABLE points ("
+        "  id                  INTEGER PRIMARY KEY,"   /* Surrogate key (rowid-backed) */
+        "  track_id            INTEGER NOT NULL REFERENCES activities(id) ON DELETE CASCADE,"
         "  wall_clock_delta_s  INTEGER NOT NULL,"
         "  active_time_delta_s INTEGER NOT NULL DEFAULT 0,"
         "  latitude_e7         REAL NOT NULL,"
@@ -111,19 +118,18 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
         "  heartrate_bpm       REAL DEFAULT 0,"
         "  cadence_rpm         REAL DEFAULT 0,"
         "  temperature_c10     REAL DEFAULT 0,"
-        "  speed_mps           REAL    DEFAULT 0,"
-        "  power_w             REAL    DEFAULT 0,"
-        "  orig_distance_m     REAL    DEFAULT 0,"
-        "  flags               INTEGER DEFAULT 0,"
-        "  PRIMARY KEY(track_id, wall_clock_delta_s)"
-        ") WITHOUT ROWID;"
-        // Helpful covering index for typical scans and counts (leftmost prefix is track_id)
+        "  speed_mps           REAL DEFAULT 0,"
+        "  power_w             REAL DEFAULT 0,"
+        "  orig_distance_m     REAL DEFAULT 0,"
+        "  flags               INTEGER DEFAULT 0"
+        ");"
+        // Keep a non-unique covering index for fast scans by time within a track.
         "CREATE INDEX IF NOT EXISTS i_points_track_time "
         "  ON points(track_id, wall_clock_delta_s, active_time_delta_s);";
 
         char *errmsg = NULL;
         if (sqlite3_exec(db, sql, NULL, NULL, &errmsg) != SQLITE_OK) {
-            fail(TPError(db, @"Create points schema failed"));
+            fail(TPError(db, @"Create points schema (drop/recreate) failed"));
             if (errmsg) sqlite3_free(errmsg);
         }
     } completion:^(NSError * _Nullable e) {
@@ -136,6 +142,7 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
     if (!ok && error) *error = err;
     return ok;
 }
+
 
 #pragma mark Loads
 

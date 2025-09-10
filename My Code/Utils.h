@@ -109,6 +109,11 @@ static inline float PaceToSpeed(float pace)
 	return val;
 }
 
+static  BOOL ShiftKeyIsDown(void) {
+    NSEventModifierFlags flags = [NSEvent modifierFlags];
+    return (flags & NSEventModifierFlagShift) != 0;   // (use NSShiftKeyMask on very old SDKs)
+}
+
 
 @class ItemList;
 @class Track;

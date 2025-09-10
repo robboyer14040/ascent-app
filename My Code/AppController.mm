@@ -269,7 +269,7 @@ static void setColorDefault(NSMutableDictionary* dict,
 // Guard untitled opens while splash is up.
 - (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender
 {
-    return !self.deferringOpens;
+    return NO;
 }
 
 - (BOOL)applicationShouldRestoreWindows:(NSApplication *)app {

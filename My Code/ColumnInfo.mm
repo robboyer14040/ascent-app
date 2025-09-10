@@ -30,7 +30,7 @@ static tColInfo sColInfo[] =
 	{ "+VAM",			 "Rate of Climb",				kCT_RateOfClimb,  "##,##0",  kMT_RateOfClimb,     82,	 kUT_IsVAM,				kUseNumberFormatter },
 	{ "-VAM",			 "Rate of Descent",				kCT_RateOfDescent,"##,##0",  kMT_RateOfDescent,   82,	 kUT_IsVAM,				kUseNumberFormatter },
 	{ "Keyword 1",       "Keyword 1",					kCT_Keyword1,     "",         kMT_Keyword1,        90,    kUT_IsText,			kUseStringComparator  | kLeftAlignment},
-	{ "Keyword 2",       "Keyword 2",					kCT_Keyword2,     "",         kMT_Keyword2,        90,    kUT_IsText,			 kUseStringComparator  | kLeftAlignment},
+	{ "Computer",        "Computer",					kCT_Computer,     "",         kMT_Computer,        90,    kUT_IsText,			 kUseStringComparator  | kLeftAlignment},
 	{ "Custom",          "Custom",						kCT_Custom,       "",         kMT_Custom,          90,    kUT_IsText,			kUseStringComparator  | kLeftAlignment},
 	{ "ActiveTime",      "Moving (Active) Time",		kCT_ActivityTime, "",         kMT_MovingDuration,  72,    kUT_IsTime,			kDefaultField | kUseIntervalFormatter },
 	{ "MaxHR",           "Maximum Heart Rate",			kCT_MaxHR,        "##0",      kMT_MaxHR,           46,    kUT_IsHeartRate,		kDefaultField | kUseNumberFormatter },
@@ -337,7 +337,7 @@ static tColInfo sSplitsColInfo[] =
          return [Utils stringFromDefaults:RCBDefaultKeyword1Label];
          break;
          
-      case kMT_Keyword2:
+      case kMT_Computer:
          return [Utils stringFromDefaults:RCBDefaultKeyword2Label];
          break;
          
@@ -360,7 +360,7 @@ static tColInfo sSplitsColInfo[] =
          return [Utils stringFromDefaults:RCBDefaultKeyword1Label];
          break;
 
-      case kMT_Keyword2:
+      case kMT_Computer:
          return [Utils stringFromDefaults:RCBDefaultKeyword2Label];
          break;
 

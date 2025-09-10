@@ -85,6 +85,7 @@ enum
 	kCMCompareActivities,
 	kCMRefreshMap,
 	kCMUploadToMobile,
+    kCMEnrichTracks,
 };
 
 
@@ -942,10 +943,14 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
     
     [cm addItem:[NSMenuItem separatorItem]];
     
-    [[cm addItemWithTitle:@"Upload to Mobile"
-                   action:@selector(syncStravaActivities:)
-            keyEquivalent:@""] setTag:kCMUploadToMobile];
-    
+//    [[cm addItemWithTitle:@"Upload to Mobile"
+//                   action:@selector(syncStravaActivities:)
+//            keyEquivalent:@""] setTag:kCMUploadToMobile];
+  
+    [[cm addItemWithTitle:@"Update Strava Info"
+                   action:@selector(enrichSelectedTracks:)
+            keyEquivalent:@""] setTag:kCMEnrichTracks];
+
     [cm addItem:[NSMenuItem separatorItem]];
     
     NSMenuItem* mi;
@@ -3293,6 +3298,8 @@ NSString*      gCompareString = nil;         // @@FIXME@@
     {
         [self expandLastItem];
     }
+    [super windowDidLoad];
+    self.window.delegate = self;  // ensure we receive delegate callbacks
 }
 
 
@@ -4465,7 +4472,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 
 -(void)resetSelectedTrack:(Track*)trk lap:(Lap*)lap
 {
-    if (trk && ([[trk points] count] == 0))
+    if (trk && ([[trk points] count] == 0) && !(ShiftKeyIsDown()))
     {
         [self _fetchMissingItemsForTrack:trk lap:lap];
         return;
@@ -4496,7 +4503,27 @@ NSString*      gCompareString = nil;         // @@FIXME@@
             [activityDetailButton setImage:whiteIcon forSegment:0];
             activityDetailButton.needsDisplay = YES;
  
-            [detailedMapButton setEnabled:YES];
+            icon = [NSImage imageNamed:@"ABAction_Trans"];
+            whiteIcon = [icon imageTintedWithColor:[NSColor whiteColor]];
+            [leftOptionsControl setImage:whiteIcon forSegment:0];
+            leftOptionsControl.needsDisplay = YES;
+ 
+            icon = [NSImage imageNamed:@"Splits_Trans"];
+            whiteIcon = [icon imageTintedWithColor:[NSColor whiteColor]];
+            [splitOptionsControl setImage:whiteIcon forSegment:0];
+            splitOptionsControl.needsDisplay = YES;
+ 
+            icon = [NSImage imageNamed:@"Calendar_Trans"];
+            whiteIcon = [icon imageTintedWithColor:[NSColor whiteColor]];
+            [calOrBrowControl setImage:whiteIcon forSegment:0];
+ 
+            icon = [NSImage imageNamed:@"Browser_Trans"];
+            whiteIcon = [icon imageTintedWithColor:[NSColor whiteColor]];
+            [calOrBrowControl setImage:whiteIcon forSegment:1];
+            calOrBrowControl.needsDisplay = YES;
+
+            
+           [detailedMapButton setEnabled:YES];
 
             [compareActivitiesButton setEnabled:YES];
             icon = [NSImage imageNamed:@"CompareButtonIcon"];
@@ -4803,8 +4830,13 @@ static NSString * const kStravaRootBookmarkKey = @"StravaRootBookmarkData";
     
     [self stopAnimations];
     [[AnimTimer defaultInstance] unregisterForTimerUpdates:self];
+    
 }
 
+
+- (BOOL)windowShouldSaveWindowState:(NSWindow *)window {
+    return NO; // don’t persist this window
+}
 
 
 - (MapPathView*) mapPathView
@@ -6544,8 +6576,11 @@ int searchTagToMask(int searchTag)
     {
         if (FLAG_IS_SET(searchOptions, kSearchTitles))
         {
-            NSString* title = [track attribute:kName];
-            NSRange r = [title rangeOfString:searchCriteria options:NSCaseInsensitiveSearch];
+            NSString* name = [track name];
+            if (!name)
+                name = [track attribute:kName];
+            
+            NSRange r = [name rangeOfString:searchCriteria options:NSCaseInsensitiveSearch];
             ret = (r.location != NSNotFound);
         }
         if (!ret && (FLAG_IS_SET(searchOptions, kSearchNotes)))
@@ -6744,35 +6779,82 @@ int searchTagToMask(int searchTag)
                          withSummaryDict:nil
                             rootMediaURL:[self getRootMediaURL]
                               completion:^(NSError * _Nullable error) {
-        [self resetSelectedTrack:track lap:lap];
-        [self simpleUpdateBrowserTrack:track];
-        [tbDocument updateChangeCount:NSChangeDone];
-        [self endProgressIndicator];
         //        NSError* err = nil;
         //        NSArray* weather = [WeatherAPI fetchWeatherTimelineForTrack:track
         //                                                              error:&err];
         //        int i=0;
         //        i++;
-        dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
-            __block NSError *err = nil;
-            NSDictionary *locs = [WeatherAPI startEndCityCountryForTrack:track error:&err];
-            // update UI on main after
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (locs) {
-                    NSDictionary *start = [locs objectForKey:kGeoStart];
-                    NSDictionary *end   = [locs objectForKey:kGeoEnd];
-                    NSLog(@"Start: %@, %@  End: %@, %@",
-                          [start objectForKey:kGeoCity], [start objectForKey:kGeoCountry],
-                          [end objectForKey:kGeoCity],   [end objectForKey:kGeoCountry]);
-                } else {
+        if (error)
+        {
+                NSAlert *a = [[[NSAlert alloc] init] autorelease];
+                a.alertStyle = NSAlertStyleWarning;
+                a.messageText = @"Couldn't fetch from Strava";
+                a.informativeText = [error description];
+                [a runModal];
+
+        } else {
+                
+            [self updateProgressIndicator:@"fetching geo info..."];
+            dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+                NSError *err = nil;
+                NSDictionary *locs = [WeatherAPI startEndCityCountryForTrack:track error:&err];
+                if (!err) {
+                    // update UI on main after
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (locs && ([locs count] >= 2)) {
+                            NSDictionary *start = [locs objectForKey:kGeoStart];
+                            NSDictionary *end   = [locs objectForKey:kGeoEnd];
+                            if (start && end)
+                            {
+                                NSLog(@"Start: %@, %@  End: %@, %@",
+                                      [start objectForKey:kGeoCity], [start objectForKey:kGeoCountry],
+                                      [end objectForKey:kGeoCity],   [end objectForKey:kGeoCountry]);
+                                NSString* startEndCity = start[@"city"];
+                                startEndCity = [startEndCity stringByAppendingString:@" → "];
+                                startEndCity = [startEndCity stringByAppendingString:end[@"city"]];
+                                [track setAttribute:kKeyword1
+                                        usingString:startEndCity];
+                                
+                            }
+                        } else {
+                        }
+                        [self simpleUpdateBrowserTrack:track];
+                        [self resetSelectedTrack:track lap:lap];
+                        [tbDocument updateChangeCount:NSChangeDone];
+                        [self endProgressIndicator];
+                    });
+                }
+                else {
                     NSLog(@"Geo failed: %@", [err localizedDescription]);
                 }
+                
             });
-        });
-        
+        }
     }];
     
  }
+
+
+- (IBAction)enrichSelectedTracks:(id)sender
+{
+    [self stopAnimations];
+    
+    NSMutableArray *arr = [self prepareArrayOfSelectedTracks];
+
+    NSUInteger num = [arr count];
+    NSUInteger i = 0;
+    for (;i<num; i++)
+    {
+        Track* t = arr[i];
+        if (t)
+        {
+            [self _fetchMissingItemsForTrack:t
+                                         lap:nil];
+        }
+    }
+    [self reloadTable];
+    
+}
 
 
 - (BOOL)applyStravaActivitiesCSVAtURL:(NSURL *)csvURL
@@ -6893,6 +6975,8 @@ int searchTagToMask(int searchTag)
         NSString *name = (idxName < (NSInteger)fields.count) ? fields[idxName] : @"";
         if (name.length) {
             [track setName:name];
+            [track setAttribute:kName
+                    usingString:name];
         }
 
         // --- Notes (kNotes) ---

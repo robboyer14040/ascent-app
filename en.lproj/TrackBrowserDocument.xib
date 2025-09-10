@@ -523,7 +523,7 @@ DQ
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                                                             <clipView key="contentView" id="Ua7-Pe-iQ3">
                                                                                 <rect key="frame" x="2" y="2" width="410" height="67"/>
-                                                                                <autoresizingMask key="autoresizingMask"/>
+                                                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                 <subviews>
                                                                                     <textView importsGraphics="NO" horizontallyResizable="YES" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" linkDetection="YES" spellingCorrection="YES" smartInsertDelete="YES" id="2403" customClass="TextViewWithPlaceholder">
                                                                                         <rect key="frame" x="0.0" y="0.0" width="410" height="67"/>
@@ -731,7 +731,7 @@ DQ
                                                                                 <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="117" translatesAutoresizingMaskIntoConstraints="NO" id="2481">
                                                                                     <rect key="frame" x="5" y="59" width="120" height="16"/>
                                                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
-                                                                                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Keyword 2" id="2494">
+                                                                                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Computer" id="2494">
                                                                                         <font key="font" metaFont="system"/>
                                                                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                                     </textFieldCell>
@@ -894,7 +894,7 @@ DQ
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
             <subviews>
                 <segmentedControl verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1864" customClass="FixedSegmentedControl">
-                    <rect key="frame" x="4" y="3" width="51" height="25"/>
+                    <rect key="frame" x="4" y="3" width="51" height="24"/>
                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                     <segmentedCell key="cell" state="on" borderStyle="border" alignment="left" style="rounded" trackingMode="momentary" id="2270">
                         <font key="font" metaFont="system"/>
@@ -914,9 +914,9 @@ DQ
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
             <subviews>
                 <segmentedControl verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1866" customClass="FixedSegmentedControl">
-                    <rect key="frame" x="108" y="108" width="77" height="24"/>
+                    <rect key="frame" x="107" y="108" width="79" height="23"/>
                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                    <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="2271">
+                    <segmentedCell key="cell" borderStyle="border" alignment="left" style="capsule" trackingMode="selectOne" id="2271">
                         <font key="font" metaFont="system"/>
                         <segments>
                             <segment toolTip="Display calendar" image="Calendar_Trans.png" imageScaling="none" width="34"/>

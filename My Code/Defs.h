@@ -93,7 +93,7 @@
 #define kCT_RateOfClimb		"rateOfClimb"
 #define kCT_RateOfDescent	"rateOfDescent"
 #define kCT_Keyword1		"keyword1"
-#define kCT_Keyword2		"keyword2"
+#define kCT_Computer		"keyword2"
 #define kCT_Custom			"custom"
 #define kCT_MaxHR			"maxHeartRate"
 #define kCT_AvgHR			"avgHeartRate"
@@ -171,7 +171,7 @@ enum tColMenuTags
 	kMT_MaxGradient,
 	kMT_MinGradient,
 	kMT_Keyword1,
-	kMT_Keyword2,
+	kMT_Computer,
 	kMT_MaxHR,
 	kMT_AvgHR,
 	kMT_MaxCadence,

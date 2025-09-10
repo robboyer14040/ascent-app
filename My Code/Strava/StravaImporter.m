@@ -413,7 +413,12 @@ static NSArray<NSURL *> *ASCPhotoURLsFromStravaPhotos(id photosObj) {
                 
                 // Name
                 NSString *name = Safe(act[@"name"]);
-                if (name) [track setName:name];
+                if (name) {
+                    [track setName:name];
+                    [track setAttribute:kName
+                            usingString:name];
+
+                }
 
                 // Start date (UTC)
                 NSString *startISO = Safe(act[@"start_date"]);

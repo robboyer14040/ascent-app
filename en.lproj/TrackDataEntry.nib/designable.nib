@@ -410,8 +410,8 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <datePickerCell key="cell" borderStyle="bezel" alignment="left" datePickerStyle="clockAndCalendar" useCurrentDate="YES" id="1533">
                                         <font key="font" metaFont="system"/>
-                                        <date key="date" timeIntervalSinceReferenceDate="778466412.68912601">
-                                            <!--2025-09-02 00:40:12 +0000-->
+                                        <date key="date" timeIntervalSinceReferenceDate="779203967.51108396">
+                                            <!--2025-09-10 13:32:47 +0000-->
                                         </date>
                                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -820,7 +820,7 @@
                                 <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="76" translatesAutoresizingMaskIntoConstraints="NO" id="516">
                                     <rect key="frame" x="306" y="27" width="80" height="13"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Keyword 2" id="1560">
+                                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Computer" id="1560">
                                         <font key="font" metaFont="miniSystem"/>
                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -1171,11 +1171,11 @@ line 4</string>
                             </subviews>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         </clipView>
-                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" controlSize="small" horizontal="YES" id="1622">
+                        <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" controlSize="small" horizontal="YES" id="1622">
                             <rect key="frame" x="-100" y="-100" width="87" height="11"/>
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
-                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" controlSize="small" horizontal="NO" id="1621">
+                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" controlSize="small" horizontal="NO" id="1621">
                             <rect key="frame" x="-30" y="1" width="11" height="56"/>
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>

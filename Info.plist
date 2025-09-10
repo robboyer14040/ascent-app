@@ -78,7 +78,7 @@
 					<key>CalculatePowerIfAbsent</key>
 					<true/>
 					<key>DefaultAltitudeFilter</key>
-					<real>4.7400000000000002</real>
+					<real>4.74</real>
 					<key>DefaultAltitudeSmoothingPercentage</key>
 					<real>50</real>
 					<key>DefaultAnimFrameRate</key>
@@ -118,7 +118,7 @@
 					<key>DefaultAltitudeColor</key>
 					<string>0 0.238 1.0</string>
 					<key>DefaultAnimPanelTransparency</key>
-					<real>0.80000000000000004</real>
+					<real>0.8</real>
 					<key>DefaultBackgroundColor</key>
 					<string>0.867 0.867 0.867</string>
 					<key>DefaultBrowserActivityColor</key>
@@ -146,9 +146,9 @@
 					<key>DefaultLapColor</key>
 					<string>.898 .898 0</string>
 					<key>DefaultMapTransparency</key>
-					<real>0.84999999999999998</real>
+					<real>0.85</real>
 					<key>DefaultMarkersPanelTransparency</key>
-					<real>0.80000000000000004</real>
+					<real>0.8</real>
 					<key>DefaultMovingDurationColor</key>
 					<string>.50 .31 .31</string>
 					<key>DefaultMovingPaceColor</key>
@@ -160,7 +160,7 @@
 					<key>DefaultPathColor</key>
 					<string>.98 0 0</string>
 					<key>DefaultPathTransparency</key>
-					<real>0.90000000000000002</real>
+					<real>0.9</real>
 					<key>DefaultPowerColor</key>
 					<string>0.6 0.5 0.4</string>
 					<key>DefaultSpeedColor</key>
@@ -236,7 +236,7 @@
 					<key>DefaultCustomSplitDistance</key>
 					<real>2.5</real>
 					<key>DefaultDataHUDTransparency</key>
-					<real>0.84999999999999998</real>
+					<real>0.85</real>
 					<key>DefaultDateFormat</key>
 					<integer>0</integer>
 					<key>DefaultDisplayPace</key>
@@ -250,13 +250,13 @@
 					<key>DefaultKeyword1Label</key>
 					<string>Keyword 1</string>
 					<key>DefaultKeyword2Label</key>
-					<string>Keyword 2</string>
+					<string>Computer</string>
 					<key>DefaultMDHUDTransparency</key>
-					<real>0.59999999999999998</real>
+					<real>0.6</real>
 					<key>DefaultMDMapTransparency</key>
-					<real>0.80000000000000004</real>
+					<real>0.8</real>
 					<key>DefaultMDPathTransparency</key>
-					<real>0.80000000000000004</real>
+					<real>0.8</real>
 					<key>DefaultMDShowLaps</key>
 					<true/>
 					<key>DefaultMDShowPath</key>
@@ -314,7 +314,7 @@
 					<key>DefaultZoneTypeForStatsHUD</key>
 					<integer>0</integer>
 					<key>DefaultZonesTransparency</key>
-					<real>0.59999999999999998</real>
+					<real>0.6</real>
 				</dict>
 				<key>icon</key>
 				<string>GeneralPreferences</string>
@@ -416,7 +416,7 @@
 					<key>DefaultGender</key>
 					<integer>1</integer>
 					<key>DefaultVO2Max</key>
-					<real>0.0</real>
+					<real>0</real>
 					<key>DefaultWeight</key>
 					<real>160</real>
 				</dict>
@@ -446,7 +446,7 @@
 						<key>DefaultZone1Color</key>
 						<string>.01 .0 .70</string>
 						<key>DefaultZone1Threshold</key>
-						<real>0.0</real>
+						<real>0</real>
 						<key>DefaultZone2Color</key>
 						<string>.13 .26 .91</string>
 						<key>DefaultZone2Threshold</key>

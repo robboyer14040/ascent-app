@@ -97,7 +97,7 @@ enum
 @end
 
 
-@interface TBWindowController : NSWindowController <AnimationTarget, NSToolbarDelegate>
+@interface TBWindowController : NSWindowController <AnimationTarget, NSToolbarDelegate, NSWindowDelegate>
 {	
 	// "toolbar" area
 	IBOutlet NSView*				calOrBrowView;

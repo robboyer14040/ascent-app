@@ -410,8 +410,8 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <datePickerCell key="cell" borderStyle="bezel" alignment="left" datePickerStyle="clockAndCalendar" useCurrentDate="YES" id="1533">
                                         <font key="font" metaFont="system"/>
-                                        <date key="date" timeIntervalSinceReferenceDate="779203967.51108396">
-                                            <!--2025-09-10 13:32:47 +0000-->
+                                        <date key="date" timeIntervalSinceReferenceDate="779234475.61124206">
+                                            <!--2025-09-10 22:01:15 +0000-->
                                         </date>
                                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>

@@ -51,6 +51,7 @@
 #import "FullImageBrowserWindowController.h"
 #import "NSImage+Tint.h"
 #import "WeatherAPI.h"
+#import "LocationAPI.h"
 
 #import <unistd.h>			// for sleep
 
@@ -365,7 +366,8 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 -(void)dismissDetailedMapWindow:(id)sender;
 - (void)doToggleCalendarAndBrowser:(int)v;
 - (void)splitDragComplete:(NSNotification *)notification;
-- (void)_fetchMissingItemsForTrack:(Track*)track lap:(Lap*)lap;
+- (void)_fetchMissingItemsForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter;
+- (void)_fetchWeatherAndGEOInfoForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter;
 - (BOOL)chooseStravaRootFolderAndSaveBookmarkFromWindow:(NSWindow *)win;
 - (NSImage *)imageUnderStravaRootForRelativePath:(NSString *)relPath error:(NSError **)error;
 - (BOOL)hasValidStravaRootBookmark;
@@ -4474,7 +4476,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 {
     if (trk && ([[trk points] count] == 0) && !(ShiftKeyIsDown()))
     {
-        [self _fetchMissingItemsForTrack:trk lap:lap];
+        [self _fetchMissingItemsForTrack:trk selectTrackAfter:YES];
         return;
     }
     if ((currentlySelectedTrack != trk) ||
@@ -6772,66 +6774,103 @@ int searchTagToMask(int searchTag)
 
 // use to fetch points, description, photos
 
-- (void)_fetchMissingItemsForTrack:(Track*)track  lap:(Lap*)lap
+- (void)_fetchMissingItemsForTrack:(Track*)track  selectTrackAfter:(BOOL)selectAfter
 {
-    [self startProgressIndicator:@"fetching track data..."];
-    [[StravaImporter shared] enrichTrack:track
-                         withSummaryDict:nil
-                            rootMediaURL:[self getRootMediaURL]
-                              completion:^(NSError * _Nullable error) {
-        //        NSError* err = nil;
-        //        NSArray* weather = [WeatherAPI fetchWeatherTimelineForTrack:track
-        //                                                              error:&err];
-        //        int i=0;
-        //        i++;
-        if (error)
-        {
+    BOOL stravaFirst = ShiftKeyIsDown() || ([track.points count] == 0);
+    if (stravaFirst)
+    {
+        [self startProgressIndicator:@"fetching detailed Strava info..."];
+        [[StravaImporter shared] enrichTrack:track
+                             withSummaryDict:nil
+                                rootMediaURL:[self getRootMediaURL]
+                                  completion:^(NSError * _Nullable error) {
+            if (error)
+            {
                 NSAlert *a = [[[NSAlert alloc] init] autorelease];
                 a.alertStyle = NSAlertStyleWarning;
-                a.messageText = @"Couldn't fetch from Strava";
+                a.messageText = @"Couldn't fetch detailed info from Strava";
                 a.informativeText = [error description];
                 [a runModal];
+                
+            }
+            [self simpleUpdateBrowserTrack:track];
+            if (selectAfter)
+                [self resetSelectedTrack:track lap:nil];
+            [tbDocument updateChangeCount:NSChangeDone];
+            [self _fetchWeatherAndGEOInfoForTrack:track
+                                 selectTrackAfter:NO];
+            [self endProgressIndicator];
+            
+        }];
+    }
+    if (!stravaFirst) {
+        [self _fetchWeatherAndGEOInfoForTrack:track
+                             selectTrackAfter:NO];
+    }
+}
 
-        } else {
-                
-            [self updateProgressIndicator:@"fetching geo info..."];
-            dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
-                NSError *err = nil;
-                NSDictionary *locs = [WeatherAPI startEndCityCountryForTrack:track error:&err];
-                if (!err) {
-                    // update UI on main after
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        if (locs && ([locs count] >= 2)) {
-                            NSDictionary *start = [locs objectForKey:kGeoStart];
-                            NSDictionary *end   = [locs objectForKey:kGeoEnd];
-                            if (start && end)
-                            {
-                                NSLog(@"Start: %@, %@  End: %@, %@",
-                                      [start objectForKey:kGeoCity], [start objectForKey:kGeoCountry],
-                                      [end objectForKey:kGeoCity],   [end objectForKey:kGeoCountry]);
-                                NSString* startEndCity = start[@"city"];
-                                startEndCity = [startEndCity stringByAppendingString:@" → "];
-                                startEndCity = [startEndCity stringByAppendingString:end[@"city"]];
-                                [track setAttribute:kKeyword1
-                                        usingString:startEndCity];
-                                
-                            }
-                        } else {
+
+- (void)_fetchWeatherAndGEOInfoForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter
+{
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+        NSError* err = nil;
+        NSArray* weather = [WeatherAPI fetchWeatherTimelineForTrack:track
+                                                              error:&err];
+        if (!err) {
+            NSMutableArray* foundArray = [NSMutableArray array];
+            NSMutableString* weatherString = [NSMutableString string];
+            for (NSDictionary<NSString *, NSNumber*> * dict in weather) {
+                NSNumber* wcode = dict[kWXCode];
+                if (wcode)
+                {
+                    if (![foundArray containsObject:wcode]) {
+                        [foundArray addObject:wcode];
+                        if ([weatherString length] != 0) {
+                            [weatherString appendString:@", "];
                         }
-                        [self simpleUpdateBrowserTrack:track];
-                        [self resetSelectedTrack:track lap:lap];
-                        [tbDocument updateChangeCount:NSChangeDone];
-                        [self endProgressIndicator];
-                    });
+                        [weatherString appendString:[WeatherAPI stringForWeatherCode:[wcode integerValue]]];
+                    }
                 }
-                else {
-                    NSLog(@"Geo failed: %@", [err localizedDescription]);
+            }
+            // update UI on main after
+           dispatch_async(dispatch_get_main_queue(), ^{
+                [track setAttribute:kWeather
+                        usingString:weatherString];
+           });
+        }
+        
+        NSDictionary *locs = [LocationAPI startEndCityCountryForTrack:track error:&err];
+        if (!err) {
+            // update UI on main after
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (locs && ([locs count] >= 2)) {
+                    NSDictionary *start = [locs objectForKey:kGeoStart];
+                    NSDictionary *end   = [locs objectForKey:kGeoEnd];
+                    if (start && end)
+                    {
+                        NSLog(@"Start: %@, %@  End: %@, %@",
+                              [start objectForKey:kGeoCity], [start objectForKey:kGeoCountry],
+                              [end objectForKey:kGeoCity],   [end objectForKey:kGeoCountry]);
+                        NSString* startEndCity = start[@"city"];
+                        startEndCity = [startEndCity stringByAppendingString:@" → "];
+                        startEndCity = [startEndCity stringByAppendingString:end[@"city"]];
+                        [track setAttribute:kLocation
+                                usingString:startEndCity];
+                        
+                    }
+                } else {
                 }
-                
+                [self simpleUpdateBrowserTrack:track];
+                if (selectAfter)
+                    [self resetSelectedTrack:track lap:nil];
+                [tbDocument updateChangeCount:NSChangeDone];
             });
         }
-    }];
-    
+        else {
+            NSLog(@"Geo failed: %@", [err localizedDescription]);
+        }
+    });
+
  }
 
 
@@ -6849,7 +6888,7 @@ int searchTagToMask(int searchTag)
         if (t)
         {
             [self _fetchMissingItemsForTrack:t
-                                         lap:nil];
+                            selectTrackAfter:i==0];
         }
     }
     [self reloadTable];

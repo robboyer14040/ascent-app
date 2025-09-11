@@ -144,10 +144,10 @@
     
     [self setUuid:[NSString uniqueString]];
     [attributes replaceObjectAtIndex:kActivity withObject:activity];
-    [attributes replaceObjectAtIndex:kEffort withObject:@kMedium];
-    [attributes replaceObjectAtIndex:kDisposition withObject:@kOK];
+    [attributes replaceObjectAtIndex:kEffort withObject:@""];
+    [attributes replaceObjectAtIndex:kDisposition withObject:@""];
     [attributes replaceObjectAtIndex:kEventType withObject:eventType];
-    [attributes replaceObjectAtIndex:kWeather withObject:@kSunny];
+    [attributes replaceObjectAtIndex:kWeather withObject:@""];
     // ALWAYS store values in STATUTE units!!!
     //[attributes replaceObjectAtIndex:kWeight withObject:[self getStatuteDefaultWeightAsString]];
     weight = [Utils floatFromDefaults:RCBDefaultWeight];
@@ -2483,6 +2483,11 @@ static int sSpikeCount = 0;
 
 - (void) setAttribute:(int)attr usingString:(NSString*)s
 {
+    // in case number of attributes has increased...
+    while ([attributes count] < kNumAttributes) {
+        [attributes addObject:@""];
+    }
+        
 	if ((attr < [attributes count]) && (s != nil))
 	{
 		[attributes replaceObjectAtIndex:attr withObject:[s copy]];

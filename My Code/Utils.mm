@@ -222,17 +222,17 @@ typedef struct
       }
       else if ([attrKey isEqualToString:RCBDefaultAttrKeyword1List])
       {
-         arr = [NSArray array];
+         arr = [NSMutableArray array];
          mustSet = YES;
       }
       else if ([attrKey isEqualToString:RCBDefaultAttrKeyword2List])
       {
-         arr = [NSArray array];
+         arr = [NSMutableArray array];
          mustSet = YES;
       }
       else
       {
-         arr = [NSArray array];
+         arr = [NSMutableArray array];
       }
    }
    if (mustSet) [Utils setAttributeListDefaults:attrKey
@@ -298,7 +298,7 @@ typedef struct
          break;
          
       case kKeyword2:
-         s = @"Computer";
+         s = @"Keyword 2";
          break;
          
       case  kKeyword3:
@@ -309,6 +309,18 @@ typedef struct
          s = @"Keyword 4";
          break;
          
+       case kLocation:
+          s = @"Location";
+          break;
+        
+       case kComputer:
+           s = @"Computer";
+           break;
+
+       case kSufferScore:
+           s = @"Suffer Score";
+           break;
+
       default:
          s = @"Unknown attribute";
    }

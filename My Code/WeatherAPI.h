@@ -5,7 +5,6 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import <CoreLocation/CoreLocation.h>
 
 @class Track;
 
@@ -49,25 +48,6 @@ FOUNDATION_EXPORT NSString * const kWXTItems;      // NSArray<NSDictionary*>, ea
 /// Public utility: convert WMO weather_code to a readable label.
 + (NSString *)stringForWeatherCode:(NSInteger)code;
 
-
-
-#
-// Reuse existing kGeo* keys for each location dictionary
-FOUNDATION_EXPORT NSString * const kGeoCity;         // @"city"
-FOUNDATION_EXPORT NSString * const kGeoCountry;      // @"country"
-FOUNDATION_EXPORT NSString * const kGeoCountryCode;  // @"country_code"
-FOUNDATION_EXPORT NSString * const kGeoAdmin;        // @"admin"
-FOUNDATION_EXPORT NSString * const kGeoLatitude;     // @"lat"
-FOUNDATION_EXPORT NSString * const kGeoLongitude;    // @"lon"
-
-// Container keys
-FOUNDATION_EXPORT NSString * const kGeoStart;        // @"start" -> NSDictionary (kGeoCity, ...)
-FOUNDATION_EXPORT NSString * const kGeoEnd;          // @"end"   -> NSDictionary (kGeoCity, ...)
-
-/// Synchronous (blocks); call off the main thread.
-/// Returns @{ kGeoStart: <dict>, kGeoEnd: <dict> } or nil + error.
-+ (nullable NSDictionary *)startEndCityCountryForTrack:(Track *)track
-                                                error:(NSError * _Nullable * _Nullable)outError;
 
 
 @end

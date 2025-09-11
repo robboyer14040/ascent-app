@@ -529,7 +529,7 @@ static NSArray<NSURL *> *ASCPhotoURLsFromStravaPhotos(id photosObj) {
                 if (eventType) [track setAttribute:kEventType usingString:eventType];
 
                 NSString *loc = Safe(act[@"location_city"]);
-                if (loc) [track setAttribute:kKeyword1 usingString:loc];
+                if (loc) [track setAttribute:kLocation usingString:loc];
 
                 
                 if (self.stravaGearMap)
@@ -604,6 +604,10 @@ static NSArray<NSURL *> *ASCPhotoURLsFromStravaPhotos(id photosObj) {
 
 static inline NSString *SafeStr(id v) {
     return [v isKindOfClass:[NSString class]] ? (NSString *)v : nil;
+}
+
+static inline NSNumber *SafeNum(id v) {
+    return [v isKindOfClass:[NSNumber class]] ? (NSNumber *)v : nil;
 }
 
 static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
@@ -699,9 +703,17 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
                 NSString* dev = SafeStr(detail[@"device_name"]);
                 if (dev.length) {
                     if ([track respondsToSelector:@selector(setAttribute:usingString:)]) {
-                        [track setAttribute:kKeyword2 usingString:dev];
+                        [track setAttribute:kComputer usingString:dev];
                     }
                 }
+                
+                NSNumber* suffer = SafeNum(detail[@"suffer_score"]);
+                if (suffer) {
+                    if ([track respondsToSelector:@selector(setAttribute:usingString:)]) {
+                        [track setAttribute:kSufferScore usingString:[suffer description]];
+                    }
+                }
+
                 
                 // Photos → Track.photoURLs
                 if (photosPayload) {

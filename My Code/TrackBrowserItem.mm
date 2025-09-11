@@ -648,6 +648,30 @@ extern NSString*      gCompareString;
       return @"";
 }
 
+- (NSString*) location
+{
+   if ((track != nil) && (lap == nil))
+      return [track attribute:kLocation];
+   else
+      return @"";
+}
+
+- (NSString*) computer
+{
+   if ((track != nil) && (lap == nil))
+      return [track attribute:kComputer];
+   else
+      return @"";
+}
+
+- (NSString*) sufferScore
+{
+   if ((track != nil) && (lap == nil))
+      return [track attribute:kSufferScore];
+   else
+      return @"";
+}
+
 
 -(float) avgMovingSpeed
 {

@@ -293,6 +293,7 @@
 		D4F779142E6FD00E0032D5EE /* NSImage+Tint.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F779132E6FD00E0032D5EE /* NSImage+Tint.m */; };
 		D4F779172E705C220032D5EE /* WeatherAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F779162E705C220032D5EE /* WeatherAPI.m */; };
 		D4F779192E706E820032D5EE /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4F779182E706E820032D5EE /* CoreLocation.framework */; };
+		D4F779302E73071B0032D5EE /* LocationAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F7792F2E73071B0032D5EE /* LocationAPI.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -840,6 +841,8 @@
 		D4F779152E705BF90032D5EE /* WeatherAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = WeatherAPI.h; path = "My Code/WeatherAPI.h"; sourceTree = "<group>"; };
 		D4F779162E705C220032D5EE /* WeatherAPI.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp.preprocessed; name = WeatherAPI.m; path = "My Code/WeatherAPI.m"; sourceTree = "<group>"; };
 		D4F779182E706E820032D5EE /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		D4F7792E2E7306FB0032D5EE /* LocationAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = LocationAPI.h; path = "My Code/LocationAPI.h"; sourceTree = "<group>"; };
+		D4F7792F2E73071B0032D5EE /* LocationAPI.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = LocationAPI.m; path = "My Code/LocationAPI.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -997,6 +1000,8 @@
 				D4F779132E6FD00E0032D5EE /* NSImage+Tint.m */,
 				D4F779152E705BF90032D5EE /* WeatherAPI.h */,
 				D4F779162E705C220032D5EE /* WeatherAPI.m */,
+				D4F7792E2E7306FB0032D5EE /* LocationAPI.h */,
+				D4F7792F2E73071B0032D5EE /* LocationAPI.m */,
 			);
 			name = Utilities;
 			sourceTree = "<group>";
@@ -1020,6 +1025,8 @@
 				D4F13A022E4EAE4600462944 /* CalendarView.mm */,
 				D4F13A032E4EAE4600462944 /* ColumnHelper.h */,
 				D4F13A042E4EAE4600462944 /* ColumnHelper.mm */,
+				D4F13AA22E4EAE4600462944 /* ColumnInfo.h */,
+				D4F13AA32E4EAE4600462944 /* ColumnInfo.mm */,
 				D4F13A052E4EAE4600462944 /* CustomSplitDistanceController.h */,
 				D4F13A062E4EAE4600462944 /* CustomSplitDistanceController.m */,
 				D4F13A072E4EAE4600462944 /* DistanceMethodController.h */,
@@ -1237,8 +1244,6 @@
 				D4F13A9F2E4EAE4600462944 /* AscentTextField.mm */,
 				D4F13AA02E4EAE4600462944 /* ColorBoxView.h */,
 				D4F13AA12E4EAE4600462944 /* ColorBoxView.m */,
-				D4F13AA22E4EAE4600462944 /* ColumnInfo.h */,
-				D4F13AA32E4EAE4600462944 /* ColumnInfo.mm */,
 				D4F13AA42E4EAE4600462944 /* DataHUDWindowController.h */,
 				D4F13AA52E4EAE4600462944 /* DataHUDWindowController.mm */,
 				D4F13A972E4EAE4600462944 /* DBComm.h */,
@@ -2086,6 +2091,7 @@
 				D4F13D002E4EAE4600462944 /* CustomSplitDistanceController.m in Sources */,
 				D4F13D012E4EAE4600462944 /* SGWindowController.m in Sources */,
 				D457D2EF2E64894F00D1DF73 /* StravaImporter.m in Sources */,
+				D4F779302E73071B0032D5EE /* LocationAPI.m in Sources */,
 				D4F13D022E4EAE4600462944 /* GarminFIT.mm in Sources */,
 				D4F13D032E4EAE4600462944 /* TCPConnection.m in Sources */,
 				D4F13D042E4EAE4600462944 /* HRM.mm in Sources */,

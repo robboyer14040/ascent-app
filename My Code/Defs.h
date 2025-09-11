@@ -93,7 +93,7 @@
 #define kCT_RateOfClimb		"rateOfClimb"
 #define kCT_RateOfDescent	"rateOfDescent"
 #define kCT_Keyword1		"keyword1"
-#define kCT_Computer		"keyword2"
+#define kCT_Keyword2		"keyword2"
 #define kCT_Custom			"custom"
 #define kCT_MaxHR			"maxHeartRate"
 #define kCT_AvgHR			"avgHeartRate"
@@ -150,6 +150,9 @@
 #define kCT_Weather			"weather"
 #define kCT_Work			"work"
 #define kCT_Device			"device"
+#define kCT_Location        "location"
+#define kCT_Computer        "computer"
+#define kCT_SufferScore     "sufferScore"
 #define kCT_FirmWareVersion	"firmwareVersion"
 #define kCT_AvgTemperature	"avgTemperature"
 #define kCT_MaxTemperature  "maxTemperature"
@@ -171,7 +174,7 @@ enum tColMenuTags
 	kMT_MaxGradient,
 	kMT_MinGradient,
 	kMT_Keyword1,
-	kMT_Computer,
+	kMT_Keyword2,
 	kMT_MaxHR,
 	kMT_AvgHR,
 	kMT_MaxCadence,
@@ -231,6 +234,9 @@ enum tColMenuTags
 	kMT_AvgTemperature,
 	kMT_MaxTemperature,
 	kMT_MinTemperature,
+    kMT_Location,
+    kMT_Computer,
+    kMT_SufferScore,
 	// add new tags here!
 	kMT_Last,
 };
@@ -302,25 +308,31 @@ enum
 	kSplitColorTag = 2000		// for use in IB
 };
 
+
 enum tAttribute
 {
-	kBadAttr		= -1,
-	kName = 0,	
-	kActivity,
-	kDisposition,
-	kEffort,
-	kEventType,
-	kWeather,		// 5
-	kEquipment,
-	kWeight,
-	kNotes,
-	kKeyword1,
-	kKeyword2,		// 10
-	kKeyword3,				
-	kCustom1 = kKeyword3,
-	kKeyword4,
-	kNumAttributes
+    kBadAttr        = -1,
+    kName = 0,
+    kActivity,
+    kDisposition,
+    kEffort,
+    kEventType,
+    kWeather,
+    kEquipment,
+    kWeight,
+    kNotes,
+    kKeyword1,
+    kKeyword2,
+    kKeyword3,
+    kCustom1 = kKeyword3,
+    kKeyword4,
+    kComputer,
+    kLocation,
+    kSufferScore,
+    // ALWAYS ADD NEW ATTRIBUTES HERE - ORDERING IS BAKED INTO STORAGE
+    kNumAttributes
 };
+
 
 
 enum tMapTypes

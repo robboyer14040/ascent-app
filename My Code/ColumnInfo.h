@@ -51,6 +51,7 @@ enum
 	kUT_IsPower,
 	kUT_IsWork,
 	kUT_IsText,
+    kUT_IsJustANumber,
 };
 
 

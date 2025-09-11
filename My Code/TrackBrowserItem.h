@@ -199,6 +199,8 @@ enum tBrowserItemType
 -(NSString*) notes;
 -(NSString*) device;
 -(NSString*) firmwareVersion;
+-(NSString*) location;
+-(NSString*) computer;
 
 - (NSString*) activity;
 - (NSString*) equipment;

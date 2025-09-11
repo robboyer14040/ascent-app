@@ -140,7 +140,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <clipView key="contentView" drawsBackground="NO" id="8OW-9J-atp">
                             <rect key="frame" x="1" y="1" width="318" height="159"/>
-                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <autoresizingMask key="autoresizingMask"/>
                             <subviews>
                                 <textView importsGraphics="NO" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" spellingCorrection="YES" smartInsertDelete="YES" id="923">
                                     <rect key="frame" x="0.0" y="0.0" width="318" height="159"/>
@@ -231,7 +231,7 @@ DQ
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <clipView key="contentView" id="tHL-Z4-kg5">
                                                                         <rect key="frame" x="1" y="1" width="423" height="416"/>
-                                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                        <autoresizingMask key="autoresizingMask"/>
                                                                         <subviews>
                                                                             <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="none" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" rowHeight="15" headerView="2292" id="1797" customClass="ActivityOutlineView">
                                                                                 <rect key="frame" x="0.0" y="0.0" width="423" height="399"/>
@@ -308,7 +308,7 @@ DQ
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <clipView key="contentView" id="U3Y-Q4-tTZ">
                                                     <rect key="frame" x="1" y="1" width="422" height="210"/>
-                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="none" columnSelection="YES" autosaveColumns="NO" rowHeight="13" headerView="2295" id="1601" customClass="SplitsTableView">
                                                             <rect key="frame" x="0.0" y="0.0" width="422" height="193"/>
@@ -419,7 +419,7 @@ DQ
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                                                             <clipView key="contentView" id="t87-DB-gYi">
                                                                                 <rect key="frame" x="1" y="1" width="414" height="219"/>
-                                                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                                <autoresizingMask key="autoresizingMask"/>
                                                                                 <subviews>
                                                                                     <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="14" headerView="2300" id="1630">
                                                                                         <rect key="frame" x="0.0" y="0.0" width="414" height="202"/>
@@ -523,7 +523,7 @@ DQ
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                                                             <clipView key="contentView" id="Ua7-Pe-iQ3">
                                                                                 <rect key="frame" x="2" y="2" width="410" height="67"/>
-                                                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                                <autoresizingMask key="autoresizingMask"/>
                                                                                 <subviews>
                                                                                     <textView importsGraphics="NO" horizontallyResizable="YES" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" linkDetection="YES" spellingCorrection="YES" smartInsertDelete="YES" id="2403" customClass="TextViewWithPlaceholder">
                                                                                         <rect key="frame" x="0.0" y="0.0" width="410" height="67"/>

@@ -949,7 +949,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 //                   action:@selector(syncStravaActivities:)
 //            keyEquivalent:@""] setTag:kCMUploadToMobile];
   
-    [[cm addItemWithTitle:@"Update Strava Info"
+    [[cm addItemWithTitle:@"Update Detailed Track Info"
                    action:@selector(enrichSelectedTracks:)
             keyEquivalent:@""] setTag:kCMEnrichTracks];
 

@@ -76,6 +76,11 @@ typedef void (^StravaGearMapCompletion)(NSDictionary<NSString *, NSString *> * _
 - (NSDictionary<NSString *, NSArray *> * _Nullable)fetchStreamsForActivityID:(NSNumber *)actID
                                                                        error:(NSError * _Nullable * _Nullable)outError;
 
+- (void)fetchSegmentsForActivityID:(NSNumber *)activityID
+                        completion:(void (^)(NSArray<NSDictionary *> * _Nullable segments,
+                                             NSError * _Nullable error))completion;
+
+
 @end
 
 NS_ASSUME_NONNULL_END

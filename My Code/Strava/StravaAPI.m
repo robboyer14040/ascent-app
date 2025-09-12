@@ -1425,4 +1425,184 @@ static NSData * _SAN_JPEGDataFromImageData(NSData *data) {
 }
 
 
+// Public: Fetch segment efforts for an activity, sorted by ascending start time.
+// Each entry is a NSDictionary with top-level effort fields and a compact "segment" sub-dictionary.
+// Completion is always invoked on the main thread.
+- (void)fetchSegmentsForActivityID:(NSNumber *)activityID
+                        completion:(void (^)(NSArray<NSDictionary *> * _Nullable segments,
+                                             NSError * _Nullable error))completion
+{
+    if (!completion) return;
+    if (!activityID) {
+        NSError *e = [NSError errorWithDomain:@"StravaAPI"
+                                         code:4001
+                                     userInfo:@{NSLocalizedDescriptionKey:@"Missing activity id"}];
+        ASCOnMain(^{ completion(nil, e); });
+        return;
+    }
+
+    void (^completionCopy)(NSArray<NSDictionary *> *, NSError *) = [completion copy]; // MRC
+
+    [self _ensureFreshAccessToken:^(NSError * _Nullable authErr) {
+        if (authErr) {
+            ASCOnMain(^{
+                if (completionCopy) completionCopy(nil, authErr);
+                if (completionCopy) Block_release(completionCopy);
+            });
+            return;
+        }
+
+        // Reuse the activity detail endpoint; it returns "segment_efforts" when include_all_efforts=true.
+        NSString *url = [NSString stringWithFormat:
+                         @"https://www.strava.com/api/v3/activities/%@?include_all_efforts=true",
+                         activityID];
+        NSURLRequest *req = [self _GET:url bearer:_accessToken];
+
+        __unsafe_unretained StravaAPI *unretainedSelf = self;
+        __block NSURLSessionDataTask *task = nil;
+        task = [_session dataTaskWithRequest:req
+                           completionHandler:^(NSData *data, NSURLResponse *response, NSError *error)
+        {
+            [unretainedSelf _untrackTask:task];
+
+            if (error) {
+                ASCOnMain(^{
+                    if (completionCopy) completionCopy(nil, error);
+                    if (completionCopy) Block_release(completionCopy);
+                });
+                return;
+            }
+
+            // Basic HTTP validation
+            NSHTTPURLResponse *http = (NSHTTPURLResponse *)response;
+            if (![http isKindOfClass:[NSHTTPURLResponse class]] || http.statusCode < 200 || http.statusCode >= 300) {
+                NSError *e = [NSError errorWithDomain:@"StravaHTTP"
+                                                 code:(http ? http.statusCode : -1)
+                                             userInfo:@{NSLocalizedDescriptionKey:
+                                                            [NSString stringWithFormat:@"HTTP %ld fetching activity detail",
+                                                             (long)(http ? http.statusCode : -1)],
+                                                        NSURLErrorFailingURLErrorKey: url}];
+                ASCOnMain(^{
+                    if (completionCopy) completionCopy(nil, e);
+                    if (completionCopy) Block_release(completionCopy);
+                });
+                return;
+            }
+
+            NSError *jsonErr = nil;
+            id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonErr];
+            if (jsonErr || ![obj isKindOfClass:[NSDictionary class]]) {
+                NSError *e = jsonErr ?: [NSError errorWithDomain:@"StravaAPI"
+                                                            code:4002
+                                                        userInfo:@{NSLocalizedDescriptionKey:@"Malformed activity JSON"}];
+                ASCOnMain(^{
+                    if (completionCopy) completionCopy(nil, e);
+                    if (completionCopy) Block_release(completionCopy);
+                });
+                return;
+            }
+
+            NSDictionary *activity = (NSDictionary *)obj;
+            NSArray *efforts = [[activity objectForKey:@"segment_efforts"] isKindOfClass:[NSArray class]]
+                             ? (NSArray *)[activity objectForKey:@"segment_efforts"]
+                             : nil;
+
+            if (![efforts isKindOfClass:[NSArray class]]) {
+                // No segment efforts found — return empty array, not an error
+                ASCOnMain(^{
+                    if (completionCopy) completionCopy([NSArray array], nil);
+                    if (completionCopy) Block_release(completionCopy);
+                });
+                return;
+            }
+
+            // Map each effort into a compact NSDictionary we control.
+            NSMutableArray *out = [NSMutableArray arrayWithCapacity:[efforts count]];
+            for (id it in efforts) {
+                if (![it isKindOfClass:[NSDictionary class]]) continue;
+                NSDictionary *eff = (NSDictionary *)it;
+
+                // Pull common effort fields (existence-checked)
+                id effortID          = [eff objectForKey:@"id"];
+                NSString *startUTC   = [[eff objectForKey:@"start_date"] isKindOfClass:[NSString class]] ? [eff objectForKey:@"start_date"] : nil;
+                NSString *startLocal = [[eff objectForKey:@"start_date_local"] isKindOfClass:[NSString class]] ? [eff objectForKey:@"start_date_local"] : nil;
+
+                NSNumber *elapsed    = [[eff objectForKey:@"elapsed_time"] isKindOfClass:[NSNumber class]] ? [eff objectForKey:@"elapsed_time"] : nil;
+                NSNumber *moving     = [[eff objectForKey:@"moving_time"]  isKindOfClass:[NSNumber class]] ? [eff objectForKey:@"moving_time"]  : nil;
+                NSNumber *distance   = [[eff objectForKey:@"distance"]     isKindOfClass:[NSNumber class]] ? [eff objectForKey:@"distance"]     : nil;
+
+                NSNumber *prRank     = [[eff objectForKey:@"pr_rank"]    isKindOfClass:[NSNumber class]] ? [eff objectForKey:@"pr_rank"]    : nil;
+                NSNumber *komRank    = [[eff objectForKey:@"kom_rank"]   isKindOfClass:[NSNumber class]] ? [eff objectForKey:@"kom_rank"]   : nil;
+
+                NSNumber *avgHR      = [[eff objectForKey:@"average_heartrate"] isKindOfClass:[NSNumber class]] ? [eff objectForKey:@"average_heartrate"] : nil;
+                NSNumber *maxHR      = [[eff objectForKey:@"max_heartrate"]     isKindOfClass:[NSNumber class]] ? [eff objectForKey:@"max_heartrate"]     : nil;
+
+                NSNumber *deviceWatts= [[eff objectForKey:@"device_watts"] isKindOfClass:[NSNumber class]] ? [eff objectForKey:@"device_watts"] : nil;
+                NSNumber *avgWatts   = [[eff objectForKey:@"average_watts"] isKindOfClass:[NSNumber class]] ? [eff objectForKey:@"average_watts"] : nil;
+
+                NSDictionary *seg    = [[eff objectForKey:@"segment"] isKindOfClass:[NSDictionary class]] ? [eff objectForKey:@"segment"] : nil;
+                NSString *segName    = [[seg objectForKey:@"name"] isKindOfClass:[NSString class]] ? [seg objectForKey:@"name"] : nil;
+                id segID             = [seg objectForKey:@"id"];
+
+                // Optional compact segment sub-dict
+                NSMutableDictionary *segmentSlim = nil;
+                if ([seg isKindOfClass:[NSDictionary class]]) {
+                    segmentSlim = [NSMutableDictionary dictionaryWithCapacity:12];
+                    id v;
+
+                    if ((v = [seg objectForKey:@"id"]))                   [segmentSlim setObject:v forKey:@"id"];
+                    if ((v = ([seg objectForKey:@"name"] ?: nil)))        [segmentSlim setObject:v forKey:@"name"];
+                    if ((v = [seg objectForKey:@"distance"]))             [segmentSlim setObject:v forKey:@"distance"];
+                    if ((v = [seg objectForKey:@"average_grade"]))        [segmentSlim setObject:v forKey:@"average_grade"];
+                    if ((v = [seg objectForKey:@"maximum_grade"]))        [segmentSlim setObject:v forKey:@"maximum_grade"];
+                    if ((v = [seg objectForKey:@"elevation_high"]))       [segmentSlim setObject:v forKey:@"elevation_high"];
+                    if ((v = [seg objectForKey:@"elevation_low"]))        [segmentSlim setObject:v forKey:@"elevation_low"];
+                    if ((v = [seg objectForKey:@"climb_category"]))       [segmentSlim setObject:v forKey:@"climb_category"];
+                    if ((v = [seg objectForKey:@"city"]))                 [segmentSlim setObject:v forKey:@"city"];
+                    if ((v = [seg objectForKey:@"state"]))                [segmentSlim setObject:v forKey:@"state"];
+                    if ((v = [seg objectForKey:@"country"]))              [segmentSlim setObject:v forKey:@"country"];
+                    if ((v = [seg objectForKey:@"start_latlng"]))         [segmentSlim setObject:v forKey:@"start_latlng"];
+                    if ((v = [seg objectForKey:@"end_latlng"]))           [segmentSlim setObject:v forKey:@"end_latlng"];
+                }
+
+                NSMutableDictionary *row = [NSMutableDictionary dictionaryWithCapacity:16];
+                if (effortID)       [row setObject:effortID forKey:@"effort_id"];
+                if (segID)          [row setObject:segID    forKey:@"segment_id"];
+                if (segName)        [row setObject:segName  forKey:@"name"];
+                if (startUTC)       [row setObject:startUTC forKey:@"start_date"];
+                if (startLocal)     [row setObject:startLocal forKey:@"start_date_local"];
+                if (elapsed)        [row setObject:elapsed forKey:@"elapsed_time"];
+                if (moving)         [row setObject:moving  forKey:@"moving_time"];
+                if (distance)       [row setObject:distance forKey:@"distance"];
+                if (prRank)         [row setObject:prRank  forKey:@"pr_rank"];
+                if (komRank)        [row setObject:komRank forKey:@"kom_rank"];
+                if (avgHR)          [row setObject:avgHR   forKey:@"average_heartrate"];
+                if (maxHR)          [row setObject:maxHR   forKey:@"max_heartrate"];
+                if (deviceWatts)    [row setObject:deviceWatts forKey:@"device_watts"];
+                if (avgWatts)       [row setObject:avgWatts    forKey:@"average_watts"];
+                if (segmentSlim)    [row setObject:segmentSlim forKey:@"segment"];
+
+                [out addObject:row];
+            }
+
+            // Sort ascending by start_date (ISO-8601 sorts lexicographically)
+            NSArray *sorted = [out sortedArrayUsingComparator:^NSComparisonResult(NSDictionary *a, NSDictionary *b) {
+                NSString *sa = [a objectForKey:@"start_date"];
+                NSString *sb = [b objectForKey:@"start_date"];
+                if (![sa isKindOfClass:[NSString class]]) sa = @"";
+                if (![sb isKindOfClass:[NSString class]]) sb = @"";
+                return [sa compare:sb options:NSLiteralSearch];
+            }];
+
+            ASCOnMain(^{
+                if (completionCopy) completionCopy(sorted, nil);
+                if (completionCopy) Block_release(completionCopy);
+            });
+        }];
+
+        [unretainedSelf _trackTask:task];
+        [task resume];
+    }];
+}
+
 @end

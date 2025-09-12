@@ -944,7 +944,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="67" y="433" width="1024" height="416"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2240" height="1235"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="944"/>
             <value key="minSize" type="size" width="1024" height="250"/>
             <view key="contentView" id="559">
                 <rect key="frame" x="0.0" y="0.0" width="1024" height="416"/>
@@ -1115,6 +1115,7 @@
         <view id="1055">
             <rect key="frame" x="0.0" y="0.0" width="125" height="1"/>
             <autoresizingMask key="autoresizingMask"/>
+            <point key="canvasLocation" x="-431" y="-646"/>
         </view>
         <view id="1059">
             <rect key="frame" x="0.0" y="0.0" width="125" height="1"/>
@@ -1123,6 +1124,7 @@
         <view id="1173">
             <rect key="frame" x="0.0" y="0.0" width="125" height="1"/>
             <autoresizingMask key="autoresizingMask"/>
+            <point key="canvasLocation" x="-484" y="-595"/>
         </view>
     </objects>
 </document>

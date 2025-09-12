@@ -15,7 +15,7 @@
 #import "ColumnInfo.h"
 
 #import <OmniFoundation/OFPreference.h>
-/// #import <OmniAppKit/NSUserDefaults-OAExtensions.h>
+#import <OmniAppKit/NSUserDefaults-OAExtensions.h>
 
 #include <math.h>
 
@@ -1124,6 +1124,7 @@ static float nullConversion(float v) { return v; }
 {
     OFPreferenceWrapper* defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
     NSColor* color = [defaults colorForKey:key];
+    ///NSColor* color = nil;
     if (color == nil)
     {
         if (key == RCBDefaultPathColor)
@@ -1132,13 +1133,22 @@ static float nullConversion(float v) { return v; }
         }
         else if (key == RCBDefaultBackgroundColor)
         {
-            color = [NSColor whiteColor];
+            color = [NSColor colorNamed:@"BackgroundPrimary"];
         }
+        else if (key == RCBDefaultBrowserActivityColor)
+        {
+            color = [NSColor colorNamed:@"TextPrimary"];
+        }
+        else if (key == RCBDefaultAltitudeColor)
+        {
+            color = [NSColor colorNamed:@"AltitudeProfilePrimary"];
+        }
+
         else
         {
             color = [NSColor blueColor];
+            NSLog(@"Defaults color not found, using a default BLUE FIXME");
         }
-        /// NSLog(@"Defaults color not found, using a default RED FIXME");
     }
     return color;
 }

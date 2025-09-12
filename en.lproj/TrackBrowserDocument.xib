@@ -3,6 +3,7 @@
     <dependencies>
         <deployment version="101304" identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23727"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -71,7 +72,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="67" y="875" width="792" height="587"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2240" height="1235"/>
+            <rect key="screenRect" x="-1005" y="982" width="1920" height="1055"/>
             <value key="minSize" type="size" width="213" height="113"/>
             <view key="contentView" id="879">
                 <rect key="frame" x="0.0" y="0.0" width="792" height="587"/>
@@ -129,7 +130,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="219" y="1012" width="360" height="233"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2240" height="1235"/>
+            <rect key="screenRect" x="-1005" y="982" width="1920" height="1055"/>
             <value key="minSize" type="size" width="213" height="113"/>
             <view key="contentView" id="921">
                 <rect key="frame" x="0.0" y="0.0" width="360" height="233"/>
@@ -198,7 +199,7 @@ DQ
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" texturedBackground="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="96" y="575" width="849" height="768"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2240" height="1235"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="944"/>
             <value key="minSize" type="size" width="810" height="600"/>
             <view key="contentView" id="1246">
                 <rect key="frame" x="0.0" y="0.0" width="849" height="768"/>
@@ -229,15 +230,15 @@ DQ
                                                                 <scrollView fixedFrame="YES" autohidesScrollers="YES" horizontalLineScroll="17" horizontalPageScroll="0.0" verticalLineScroll="17" verticalPageScroll="0.0" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1796">
                                                                     <rect key="frame" x="0.0" y="0.0" width="425" height="418"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                                    <clipView key="contentView" id="tHL-Z4-kg5">
+                                                                    <clipView key="contentView" drawsBackground="NO" id="tHL-Z4-kg5">
                                                                         <rect key="frame" x="1" y="1" width="423" height="416"/>
-                                                                        <autoresizingMask key="autoresizingMask"/>
+                                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                         <subviews>
                                                                             <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="none" alternatingRowBackgroundColors="YES" columnSelection="YES" autosaveColumns="NO" rowHeight="15" headerView="2292" id="1797" customClass="ActivityOutlineView">
                                                                                 <rect key="frame" x="0.0" y="0.0" width="423" height="399"/>
                                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                 <size key="intercellSpacing" width="3" height="2"/>
-                                                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                                                <color key="backgroundColor" name="BackgroundPrimary"/>
                                                                                 <tableViewGridLines key="gridStyleMask" vertical="YES"/>
                                                                                 <color key="gridColor" white="0.83467741939999995" alpha="0.83999999999999997" colorSpace="calibratedWhite"/>
                                                                                 <tableColumns>
@@ -249,7 +250,7 @@ DQ
                                                                                         <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="2281">
                                                                                             <font key="font" metaFont="system"/>
                                                                                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                                            <color key="backgroundColor" name="BackgroundPrimary"/>
                                                                                         </textFieldCell>
                                                                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                                     </tableColumn>
@@ -260,6 +261,7 @@ DQ
                                                                                 </connections>
                                                                             </tableView>
                                                                         </subviews>
+                                                                        <nil key="backgroundColor"/>
                                                                     </clipView>
                                                                     <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" controlSize="small" horizontal="YES" id="2291">
                                                                         <rect key="frame" x="1" y="-30" width="581" height="15"/>
@@ -308,13 +310,13 @@ DQ
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <clipView key="contentView" id="U3Y-Q4-tTZ">
                                                     <rect key="frame" x="1" y="1" width="422" height="210"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
                                                         <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="none" columnSelection="YES" autosaveColumns="NO" rowHeight="13" headerView="2295" id="1601" customClass="SplitsTableView">
                                                             <rect key="frame" x="0.0" y="0.0" width="422" height="193"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <size key="intercellSpacing" width="3" height="2"/>
-                                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                            <color key="backgroundColor" name="BackgroundPrimary"/>
                                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                             <tableColumns>
                                                                 <tableColumn identifier="cumulativeDistance" width="60" minWidth="40" maxWidth="1000" id="1602">
@@ -336,6 +338,7 @@ DQ
                                                             </connections>
                                                         </tableView>
                                                     </subviews>
+                                                    <color key="backgroundColor" name="BackgroundPrimary"/>
                                                 </clipView>
                                                 <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" controlSize="small" horizontal="YES" id="2294">
                                                     <rect key="frame" x="1" y="-22" width="583" height="11"/>
@@ -419,17 +422,17 @@ DQ
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                                                             <clipView key="contentView" id="t87-DB-gYi">
                                                                                 <rect key="frame" x="1" y="1" width="414" height="219"/>
-                                                                                <autoresizingMask key="autoresizingMask"/>
+                                                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                 <subviews>
                                                                                     <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="14" headerView="2300" id="1630">
-                                                                                        <rect key="frame" x="0.0" y="0.0" width="414" height="202"/>
+                                                                                        <rect key="frame" x="0.0" y="0.0" width="416" height="202"/>
                                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                         <size key="intercellSpacing" width="3" height="2"/>
                                                                                         <color key="backgroundColor" name="controlHighlightColor" catalog="System" colorSpace="catalog"/>
                                                                                         <tableViewGridLines key="gridStyleMask" horizontal="YES"/>
                                                                                         <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                                                         <tableColumns>
-                                                                                            <tableColumn identifier="Metric" editable="NO" width="55.5" minWidth="8" maxWidth="1000" id="1632">
+                                                                                            <tableColumn identifier="Metric" editable="NO" width="56" minWidth="8" maxWidth="1000" id="1632">
                                                                                                 <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Metric">
                                                                                                     <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                     <color key="backgroundColor" white="0.33333299" alpha="1" colorSpace="calibratedWhite"/>
@@ -441,7 +444,7 @@ DQ
                                                                                                 </textFieldCell>
                                                                                                 <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                                             </tableColumn>
-                                                                                            <tableColumn identifier="Type" editable="NO" width="44.5" minWidth="10" maxWidth="1000" id="1633">
+                                                                                            <tableColumn identifier="Type" editable="NO" width="45" minWidth="10" maxWidth="1000" id="1633">
                                                                                                 <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Type">
                                                                                                     <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                     <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -453,7 +456,7 @@ DQ
                                                                                                 </textFieldCell>
                                                                                                 <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                                             </tableColumn>
-                                                                                            <tableColumn identifier="Value" editable="NO" width="62.5" minWidth="10" maxWidth="1000" id="1644">
+                                                                                            <tableColumn identifier="Value" editable="NO" width="63" minWidth="10" maxWidth="1000" id="1644">
                                                                                                 <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="right" title="Value">
                                                                                                     <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                     <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -477,7 +480,7 @@ DQ
                                                                                                 </textFieldCell>
                                                                                                 <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                                             </tableColumn>
-                                                                                            <tableColumn identifier="Time" editable="NO" width="157.5" minWidth="137.6435546875" maxWidth="1000" id="1634">
+                                                                                            <tableColumn identifier="Time" editable="NO" width="158" minWidth="137.6435546875" maxWidth="1000" id="1634">
                                                                                                 <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="@Time (select to go to...)">
                                                                                                     <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                     <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -506,7 +509,7 @@ DQ
                                                                                 <autoresizingMask key="autoresizingMask"/>
                                                                             </scroller>
                                                                             <tableHeaderView key="headerView" wantsLayer="YES" id="2300">
-                                                                                <rect key="frame" x="0.0" y="0.0" width="414" height="17"/>
+                                                                                <rect key="frame" x="0.0" y="0.0" width="416" height="17"/>
                                                                                 <autoresizingMask key="autoresizingMask"/>
                                                                             </tableHeaderView>
                                                                         </scrollView>
@@ -974,7 +977,7 @@ DQ
             <windowStyleMask key="styleMask" titled="YES" closable="YES" utility="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="471" y="380" width="260" height="129"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2240" height="1235"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="944"/>
             <value key="minSize" type="size" width="213" height="113"/>
             <view key="contentView" id="1921">
                 <rect key="frame" x="0.0" y="0.0" width="260" height="129"/>
@@ -1183,5 +1186,8 @@ DQ
         <image name="Calendar_Trans.png" width="128" height="128"/>
         <image name="CompareButtonIcon" width="32" height="23"/>
         <image name="Splits_Trans.png" width="128" height="128"/>
+        <namedColor name="BackgroundPrimary">
+            <color red="0.99999994039535522" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

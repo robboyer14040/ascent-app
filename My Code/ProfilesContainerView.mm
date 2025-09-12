@@ -90,8 +90,8 @@
 -(void)drawRect:(NSRect)fr
 {
 	NSRect bounds = [self bounds];
-	[[Utils colorFromDefaults:RCBDefaultBackgroundColor] set];
-	[NSBezierPath fillRect:bounds];
+    [[NSColor colorNamed:@"BackgroundPrimary"] set];
+    [NSBezierPath fillRect:bounds];
 	[[[NSColor blackColor] colorWithAlphaComponent:0.6] set];
 	[NSBezierPath setDefaultLineWidth:1.0];
 	[NSBezierPath strokeRect:bounds];

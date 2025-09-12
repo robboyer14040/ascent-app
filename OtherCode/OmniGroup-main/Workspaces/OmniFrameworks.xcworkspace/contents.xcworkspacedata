@@ -2,7 +2,7 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:../Tools/FixStringsFile/FixStringsFile.xcodeproj">
+      location = "absolute:/Users/rob/projects/Ascent/ascent-app/OtherCode/OmniGroup-main/Tools/FixStringsFile/FixStringsFile.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:../Frameworks/OmniAppKit/OmniAppKit.xcodeproj">

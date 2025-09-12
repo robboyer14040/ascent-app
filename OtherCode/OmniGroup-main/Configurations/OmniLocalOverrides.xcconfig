@@ -3,3 +3,6 @@ EXPLICIT_PRECOMPILED_MODULES = NO
 OTHER_CFLAGS = $(inherited) -fmodules
 OTHER_CPLUSPLUSFLAGS = $(inherited) -fmodules
 OTHER_SWIFT_FLAGS = $(inherited) -Xcc -fmodules
+
+SYMROOT = $(SRCROOT)/../build
+CONFIGURATION_BUILD_DIR = $(SYMROOT)/$(CONFIGURATION)

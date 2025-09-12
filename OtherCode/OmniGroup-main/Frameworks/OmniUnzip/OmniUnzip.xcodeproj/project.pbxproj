@@ -450,6 +450,7 @@
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* OmniUnzip.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniUnzip.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2C094181F84624E00B7CD65 /* OmniBase.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniBase.xcodeproj; path = OmniBase/OmniBase.xcodeproj; sourceTree = "<group>"; };
+		D4ACD4432E747E2D00E430FF /* FixStringsFile.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FixStringsFile.xcodeproj; path = "/Users/rob/projects/Ascent/ascent-app/OtherCode/OmniGroup-main/Tools/FixStringsFile/FixStringsFile.xcodeproj"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -513,6 +514,7 @@
 		0867D691FE84028FC02AAC07 /* OmniUnzip */ = {
 			isa = PBXGroup;
 			children = (
+				D4ACD4432E747E2D00E430FF /* FixStringsFile.xcodeproj */,
 				424183A30F44CF990029B4DA /* Configurations */,
 				08FB77AEFE84172EC02AAC07 /* Classes */,
 				32C88DFF0371C24200C91783 /* Other Sources */,

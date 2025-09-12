@@ -46,7 +46,7 @@ NSString*  RCBDefaultSplitColor				= @"DefaultSplitColor";
 - (IBAction)setValueForSender:(id)sender;
 {
     NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
-	int tag = [sender tag];
+	int tag = (int) [sender tag];
    if (tag > 0)
    {
       NSString* key = [Utils defaultColorKey:tag];

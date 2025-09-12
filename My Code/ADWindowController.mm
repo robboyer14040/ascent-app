@@ -1015,7 +1015,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 																	   hinfo.colw, hudTH)];
 			[cv addSubview:textField];
 			[textField setEditable:NO];
-			[textField setTextColor:[[NSColor whiteColor] colorWithAlphaComponent:0.7]];
+			[textField setTextColor:[[NSColor colorNamed:@"TextPrimary"] colorWithAlphaComponent:0.7]];
 			[textField setDrawsBackground:NO];
 			[textField setBordered:NO];
 			[textField setAlignment:hinfo.align];
@@ -1096,7 +1096,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 																				wSED, hudTH)];
 		 [[statsHUDWindow contentView] addSubview:textField];
 		 [textField setEditable:NO];
-		 [textField setTextColor:[NSColor whiteColor]];
+		 [textField setTextColor:[NSColor  colorNamed:@"TextPrimary"]];
 		 [textField setDrawsBackground:NO];
 		 [textField setBordered:NO];
 		 [textField setAlignment:NSTextAlignmentLeft];
@@ -1134,7 +1134,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 																				(col==3) ? 100.0 : wAMM, hudTH)];
 		 [[statsHUDWindow contentView] addSubview:textField];
 		 [textField setEditable:NO];
-		 [textField setTextColor:[NSColor whiteColor]];
+		 [textField setTextColor:[NSColor colorNamed:@"TextPrimary"]];
 		 [textField setDrawsBackground:NO];
 		 [textField setBordered:NO];
 		 [textField setAlignment:NSTextAlignmentLeft];
@@ -1155,7 +1155,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 																			 wHR, hudTH)];
 		[[statsHUDWindow contentView] addSubview:textField];
 		[textField setEditable:NO];
-		[textField setTextColor:[NSColor whiteColor]];
+		[textField setTextColor:[NSColor colorNamed:@"TextPrimary"]];
 		[textField setDrawsBackground:NO];
 		[textField setBordered:NO];
 		[textField setAlignment:NSTextAlignmentLeft];
@@ -1180,7 +1180,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 																  col0W-8.0, hudTH)];
 		[[statsHUDWindow contentView] addSubview:textField];
 		[textField setEditable:NO];
-		[textField setTextColor:[NSColor whiteColor]];
+		[textField setTextColor:[NSColor colorNamed:@"TextPrimary"]];
 		[textField setDrawsBackground:NO];
 		[textField setBordered:NO];
 		[textField setAlignment:NSTextAlignmentRight];
@@ -1194,7 +1194,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 																		  80.0, hudTH)];
 	[[statsHUDWindow contentView] addSubview:textField];
 	[textField setEditable:NO];
-	[textField setTextColor:[NSColor whiteColor]];
+	[textField setTextColor:[NSColor colorNamed:@"TextPrimary"]];
 	[textField setDrawsBackground:NO];
 	[textField setBordered:NO];
 	[textField setAlignment:NSTextAlignmentLeft];

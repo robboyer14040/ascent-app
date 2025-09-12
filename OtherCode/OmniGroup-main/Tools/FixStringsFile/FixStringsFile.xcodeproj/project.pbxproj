@@ -51,6 +51,8 @@
 		34C4D6B308C7AB280072D2D6 /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
 		34C4D6BF08C7AB770072D2D6 /* FixStringsFile_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FixStringsFile_Prefix.h; sourceTree = "<group>"; };
 		8DD76F7E0486A8DE00D96B5E /* FixStringsFile */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = FixStringsFile; sourceTree = BUILT_PRODUCTS_DIR; };
+		D4ACD4582E747E5E00E430FF /* OmniLocalOverrides.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = OmniLocalOverrides.xcconfig; sourceTree = "<group>"; };
+		D4ACD4592E747E8A00E430FF /* Omni-Global-Settings.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Settings.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,6 +123,8 @@
 		34C4D6A408C7AB280072D2D6 /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
+				D4ACD4592E747E8A00E430FF /* Omni-Global-Settings.xcconfig */,
+				D4ACD4582E747E5E00E430FF /* OmniLocalOverrides.xcconfig */,
 				342ACFE21192541600AD0F83 /* Omni-Application-Common.xcconfig */,
 				34C4D6A608C7AB280072D2D6 /* Omni-Application-Debug.xcconfig */,
 				34C4D6A708C7AB280072D2D6 /* Omni-Application-Release.xcconfig */,
@@ -229,7 +233,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "./Tests/RunTests\n";
+			shellScript = "# Skip when asked\n[ -n \"$OMNI_SKIP_FIXSTRINGS_TESTS\" ] && echo \"Skipping FixStringsFile tests\" && exit 0\n\nset -euxo pipefail\nexport LC_ALL=C\n\n# If Xcode didn't set these, provide writable defaults\n: \"${DERIVED_FILE_DIR:=$SRCROOT/Derived}\"\n: \"${CONFIGURATION_BUILD_DIR:=$CONFIGURATION_TEMP_DIR/..}\"  # fallback; not strictly needed for RunTests\n\nmkdir -p \"$DERIVED_FILE_DIR/TestOutput\"\n\nexec /bin/zsh ./Tests/RunTests\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -253,6 +257,8 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "-";
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = F3GH78PJ2M;
+				EXPLICIT_PRECOMPILED_MODULES = NO;
+				EXPLICIT_PRECOMPILED_MODULES_OTHER_CFLAGS = "";
 				PRODUCT_NAME = FixStringsFile;
 			};
 			name = Debug;
@@ -263,6 +269,8 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "-";
+				EXPLICIT_PRECOMPILED_MODULES = NO;
+				EXPLICIT_PRECOMPILED_MODULES_OTHER_CFLAGS = "";
 				PRODUCT_NAME = FixStringsFile;
 			};
 			name = Release;

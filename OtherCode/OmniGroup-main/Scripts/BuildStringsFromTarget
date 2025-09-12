@@ -139,7 +139,39 @@ if [ $#source_files -gt 0 ]; then
 fi
 
 # FIX_STRINGS_FILE="$BUILD_DIR/$CONFIGURATION"/FixStringsFile
-TOOL_PATH="${SRCROOT}/../../Tools/FixStringsFile/build/${CONFIGURATION}/FixStringsFile"
+###rcb TOOL_PATH="${SRCROOT}/../../Tools/FixStringsFile/build/${CONFIGURATION}/FixStringsFile"
+
+# Prefer Tools/build/<CONFIG>, then this target’s products dir, then PATH
+: "${CONFIGURATION:=Debug}"
+export PATH="$CONFIGURATION_BUILD_DIR:$SRCROOT/../../Tools/build/${CONFIGURATION}:$PATH"
+
+candidates=(
+  "$SRCROOT/../../Tools/build/${CONFIGURATION}/FixStringsFile"
+  "$CONFIGURATION_BUILD_DIR/FixStringsFile"
+)
+
+FIX_STRINGS_FILE=""
+for c in "${candidates[@]}"; do
+  if [[ -x "$c" ]]; then
+    FIX_STRINGS_FILE="$c"
+    break
+  fi
+done
+
+# Fall back to PATH
+[[ -z "${FIX_STRINGS_FILE:-}" ]] && FIX_STRINGS_FILE="$(command -v FixStringsFile || true)"
+
+if [[ -z "${FIX_STRINGS_FILE:-}" || ! -x "$FIX_STRINGS_FILE" ]]; then
+  echo "error: *** FixStringsFile not found."
+  printf 'Searched:\n  %s\n  %s\n  PATH=%s\n' "${candidates[1]}" "${candidates[2]}" "$PATH"
+  exit 1
+fi
+
+TOOL_PATH="$FIX_STRINGS_FILE"
+# (Optional) keep this if the rest of the script uses FIX_STRINGS_FILE:
+# FIX_STRINGS_FILE="$TOOL_PATH"
+
+
 FIX_STRINGS_FILE="$TOOL_PATH"
 
 # If we are building a real bundle (Mac framework or app) sync the built files into that bundle.

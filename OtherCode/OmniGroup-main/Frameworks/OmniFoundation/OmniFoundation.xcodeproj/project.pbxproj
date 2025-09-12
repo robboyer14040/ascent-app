@@ -1723,13 +1723,6 @@
 			remoteGlobalIDString = 8DD76F7E0486A8DE00D96B5E;
 			remoteInfo = FixStringsFile;
 		};
-		34C0E42E1ECB5AFE00780499 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34C0E4241ECB5AF100780499 /* FixStringsFile.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 8DD76F740486A8DE00D96B5E;
-			remoteInfo = FixStringsFile;
-		};
 		34C7746C194F955F00462ADA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 00E51C5BFE8AAEA611C9CC38 /* Project object */;
@@ -1813,6 +1806,13 @@
 			proxyType = 2;
 			remoteGlobalIDString = 5FE81E171B62AE980056756C;
 			remoteInfo = "OmniBase-watchOS";
+		};
+		D494DF962E73AEF20029C657 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34C0E4241ECB5AF100780499 /* FixStringsFile.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DD76F740486A8DE00D96B5E;
+			remoteInfo = FixStringsFile;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -5025,7 +5025,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				34C0E42F1ECB5AFE00780499 /* PBXTargetDependency */,
+				D494DF972E73AEF20029C657 /* PBXTargetDependency */,
 				34E45BD21EC5236400DDF69F /* PBXTargetDependency */,
 			);
 			name = OmniFoundation;
@@ -5375,7 +5375,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "perl -w \"${SOURCE_ROOT}/Crypto/generateOIDs.pl\"";
+			shellScript = "perl -w \"${SOURCE_ROOT}/Crypto/generateOIDs.pl\"\n";
 			showEnvVarsInLog = 0;
 		};
 		34A061231EC110A60099028D /* Generate Derived Sources */ = {
@@ -5431,7 +5431,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "../../Scripts/BuildStringsFromTarget OmniFoundation OFDateProcessing\n";
+			shellScript = "export PATH=\"$CONFIGURATION_BUILD_DIR:$SRCROOT/../../Tools/build/$CONFIGURATION:$PATH\"\n\n../../Scripts/BuildStringsFromTarget OmniFoundation OFDateProcessing\n";
 			showEnvVarsInLog = 0;
 		};
 		E8A3898F199E79440004DE3A /* Build String Files */ = {
@@ -6389,11 +6389,6 @@
 			target = 4A4E05FE08AA72B10098FF0F /* OmniFoundation */;
 			targetProxy = 34B2F64A171885D3000E45DF /* PBXContainerItemProxy */;
 		};
-		34C0E42F1ECB5AFE00780499 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = FixStringsFile;
-			targetProxy = 34C0E42E1ECB5AFE00780499 /* PBXContainerItemProxy */;
-		};
 		34C7746D194F955F00462ADA /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 34F16B19194F6C3200AD9C4D /* OmniFoundation-iOS */;
@@ -6448,6 +6443,11 @@
 			isa = PBXTargetDependency;
 			target = 4A4E05FE08AA72B10098FF0F /* OmniFoundation */;
 			targetProxy = 4A4E07F508AA72B10098FF0F /* PBXContainerItemProxy */;
+		};
+		D494DF972E73AEF20029C657 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = FixStringsFile;
+			targetProxy = D494DF962E73AEF20029C657 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

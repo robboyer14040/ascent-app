@@ -31,7 +31,7 @@
 		font = [NSFont systemFontOfSize:18];
 		textFontAttrs = [[NSMutableDictionary alloc] init];
 		[textFontAttrs setObject:font forKey:NSFontAttributeName];
-		[textFontAttrs setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
+		[textFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"]                        forKey:NSForegroundColorAttributeName];
 	}
 	return self;
 }
@@ -113,7 +113,7 @@ static float calcY(float ymin, float ymax, float h, float v)
    bounds.origin.x += 25;
    bounds.size.width -= 25;
    
-   [tickFontAttrs setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
+   [tickFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"] forKey:NSForegroundColorAttributeName];
 
    
    float incr;
@@ -347,7 +347,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 	//[dropShadow set];
 
 	// fill the desired area
-	[[Utils colorFromDefaults:RCBDefaultBackgroundColor] set];
+    [[NSColor colorNamed:@"BackgroundPrimary"] set];
 	[NSBezierPath fillRect:bounds];
 	[[[NSColor blackColor] colorWithAlphaComponent:0.6] set];
 	[NSBezierPath setDefaultLineWidth:1.0];
@@ -477,8 +477,8 @@ static float calcY(float ymin, float ymax, float h, float v)
 		}
 		
 		
-		[[NSColor colorWithCalibratedRed:(217.0/255.0) green:(217.0/255.0) blue:(217.0/255.0) alpha:1.0] set];
-		[NSBezierPath fillRect:bounds];
+		//[[NSColor colorNamed:@"BackgroundPrimary"] set];
+		//[NSBezierPath fillRect:bounds];
 		NSRect tbounds = [self drawTickMarks:numVertTickPoints];
 
 		[self drawRangeIndicator:kAltitude
@@ -492,10 +492,10 @@ static float calcY(float ymin, float ymax, float h, float v)
 		
 		if ((numPts > 0) && ![dpath isEmpty])
 		{
-			[[NSColor blackColor] set];
+			[[NSColor colorNamed:@"TextPrimary"] set];
 			[dpath setLineWidth:0.5];
 			[dpath stroke];
-			[[[Utils colorFromDefaults:RCBDefaultAltitudeColor] colorWithAlphaComponent:.3] set];
+			[[[Utils colorFromDefaults:RCBDefaultAltitudeColor] colorWithAlphaComponent:1.0] set];
 			NSPoint p = [dpath currentPoint];
 			p.y = plotBounds.origin.y;
 			[dpath lineToPoint:p];

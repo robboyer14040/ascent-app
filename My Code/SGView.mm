@@ -368,7 +368,7 @@ NSInteger compareDates(id dt1, id dt2, void* ctx)
    
    // calculate scaleFactors based on window height, and width of tick text based on max values
    int numTypes = [self getNumPlotsEnabled];
-   int numGroups = [theKeys count];
+    NSUInteger numGroups = [theKeys count];
    NSPoint pt;
    pt.x = xPad;
    pt.y = yPad;
@@ -380,8 +380,7 @@ NSInteger compareDates(id dt1, id dt2, void* ctx)
    bounds.size.width = totalWidth;
    [self setFrame:bounds];
    [self setBounds:bounds];
-   NSColor* backgroundColor = [Utils colorFromDefaults:RCBDefaultBackgroundColor];
-   [backgroundColor set];
+     [[NSColor colorNamed:@"BackgroundPrimary"] set];
    [NSBezierPath fillRect:bounds];
    
    
@@ -395,7 +394,8 @@ NSInteger compareDates(id dt1, id dt2, void* ctx)
       r.size.height = bounds.size.height;
       NSColor* shadeColor = [NSColor colorWithCalibratedRed:(167.0/255.0) green:(255.0/255.0) blue:(169.0/255.0) alpha:0.42];
       NSColor* fclr = shadeColor;
-      int i;
+       NSColor* backgroundColor = nil;
+       int i;
       for (i=0; i<numGroups; i++)
       {
          if ((i % 2) == 0)    // alternate shading/non-shading
@@ -471,8 +471,8 @@ NSInteger compareDates(id dt1, id dt2, void* ctx)
    [self setBounds:bounds];
    
    
-   NSColor* backgroundColor = [Utils colorFromDefaults:RCBDefaultBackgroundColor];
-   [backgroundColor set];
+  /// NSColor* backgroundColor = [Utils colorFromDefaults:RCBDefaultBackgroundColor];
+    [[NSColor colorNamed:@"BackgroundPrimary"] set];
    [NSBezierPath fillRect:bounds];
    
    
@@ -568,7 +568,7 @@ NSInteger compareDates(id dt1, id dt2, void* ctx)
 	{
 		// get the keys, and sort them by date
 		NSArray* keys = [dataDict allKeys];
-		int numGroups = [keys count];
+        NSUInteger numGroups = [keys count];
 		NSMutableArray* theKeys = [NSMutableArray arrayWithCapacity:numGroups];
 		[theKeys addObjectsFromArray:keys]; 
 		[theKeys sortUsingFunction:compareDates context:nil];

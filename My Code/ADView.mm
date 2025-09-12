@@ -428,7 +428,7 @@ tPlotInfo plotInfoArray[] =
 		font = [NSFont systemFontOfSize:24];
 		textFontAttrs = [[NSMutableDictionary alloc] init];
 		[textFontAttrs setObject:font forKey:NSFontAttributeName];
-		[textFontAttrs setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
+		[textFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"] forKey:NSForegroundColorAttributeName];
 		
 		plotAttributesArray = [[NSMutableArray arrayWithCapacity:kNumPlotTypes] retain];
 		int i;
@@ -1405,7 +1405,7 @@ struct tPosInfo
 										atPoint:NSMakePoint(pt.x+10,y)
 										  attrs:attr];
 						[NSGraphicsContext restoreGraphicsState];
-						[[NSColor blackColor] set];
+						[[NSColor colorNamed:@"TextPrimary"] set];
 						NSPoint topOLine = NSMakePoint(pt.x, y-2);
 						[NSBezierPath strokeLineFromPoint:pt toPoint:topOLine];
 						[NSBezierPath strokeLineFromPoint:topOLine toPoint:NSMakePoint(pt.x + 5, y-2+5)];
@@ -1470,7 +1470,7 @@ struct tPosInfo
 			NSSize size = [s sizeWithAttributes:fontAttrs];
 			float lxoff = ((r.size.width - size.width)/2.0)-1;
 			float lyoff = 11.0;
-			[fontAttrs setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
+			[fontAttrs setObject:[NSColor colorNamed:@"TextPrimary"] forKey:NSForegroundColorAttributeName];
 			[s drawAtPoint:NSMakePoint((int)(r.origin.x + lxoff), (int)(r.origin.y + lyoff + 1.0)) withAttributes:fontAttrs];
 		}
 	}
@@ -1708,7 +1708,7 @@ BOOL mightBeAMax(NSArray* pts, int num, int idx, int thresh, tAccessor ysel)
    
 	//NSDate* startTime = [[pts objectAtIndex:0] DATE_METHOD];
 	NSTimeInterval startTimeDelta = [[pts objectAtIndex:0] DATE_METHOD];
-	NSColor* textColor = [Utils colorFromDefaults:colorKey];
+    NSColor* textColor = [NSColor colorNamed:@"TextPrimary"];
 	[tickFontAttrs setObject:textColor forKey:NSForegroundColorAttributeName];
    
 	for (i=0; i<n; i++)
@@ -1852,104 +1852,119 @@ BOOL mightBeAMax(NSArray* pts, int num, int idx, int thresh, tAccessor ysel)
 
 - (void)drawHeader:(NSRect)plotBounds
 {
-	NSRect bounds = [self drawBounds];
-	[[NSColor blackColor] set];
-	NSDate* startTime = [track creationTime];
-	NSArray*pts = [self ptsForPlot];
-	if ([pts count] > 0)
-	{
-        NSTimeInterval dt = [pts[0] activeTimeDelta];
-        startTime = [startTime dateByAddingTimeInterval:dt];
-	}
-	NSString* dt = [Utils activityNameFromDate:track alternateStartTime:startTime];
-	NSMutableDictionary *fontAttrs = [NSMutableDictionary dictionary];
-	NSFont* font = [NSFont systemFontOfSize:15];
-	[fontAttrs setObject:font forKey:NSFontAttributeName];
-	NSString* s = [track attribute:kName];
-	float x;
-	float y = bounds.size.height - 14.0;
-	if ([s compare:@""] != NSOrderedSame)
-	{
-		NSMutableString* ms = [NSMutableString stringWithString:s];
-		if (lap != nil)
-		{
-			int lapIdx = [track findLapIndex:lap];
-			if (lapIdx == ([[track laps] count] - 1))
-			{
-				s = [NSString stringWithFormat:@" - End of Lap %d to Finish", lapIdx];
-			}
-			else
-			{
-				s = [NSString stringWithFormat:@" - Lap %d", lapIdx + 1];
-			}
-			[ms appendString:s];
-		}
-		NSSize size = [ms sizeWithAttributes:fontAttrs];
-		[[NSColor blackColor] set];
-		x = bounds.origin.x + bounds.size.width/2.0 - size.width/2.0;
-		[ms drawAtPoint:NSMakePoint(x,y) withAttributes:fontAttrs];
-		y -= 18;
-	}
-   
-	[fontAttrs setObject:[NSFont systemFontOfSize:13] forKey:NSFontAttributeName];
-	s = [track attribute:kActivity];
-	s = [s stringByAppendingString:[NSString stringWithFormat:@" for %02.2d:%02.2d:%02.2d on ",
-									(int)(plotDuration/3600.0), (int)(((int)plotDuration/60)%60), ((int)plotDuration)%60]];
-	s = [s stringByAppendingString:dt];
-	NSString* eventType = [track attribute:kEventType];
-	if ((eventType != nil) && (![eventType isEqualToString:@""]))
-	{
-		s = [s stringByAppendingString:@" ("];
-		s = [s stringByAppendingString:eventType];
-		s = [s stringByAppendingString:@")"];
-	}
-	
-	NSSize size = [s sizeWithAttributes:fontAttrs];
-	x = bounds.origin.x + bounds.size.width/2.0 - size.width/2.0;
-	[s drawAtPoint:NSMakePoint(x,y) withAttributes:fontAttrs];
-	y -= 16;
+    NSRect bounds = [self drawBounds];
 
-	BOOL useStatuteUnits = [Utils boolFromDefaults:RCBDefaultUnitsAreEnglishKey];
-	NSString* format;
-	if (useStatuteUnits)
-	{
-		format = @"%@ miles, total climb: %@ft, average (moving) speed: %@mph, pace: %@ min/mile";
-	}
-	else
-	{
-		format = @"%@km, total climb: %@m, average (moving) speed: %@km/h, pace: %@ min/km";
-	}
-	float avgPower = [track avgPower];
-	float avgSpd = [track avgMovingSpeed];
-	float dist = [track distance];
-	float climb = [track totalClimb];
-	if (lap != nil)
-	{ 
-		avgPower = [track avgPowerForLap:lap];
-		avgSpd = [track movingSpeedForLap:lap];
-		dist = [track distanceOfLap:lap];
-		climb = [track lapClimb:lap];
-	}
-	float pace = [track avgMovingPace];
-	if ((lap != nil) && (avgSpd > 0.0))
-	{
-		// hours/mile * mins/hour = mins/mile; 
-		pace = (1.0*60.0*60.0)/avgSpd;
-	}
-	[numberFormatter setMaximumFractionDigits:0];
-	if (avgPower > 0.0)
-	{
-		NSString* powerString = [numberFormatter stringFromNumber:[NSNumber numberWithFloat:avgPower]];
-		format = [NSString stringWithFormat:@"%@, average power: %@ watts", format, powerString];
-	}
-	NSString* climbString = [numberFormatter stringFromNumber:[NSNumber numberWithFloat:[Utils convertClimbValue:climb]]];
-	[numberFormatter setMaximumFractionDigits:1];
-	NSString* distString =  [numberFormatter stringFromNumber:[NSNumber numberWithFloat:[Utils convertDistanceValue:dist]]];
-	NSString* speedString = [numberFormatter stringFromNumber:[NSNumber numberWithFloat:[Utils convertSpeedValue:avgSpd]]];
-	s = [NSString stringWithFormat:format, distString, climbString, speedString, [Utils convertPaceValueToString:pace]];
-	size = [s sizeWithAttributes:fontAttrs];
-	x = bounds.origin.x + bounds.size.width/2.0 - size.width/2.0;
-	[s drawAtPoint:NSMakePoint(x,y) withAttributes:fontAttrs];
+    // Resolve the text color from assets (fallback to dynamic system label color)
+    NSColor *textColor = [NSColor colorNamed:@"TextPrimary"] ?: [NSColor labelColor];
+
+    // Build the alternate start time (if the plot starts after creation time)
+    NSDate *startTime = [track creationTime];
+    NSArray *pts = [self ptsForPlot];
+    if ([pts count] > 0) {
+        NSTimeInterval firstDelta = [pts[0] activeTimeDelta];
+        startTime = [startTime dateByAddingTimeInterval:firstDelta];
+    }
+
+    // Human-readable date/title for the activity header line
+    NSString *dateTitle = [Utils activityNameFromDate:track alternateStartTime:startTime];
+
+    // Shared attributes dict for text (we'll only mutate the font size)
+    NSMutableDictionary *fontAttrs = [NSMutableDictionary dictionary];
+    fontAttrs[NSForegroundColorAttributeName] = textColor;
+
+    CGFloat x = 0.0;
+    CGFloat y = bounds.size.height - 14.0;
+    NSSize size;
+
+    // ----- Title line (activity name + optional lap suffix) -----
+    NSString *title = [track attribute:kName];
+    if (title.length > 0) {
+        NSMutableString *mutableTitle = [NSMutableString stringWithString:title];
+
+        if (lap != nil) {
+            NSInteger lapIdx = [track findLapIndex:lap];
+            if (lapIdx == ([[track laps] count] - 1)) {
+                [mutableTitle appendFormat:@" - End of Lap %ld to Finish", (long)lapIdx];
+            } else {
+                [mutableTitle appendFormat:@" - Lap %ld", (long)(lapIdx + 1)];
+            }
+        }
+
+        fontAttrs[NSFontAttributeName] = [NSFont systemFontOfSize:15.0];
+        size = [mutableTitle sizeWithAttributes:fontAttrs];
+        x = bounds.origin.x + bounds.size.width/2.0 - size.width/2.0;
+        [mutableTitle drawAtPoint:NSMakePoint(x, y) withAttributes:fontAttrs];
+        y -= 18.0;
+    }
+
+    // ----- Subtitle line (activity type, duration, date, event type) -----
+    fontAttrs[NSFontAttributeName] = [NSFont systemFontOfSize:13.0];
+
+    NSString *activity = [track attribute:kActivity] ?: @"";
+    NSString *durationPart = [NSString stringWithFormat:@" for %02.2d:%02.2d:%02.2d on ",
+                              (int)(plotDuration/3600.0),
+                              (int)(((int)plotDuration/60) % 60),
+                              ((int)plotDuration) % 60];
+
+    NSMutableString *subtitle = [NSMutableString stringWithFormat:@"%@%@%@", activity, durationPart, dateTitle];
+
+    NSString *eventType = [track attribute:kEventType];
+    if (eventType.length > 0) {
+        [subtitle appendFormat:@" (%@)", eventType];
+    }
+
+    size = [subtitle sizeWithAttributes:fontAttrs];
+    x = bounds.origin.x + bounds.size.width/2.0 - size.width/2.0;
+    [subtitle drawAtPoint:NSMakePoint(x, y) withAttributes:fontAttrs];
+    y -= 16.0;
+
+    // ----- Stats line (distance, climb, speed, pace, optional avg power) -----
+    BOOL useStatuteUnits = [Utils boolFromDefaults:RCBDefaultUnitsAreEnglishKey];
+    NSString *format = useStatuteUnits
+                       ? @"%@ miles, total climb: %@ft, average (moving) speed: %@mph, pace: %@ min/mile"
+                       : @"%@km, total climb: %@m, average (moving) speed: %@km/h, pace: %@ min/km";
+
+    float avgPower = [track avgPower];
+    float avgSpd   = [track avgMovingSpeed];
+    float dist     = [track distance];
+    float climb    = [track totalClimb];
+
+    if (lap != nil) {
+        avgPower = [track avgPowerForLap:lap];
+        avgSpd   = [track movingSpeedForLap:lap];
+        dist     = [track distanceOfLap:lap];
+        climb    = [track lapClimb:lap];
+    }
+
+    float pace = [track avgMovingPace];
+    if (lap != nil && avgSpd > 0.0f) {
+        // hours/mile * 60 = min/mile (Utils convertPaceValueToString: expects seconds or min? keep original behavior)
+        pace = (60.0f * 60.0f) / avgSpd;
+    }
+
+    // numberFormatter is assumed to be an ivar as in your original code
+    [numberFormatter setMaximumFractionDigits:0];
+
+    if (avgPower > 0.0f) {
+        NSString *powerString = [numberFormatter stringFromNumber:@(avgPower)];
+        format = [NSString stringWithFormat:@"%@, average power: %@ watts", format, powerString];
+    }
+
+    NSString *climbString = [numberFormatter stringFromNumber:@([Utils convertClimbValue:climb])];
+
+    [numberFormatter setMaximumFractionDigits:1];
+    NSString *distString  = [numberFormatter stringFromNumber:@([Utils convertDistanceValue:dist])];
+    NSString *speedString = [numberFormatter stringFromNumber:@([Utils convertSpeedValue:avgSpd])];
+
+    NSString *stats = [NSString stringWithFormat:format,
+                       distString,
+                       climbString,
+                       speedString,
+                       [Utils convertPaceValueToString:pace]];
+
+    size = [stats sizeWithAttributes:fontAttrs];
+    x = bounds.origin.x + bounds.size.width/2.0 - size.width/2.0;
+    [stats drawAtPoint:NSMakePoint(x, y) withAttributes:fontAttrs];
 }
 
 
@@ -3091,7 +3106,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 				[self drawRoad:altPath
 						bounds:plotBounds];
 #endif
-				[[NSColor blackColor] set];
+				[[NSColor colorNamed:@"TextPrimary"] set];
 				[altPath setLineWidth:1.0];
 				[altPath setLineJoinStyle:NSLineJoinStyleRound];
 				[altPath stroke];
@@ -3410,7 +3425,8 @@ static float calcY(float ymin, float ymax, float h, float v)
 	[dropShadow setShadowOffset:NSMakeSize(+2.0,-2.0)];
 	[NSGraphicsContext saveGraphicsState];
 	[dropShadow set];
-	[[Utils colorFromDefaults:RCBDefaultBackgroundColor] set];
+	///[[Utils colorFromDefaults:RCBDefaultBackgroundColor] set];
+    [[NSColor colorNamed:@"BackgroundPrimary"] set];
 	[NSBezierPath fillRect:bounds];
 	[NSGraphicsContext restoreGraphicsState];
 

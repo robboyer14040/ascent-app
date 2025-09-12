@@ -4638,10 +4638,17 @@ static NSString * const kStravaRootBookmarkKey = @"StravaRootBookmarkData";
 
 - (BOOL)chooseStravaRootFolderAndSaveBookmarkFromWindow:(NSWindow *)win {
     NSOpenPanel *p = [NSOpenPanel openPanel];
+    p.title = @"Choose location for storing Strava media";
+    p.message = @"Strava photos and (maybe, in the future)videos will be downloaded and stored in the folder you specify";
+    p.prompt = @"Choose";
     p.canChooseFiles = NO;
     p.canChooseDirectories = YES;
     p.allowsMultipleSelection = NO;
     p.directoryURL = [NSURL fileURLWithPath:NSHomeDirectory()];
+    p.canChooseFiles = NO;
+    p.canChooseDirectories = YES;
+    // allow creating new folders right in the panel
+    p.canCreateDirectories = YES;
     if ([p runModal] != NSModalResponseOK) return NO;
 
     NSURL *folder = p.URL;

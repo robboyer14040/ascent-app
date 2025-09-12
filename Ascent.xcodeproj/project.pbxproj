@@ -13,7 +13,6 @@
 		D4450B5B2E5BD33A00AB39C3 /* NDRunLoopMessenger.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B582E5BD33A00AB39C3 /* NDRunLoopMessenger.m */; };
 		D4450B5C2E5BD33A00AB39C3 /* SingletonBase.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4450B5A2E5BD33A00AB39C3 /* SingletonBase.mm */; };
 		D4450B5D2E5BD33A00AB39C3 /* LatLong-UTMconversion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D4450B562E5BD33A00AB39C3 /* LatLong-UTMconversion.cpp */; };
-		D4450B702E5BDB8300AB39C3 /* ActivityStore.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B6F2E5BDB8300AB39C3 /* ActivityStore.m */; };
 		D4450B7D2E5BDC1C00AB39C3 /* OverrideData.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B7B2E5BDC1C00AB39C3 /* OverrideData.m */; };
 		D457D2B52E61FE4300D1DF73 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = D457D2B42E61FE4300D1DF73 /* Fonts */; };
 		D457D2ED2E6488B400D1DF73 /* StravaAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = D457D2EB2E6488B400D1DF73 /* StravaAPI.m */; };
@@ -30,6 +29,7 @@
 		D49F293F2E69FAB100C5B87C /* AscentApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = D49F293E2E69FAB100C5B87C /* AscentApplication.m */; };
 		D49F29442E6A52C500C5B87C /* AscentDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = D49F29432E6A52C500C5B87C /* AscentDocumentController.m */; };
 		D49F29482E6A61CA00C5B87C /* NSDocumentController+AscentForceSubclass.m in Sources */ = {isa = PBXBuildFile; fileRef = D49F29472E6A61CA00C5B87C /* NSDocumentController+AscentForceSubclass.m */; };
+		D4ACD46F2E74B34F00E430FF /* ActivityStore.m in Sources */ = {isa = PBXBuildFile; fileRef = D4ACD46E2E74B34F00E430FF /* ActivityStore.m */; };
 		D4C0CE8F2E5BE2C4003B55C4 /* fit_example.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C0CE8B2E5BE2C4003B55C4 /* fit_example.c */; };
 		D4C0CE902E5BE2C4003B55C4 /* fit_ram.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C0CE8E2E5BE2C4003B55C4 /* fit_ram.c */; };
 		D4CCE92A2E5049B900B46DB2 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4CCE9282E5049B900B46DB2 /* MainMenu.nib */; };
@@ -359,8 +359,6 @@
 		D4450B582E5BD33A00AB39C3 /* NDRunLoopMessenger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = NDRunLoopMessenger.m; path = OtherCode/NDRunLoopMessenger.m; sourceTree = SOURCE_ROOT; };
 		D4450B592E5BD33A00AB39C3 /* SingletonBase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SingletonBase.h; path = OtherCode/SingletonBase.h; sourceTree = SOURCE_ROOT; };
 		D4450B5A2E5BD33A00AB39C3 /* SingletonBase.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = SingletonBase.mm; path = OtherCode/SingletonBase.mm; sourceTree = SOURCE_ROOT; };
-		D4450B6E2E5BDB8300AB39C3 /* ActivityStore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ActivityStore.h; path = "../My Code/ActivityStore.h"; sourceTree = "<group>"; };
-		D4450B6F2E5BDB8300AB39C3 /* ActivityStore.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = ActivityStore.m; path = "../My Code/ActivityStore.m"; sourceTree = "<group>"; };
 		D4450B712E5BDBB400AB39C3 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		D4450B7A2E5BDC1C00AB39C3 /* OverrideData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = OverrideData.h; path = "My Code/OverrideData.h"; sourceTree = "<group>"; };
 		D4450B7B2E5BDC1C00AB39C3 /* OverrideData.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = OverrideData.m; path = "My Code/OverrideData.m"; sourceTree = "<group>"; };
@@ -402,6 +400,8 @@
 		D49F29452E6A52DA00C5B87C /* AscentDocumentController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AscentDocumentController.h; path = "My Code/AscentDocumentController.h"; sourceTree = "<group>"; };
 		D49F29462E6A5B1D00C5B87C /* ADQueuedRequest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ADQueuedRequest.h; sourceTree = "<group>"; };
 		D49F29472E6A61CA00C5B87C /* NSDocumentController+AscentForceSubclass.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "NSDocumentController+AscentForceSubclass.m"; path = "My Code/NSDocumentController+AscentForceSubclass.m"; sourceTree = "<group>"; };
+		D4ACD46D2E74B34F00E430FF /* ActivityStore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ActivityStore.h; path = "My Code/ActivityStore.h"; sourceTree = SOURCE_ROOT; };
+		D4ACD46E2E74B34F00E430FF /* ActivityStore.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = ActivityStore.m; path = "My Code/ActivityStore.m"; sourceTree = SOURCE_ROOT; };
 		D4C0CE8A2E5BE2C4003B55C4 /* fit_example.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = fit_example.h; path = "My Code/FIT/fit_example.h"; sourceTree = "<group>"; };
 		D4C0CE8B2E5BE2C4003B55C4 /* fit_example.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fit_example.c; path = "My Code/FIT/fit_example.c"; sourceTree = "<group>"; };
 		D4C0CE8C2E5BE2C4003B55C4 /* fit_include.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = fit_include.h; path = "My Code/FIT/fit_include.h"; sourceTree = "<group>"; };
@@ -897,8 +897,8 @@
 		D489E0EA2E6D10D60076E5DC /* Database */ = {
 			isa = PBXGroup;
 			children = (
-				D4450B6E2E5BDB8300AB39C3 /* ActivityStore.h */,
-				D4450B6F2E5BDB8300AB39C3 /* ActivityStore.m */,
+				D4ACD46D2E74B34F00E430FF /* ActivityStore.h */,
+				D4ACD46E2E74B34F00E430FF /* ActivityStore.m */,
 				D489E0EB2E6D113A0076E5DC /* DatabaseManager.h */,
 				D489E0EC2E6D11840076E5DC /* DatabaseManager.m */,
 				D489E0F12E6D13C60076E5DC /* IdentifierStore.h */,
@@ -2013,7 +2013,6 @@
 				D4F13CB62E4EAE4600462944 /* EquipmentSelectorWindowController.mm in Sources */,
 				D4F13CB72E4EAE4600462944 /* AscentIntervalFormatter.mm in Sources */,
 				D4F13CB82E4EAE4600462944 /* BrowserColumnsWindowController.mm in Sources */,
-				D4450B702E5BDB8300AB39C3 /* ActivityStore.m in Sources */,
 				D4F13CB92E4EAE4600462944 /* TCPServer.m in Sources */,
 				D489E0F62E6D13D20076E5DC /* LibraryController.m in Sources */,
 				D4C0CE8F2E5BE2C4003B55C4 /* fit_example.c in Sources */,
@@ -2134,6 +2133,7 @@
 				D4F13D212E4EAE4600462944 /* BackupNagController.mm in Sources */,
 				D4F13D222E4EAE4600462944 /* DataHUDView.mm in Sources */,
 				D4450B3C2E5BCF1700AB39C3 /* HUDWindow.m in Sources */,
+				D4ACD46F2E74B34F00E430FF /* ActivityStore.m in Sources */,
 				D4450B3D2E5BCF1700AB39C3 /* interp.c in Sources */,
 				D4F13D232E4EAE4600462944 /* PrefsBackup.mm in Sources */,
 				D4F13D242E4EAE4600462944 /* EquipmentBoxView.mm in Sources */,

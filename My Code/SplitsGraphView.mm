@@ -45,7 +45,8 @@
 		selectedLapStartTime = selectedLapEndTime = -42.0;
 		textFontAttrs = [[NSMutableDictionary alloc] init];
 		[textFontAttrs setObject:[NSFont systemFontOfSize:18] forKey:NSFontAttributeName];
-		[textFontAttrs setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
+		[textFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"]
+                          forKey:NSForegroundColorAttributeName];
     }
     return self;
 }
@@ -122,7 +123,7 @@
 	bounds.origin.x += Y_AXIS_WIDTH;
 	bounds.size.width -= (Y_AXIS_WIDTH + 3.0);
 	bounds.size.height -= 4.0;
-	[tickFontAttrs setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
+	[tickFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"] forKey:NSForegroundColorAttributeName];
 	float incr;
 	if (xAxisIsTime)
 	{
@@ -199,7 +200,7 @@
 	NSRect bounds = [self drawBounds];
 	float x = bounds.origin.x + bounds.size.width - (size.width + 4.0);
 	float y = bounds.origin.y +  bounds.size.height - (size.height) + 2.0;
-	[[[NSColor blackColor] colorWithAlphaComponent:0.6] set];
+	[[[NSColor colorNamed:@"TextPrimary"] colorWithAlphaComponent:0.6] set];
 	[s drawAtPoint:NSMakePoint(x,y) withAttributes:fontAttrs];
 }	
 
@@ -222,18 +223,18 @@
 
 - (void)drawRect:(NSRect)rect 
 {
-	[[Utils colorFromDefaults:RCBDefaultBackgroundColor] set];
+    [[NSColor colorNamed:@"BackgroundPrimary"] set];
 	[NSBezierPath fillRect:[self bounds]];
-	[[[NSColor blackColor] colorWithAlphaComponent:0.6] set];
+	[[[NSColor colorNamed:@"TextPrimary"] colorWithAlphaComponent:0.6] set];
 	[NSBezierPath setDefaultLineWidth:1.0];
 	[NSBezierPath strokeRect:[self bounds]];
 	
 	if (splitArray && ([splitArray count] > 0))
 	{
-		int numSplits = [splitArray count];
+        NSUInteger numSplits = [splitArray count];
 		if (numSplits >= 1)
 		{
-			int num = [splitArray count];
+            NSUInteger num = [splitArray count];
 			if (num > 0)
 			{
 				SplitTableItem* ti = [splitArray objectAtIndex:num-1];
@@ -304,7 +305,7 @@
 								r.origin.y = yBottom;
 								r.size.height = valH;
 							}
-							[[NSColor blackColor] set];
+							[[NSColor colorNamed:@"TextPrimary"] set];
 							[NSBezierPath setDefaultLineWidth:0.5];
 							[NSBezierPath strokeRect:r];
 							[sti setTrackingRect:r];
@@ -337,8 +338,8 @@
 		NSSize size = [s sizeWithAttributes:textFontAttrs];
 		float x = dbounds.origin.x + dbounds.size.width/2.0 - size.width/2.0;
 		float y = (dbounds.size.height/2.0) - (size.height/2.0);
-		[textFontAttrs setObject:[[NSColor blackColor] colorWithAlphaComponent:0.25] forKey:NSForegroundColorAttributeName];
-		[s drawAtPoint:NSMakePoint(x,y) 
+		[textFontAttrs setObject:[[NSColor colorNamed:@"TextPrimary"] colorWithAlphaComponent:0.25] forKey:NSForegroundColorAttributeName];
+		[s drawAtPoint:NSMakePoint(x,y)
 		withAttributes:textFontAttrs];
 	}
 }

@@ -356,11 +356,11 @@ BOOL terraServerMap(int dt)
 		NSFont* font = [NSFont systemFontOfSize:24];
 		textFontAttrs = [[NSMutableDictionary alloc] init];
 		[textFontAttrs setObject:font forKey:NSFontAttributeName];
-		[textFontAttrs setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
+		[textFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"] forKey:NSForegroundColorAttributeName];
 		font = [NSFont boldSystemFontOfSize:7.0];
 		mileageMarkerTextAttrs = [[NSMutableDictionary alloc] init];
 		[mileageMarkerTextAttrs setObject:font forKey:NSFontAttributeName];
-		[mileageMarkerTextAttrs setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
+		[mileageMarkerTextAttrs setObject:[NSColor colorNamed:@"TextPrimary"] forKey:NSForegroundColorAttributeName];
 		dataInProgress = [[NSMutableData data] retain];
 		cacheFilePath = [[Utils getMapTilesPath] retain];
 		connection = nil;
@@ -1124,7 +1124,7 @@ BOOL intersectsExistingRect(NSRect* rects, int numRects, NSRect r)
 		NSSize size = [s sizeWithAttributes:fontAttrs];
 		float lxoff = ((r.size.width - size.width)/2.0) - 1;
 		float lyoff = 11.0;
-		[fontAttrs setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
+		[fontAttrs setObject:[NSColor colorNamed:@"TextPrimary"] forKey:NSForegroundColorAttributeName];
 		[s drawAtPoint:NSMakePoint((int)(r.origin.x + lxoff), (int)(r.origin.y + lyoff + 1.0)) withAttributes:fontAttrs];
 	}
 	
@@ -1144,7 +1144,7 @@ BOOL intersectsExistingRect(NSRect* rects, int numRects, NSRect r)
 {
    if ([currentMapImages count] > 0)
    {
-      [[NSColor colorWithCalibratedRed:(217.0/255.0) green:(217.0/255.0) blue:(217.0/255.0) alpha:1.0] set];
+       [[NSColor colorNamed:@"BackgroundPrimary"] set];
       NSRect arect;
       arect.origin.x = 0.0;
       arect.origin.y = 0.0;
@@ -2003,7 +2003,7 @@ struct tStringInfo
 		{
 			[NSGraphicsContext saveGraphicsState];
 			[dropShadow set];
-			[[Utils colorFromDefaults:RCBDefaultBackgroundColor] set];
+            [[NSColor colorNamed:@"BackgroundPrimary"] set];
 			[NSBezierPath fillRect:dbounds];
 			[NSGraphicsContext restoreGraphicsState];
 		}
@@ -2041,21 +2041,22 @@ struct tStringInfo
 		
 		if (currentTrack == nil)
 		{
-			[[NSColor colorWithCalibratedRed:(217.0/255.0) green:(217.0/255.0) blue:(217.0/255.0) alpha:1.0] set];
+            [[NSColor colorNamed:@"BackgroundPrimary"] set];
 			[NSBezierPath fillRect:dbounds];
 		}
-		[[self window] flushWindow];
+		///[[self window] flushWindow];
 	}
 	else
 	{
-		[[Utils colorFromDefaults:RCBDefaultBackgroundColor] set];
+        [[NSColor colorNamed:@"BackgroundPrimary"] set];
 		[NSBezierPath fillRect:dbounds];
 		NSString* s = currentTrack ? @"No Location Data" : @"No Activity Selected";
 		NSSize size = [s sizeWithAttributes:textFontAttrs];
 		float x = dbounds.origin.x + dbounds.size.width/2.0 - size.width/2.0;
 		float y = (dbounds.size.height/2.0) - (size.height/2.0);
-		[textFontAttrs setObject:[[NSColor blackColor] colorWithAlphaComponent:0.25] forKey:NSForegroundColorAttributeName];
-		[s drawAtPoint:NSMakePoint(x,y) 
+		[textFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"]
+                          forKey:NSForegroundColorAttributeName];
+		[s drawAtPoint:NSMakePoint(x,y)
 		withAttributes:textFontAttrs];
 	}
 	if (hasPoints) [self drawAnimationBitmap:YES

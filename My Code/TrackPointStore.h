@@ -8,6 +8,8 @@
 
 @class DatabaseManager;
 @class TrackPoint;
+@class Track;
+
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,10 +39,10 @@ typedef struct {
 - (BOOL)createSchemaIfNeeded:(NSError **)error;
 
 // CRUD
-- (BOOL)replacePointsForTrackID:(int64_t)trackID
-                       fromRows:(const TPRow *)rows
-                          count:(NSUInteger)count
-                          error:(NSError **)error;
+- (BOOL)replacePointsForTrack:(Track *)t
+                      fromRows:(const TPRow *)rows
+                         count:(NSUInteger)count
+                        error:(NSError **)error;
 
 - (BOOL)deletePointsForTrackID:(int64_t)trackID
                          error:(NSError **)error;

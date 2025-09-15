@@ -52,6 +52,7 @@
 #import "NSImage+Tint.h"
 #import "WeatherAPI.h"
 #import "LocationAPI.h"
+#import "TrackPointStore.h"
 
 #import <unistd.h>			// for sleep
 
@@ -6784,6 +6785,7 @@ int searchTagToMask(int searchTag)
 - (void)_fetchMissingItemsForTrack:(Track*)track  selectTrackAfter:(BOOL)selectAfter
 {
     BOOL stravaFirst = ShiftKeyIsDown() || ([track.points count] == 0);
+  
     if (stravaFirst)
     {
         [self startProgressIndicator:@"fetching detailed Strava info..."];
@@ -6811,6 +6813,15 @@ int searchTagToMask(int searchTag)
         }];
     }
     if (!stravaFirst) {
+        if (track.points.count == 0 && track.pointsEverSaved)
+        {
+            TrackPointStore *tpStore = [[TrackPointStore alloc] init];
+            NSError* err = nil;
+            NSArray* pts = [tpStore loadPointsForTrackUUID:track.uuid error:&err];
+            if (pts) {
+                track.points = [[pts mutableCopy] autorelease];
+            }
+        }
         [self _fetchWeatherAndGEOInfoForTrack:track
                              selectTrackAfter:NO];
     }

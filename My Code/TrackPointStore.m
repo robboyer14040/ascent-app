@@ -6,6 +6,8 @@
 #import "TrackPointStore.h"
 #import "DatabaseManager.h"
 #import "TrackPoint.h"
+#import "Track.h"
+
 
 #pragma mark - Helpers
 
@@ -159,8 +161,8 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
             sqlite3_extended_result_codes(db, 1);
 
             // Sanity: log open state and connection identity
-            int ro = sqlite3_db_readonly(db, NULL);
-            const char *dbfile = sqlite3_db_filename(db, "main");
+            ///int ro = sqlite3_db_readonly(db, NULL);
+            ///const char *dbfile = sqlite3_db_filename(db, "main");
 
             // 0) prove there are no stray statements that might be finalized elsewhere
             int stray = 0;
@@ -317,14 +319,22 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
 
 #pragma mark Writes
 
-- (BOOL)replacePointsForTrackID:(int64_t)trackID
-                       fromRows:(const TPRow *)rows
-                          count:(NSUInteger)count
-                          error:(NSError **)error
+
+
+- (BOOL)replacePointsForTrack:(Track *)t
+                      fromRows:(const TPRow *)rows
+                         count:(NSUInteger)count
+                         error:(NSError **)error
 {
-    // Defensive copy so caller's buffer may go out of scope
+    BOOL already = NO;
+    @try { already = [t pointsEverSaved]; } @catch (__unused id e) {}
+    if (already) {
+        NSLog(@"[TPStore] Skipping points for %@ (pointsEverSaved=YES)", [t uuid]);
+        return YES;
+    }
+
     TPRow *rowsCopy = NULL;
-    if (count) {
+    if (count > 0) {
         size_t bytes = count * sizeof(TPRow);
         rowsCopy = (TPRow *)malloc(bytes);
         if (!rowsCopy) {
@@ -342,66 +352,115 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
 
     [_dbm performWrite:^(sqlite3 *db, DBErrorBlock fail) {
 
-        // Delete existing points for this track
-        sqlite3_stmt *del = NULL;
-        if (sqlite3_prepare_v2(db, "DELETE FROM points WHERE track_id=?1;", -1, &del, NULL) != SQLITE_OK) {
-            fail(TPError(db, @"Prepare delete points failed"));
-            goto done;
+        NSString *uuid = [t respondsToSelector:@selector(uuid)] ? [t uuid] : nil;
+        NSLog(@"[TPStore] Starting point save: uuid=%@", uuid);
+
+        if (uuid.length == 0) {
+            NSError *e = [NSError errorWithDomain:@"Ascent.DB.TrackPoints" code:-1
+                                         userInfo:@{NSLocalizedDescriptionKey:@"Track uuid is required"}];
+            fail(e);
+            return;
         }
-        sqlite3_bind_int64(del, 1, trackID);
-        if (sqlite3_step(del) != SQLITE_DONE) {
-            fail(TPError(db, @"Delete points failed"));
-            sqlite3_finalize(del);
-            goto done;
-        }
-        sqlite3_finalize(del);
 
-        // Insert replacements
-        const char *insSQL =
-        "INSERT INTO points("
-        " track_id, wall_clock_delta_s, active_time_delta_s, "
-        " latitude_e7, longitude_e7, orig_altitude_cm, heartrate_bpm, cadence_rpm, "
-        " temperature_c10, speed_mps, power_w, orig_distance_m, flags)"
-        " VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13);";
-
-        sqlite3_stmt *ins = NULL;
-        if (sqlite3_prepare_v2(db, insSQL, -1, &ins, NULL) != SQLITE_OK) {
-            fail(TPError(db, @"Prepare insert failed"));
-            goto done;
-        }
-        ///NSLog(@"writing %d points for track %d...", (int)count, (int)trackID);
-        for (NSUInteger i = 0; i < count; i++) {
-            const TPRow *r = &rowsCopy[i];
-
-            sqlite3_bind_int64(ins, 1,  trackID);
-            sqlite3_bind_int64(ins, 2,  r->wall_clock_delta_s);
-            sqlite3_bind_int64(ins, 3,  r->active_time_delta_s);
-            sqlite3_bind_double   (ins, 4,  r->latitude_e7);
-            sqlite3_bind_double   (ins, 5,  r->longitude_e7);
-            sqlite3_bind_double   (ins, 6,  r->orig_altitude_cm);
-            sqlite3_bind_double   (ins, 7,  r->heartrate_bpm);
-            sqlite3_bind_double   (ins, 8,  r->cadence_rpm);
-            sqlite3_bind_double   (ins, 9,  r->temperature_c10);
-            sqlite3_bind_double(ins,10,  r->speed_mps);
-            sqlite3_bind_double(ins,11,  r->power_w);
-            sqlite3_bind_double(ins,12,  r->orig_distance_m);
-            sqlite3_bind_int   (ins,13,  r->flags);
-
-            int rc = sqlite3_step(ins);
-            if (rc != SQLITE_DONE) {
-                int xrc = sqlite3_extended_errcode(db);
-                NSString *msg = [NSString stringWithFormat:@"Insert point failed (rc=%d,xrc=%d): %s",
-                                 rc, xrc, sqlite3_errmsg(db)];
-                fail(TPError(db, msg));
-                sqlite3_reset(ins);
-                break;
+        // --- Resolve parent id ---
+        sqlite3_int64 trackID = 0;
+        sqlite3_stmt *q = NULL;
+        if (sqlite3_prepare_v2(db, "SELECT id FROM activities WHERE uuid=?1;", -1, &q, NULL) == SQLITE_OK) {
+            sqlite3_bind_text(q, 1, uuid.UTF8String, -1, SQLITE_TRANSIENT);
+            if (sqlite3_step(q) == SQLITE_ROW) {
+                trackID = sqlite3_column_int64(q, 0);
             }
-            sqlite3_reset(ins);
+        }
+        if (q) sqlite3_finalize(q);
+
+        NSLog(@"[TPStore] Resolved trackID=%lld for uuid=%@", trackID, uuid);
+        if (trackID == 0) {
+            NSLog(@"[TPStore] ERROR: No activities row for uuid=%@", uuid);
+            NSError *e = [NSError errorWithDomain:@"Ascent.DB.TrackPoints" code:-2
+                                         userInfo:@{NSLocalizedDescriptionKey:
+                                                        [NSString stringWithFormat:@"No activities row for uuid=%@", uuid]}];
+            fail(e);
+            return;
         }
 
-        sqlite3_finalize(ins);
+        // --- Check parent actually exists (defensive) ---
+        sqlite3_stmt *chk = NULL;
+        if (sqlite3_prepare_v2(db, "SELECT COUNT(1) FROM activities WHERE id=?1;", -1, &chk, NULL) == SQLITE_OK) {
+            sqlite3_bind_int64(chk, 1, trackID);
+            if (sqlite3_step(chk) == SQLITE_ROW) {
+                int exists = sqlite3_column_int(chk, 0);
+                NSLog(@"[TPStore] Parent row exists? %d (id=%lld)", exists, trackID);
+            }
+        }
+        if (chk) sqlite3_finalize(chk);
 
-    done: ;
+        // --- Delete existing points ---
+        sqlite3_stmt *del = NULL;
+        if (sqlite3_prepare_v2(db, "DELETE FROM points WHERE track_id=?1;", -1, &del, NULL) == SQLITE_OK) {
+            sqlite3_bind_int64(del, 1, trackID);
+            int drc = sqlite3_step(del);
+            NSLog(@"[TPStore] DELETE points rc=%d", drc);
+        }
+        if (del) sqlite3_finalize(del);
+
+        // --- Insert replacements ---
+        if (count > 0) {
+            NSLog(@"[TPStore] Inserting %lu points for trackID=%lld", (unsigned long)count, trackID);
+
+            const char *insSQL =
+            "INSERT INTO points("
+            " track_id, wall_clock_delta_s, active_time_delta_s, "
+            " latitude_e7, longitude_e7, orig_altitude_cm, heartrate_bpm, cadence_rpm, "
+            " temperature_c10, speed_mps, power_w, orig_distance_m, flags)"
+            " VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13);";
+
+            sqlite3_stmt *ins = NULL;
+            if (sqlite3_prepare_v2(db, insSQL, -1, &ins, NULL) == SQLITE_OK) {
+                for (NSUInteger i = 0; i < count; i++) {
+                    const TPRow *r = &rowsCopy[i];
+
+                    sqlite3_bind_int64 (ins, 1,  trackID);
+                    sqlite3_bind_int64 (ins, 2,  r->wall_clock_delta_s);
+                    sqlite3_bind_int64 (ins, 3,  r->active_time_delta_s);
+                    sqlite3_bind_double(ins, 4,  r->latitude_e7);
+                    sqlite3_bind_double(ins, 5,  r->longitude_e7);
+                    sqlite3_bind_double(ins, 6,  r->orig_altitude_cm);
+                    sqlite3_bind_double(ins, 7,  r->heartrate_bpm);
+                    sqlite3_bind_double(ins, 8,  r->cadence_rpm);
+                    sqlite3_bind_double(ins, 9,  r->temperature_c10);
+                    sqlite3_bind_double(ins,10,  r->speed_mps);
+                    sqlite3_bind_double(ins,11,  r->power_w);
+                    sqlite3_bind_double(ins,12,  r->orig_distance_m);
+                    sqlite3_bind_int   (ins,13,  r->flags);
+
+                    int rc = sqlite3_step(ins);
+                    if (rc != SQLITE_DONE) {
+                        int xrc = sqlite3_extended_errcode(db);
+                        NSLog(@"[TPStore] Insert failed at row %lu rc=%d xrc=%d msg=%s",
+                              (unsigned long)i, rc, xrc, sqlite3_errmsg(db));
+                        NSString *msg = [NSString stringWithFormat:
+                                         @"Insert point failed (rc=%d,xrc=%d): %s",
+                                         rc, xrc, sqlite3_errmsg(db)];
+                        fail(TPError(db, msg));
+                        sqlite3_reset(ins);
+                        break;
+                    } else {
+                        if (i < 3 || i == count-1) {
+                            NSLog(@"[TPStore] Insert ok for row %lu (sample logging)", (unsigned long)i);
+                        }
+                    }
+                    sqlite3_reset(ins);
+                    sqlite3_clear_bindings(ins);
+                }
+            } else {
+                NSLog(@"[TPStore] ERROR preparing insert: %s", sqlite3_errmsg(db));
+                fail(TPError(db, @"Prepare insert points failed"));
+            }
+            if (ins) sqlite3_finalize(ins);
+        }
+
+        @try { [t setValue:@(YES) forKey:@"pointsEverSaved"]; } @catch (__unused id e) {}
+
     } completion:^(NSError * _Nullable e) {
         if (e) { ok = NO; err = [e retain]; }
         if (rowsCopy) free(rowsCopy);
@@ -414,6 +473,7 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
     if (!ok && error) *error = [err autorelease];
     return ok;
 }
+
 
 - (BOOL)deletePointsForTrackID:(int64_t)trackID error:(NSError **)error {
     __block BOOL ok = YES; __block NSError *err = nil;

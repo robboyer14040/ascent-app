@@ -58,6 +58,7 @@
 #if DEBUG_LEAKS
 	NSLog(@"Transparent MAP view dealloc...rc:%d", [self retainCount]);
 #endif
+    [super dealloc];
 }
 
 

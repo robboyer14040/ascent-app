@@ -124,7 +124,7 @@ static float sCumulativeDeltaY = 0.0;			// for scrolling/zoom
 
 - (void) dealloc
 {
-
+    [super dealloc];
 }
 
 
@@ -231,7 +231,10 @@ static float sCumulativeDeltaY = 0.0;			// for scrolling/zoom
 
 - (void) dealloc
 {
+    [super dealloc];
 }
+
+
 @end
 
 
@@ -473,7 +476,7 @@ static NSString* tileToQuadKey(int tx, int ty, int zl)
 
 -(void) queueHTTPFetch
 {
-   int num = [tileFetchQueue count];
+    NSUInteger num = [tileFetchQueue count];
   // if ((num > 0) && tileFetchThreadRunning)
     if ((num > 0) && [fetcher tileFetchThreadRunning])
    {
@@ -805,7 +808,7 @@ static double getMetersPerTile(int zoom)
 	// set up display path
 	[plottedPoints removeAllObjects];
 	NSMutableArray* points = [currentTrack goodPoints];
-	int numPts = [points count];
+    NSUInteger numPts = [points count];
 	if (numPts > 2)
 	{
 		double northing, easting;
@@ -831,7 +834,11 @@ static double getMetersPerTile(int zoom)
 	overrideDefaults = NO;
 	float maxarr[kNumPlotTypes];
 	float minarr[kNumPlotTypes];
-	for (int i=0; i<kNumPlotTypes; i++) { maxarr[i] = 0.0, minarr[i] = 0.0; }
+	for (int i=0; i<kNumPlotTypes; i++)
+    {
+        maxarr[i] = 0.0;
+        minarr[i] = 0.0;
+    }
 	if (numPts > 1)
 	{
 		maxarr[kSpeed] = [[points valueForKeyPath:@"@max.speed"] floatValue];
@@ -1050,7 +1057,7 @@ static double getMetersPerTile(int zoom)
 
 - (NSPoint) findNearestPointToWallClockDelta:(NSTimeInterval)delta track:(Track*)trk
 {
-	int num = [plottedPoints count];
+    NSUInteger num = [plottedPoints count];
 	int i = 0;
 	PathPoint* pt = nil;
 	for (i=0; i<num; i++)
@@ -1106,7 +1113,7 @@ BOOL intersectsExistingRect(NSRect* rects, int numRects, NSRect r)
 	NSMutableDictionary *fontAttrs = [[NSMutableDictionary alloc] init] ;
 	[fontAttrs setObject:font forKey:NSFontAttributeName];
 	NSMutableArray* laps = [currentTrack laps];
-    NSUInteger numLaps = [laps count];
+    int numLaps = (int)[laps count];
 	int i;
 	for (i=numLaps-1; i>=0; i--)
 	{
@@ -1432,8 +1439,8 @@ struct tStringInfo
 
 - (NSArray*)drawTrackPath
 {
-	[NSBezierPath setDefaultLineJoinStyle:NSMiterLineJoinStyle];
-	[NSBezierPath setDefaultLineCapStyle:NSSquareLineCapStyle];
+	[NSBezierPath setDefaultLineJoinStyle:NSLineJoinStyleMiter];
+	[NSBezierPath setDefaultLineCapStyle:NSLineCapStyleSquare];
 	[NSBezierPath setDefaultLineWidth:2.5];
     NSUInteger numPts = [plottedPoints count];
 	int count = 0;
@@ -1744,7 +1751,7 @@ struct tStringInfo
 {
 	BOOL getCachedOnly = dragging || [self inLiveResize];
 
-	int num = [currentMapImages count];
+    NSUInteger num = [currentMapImages count];
 	int numCached = 0;
 	for (int i=0; i<num; i++)
 	{
@@ -2334,8 +2341,8 @@ struct tStringInfo
 
 -(void)centerAtStart
 {
-   int num = [plottedPoints count];
-   if (num > 0)
+    NSUInteger num = [plottedPoints count];
+    if (num > 0)
    {
       for (int i=0; i<num; i++)
       {
@@ -2352,10 +2359,10 @@ struct tStringInfo
 
 -(void)centerAtEnd
 {
-   int num = [plottedPoints count];
+    NSUInteger num = [plottedPoints count];
    if (num > 0)
    {
-      for (int i=num-1; i>=0; i--)
+      for (NSUInteger i=num-1; i>=0; i--)
       {
          PathPoint* pt = [plottedPoints objectAtIndex:i];
          if ([pt valid])
@@ -2384,7 +2391,7 @@ static NSPoint dragPoint;
 - (void)mouseDown:(NSEvent*) ev
 {
 	if (!enableMapInteraction) return;
-	int i = [ev clickCount];
+    NSInteger i = [ev clickCount];
 	if((!isDetailedMap) &&(2==i))
 	{
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"OpenMapDetail" object:self];

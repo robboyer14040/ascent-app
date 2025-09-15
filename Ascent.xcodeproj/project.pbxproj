@@ -386,7 +386,7 @@
 		D489E0EB2E6D113A0076E5DC /* DatabaseManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DatabaseManager.h; path = "My Code/DatabaseManager.h"; sourceTree = SOURCE_ROOT; };
 		D489E0EC2E6D11840076E5DC /* DatabaseManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = DatabaseManager.m; path = "My Code/DatabaseManager.m"; sourceTree = SOURCE_ROOT; };
 		D489E0EE2E6D11B90076E5DC /* TrackPointStore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TrackPointStore.h; path = "My Code/TrackPointStore.h"; sourceTree = SOURCE_ROOT; };
-		D489E0EF2E6D12100076E5DC /* TrackPointStore.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = TrackPointStore.m; path = "My Code/TrackPointStore.m"; sourceTree = SOURCE_ROOT; };
+		D489E0EF2E6D12100076E5DC /* TrackPointStore.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = TrackPointStore.m; path = "My Code/TrackPointStore.m"; sourceTree = SOURCE_ROOT; };
 		D489E0F12E6D13C60076E5DC /* IdentifierStore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = IdentifierStore.h; path = "My Code/IdentifierStore.h"; sourceTree = SOURCE_ROOT; };
 		D489E0F22E6D13C60076E5DC /* IdentifierStore.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = IdentifierStore.m; path = "My Code/IdentifierStore.m"; sourceTree = SOURCE_ROOT; };
 		D489E0F42E6D13D20076E5DC /* LibraryController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = LibraryController.h; path = "My Code/LibraryController.h"; sourceTree = SOURCE_ROOT; };

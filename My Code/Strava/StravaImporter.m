@@ -735,7 +735,13 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
                     // No wrapping needed; your fetch returns {type:{data:[…]}} (or we already normalized it).
                     NSArray *pts = PointsFromStreams(streamsByType);
                     if (pts.count) {
-                        @try { [track setValue:pts forKey:@"points"]; } @catch (__unused id e) {}
+                        @try {
+                            [track setValue:pts forKey:@"points"];
+                            // When you assemble points for a new Track:
+                            track.pointsCount    = (int)pts.count;
+                            track.pointsEverSaved = NO; // default for new track
+
+                        } @catch (__unused id e) {}
                         if ([track respondsToSelector:@selector(fixupTrack)]) [track fixupTrack];
                     }
                     [streamsByType release]; streamsByType = nil;

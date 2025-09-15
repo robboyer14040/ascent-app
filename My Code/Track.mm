@@ -121,7 +121,6 @@
 @synthesize srcKilojoules;
 @synthesize srcElapsedTime;
 @synthesize srcMovingTime;
-@synthesize gpxFileName;
 
 
 - (id)init
@@ -157,6 +156,9 @@
     lapInfoArray = [[NSMutableArray alloc] init];
     markers = [[NSMutableArray alloc] init];
     goodPoints = [[NSMutableArray alloc] init];
+    _pointsEverSaved = NO;
+    _pointsCount = 0;
+    _dirtyMask = 0;
     name = @"";
     creationTime = nil;
     creationTimeOverride = nil;
@@ -212,7 +214,6 @@
     [points release];
     [markers release];
     [equipmentUUIDs release];
-    [gpxFileName release];
     [overrideData release];
      free(peakIntervalData);
     [_photoURLs release];

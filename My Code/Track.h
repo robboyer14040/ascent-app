@@ -19,6 +19,13 @@ enum
    kValidHRMax    = 190,      // fixme make this a preference
 };
 
+enum
+{
+    kDirtyNone     = 0,
+    kDirtyMeta     = 1 << 0, // activity row (name/notes/flags/etc.)
+    kDirtyLaps     = 1 << 1, // laps array changed
+    // (no points dirty bit: points are immutable once saved)
+};
 
 struct tZoneData
 {
@@ -156,7 +163,10 @@ struct tPeakIntervalData
 @property(nonatomic) BOOL hasDistanceData;
 @property(nonatomic, retain) NSArray<NSURL *> *photoURLs;  // array of file or web URLs
 @property(nonatomic, retain) NSArray<NSString*> *localMediaItems;  // array of filenames, stored somewhere locally
-@property(nonatomic, retain) NSString* gpxFileName;  // points storage
+@property(nonatomic, assign) BOOL pointsEverSaved;     // mirrors activities.points_saved
+@property(nonatomic, assign) int  pointsCount;         // number of points loaded
+@property(nonatomic, assign) uint32_t dirtyMask;       // meta bits, laps bits, etc.
+
 
 - (NSComparisonResult) comparator:(Track*)track;
 -(void) doFixupAndCalcGradients;

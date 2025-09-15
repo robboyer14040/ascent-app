@@ -2587,8 +2587,10 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
             if (st)
                 sqlite3_finalize(st);
         }
+
         
-        if (trackID) {
+        if (([uuid length] > 0) && !t.pointsEverSaved) {
+            NSLog(@"saving points for %s", [t.name UTF8String]);
             NSArray *pts = [t respondsToSelector:@selector(points)] ? [t points] : nil;
             NSUInteger n = pts.count;
             if (n) {
@@ -2608,7 +2610,10 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
                     rows[i].power_w = [p power];
                     rows[i].flags = [p flags];
                 }
-                BOOL ok = [points replacePointsForTrackID:trackID fromRows:rows count:n error:&err];
+                BOOL ok = [points replacePointsForTrack:t
+                                               fromRows:rows
+                                                  count:n
+                                                  error:&err];
                 free(rows);
                 if (!ok) break;
             }

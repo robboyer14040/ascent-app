@@ -41,9 +41,9 @@ static BOOL TPResolveTrackIDForUUID(sqlite3 *db, NSString *uuid, int64_t *outID)
 
 // Convert a TPRow into a TrackPoint (MRC-safe)
 static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
-    const double kE7 = 1e7;
-    const double kCM = 100.0;
-    const double kM_TO_MI = 0.00062137119223733397;
+//    const double kE7 = 1e7;
+//    const double kCM = 100.0;
+//    const double kM_TO_MI = 0.00062137119223733397;
 
     TrackPoint *tp = [TrackPoint new];
 
@@ -153,50 +153,36 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
     __block NSArray *result = nil;
     __block NSError *err = nil;
 
-    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-    [_dbm performRead:^(sqlite3 *db) {
+    [_dbm performReadSync:^(sqlite3 *db) {
         @autoreleasepool {
-            if (!db) { err = TPError(NULL, @"DB handle is NULL"); goto done; }
-
+            if (!db)
+            {
+                err = TPError(NULL, @"DB handle is NULL");
+                return;
+            }
             sqlite3_extended_result_codes(db, 1);
-
-            // Sanity: log open state and connection identity
-            ///int ro = sqlite3_db_readonly(db, NULL);
-            ///const char *dbfile = sqlite3_db_filename(db, "main");
-
-            // 0) prove there are no stray statements that might be finalized elsewhere
-            int stray = 0;
-            for (sqlite3_stmt *p = sqlite3_next_stmt(db, NULL); p; p = sqlite3_next_stmt(db, p)) stray++;
-            if (stray) NSLog(@"[TP] WARNING: %d statements already active on this connection", stray);
 
             // 1) resolve track id
             int64_t trackID = 0;
             if (!TPResolveTrackIDForUUID(db, uuid, &trackID)) {
                 err = TPError(db, [NSString stringWithFormat:@"No activity row for uuid %@", uuid ?: @"(nil)"]);
-                goto done;
+                return;
             }
-            ///NSLog(@"reading points for track %d", (int)trackID);
+
             // 2) prepare
-            const char *sql =
-                "SELECT wall_clock_delta_s, active_time_delta_s, latitude_e7, longitude_e7, "
-                "       orig_altitude_cm, heartrate_bpm, cadence_rpm, temperature_c10, "
-                "       speed_mps, power_w, orig_distance_m, flags "
-                "FROM points WHERE track_id=?1 "
-                "ORDER BY wall_clock_delta_s ASC, active_time_delta_s ASC;";
+            static const char *sql =
+            "SELECT wall_clock_delta_s, active_time_delta_s, latitude_e7, longitude_e7, "
+            "       orig_altitude_cm, heartrate_bpm, cadence_rpm, temperature_c10, "
+            "       speed_mps, power_w, orig_distance_m, flags "
+            "FROM points WHERE track_id=?1 "
+            "ORDER BY wall_clock_delta_s ASC, active_time_delta_s ASC;";
 
             sqlite3_stmt *st = NULL;
             int rc = sqlite3_prepare_v2(db, sql, -1, &st, NULL);
             if (rc != SQLITE_OK || !st) {
                 err = TPError(db, [NSString stringWithFormat:@"prepare failed rc=%d xrc=%d: %s",
                                    rc, sqlite3_extended_errcode(db), sqlite3_errmsg(db)]);
-                goto done;
-            }
-
-            // 2a) prove the stmt belongs to THIS db
-            if (sqlite3_db_handle(st) != db) {
-                err = TPError(db, @"MISUSE: statement bound to a different sqlite3*");
-                sqlite3_finalize(st);
-                goto done;
+                return;
             }
 
             // 3) bind
@@ -205,63 +191,45 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
                 err = TPError(db, [NSString stringWithFormat:@"bind failed rc=%d xrc=%d: %s",
                                    rc, sqlite3_extended_errcode(db), sqlite3_errmsg(db)]);
                 sqlite3_finalize(st);
-                goto done;
+                return;
             }
 
             // 4) step
             NSMutableArray *accum = [NSMutableArray array];
-            rc = sqlite3_step(st);
+            while ((rc = sqlite3_step(st)) == SQLITE_ROW) {
+                TPRow r;
+                r.wall_clock_delta_s  = sqlite3_column_int64(st, 0);
+                r.active_time_delta_s = sqlite3_column_int64(st, 1);
+                r.latitude_e7         = (float)sqlite3_column_double(st, 2);
+                r.longitude_e7        = (float)sqlite3_column_double(st, 3);
+                r.orig_altitude_cm    = (float)sqlite3_column_double(st, 4);
+                r.heartrate_bpm       = (float)sqlite3_column_double(st, 5);
+                r.cadence_rpm         = (float)sqlite3_column_double(st, 6);
+                r.temperature_c10     = (float)sqlite3_column_double(st, 7);
+                r.speed_mps           = (float)sqlite3_column_double(st, 8);
+                r.power_w             = (float)sqlite3_column_double(st, 9);
+                r.orig_distance_m     = (float)sqlite3_column_double(st,10);
+                r.flags               = (uint32_t)sqlite3_column_int(st,11);
 
-            if (rc == SQLITE_ROW) {
-                // normal path
-                do {
-                    TPRow r;
-                    r.wall_clock_delta_s  = sqlite3_column_int64(st, 0);
-                    r.active_time_delta_s = sqlite3_column_int64(st, 1);
-                    r.latitude_e7         = (float)sqlite3_column_double(st, 2);
-                    r.longitude_e7        = (float)sqlite3_column_double(st, 3);
-                    r.orig_altitude_cm    = (float)sqlite3_column_double(st, 4);
-                    r.heartrate_bpm       = (float)sqlite3_column_double(st, 5);
-                    r.cadence_rpm         = (float)sqlite3_column_double(st, 6);
-                    r.temperature_c10     = (float)sqlite3_column_double(st, 7);
-                    r.speed_mps           = (float)sqlite3_column_double(st, 8);
-                    r.power_w             = (float)sqlite3_column_double(st, 9);
-                    r.orig_distance_m     = (float)sqlite3_column_double(st,10);
-                    r.flags               = (uint32_t)sqlite3_column_int(st,11);
+                TrackPoint *tp = TPMakeTrackPointFromRow(&r);
+                [accum addObject:tp];
+                [tp release];
+            }
 
-                    TrackPoint *tp = TPMakeTrackPointFromRow(&r);
-                    [accum addObject:tp];
-                    [tp release];
-                } while ((rc = sqlite3_step(st)) == SQLITE_ROW);
-
-                if (rc != SQLITE_DONE) {
-                    err = TPError(db, [NSString stringWithFormat:@"step mid-rows rc=%d xrc=%d: %s",
-                                       rc, sqlite3_extended_errcode(db), sqlite3_errmsg(db)]);
-                }
-            } else if (rc == SQLITE_DONE) {
-                // zero rows, OK
-            } else {
-                // *** THIS IS YOUR 101 CASE ***
-                int xrc = sqlite3_extended_errcode(db);
-                const char *em = sqlite3_errmsg(db);
-                // Dump a little more state to help find misuse source
-                int stray2 = 0;
-                for (sqlite3_stmt *p = sqlite3_next_stmt(db, NULL); p; p = sqlite3_next_stmt(db, p)) stray2++;
-                NSLog(@"[TP] step-first rc=%d xrc=%d msg=%s (active stmts now=%d)", rc, xrc, em?: "", stray2);
-                err = TPError(db, [NSString stringWithFormat:@"MISUSE on first step rc=%d xrc=%d: %s", rc, xrc, em]);
+            if (rc != SQLITE_DONE) {
+                err = TPError(db, [NSString stringWithFormat:@"step rc=%d xrc=%d: %s",
+                                   rc, sqlite3_extended_errcode(db), sqlite3_errmsg(db)]);
             }
 
             sqlite3_finalize(st);
-            if (!err) result = [[accum copy] retain];
+            if (!err) result = [accum copy];
         }
-    done: ;
-    } completion:^{ dispatch_semaphore_signal(sem); }];
-    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-    dispatch_release(sem);
+    }];
 
     if (err && error) *error = err;
     return result;
 }
+
 
 - (NSArray<TrackPoint *> *)loadPointsForTrackID:(int64_t)trackID error:(NSError **)error {
     __block NSArray *result = nil;
@@ -329,7 +297,7 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
     BOOL already = NO;
     @try { already = [t pointsEverSaved]; } @catch (__unused id e) {}
     if (already) {
-        NSLog(@"[TPStore] Skipping points for %@ (pointsEverSaved=YES)", [t uuid]);
+        NSLog(@"[TPStore] Skipping points save for %s (pointsEverSaved=YES)", [t.name UTF8String]);
         return YES;
     }
 
@@ -353,8 +321,6 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
     [_dbm performWrite:^(sqlite3 *db, DBErrorBlock fail) {
 
         NSString *uuid = [t respondsToSelector:@selector(uuid)] ? [t uuid] : nil;
-        NSLog(@"[TPStore] Starting point save: uuid=%@", uuid);
-
         if (uuid.length == 0) {
             NSError *e = [NSError errorWithDomain:@"Ascent.DB.TrackPoints" code:-1
                                          userInfo:@{NSLocalizedDescriptionKey:@"Track uuid is required"}];
@@ -373,9 +339,7 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
         }
         if (q) sqlite3_finalize(q);
 
-        NSLog(@"[TPStore] Resolved trackID=%lld for uuid=%@", trackID, uuid);
         if (trackID == 0) {
-            NSLog(@"[TPStore] ERROR: No activities row for uuid=%@", uuid);
             NSError *e = [NSError errorWithDomain:@"Ascent.DB.TrackPoints" code:-2
                                          userInfo:@{NSLocalizedDescriptionKey:
                                                         [NSString stringWithFormat:@"No activities row for uuid=%@", uuid]}];
@@ -383,30 +347,58 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
             return;
         }
 
-        // --- Check parent actually exists (defensive) ---
-        sqlite3_stmt *chk = NULL;
-        if (sqlite3_prepare_v2(db, "SELECT COUNT(1) FROM activities WHERE id=?1;", -1, &chk, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(chk, 1, trackID);
-            if (sqlite3_step(chk) == SQLITE_ROW) {
-                int exists = sqlite3_column_int(chk, 0);
-                NSLog(@"[TPStore] Parent row exists? %d (id=%lld)", exists, trackID);
+        // --- Sanity: verify RW handle ---
+        int db_ro = sqlite3_db_readonly(db, "main");
+        if (db_ro) {
+            NSError *e = [NSError errorWithDomain:@"Ascent.DB.TrackPoints" code:SQLITE_READONLY
+                                         userInfo:@{NSLocalizedDescriptionKey:
+                                                        [NSString stringWithFormat:@"DB is read-only (%s)",
+                                                         sqlite3_db_filename(db, "main") ?: "unknown"]}];
+            fail(e);
+            return;
+        }
+
+        // --- Ensure columns exist (robust) ---
+        int have_points_saved = 0, have_points_count = 0;
+        sqlite3_stmt *ti = NULL;
+        if (sqlite3_prepare_v2(db, "PRAGMA table_info(activities);", -1, &ti, NULL) == SQLITE_OK) {
+            while (sqlite3_step(ti) == SQLITE_ROW) {
+                const char *cname = (const char *)sqlite3_column_text(ti, 1);
+                if (!cname) continue;
+                if (strcmp(cname, "points_saved") == 0) have_points_saved = 1;
+                else if (strcmp(cname, "points_count") == 0) have_points_count = 1;
             }
         }
-        if (chk) sqlite3_finalize(chk);
+        if (ti) sqlite3_finalize(ti);
+
+        if (!have_points_saved) {
+            int rcA = sqlite3_exec(db, "ALTER TABLE activities ADD COLUMN points_saved INTEGER DEFAULT 0;", NULL, NULL, NULL);
+            if (rcA != SQLITE_OK) {
+                fail(TPError(db, [NSString stringWithFormat:@"ALTER add points_saved failed rc=%d xrc=%d: %s",
+                                  rcA, sqlite3_extended_errcode(db), sqlite3_errmsg(db)]));
+                return;
+            }
+        }
+        if (!have_points_count) {
+            int rcB = sqlite3_exec(db, "ALTER TABLE activities ADD COLUMN points_count INTEGER DEFAULT 0;", NULL, NULL, NULL);
+            if (rcB != SQLITE_OK) {
+                fail(TPError(db, [NSString stringWithFormat:@"ALTER add points_count failed rc=%d xrc=%d: %s",
+                                  rcB, sqlite3_extended_errcode(db), sqlite3_errmsg(db)]));
+                return;
+            }
+        }
 
         // --- Delete existing points ---
         sqlite3_stmt *del = NULL;
         if (sqlite3_prepare_v2(db, "DELETE FROM points WHERE track_id=?1;", -1, &del, NULL) == SQLITE_OK) {
             sqlite3_bind_int64(del, 1, trackID);
-            int drc = sqlite3_step(del);
-            NSLog(@"[TPStore] DELETE points rc=%d", drc);
+            (void)sqlite3_step(del);
         }
         if (del) sqlite3_finalize(del);
 
         // --- Insert replacements ---
+        NSUInteger insertedCount = 0;
         if (count > 0) {
-            NSLog(@"[TPStore] Inserting %lu points for trackID=%lld", (unsigned long)count, trackID);
-
             const char *insSQL =
             "INSERT INTO points("
             " track_id, wall_clock_delta_s, active_time_delta_s, "
@@ -435,42 +427,72 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
 
                     int rc = sqlite3_step(ins);
                     if (rc != SQLITE_DONE) {
-                        int xrc = sqlite3_extended_errcode(db);
-                        NSLog(@"[TPStore] Insert failed at row %lu rc=%d xrc=%d msg=%s",
-                              (unsigned long)i, rc, xrc, sqlite3_errmsg(db));
                         NSString *msg = [NSString stringWithFormat:
                                          @"Insert point failed (rc=%d,xrc=%d): %s",
-                                         rc, xrc, sqlite3_errmsg(db)];
+                                         rc, sqlite3_extended_errcode(db), sqlite3_errmsg(db)];
                         fail(TPError(db, msg));
-                        sqlite3_reset(ins);
-                        break;
-                    } else {
-                        if (i < 3 || i == count-1) {
-                            NSLog(@"[TPStore] Insert ok for row %lu (sample logging)", (unsigned long)i);
-                        }
+                        sqlite3_finalize(ins);
+                        return; // abort; DBM will rollback
                     }
+                    insertedCount++;
                     sqlite3_reset(ins);
                     sqlite3_clear_bindings(ins);
                 }
             } else {
-                NSLog(@"[TPStore] ERROR preparing insert: %s", sqlite3_errmsg(db));
                 fail(TPError(db, @"Prepare insert points failed"));
+                if (ins) sqlite3_finalize(ins);
+                return;
             }
             if (ins) sqlite3_finalize(ins);
         }
 
+        // --- Mark saved + persist count (even if count==0) ---
+        sqlite3_stmt *upd = NULL;
+        int rc_upd = sqlite3_prepare_v2(db,
+            "UPDATE activities SET points_saved=1, points_count=?2 WHERE id=?1;", -1, &upd, NULL);
+        NSLog(@"setting points_saved for %s", [t.name UTF8String]);
+        if (rc_upd != SQLITE_OK || !upd) {
+            fail(TPError(db, [NSString stringWithFormat:@"prepare UPDATE points_saved failed rc=%d xrc=%d: %s",
+                              rc_upd, sqlite3_extended_errcode(db), sqlite3_errmsg(db)]));
+            return;
+        }
+
+        sqlite3_bind_int64(upd, 1, trackID);                 // WHERE id=?1
+        sqlite3_bind_int  (upd, 2, (int)insertedCount);      // points_count=?2
+
+        rc_upd = sqlite3_step(upd);
+        if (rc_upd != SQLITE_DONE) {
+            fail(TPError(db, [NSString stringWithFormat:@"UPDATE points_saved step failed rc=%d xrc=%d: %s",
+                              rc_upd, sqlite3_extended_errcode(db), sqlite3_errmsg(db)]));
+            sqlite3_finalize(upd);
+            return;
+        }
+
+        int changed = sqlite3_changes(db);
+        if (changed == 0) {
+            NSLog(@"[TPStore] WARNING: UPDATE points changed 0 rows (id=%lld file=%s)",
+                  (long long)trackID, sqlite3_db_filename(db, "main") ?: "");
+        }
+        sqlite3_finalize(upd);
+
+        // Mirror in-memory flag
         @try { [t setValue:@(YES) forKey:@"pointsEverSaved"]; } @catch (__unused id e) {}
 
     } completion:^(NSError * _Nullable e) {
-        if (e) { ok = NO; err = [e retain]; }
-        if (rowsCopy) free(rowsCopy);
+        if (e) {
+            ok = NO;
+            err = [e retain];
+        }
+        if (rowsCopy)
+            free(rowsCopy);
         dispatch_semaphore_signal(sem);
     }];
 
     dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     dispatch_release(sem);
 
-    if (!ok && error) *error = [err autorelease];
+    if (!ok && error)
+        *error = [err autorelease];
     return ok;
 }
 

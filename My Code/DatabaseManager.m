@@ -8,6 +8,7 @@
 
 #import "DatabaseManager.h"
 #import <sqlite3.h>
+#import <dispatch/dispatch.h>
 
 #if defined(HAS_CODEC_RESTRICTED) || defined(SQLITE_HAS_CODEC)
 // SEE-style activation (present in SEE and many codec forks)
@@ -17,25 +18,36 @@ extern int sqlite3_key(sqlite3 *db, const void *pKey, int nKey);
 #endif
 
 
+static void *kDBMWriteQueueSpecificKey = &kDBMWriteQueueSpecificKey;
+static void *kDBMReadQueueSpecificKey = &kDBMReadQueueSpecificKey;
 
-static inline NSError *DBMakeError(sqlite3 *db, NSString *msg) {
+// MRC-safe local helper
+static inline NSError *DBMakeError(sqlite3 *db, NSString *msg)
+{
     int code = db ? sqlite3_errcode(db) : -1;
-    const char *c = db ? sqlite3_errmsg(db) : "no db";
-    NSDictionary *info = @{
-        NSLocalizedDescriptionKey : (msg ?: @"SQLite error"),
-        @"sqlite_message"         : c ? @(c) : @""
-    };
+    const char *cmsg = db ? sqlite3_errmsg(db) : "no db";
+    NSDictionary *info =
+        [NSDictionary dictionaryWithObjectsAndKeys:
+            (msg ?: @"SQLite error"), NSLocalizedDescriptionKey,
+            (cmsg ? [NSString stringWithUTF8String:cmsg] : @""), @"sqlite_message",
+            nil];
     return [NSError errorWithDomain:@"Ascent.DB" code:code userInfo:info];
 }
 
-static NSString *URIForFileURL(NSURL *url, BOOL readOnly) {
-    // Build a SQLite URI: file:/absolute/path?mode=ro&immutable=1  (or mode=rwc for read-write)
-    NSString *path = url.path;
-    // Percent-encode path segments safely (older SDKs may lack URLPathAllowedCharacterSet)
-    CFStringRef cfEsc = CFURLCreateStringByAddingPercentEscapes(NULL,
-                           (CFStringRef)path, NULL, CFSTR(":/?#[]@!$&'()*+,;="), kCFStringEncodingUTF8);
-    NSString *escaped = [(__bridge_transfer NSString *)cfEsc autorelease];
+// Common helper: keep unreserved RFC3986 chars + "/" so absolute paths survive.
+static NSString *ASCPercentEncodePath(NSString *path) {
+    if (!path) path = @"";
+    NSMutableCharacterSet *allowed = [[NSCharacterSet alphanumericCharacterSet] mutableCopy];
+    [allowed addCharactersInString:@"-._~/"];
+    NSString *escaped = [path stringByAddingPercentEncodingWithAllowedCharacters:allowed];
+    [allowed release];
+    if (!escaped) escaped = [path stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
+    return escaped;
+}
 
+// Your existing semantics: RO uses immutable snapshot; RW uses rwc.
+static NSString *URIForFileURL(NSURL *url, BOOL readOnly) {
+    NSString *escaped = ASCPercentEncodePath(url.path);
     if (readOnly) {
         return [NSString stringWithFormat:@"file:%@?mode=ro&immutable=1", escaped];
     } else {
@@ -43,8 +55,20 @@ static NSString *URIForFileURL(NSURL *url, BOOL readOnly) {
     }
 }
 
+// Live read-only (see WAL updates): **no immutable=1**
+static NSString *LiveReadOnlyURIForFileURL(NSURL *url) {
+    NSString *escaped = ASCPercentEncodePath(url.path);
+    return [NSString stringWithFormat:@"file:%@?mode=ro", escaped];
+}
+
+
 
 @interface DatabaseManager ()
+{
+    dispatch_queue_t _readQueue;
+}
+- (sqlite3 *)openReadOnlyHandle;
+- (void)closeHandleIfNeeded:(sqlite3 *)db;
 @end
 
 @implementation DatabaseManager
@@ -60,23 +84,32 @@ static NSString *URIForFileURL(NSURL *url, BOOL readOnly) {
     if ((self = [super init])) {
         _databaseURL = [dbURL retain];
         _readOnly = readOnly;
+
         _writeQueue = dispatch_queue_create("com.montebellosoftware.Ascent.DBWriteQ",
-                       dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, 0));
+                       dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_USER_INITIATED, 0));
+        _readQueue  = dispatch_queue_create("com.montebellosoftware.Ascent.DBReadQ",
+                       dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_USER_INITIATED, 0));
+
+        dispatch_queue_set_specific(_writeQueue, kDBMWriteQueueSpecificKey, kDBMWriteQueueSpecificKey, NULL);
+        dispatch_queue_set_specific(_readQueue,  kDBMReadQueueSpecificKey,  kDBMReadQueueSpecificKey,  NULL);
+
         _db = NULL; _isOpen = NO;
     }
     return self;
 }
 
-
 - (void)dealloc {
     [self close];
     if (_writeQueue) { dispatch_release(_writeQueue); _writeQueue = NULL; }
+    if (_readQueue)  { dispatch_release(_readQueue);  _readQueue  = NULL; }
     [_databaseURL release];
     [super dealloc];
 }
 
+
 - (NSURL *)databaseURL { return _databaseURL; }
 - (dispatch_queue_t)writeQueue { return _writeQueue; }
+- (dispatch_queue_t)readQueue { return _readQueue; }
 - (sqlite3 *)rawSQLite { return _db; }
 
 static int LoggingPermissiveAuth(void *ud, int action,
@@ -212,14 +245,45 @@ static BOOL DirIsWritable(NSURL *dirURL) {
 - (void)performRead:(void (^)(sqlite3 *db))block
          completion:(void (^_Nullable)(void))completion
 {
-    // Reads go through the same serial queue => no concurrent access to _db
-    dispatch_async(_writeQueue, ^{
-        if (block) block(_db);
+    dispatch_async(_readQueue, ^{
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+        sqlite3 *rdb = [self openReadOnlyHandle];
+        if (block) block(rdb);
+        [self closeHandleIfNeeded:rdb];
+
+        [pool drain];
+
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{ completion(); });
         }
     });
 }
+
+- (void)performReadSync:(void (^)(sqlite3 *db))block
+{
+    if (!block) return;
+
+    // If already on the read queue, run inline to avoid self-deadlock.
+    if (dispatch_get_specific(kDBMReadQueueSpecificKey) == kDBMReadQueueSpecificKey) {
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        sqlite3 *rdb = [self openReadOnlyHandle];
+        block(rdb);
+        [self closeHandleIfNeeded:rdb];
+        [pool drain];
+        return;
+    }
+
+    // Otherwise, hop to the read queue synchronously.
+    dispatch_sync(_readQueue, ^{
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        sqlite3 *rdb = [self openReadOnlyHandle];
+        block(rdb);
+        [self closeHandleIfNeeded:rdb];
+        [pool drain];
+    });
+}
+
 
 - (BOOL)checkpointTruncate:(NSError **)error {
     __block BOOL ok = YES;
@@ -268,5 +332,41 @@ static BOOL DirIsWritable(NSURL *dirURL) {
     if (!ok && error) *error = err;
     return ok;
 }
+
+
+- (BOOL)isOnWriteQueue
+{
+    // Returns YES iff current execution context has the specific flag from DBM's write queue.
+    return (dispatch_get_specific(kDBMWriteQueueSpecificKey) == kDBMWriteQueueSpecificKey);
+}
+
+
+// Live (no-immutable) URI for RW managers; immutable snapshot for RO managers.
+- (sqlite3 *)openReadOnlyHandle {
+    sqlite3 *rdb = NULL;
+    int flags = SQLITE_OPEN_READONLY | SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_URI;
+
+    // If this DBM was opened read-only, we must also open our read handle
+    // with immutable=1 to avoid needing WAL/SHM creation (which would fail
+    // under user-selected read-only security scope, e.g., iCloud Drive).
+    NSString *uri = _readOnly
+                  ? URIForFileURL(_databaseURL, YES)         // file:... ?mode=ro&immutable=1
+                  : LiveReadOnlyURIForFileURL(_databaseURL); // file:... ?mode=ro
+
+    int rc = sqlite3_open_v2(uri.UTF8String, &rdb, flags, NULL);
+    if (rc != SQLITE_OK) {
+        if (rdb) { sqlite3_close(rdb); rdb = NULL; }
+        return NULL;
+    }
+    sqlite3_extended_result_codes(rdb, 1);
+    sqlite3_exec(rdb, "PRAGMA foreign_keys=ON;", NULL, NULL, NULL);
+    return rdb;
+}
+
+
+- (void)closeHandleIfNeeded:(sqlite3 *)db {
+    if (db) sqlite3_close(db);
+}
+
 
 @end

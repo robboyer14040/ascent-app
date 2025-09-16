@@ -32,8 +32,10 @@
 #import "DatabaseManager.h"
 #import "IdentifierStore.h"
 #import "SplashPanelController.h"
+#import "DocumentMetaData.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
-
+#import "AscentImporter.h"
+#import "AscentExporter.h"
 
 #include <unistd.h>        // for sleep()
 
@@ -63,12 +65,9 @@
 
 @interface TrackBrowserDocument ()
 {
-    TrackBrowserData *_stagedBrowserData;   // parsed off-main, consumed by readFromURL:
+    DocumentMetaData *_stagedBrowserData;   // parsed off-main, consumed by readFromURL:
 }
 @property (nonatomic, strong) NSURL *stagedExportURL; // temp file we built
-- (NSURL *)_exportDocumentToTemporaryURLWithProgress:(ASProgress)progress error:(NSError **)outError;
--(BOOL)loadDatabaseFile:(NSURL*)url progress:(ASProgress)progress;
-// Shim so this compiles even if your SDK doesn’t declare the async read yet
 @end
 
 @interface NSDocument (ReadCompletionShim)
@@ -77,433 +76,7 @@
   completionHandler:(void (^)(NSError * _Nullable error))handler;
 @end
 
-// values for the TrackBrowserData 'flags' field
-enum
-{
-	kUsesEquipmentLog				= 0x00000001,
-	kHasInitialEquipmentLogData		= 0x00000002,
-};
 
-@interface TrackBrowserData : NSObject <NSCoding>
-{
-	NSMutableArray*                 trackArray;
-	NSMutableDictionary*            tableInfoDict;			// main browser column info
-	NSMutableDictionary*            splitsTableInfoDict;	// splits table column info
-	NSDate*							lastSyncTime;
-	NSMutableArray*					userDeletedTrackTimes;
-	NSMutableDictionary*			initialEquipmentLogData;
-	NSString*						uuid;
-	NSArray*						startEndDateArray;
-	int								numberOfSavesSinceLocalBackup;
-	int								numberOfSavesSinceMobileMeBackup;
-	int								flags;
-}
-@property (nonatomic, retain) NSString* uuid;
-@property (nonatomic, retain) NSMutableDictionary* initialEquipmentLogData;
-@property (nonatomic, retain) NSArray* startEndDateArray;
--(void)setTrackArray:(NSMutableArray*)ta;
--(NSMutableArray*)trackArray;
--(NSMutableDictionary *)tableInfoDict;
--(NSMutableDictionary *)splitsTableInfoDict;
--(NSMutableArray*) userDeletedTrackTimes;
--(void)setLastSyncTime:(NSDate*)d;
--(void)setUuid:(NSString*) uid;
--(void)setTableInfoDict:(NSMutableDictionary *)value;
--(void)setSplitsTableInfoDict:(NSMutableDictionary *)value;
--(void)setUserDeletedTrackTimes:(NSMutableArray*)arr;
--(int)numberOfSavesSinceLocalBackup;
--(int)numberOfSavesSinceMobileMeBackup;
--(void)setNumberOfSavesSinceLocalBackup:(int)n;
--(void)setNumberOfSavesSinceMobileMeBackup:(int)n;
--(int)flags;
--(void)setFlags:(int)flgs;
--(void)setStartEndDateArray:(NSArray*)arr;
--(void)storeMetaData:(ActivityStore*)store;
-@end
-
-@implementation TrackBrowserData
-
-@synthesize uuid;
-@synthesize initialEquipmentLogData;
-@synthesize startEndDateArray;
-
-- (id) init
-{
-	if (self = [super init])
-	{
-		flags = 0;
-		uuid = [[NSString uniqueString] retain];
-		trackArray = [[NSMutableArray alloc] init];
-		userDeletedTrackTimes = [[NSMutableArray alloc] init];
-		lastSyncTime = [NSDate distantPast];
-		[lastSyncTime retain];
-		numberOfSavesSinceLocalBackup = numberOfSavesSinceMobileMeBackup = 0;
-		initialEquipmentLogData = [[NSMutableDictionary dictionaryWithCapacity:4] retain];
-		SET_FLAG(flags, kHasInitialEquipmentLogData);
-		startEndDateArray = [[NSArray arrayWithObjects:[NSDate distantPast], [NSDate distantFuture], nil] retain];
-	}
-	return self;
-}
-
-
-- (void) dealloc
-{
-	[startEndDateArray release];
-	[trackArray release];
-	[lastSyncTime release];
-	[tableInfoDict release];
-	[splitsTableInfoDict release];
-	[userDeletedTrackTimes release];
-	[initialEquipmentLogData release];
-	[uuid release];
-	[super dealloc];
-}
-
-
-
-#define CUR_VERSION 8
-
-- (id)initWithCoder:(NSCoder *)coder
-{
-	[super init];
-	trackArray = [[NSMutableArray alloc] init];
-	if ( [coder allowsKeyedCoding] )
-	{
-	   [self setTrackArray:[coder decodeObjectForKey:@"tracks"]];
-	   [self setLastSyncTime:[coder decodeObjectForKey:@"lastSyncTime"]];
-	}
-	else
-	{
-		float fval;
-		float ival;
-		int version;
-		flags = 0;
-		@try 
-		{
-
-			[coder decodeValueOfObjCType:@encode(int) at:&version];
-			if (version > CUR_VERSION)
-			{
-				NSException *e = [NSException exceptionWithName:ExFutureVersionName
-													   reason:ExFutureVersionReason
-													 userInfo:nil];			  
-				@throw e;
-			}
-			if (version >= 1)
-			{
-				[self setTrackArray:[coder decodeObject]];
-				// remove any tracks without creation times
-                NSUInteger num = [trackArray count];
-				NSMutableIndexSet* is = [NSMutableIndexSet indexSet];
-				for (int i=0; i<num; i++)
-				{
-					Track* t = [trackArray objectAtIndex:i];
-					if ([t creationTime] == nil)
-					{
-						[is addIndex:i];
-						NSLog(@"Removed track (%d of %d) with nil creation date!", (int)i, (int)num);
-					}
-				}
-				[trackArray removeObjectsAtIndexes:is];
-					  
-				  
-				[self setLastSyncTime:[coder decodeObject]];
-				NSString* spareString;
-
-				NSString* s = [coder decodeObject];      // added in v5, did not change version#
-				if (!s || [s isEqualToString:@""])
-				{
-					s = [NSString uniqueString];
-				}
-				self.uuid = s;
-
-				if (version > 7)
-				{
-					self.startEndDateArray = [coder decodeObject];      // changed from spare in v8
-				}
-				else
-				{
-					self.startEndDateArray = [[NSArray arrayWithObjects:[NSDate distantPast], [NSDate distantFuture], nil] retain];
-					spareString = [coder decodeObject];      // spare
-				}
-				spareString = [coder decodeObject];      // spare
-				spareString = [coder decodeObject];      // spare
-				[coder decodeValueOfObjCType:@encode(float) at:&fval];      // spare
-				[coder decodeValueOfObjCType:@encode(float) at:&fval];      // spare
-				[coder decodeValueOfObjCType:@encode(float) at:&fval];      // spare
-				[coder decodeValueOfObjCType:@encode(float) at:&fval];      // spare
-				[coder decodeValueOfObjCType:@encode(int) at:&numberOfSavesSinceLocalBackup];        // was spare
-				[coder decodeValueOfObjCType:@encode(int) at:&numberOfSavesSinceMobileMeBackup];     // was spare
-				[coder decodeValueOfObjCType:@encode(int) at:&flags];		// changed in v6 (was spare)
-				[coder decodeValueOfObjCType:@encode(int) at:&ival];		// spare
-			}
-		  
-		   if (version > 1)
-		   {
-			   [self setTableInfoDict:[coder decodeObject]];
-		   }
-		  
-		   if (version > 2)
-		   {
-			   [self setSplitsTableInfoDict:[coder decodeObject]];
-		   }
-		  
-		   if (version > 3)
-		   {
-			   [self setUserDeletedTrackTimes:[coder decodeObject]];
-		   }
-		   if (!userDeletedTrackTimes)  userDeletedTrackTimes = [[NSMutableArray alloc] init];
-		  
-		   if (![RegController CHECK_REGISTRATION])
-		   {
-			   while ([trackArray count] > kNumUnregisteredTracks)
-			   {
-				   [trackArray removeLastObject];
-			   }
-		   }
-		   BOOL hasInitialEquipmentLogData = NO;
-		   if (version >= 6)
-		   {
-			   hasInitialEquipmentLogData = FLAG_IS_SET(flags, kHasInitialEquipmentLogData);
-		   }
-		   if (hasInitialEquipmentLogData)
-		   {
-			   [self setInitialEquipmentLogData:[coder decodeObject]];
-		   }
-		   else
-		   {
-			   [self setInitialEquipmentLogData:[NSMutableDictionary dictionaryWithCapacity:4]];
-		   }
-		   SET_FLAG(flags, kHasInitialEquipmentLogData);
-		}
-		@catch (NSException *exception) 
-		{
-			NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-			[alert addButtonWithTitle:@"OK"];
-			[alert setMessageText:@"Document Read Error"];
-			[alert setInformativeText:[exception reason]];
-			[alert setAlertStyle:NSAlertStyleWarning];
-			[alert runModal];
-			@throw;
-		}
-	}
-	return self;
-}
-
-
-
-
-- (void)encodeWithCoder:(NSCoder *)coder
-{
-	if ( [coder allowsKeyedCoding] )
-	{
-		[coder encodeObject:trackArray forKey:@"tracks"];
-		[coder encodeObject:lastSyncTime forKey:@"lastSyncTime"];
-	}
-	else
-	{
-		int version = CUR_VERSION;
-		// version 1
-		float spareFloat = 0.0f;
-		int spareInt = 0;
-
-		[coder encodeValueOfObjCType:@encode(int) at:&version];
-		[coder encodeObject:trackArray];
-		[coder encodeObject:lastSyncTime];
-		NSString* spareString = @"";
-		[coder encodeObject:self.uuid];
-		[coder encodeObject:startEndDateArray];
-		[coder encodeObject:spareString];
-		[coder encodeObject:spareString];
-		[coder encodeValueOfObjCType:@encode(float) at:&spareFloat];
-		[coder encodeValueOfObjCType:@encode(float) at:&spareFloat];
-		[coder encodeValueOfObjCType:@encode(float) at:&spareFloat];
-		[coder encodeValueOfObjCType:@encode(float) at:&spareFloat];
-		[coder encodeValueOfObjCType:@encode(int) at:&numberOfSavesSinceLocalBackup];
-		[coder encodeValueOfObjCType:@encode(int) at:&numberOfSavesSinceMobileMeBackup];
-		[coder encodeValueOfObjCType:@encode(int) at:&flags];		// changed in v6 (was spareInt)
-		[coder encodeValueOfObjCType:@encode(int) at:&spareInt];
-		// version 2
-		[coder encodeObject:tableInfoDict];
-		// version 3
-		[coder encodeObject:splitsTableInfoDict];
-		// version 4
-		[coder encodeObject:userDeletedTrackTimes];
-		// added in version 7, did not bump version (using flag technique)
-		SET_FLAG(flags, kHasInitialEquipmentLogData);
-		[coder encodeObject:initialEquipmentLogData];
-		
-	}
-}
-
-
--(void)storeMetaData:(ActivityStore*)store
-{
-    if (store) {
-        NSError* err;
-        BOOL worked = [store saveMetaWithTableInfo:tableInfoDict
-                                   splitsTableInfo:splitsTableInfoDict
-                                              uuid:uuid
-                                         startDate:(NSDate *)startEndDateArray[0]
-                                           endDate:(NSDate *)startEndDateArray[1]
-                                      lastSyncTime:lastSyncTime
-                                             flags:flags
-                                       totalTracks:[trackArray count]
-                                              int3:0
-                                              int4:0
-                                             error:&err];
-        if (!worked)
-        {
-            NSLog(@"Metadata store FAILED");
-        }
-    }
-}
-
-
--(int)flags
-{
-	return flags;
-}
-
-
--(void)setFlags:(int)flgs
-{
-	flags = flgs;
-}
-
-
-- (void)setTrackArray:(NSMutableArray*)ta
-{
-	if (ta != trackArray)
-	{
-		[trackArray release];
-		trackArray = ta;
-		[trackArray retain];
-	}
-}
-
-
-- (NSDate*)lastSyncTime
-{
-	return lastSyncTime;
-}
-
-
-- (void)setLastSyncTime:(NSDate*)d
-{
-	if (d != lastSyncTime)
-	{
-		[lastSyncTime release];
-		lastSyncTime = d;
-		[lastSyncTime retain];
-	}
-}
-
-
--(void)setUuid:(NSString*) uid
-{
-    if (uid != uuid)
-    {
-        [uuid release];
-        uuid = [uid retain];
-    }
-}
-
-
-- (NSMutableArray*)trackArray
-{
-	return trackArray;
-}
-
-
-- (NSMutableDictionary *)tableInfoDict 
-{
-	return tableInfoDict;
-}
-
-
-- (void)setTableInfoDict:(NSMutableDictionary *)value 
-{
-	if (tableInfoDict != value) 
-	{
-		[tableInfoDict autorelease];
-		tableInfoDict = value;
-		[tableInfoDict retain];
-	}
-	[[BrowserInfo sharedInstance] setColInfoDict:tableInfoDict];
-}
-
-
-- (NSMutableDictionary *)splitsTableInfoDict 
-{
-	return splitsTableInfoDict;
-}
-
-
-- (void)setSplitsTableInfoDict:(NSMutableDictionary *)value 
-{
-	if (splitsTableInfoDict != value) 
-	{
-		[splitsTableInfoDict autorelease];
-		splitsTableInfoDict = value;
-		[splitsTableInfoDict retain];
-	}
-	[[BrowserInfo sharedInstance] setSplitsColInfoDict:splitsTableInfoDict];
-}
-
-
--(void)setUserDeletedTrackTimes:(NSMutableArray*)arr
-{
-	if (arr != userDeletedTrackTimes)
-	{
-		[userDeletedTrackTimes autorelease];
-		userDeletedTrackTimes = [arr retain];
-	}
-}
-
-
-
--(NSMutableArray*) userDeletedTrackTimes
-{
-	return userDeletedTrackTimes;
-}
-
--(int)numberOfSavesSinceLocalBackup
-{
-	return numberOfSavesSinceLocalBackup;
-}
-
-
--(int)numberOfSavesSinceMobileMeBackup
-{
-	return numberOfSavesSinceMobileMeBackup;
-}
-
-
--(void)setNumberOfSavesSinceLocalBackup:(int)n
-{
-	numberOfSavesSinceLocalBackup = n;
-}
-
-
--(void)setNumberOfSavesSinceMobileMeBackup:(int)n
-{
-	numberOfSavesSinceMobileMeBackup = n;
-}
-
--(void)setStartEndDateArray:(NSArray*)arr
-{
-    if (startEndDateArray != arr)
-    {
-        [startEndDateArray release];
-        startEndDateArray = [arr retain];
-    }
-
-}
-
-
-
-@end
 
 
 
@@ -534,6 +107,11 @@ NSString* getTracksPath()
 -(void)syncDirect:(int*)numLoadedPtr lastTrackLoaded:(Track**)lastTrackLoadedPtr;
 - (void)_presentProgress:(ProgressBarController *)pbc total:(int)total message:(NSString*)msg;
 - (void)_dismissProgress;
+- (BOOL)ensureOpenDBMForURL:(NSURL *)url error:(NSError **)outError;
+- (void)teardownDocumentDBM;
+- (BOOL)shouldDoIncrementalSaveForOperation:(NSSaveOperationType)op;
+
+
 @end
 
 
@@ -550,7 +128,11 @@ int kSearchEventType		= 0x0020;
 @synthesize equipmentLog;
 @synthesize equipmentLogDataDict;
 @synthesize equipmentTotalsNeedUpdate;
-
+@synthesize docMetaData;
+@synthesize documentDBM;
+@synthesize activityStore;
+@synthesize trackPointStore;
+@synthesize identifierStore;
 
 
 + (NSArray<UTType *> *)readableContentTypes {
@@ -587,7 +169,7 @@ int kSearchEventType		= 0x0020;
 		equipmentTotalsNeedUpdate = YES;
 		currentlySelectedTrack = nil;
 		selectedLap = nil;
-		browserData = [[TrackBrowserData alloc] init];
+        self.docMetaData = [[[DocumentMetaData alloc] init] autorelease];
 		backupDelegate = [[BackupDelegate alloc] initWithDocument:self];
 		tbWindowController = nil;
         databaseFileURL = nil;
@@ -614,7 +196,7 @@ int kSearchEventType		= 0x0020;
 #endif
     [databaseFileURL release];
 	[backupDelegate release];
-	[browserData release];
+	[self.docMetaData release];
 	[selectedLap release];
 	[currentlySelectedTrack release];
 	[equipmentLog release];
@@ -626,13 +208,13 @@ int kSearchEventType		= 0x0020;
 
 - (void)setTracks:(NSMutableArray*)tracks
 {
-   [browserData setTrackArray:tracks];
+   [self.docMetaData setTrackArray:tracks];
 }
 
 
 -(NSString*)uuid
 {
-	return browserData.uuid;
+	return self.docMetaData.uuid;
 }
 
 #pragma mark TRACK FILE PARSING METHODS
@@ -1015,7 +597,7 @@ bool readLapDataLine(char *ptr, NSMutableArray* laps, char** optr)
 	const char* trkext = "trk";
 	NSString* trackExt = [NSString stringWithCString:trkext encoding:NSASCIIStringEncoding];
 	NSString* relTrackPath;
-	NSMutableArray* trackArray = [browserData trackArray];
+	NSMutableArray* trackArray = [self.docMetaData trackArray];
 	int tracksAdded = 0;
 	NSDate* lastSyncedTrackDate = nil;
 	NSMutableArray* tracksJustSynced = [NSMutableArray arrayWithCapacity:16];
@@ -1063,11 +645,11 @@ bool readLapDataLine(char *ptr, NSMutableArray* laps, char** optr)
 		if (contains == NO)
 		{
 			// make sure user hasn't deleted this track from this document already
-			contains = [[browserData userDeletedTrackTimes] containsObject:[track creationTime]];
+			contains = [[self.docMetaData userDeletedTrackTimes] containsObject:[track creationTime]];
 			if (contains == NO)
 			{
                 NSUInteger numTracks = [trackArray count];
-				//if ([[browserData lastSyncTime] compare:[track creationTime]] == NSOrderedAscending) &&
+				//if ([[docMetaData lastSyncTime] compare:[track creationTime]] == NSOrderedAscending) &&
 				if ((numTracks <= kNumUnregisteredTracks) || [RegController CHECK_REGISTRATION])
 				{
 					[tracksNeedingFixup addObject:track];
@@ -1100,7 +682,7 @@ getOut:
 	{
 		if (lastSyncedTrackDate != nil)
 		{
-			[browserData setLastSyncTime:lastSyncedTrackDate];
+			[self.docMetaData setLastSyncTime:lastSyncedTrackDate];
 		}
 		[tracksNeedingFixup makeObjectsPerformSelector:@selector(doFixupAndCalcGradients)];
 	}
@@ -1638,7 +1220,7 @@ getOut:
 		if (sts == YES)
 		{
 			NSArray* arr = [importedTrackArray sortedArrayUsingSelector:@selector(comparator:)];
-			NSMutableArray* trackArray = [browserData trackArray];
+			NSMutableArray* trackArray = [self.docMetaData trackArray];
             NSUInteger numImported = [arr count];
 			for (int i=0; i<numImported; i++)
 			{
@@ -1647,7 +1229,7 @@ getOut:
 				if (![trackArray containsObject:t])
 				{
 					// make sure user hasn't deleted this track from this document already
-					BOOL contains = [[browserData userDeletedTrackTimes] containsObject:[t creationTime]];
+					BOOL contains = [[self.docMetaData userDeletedTrackTimes] containsObject:[t creationTime]];
 					if (contains == NO)
 					{
 						if (([trackArray count] <= kNumUnregisteredTracks) || [RegController CHECK_REGISTRATION])
@@ -1871,9 +1453,9 @@ deviceIsPluggedIn:YES];
 
 - (NSDate*)lastSyncTime
 {
-    if (browserData)
+    if (self.docMetaData)
     {
-        return [browserData lastSyncTime];
+        return [self.docMetaData lastSyncTime];
     }
     return [NSDate distantPast];
 }
@@ -1881,9 +1463,9 @@ deviceIsPluggedIn:YES];
 
 - (void)setLastSyncTime:(NSDate*) d
 {
-    if (browserData)
+    if (self.docMetaData)
     {
-        [browserData setLastSyncTime:d];
+        [self.docMetaData setLastSyncTime:d];
     }
 }
 
@@ -1893,7 +1475,7 @@ deviceIsPluggedIn:YES];
 -(BOOL)trackExistsAtTime:(NSDate*)st startIndex:(int*)startIdx slop:(int)secondsSlop
 {
 	BOOL ret = NO;
-	NSArray* trackArray = [browserData trackArray];
+	NSArray* trackArray = [self.docMetaData trackArray];
     NSUInteger num = [trackArray count];
 	//for (int i=*startIdx; i<num; i++)
 	for (int i=0; i<num; i++)
@@ -1951,15 +1533,18 @@ deviceIsPluggedIn:YES];
    
    // For applications targeted for Tiger or later systems, you should use the new Tiger API -dataOfType:error:.  In this case you can also choose to override -writeToURL:ofType:error:, -fileWrapperOfType:error:, or -writeToURL:ofType:forSaveOperation:originalContentsURL:error: instead.
  #if USE_KEYED_ENCODING
-   data = [NSKeyedArchiver archivedDataWithRootObject:browserData];
+   data = [NSKeyedArchiver archivedDataWithRootObject:docMetaData];
 #else
    // NOTE: archivedDataWithRootObject (and encodeRootObject) cause the encoding process to be run 2x, and
    // this is not necessary here.  Therefore, since there are no cycles in the data being encoded, we just
-   // call encodeObject on on the root browserData object
+   // call encodeObject on on the root docMetaData object
    NSMutableData* data = [NSMutableData data];
-   NSArchiver* arch = [[[NSArchiver alloc] initForWritingWithMutableData:data] autorelease];
-   [arch encodeObject:browserData];
-   //data = [NSArchiver archivedDataWithRootObject:browserData];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    NSArchiver* arch = [[[NSArchiver alloc] initForWritingWithMutableData:data] autorelease];
+#pragma clang diagnostic pop
+   [arch encodeObject:self.docMetaData];
+   //data = [NSArchiver archivedDataWithRootObject:docMetaData];
 #endif
    return data;
 }
@@ -2013,104 +1598,10 @@ deviceIsPluggedIn:YES];
 }
 
 
-- (BOOL)loadDatabaseFile:(NSURL *)url progress:(ASProgress)prog {
-    NSError *err = nil;
-    BOOL worked = NO;
-
-    BOOL started = NO;
-    if ([url respondsToSelector:@selector(startAccessingSecurityScopedResource)]) {
-        started = [url startAccessingSecurityScopedResource];
-    }
-
-    @try {
-        // Open read-only + immutable
-        DatabaseManager *dbm = [[DatabaseManager alloc] initWithURL:url readOnly:YES];
-        if (![dbm open:&err]) {
-            NSLog(@"[Ascent] DB open failed: %@", err);
-            [dbm release];
-            return NO;
-        }
-
-        ActivityStore *store = [[[ActivityStore alloc] initWithDatabaseManager:dbm] autorelease];
-        // DO NOT call createSchemaIfNeeded on a read-only handle.
-
-        NSDictionary *tableInfo = nil, *splitsInfo = nil;
-        NSString *uuid = nil;
-        NSDate *startDate = nil, *endDate = nil, *lastSyncTime = nil;
-        NSInteger flags = 0, totalTracks = 0, i3 = 0, i4 = 0;
-
-        worked = [store loadMetaTableInfo:&tableInfo
-                          splitsTableInfo:&splitsInfo
-                                     uuid:&uuid
-                                startDate:&startDate
-                                  endDate:&endDate
-                             lastSyncTime:&lastSyncTime
-                                    flags:&flags
-                              totalTracks:&totalTracks
-                                     int3:&i3
-                                     int4:&i4
-                                    error:&err];
-
-        if (!worked) {
-            NSLog(@"[Ascent] Failed to load META info: %@", err);
-        } else {
-            // Push META to browserData
-            if (tableInfo)       [browserData setTableInfoDict:[NSMutableDictionary dictionaryWithDictionary:tableInfo]];
-            if (splitsInfo)      [browserData setSplitsTableInfoDict:[NSMutableDictionary dictionaryWithDictionary:splitsInfo]];
-            if (uuid)            [browserData setUuid:uuid];
-            if (startDate && endDate)
-                                 [browserData setStartEndDateArray:@[startDate, endDate]];
-            [browserData setFlags:(int)flags];
-
-            // ---- Load TRACKS only (no points) ----
-            NSArray *tracks = [store loadAllTracks:&err totalTracks:totalTracks progressBlock:prog];
-            if (tracks) {
-                [browserData setTrackArray:[NSMutableArray arrayWithArray:tracks]];
-                worked = YES;
-            } else {
-                NSLog(@"[Ascent] No tracks loaded (err=%@)", err);
-                worked = NO;
-            }
-            
-            if (worked)
-            {
-                TrackPointStore* tpStore = [[TrackPointStore alloc] initWithDatabaseManager:dbm];
-                NSUInteger count = [tracks count];
-                for (int i=0; i<count ; i++)
-                {
-                    Track* t = tracks[i];
-                    if (t)
-                    {
-                        NSArray* pts = [tpStore loadPointsForTrackUUID:t.uuid
-                                                                 error:&err];
-                        if (err)
-                        {
-                            NSLog(@"[Ascent] DB open failed: %@", err);
-                            break;
-                        }
-                        else
-                        {
-                            [t setPoints:[pts mutableCopy]];
-                            [t fixupTrack];
-                            
-                        }
-                        [pts release];
-                    }
-                }
-            }
-        }
-
-        [dbm close];
-        [dbm release];
-    }
-    @finally {
-        if (started) {
-            [url stopAccessingSecurityScopedResource];
-        }
-    }
-    return worked;
+- (NSURL*)databaseFileURL:(NSURL*)url
+{
+    return databaseFileURL;
 }
-
 
 
 #pragma mark - Async Read (preferred) doesn't seem to work, the'completionHandler' version below is never called
@@ -2161,8 +1652,11 @@ deviceIsPluggedIn:YES];
                 // and on first tick, restart the bar as determinate:
                 __block BOOL madeDeterminate = NO;
 
-                [self loadDatabaseFile:url
-                              progress:^(NSInteger done, NSInteger total) {
+                AscentImporter *importer = [[[AscentImporter alloc] init] autorelease];
+
+                /*BOOL ok =*/ [importer loadDatabaseFile:url
+                                        documentMeta:self.docMetaData
+                                            progress:^(NSInteger done, NSInteger total) {
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if (!madeDeterminate && total > 0) {
                             madeDeterminate = YES;
@@ -2187,15 +1681,16 @@ deviceIsPluggedIn:YES];
                                           userInfo:@{NSLocalizedDescriptionKey:
                                                      @"Unable to read legacy file"}];
                 } else {
-                    id obj = [NSUnarchiver unarchiveObjectWithData:data];
-                    if ([obj isKindOfClass:[TrackBrowserData class]]) {
-                        if (browserData) [browserData release];
-                        browserData = [obj retain];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+                   id obj = [NSUnarchiver unarchiveObjectWithData:data];
+#pragma clang diagnostic pop
+                    if ([obj isKindOfClass:[DocumentMetaData class]]) {
+                        self.docMetaData = obj;
                     } else {
-                        TrackBrowserData *bd = [[TrackBrowserData alloc] init];
+                        DocumentMetaData *bd = [[[DocumentMetaData alloc] init] autorelease];
                         [bd setTrackArray:obj];
-                        if (browserData) [browserData release];
-                        browserData = bd; // retained
+                        self.docMetaData = bd; // retained
                     }
                     // A couple of UI ticks so the user sees motion
                     dispatch_async(dispatch_get_main_queue(), ^{
@@ -2222,7 +1717,7 @@ deviceIsPluggedIn:YES];
         // --- Commit model & finish on MAIN ---
         dispatch_async(dispatch_get_main_queue(), ^{
             // If your `loadDatabaseFile:` created/filled a new model object,
-            // assign it to `browserData` ivar here as needed.
+            // assign it to `docMetaData` ivar here as needed.
 
             // Hide progress
             ProgressBarController *pbcm = [[SharedProgressBar sharedInstance] controller];
@@ -2304,8 +1799,10 @@ deviceIsPluggedIn:YES];
             @try {
                 if ([typeName isEqualToString:AscentUTIDatabase]) {
                     __block BOOL madeDeterminate = NO;
-                    ok = [self loadDatabaseFile:url
-                                       progress:^(NSInteger doneCount, NSInteger total) {
+                    AscentImporter *importer = [[[AscentImporter alloc] init] autorelease];
+                    ok = [importer loadDatabaseFile:url
+                                       documentMeta:self.docMetaData
+                                           progress:^(NSInteger doneCount, NSInteger total) {
                         dispatch_async(dispatch_get_main_queue(), ^{
                             // Flip to determinate as soon as total is known
  
@@ -2330,16 +1827,18 @@ deviceIsPluggedIn:YES];
                 } else if ([typeName isEqualToString:AscentUTIDatabaseOLD]) {
                     NSData *data = [NSData dataWithContentsOfURL:url options:0 error:&bgErr];
                     if (data) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
                         id obj = [NSUnarchiver unarchiveObjectWithData:data];
-                        TrackBrowserData *bd = nil;
-                        if ([obj isKindOfClass:[TrackBrowserData class]]) {
-                            bd = [obj retain];
+#pragma clang diagnostic pop
+                        DocumentMetaData *bd = nil;
+                        if ([obj isKindOfClass:[DocumentMetaData class]]) {
+                            bd = obj;
                         } else {
-                            bd = [[TrackBrowserData alloc] init];
+                            bd = [[DocumentMetaData alloc] init];
                             [bd setTrackArray:obj];
                         }
-                        if (browserData) [browserData release];
-                        browserData = bd; // retained
+                        self.docMetaData = bd; // retained
                         ok = YES;
 
                         dispatch_async(dispatch_get_main_queue(), ^{
@@ -2434,28 +1933,93 @@ deviceIsPluggedIn:YES];
  forSaveOperation:(NSSaveOperationType)op
 completionHandler:(void (^)(NSError * _Nullable error))handler
 {
-    // 0) Show progress now
-    
-    ProgressBarController *pbc = [[SharedProgressBar sharedInstance] controller];
+    // Progress UI (main thread)
     NSString *name = [[url URLByDeletingPathExtension] lastPathComponent];
     NSString *displayName = [name stringByRemovingPercentEncoding] ?: name;
-    NSLog(@"Saving doc %s", [[url path] UTF8String]);
-    [self _presentProgress:pbc total:(int)browserData.trackArray.count message:[NSString stringWithFormat:@"saving “%@”…", displayName]];
+    [self startProgressIndicator:[NSString stringWithFormat:@"saving “%@”…", displayName]];
 
-    // 1) Phase A: export to a temp file on a background queue
+    // Decide incremental vs full export up front (main thread, cheap)
+    BOOL doIncremental = [self shouldDoIncrementalSaveForOperation:op];
+
+    if (doIncremental) {
+        // ----- Incremental path: write directly into the current writable DB -----
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+            NSError *exportErr = nil;
+
+            // Ensure we have a writable DBM for the *document’s* URL
+            DatabaseManager *dbm = [self currentWritableDBMForURL:self.fileURL error:&exportErr];
+            ActivityStore   *actStore = nil;
+            TrackPointStore *tpStore  = nil;
+            IdentifierStore *idStore  = nil;
+
+            if (dbm != nil && exportErr == nil) {
+                [self ensureWritableStoresForDBM:dbm
+                                    activityStore:&actStore
+                                 trackPointStore:&tpStore
+                                identifierStore:&idStore];
+            }
+
+            if (dbm == nil || actStore == nil || tpStore == nil || idStore == nil || exportErr != nil) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self _dismissProgress];
+                    if (handler) {
+                        handler(exportErr ?: [NSError errorWithDomain:@"AscentExporter"
+                                                                 code:-1
+                                                             userInfo:@{NSLocalizedDescriptionKey:@"No writable database available for incremental save"}]);
+                    }
+                });
+                return;
+            }
+
+            AscentExporter *exporter = [[[AscentExporter alloc] init] autorelease];
+            BOOL ok = [exporter performIncrementalExportWithMetaData:self.docMetaData
+                                                    databaseManager:dbm
+                                                      activityStore:actStore
+                                                   trackPointStore:tpStore
+                                                  identifierStore:idStore
+                                                             error:&exportErr];
+
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self _dismissProgress];
+
+                if (ok) {
+                    // Keep document identity (incremental doesn’t replace the file)
+                    // Clear dirty state
+                    [self updateChangeCount:NSChangeCleared];
+
+                    if (handler) {
+                        handler(nil);
+                    }
+                } else {
+                    if (handler) {
+                        handler(exportErr);
+                    }
+                }
+            });
+        });
+
+        return;
+    }
+
+    // ----- Full export path (stage to temp then atomic replace) -----
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
         NSError *exportErr = nil;
-        NSURL *tmp = [self _exportDocumentToTemporaryURLWithProgress:^(NSInteger done, NSInteger total){
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [pbc setDivs:(int)done];
-            });
-        } error:&exportErr];
 
-        // 2) Back to main for the (short) commit INSIDE the current file-access section
+        AscentExporter *exporter = [[[AscentExporter alloc] init] autorelease];
+        NSURL *tmp = [exporter exportDocumentToTemporaryURLWithProgress:^(NSInteger done, NSInteger total) {
+            // Progress UI on main thread
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+            });
+        } metaData:self.docMetaData
+             error:&exportErr];
+
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (!tmp || exportErr) {
+            if (tmp == nil || exportErr != nil) {
                 [self _dismissProgress];
-                if (handler) handler(exportErr);
+                if (handler) {
+                    handler(exportErr);
+                }
                 return;
             }
 
@@ -2464,178 +2028,35 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
             NSError *writeErr = nil;
             BOOL ok = [self writeSafelyToURL:url
                                       ofType:type
-                             forSaveOperation:op
-                                        error:&writeErr];
+                            forSaveOperation:op
+                                       error:&writeErr];
 
-            // Clean up temp & UI
-            if (self.stagedExportURL) {
+            // Cleanup + UI
+            if (self.stagedExportURL != nil) {
                 [[NSFileManager defaultManager] removeItemAtURL:self.stagedExportURL error:NULL];
                 self.stagedExportURL = nil;
             }
             [self _dismissProgress];
- 
+
             if (ok) {
-                if ((op == NSSaveOperation || op == NSSaveAsOperation)) {
+                // Adopt the new identity for Save / Save As
+                if (op == NSSaveOperation || op == NSSaveAsOperation) {
                     if (self.fileURL == nil || ![self.fileURL isEqual:url]) {
-                        // Adopt the new identity so the title updates from “Untitled”
                         [self setFileURL:url];
                     }
-                    // Ensure Recents gets updated (normally NSDocumentController does this, but be defensive)
                     NSDocumentController *dc = [NSDocumentController sharedDocumentController];
                     if ([dc respondsToSelector:@selector(noteNewRecentDocumentURL:)]) {
                         [dc noteNewRecentDocumentURL:url];
                     }
                 }
-               // Ensure autosave state is clean
                 [self updateChangeCount:NSChangeCleared];
-                
             }
 
-            // Tell NSDocument we're done
-            if (handler) handler(ok ? nil : writeErr);
+            if (handler) {
+                handler(ok ? nil : writeErr);
+            }
         });
     });
-}
-
-
-- (NSURL *)_exportDocumentToTemporaryURLWithProgress:(ASProgress)progress
-                                               error:(NSError **)outError
-{
-    NSURL *tmpDir = [NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES];
-    NSURL *tmpURL = [tmpDir URLByAppendingPathComponent:
-                     [[NSUUID UUID].UUIDString stringByAppendingPathExtension:@"ascentdb"]];
-
-    NSError *err = nil;
-
-    // 1) Open a brand-new DB using DatabaseManager
-    DatabaseManager *dbm = [[DatabaseManager alloc] initWithURL:tmpURL];
-    if (![dbm open:&err]) {
-        if (outError) *outError = err;
-        [dbm release];
-        return nil;
-    }
-
-    // 2) Create stores on top of that connection
-    ActivityStore   *activities = [[ActivityStore alloc]   initWithDatabaseManager:dbm];
-    TrackPointStore *points     = [[TrackPointStore alloc] initWithDatabaseManager:dbm];
-    IdentifierStore *idents     = [[IdentifierStore alloc] initWithDatabaseManager:dbm];
-
-    // 3) Ensure schema on each store
-    if (![activities createSchemaIfNeeded:&err] ||
-        ![points createSchemaIfNeeded:&err] ||
-        ![idents createSchemaIfNeeded:&err]) {
-        if (outError) *outError = err;
-        [activities release];
-        [points release];
-        [idents release];
-        [dbm close];
-        [dbm release];
-        return nil;
-    }
-    [browserData storeMetaData:activities];
-
-    NSArray *tracks = browserData.trackArray; // your source objects
-    NSUInteger total = tracks.count, idx = 0;
-
-    for (Track *t in tracks) {
-        @autoreleasepool {
-            if (progress) progress(idx, total);
-
-            // 5a) Upsert activity + laps
-            if (![activities saveTrack:t error:&err]) {
-                break;
-            }
-
-            // 5b) OPTIONAL: save identifiers for this track (if you have them on the Track)
-            // Example: link a Strava activity id
-            if ([t respondsToSelector:@selector(stravaActivityID)]) {
-                NSNumber *sid = [t stravaActivityID];
-                if (sid != nil) {
-                    // Need the DB track_id to link identifiers; resolve by uuid
-                    NSString *uuid = [t respondsToSelector:@selector(uuid)] ? [t uuid] : nil;
-                    if (uuid.length) {
-                        // small helper query to get activities.id for uuid
-                        sqlite3_stmt *st = NULL;
-                        sqlite3 *db = [dbm rawSQLite];
-                        int rc = sqlite3_prepare_v2(db, "SELECT id FROM activities WHERE uuid=?1;", -1, &st, NULL);
-                        if (rc == SQLITE_OK) {
-                            rc = sqlite3_bind_text(st, 1, uuid.UTF8String, -1, SQLITE_TRANSIENT);
-                            rc = (sqlite3_step(st));
-                            if (rc == SQLITE_ROW) {
-                                int64_t trackID = sqlite3_column_int64(st, 0);
-                                // Source label is up to you (e.g. @"strava")
-                                if (![idents linkExternalID:sid.stringValue source:@"strava" toTrackID:trackID error:&err]) {
-                                    // non-fatal; decide if you want to break
-                                }
-                            }
-                        }
-                        if (st) sqlite3_finalize(st);
-                    }
-                }
-            }
-        }
-        NSString *uuid = [t uuid];
-        int64_t trackID = 0;
-        {
-            sqlite3_stmt *st = NULL;
-            sqlite3 *db = [dbm rawSQLite];
-            if (sqlite3_prepare_v2(db, "SELECT id FROM activities WHERE uuid=?1;", -1, &st, NULL) == SQLITE_OK) {
-                sqlite3_bind_text(st, 1, uuid.UTF8String, -1, SQLITE_TRANSIENT);
-                if (sqlite3_step(st) == SQLITE_ROW)
-                    trackID = sqlite3_column_int64(st, 0);
-            }
-            if (st)
-                sqlite3_finalize(st);
-        }
-
-        
-        if (([uuid length] > 0) && !t.pointsEverSaved) {
-            NSLog(@"saving points for %s", [t.name UTF8String]);
-            NSArray *pts = [t respondsToSelector:@selector(points)] ? [t points] : nil;
-            NSUInteger n = pts.count;
-            if (n) {
-                TPRow *rows = (TPRow *)calloc(n, sizeof(TPRow));
-                for (NSUInteger i = 0; i < n; i++) {
-                    TrackPoint* p = (TrackPoint*)pts[i];
-                    rows[i].wall_clock_delta_s = [p wallClockDelta];
-                    rows[i].active_time_delta_s = [p activeTimeDelta];
-                    rows[i].latitude_e7 = [p latitude];
-                    rows[i].longitude_e7 = [p longitude];
-                    rows[i].orig_altitude_cm = [p origAltitude];
-                    rows[i].orig_distance_m = [p origDistance];
-                    rows[i].heartrate_bpm = [p heartrate];
-                    rows[i].cadence_rpm = [p cadence];
-                    rows[i].temperature_c10 = [p temperature];  // fixme
-                    rows[i].speed_mps = [p speed];
-                    rows[i].power_w = [p power];
-                    rows[i].flags = [p flags];
-                }
-                BOOL ok = [points replacePointsForTrack:t
-                                               fromRows:rows
-                                                  count:n
-                                                  error:&err];
-                free(rows);
-                if (!ok) break;
-            }
-        }
-
-        if (err) break;
-        idx++;
-    }
-
-    // 6) Close and return
-    [activities release];
-    [points release];
-    [idents release];
-
-    [dbm close];
-    [dbm release];
-
-    if (err) {
-        if (outError) *outError = err;
-        return nil;
-    }
-    return tmpURL;
 }
 
 
@@ -2660,7 +2081,10 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
     // In that case, build the staged export synchronously *here*.
     if (!staged) {
         NSError *exportErr = nil;
-        staged = [self _exportDocumentToTemporaryURLWithProgress:nil error:&exportErr];
+        AscentExporter* exporter = [[[AscentExporter alloc] init] autorelease];
+        staged = [exporter exportDocumentToTemporaryURLWithProgress:nil
+                                                           metaData:self.docMetaData
+                                                              error:&exportErr];
         if (!staged) {
             if (outError) *outError = exportErr ?: [NSError errorWithDomain:NSCocoaErrorDomain
                                                                        code:NSFileWriteUnknownError
@@ -2726,39 +2150,6 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
     // Clear dirty state (you already do this)
     [self updateChangeCount:NSChangeCleared];
 
-#if 0
-    
-    
-    NSFileManager *fm = [NSFileManager defaultManager];
-    NSError *err = nil;
-
-    
-    
-    // Try atomic replace first.
-    NSURL *resultURL = nil;
-    if (![fm replaceItemAtURL:destURL
-                 withItemAtURL:staged
-                backupItemName:nil
-                       options:0
-              resultingItemURL:&resultURL
-                         error:&err]) {
-        // Fallback to copy (handle new/untitled destinations, etc.).
-        [fm removeItemAtURL:destURL error:NULL];
-        if (![fm copyItemAtURL:staged toURL:destURL error:&err]) {
-            if (outError) *outError = err;
-            // If we created the staged file here, clean it up on failure.
-            if (stagedOwnedHere) [fm removeItemAtURL:staged error:NULL];
-            return NO;
-        }
-    }
-
-    // Clean up the staged file if we created it here.
-    if (stagedOwnedHere) {
-        [fm removeItemAtURL:staged error:NULL];
-    }
-    [self updateChangeCount:NSChangeCleared];
-#endif
-
 
     return YES;
 }
@@ -2798,32 +2189,32 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 
 - (NSMutableArray*)trackArray
 {
-   return [browserData trackArray];
+   return [self.docMetaData trackArray];
 }
 
 
 
 -(NSMutableDictionary*) colInfoDict
 {
-   return [browserData tableInfoDict];
+   return [self.docMetaData tableInfoDict];
 }
 
 
 -(void) setColInfoDict:(NSMutableDictionary*)dict
 {
-   [browserData setTableInfoDict:dict];
+   [self.docMetaData setTableInfoDict:dict];
 }
 
 
 -(NSMutableDictionary*) splitsColInfoDict
 {
-   return [browserData splitsTableInfoDict];
+   return [self.docMetaData splitsTableInfoDict];
 }
 
 
 -(void) setSplitsColInfoDict:(NSMutableDictionary*)dict
 {
-   [browserData setSplitsTableInfoDict:dict];
+   [self.docMetaData setSplitsTableInfoDict:dict];
 }
 
 
@@ -2936,7 +2327,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 
 -(void) replaceTracks:(NSArray*)tracksToRemove withTracks:(NSArray*)tracksToAdd actionName:(NSString*)an
 {
-	NSMutableArray* trackArray = [browserData trackArray];
+	NSMutableArray* trackArray = [self.docMetaData trackArray];
 	[tbWindowController storeExpandedState];
 	NSUndoManager* undo = [self undoManager];
 	[[undo prepareWithInvocationTarget:self] replaceTracks:tracksToAdd 
@@ -3242,7 +2633,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 
 -(void) addTracks:(NSArray*)arr
 {
-   NSMutableArray* trackArray = [browserData trackArray];
+   NSMutableArray* trackArray = [self.docMetaData trackArray];
   NSUInteger num = [arr count];
    if ((trackArray != nil) && (num > 0))
    {
@@ -3268,7 +2659,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 			 [self addTracksToDB:[NSArray arrayWithObject:t]
 			 alsoAddToTrackArray:YES];
 
-			 NSMutableArray* deletedTracks = [browserData userDeletedTrackTimes];
+			 NSMutableArray* deletedTracks = [self.docMetaData userDeletedTrackTimes];
 			 if ([deletedTracks containsObject:[t creationTime]])
 			 {
 				 [deletedTracks removeObject:[t creationTime]];
@@ -3303,7 +2694,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 {
     NSDate* newestCreatedTrack = [NSDate distantPast];
     NSDate* oldestCreatedTrack = [NSDate distantFuture];
-    NSMutableArray* trackArray = [browserData trackArray];
+    NSMutableArray* trackArray = [self.docMetaData trackArray];
     NSUInteger num = [arr count];
     if ((trackArray != nil) && (num > 0))
     {
@@ -3341,7 +2732,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
                 [self addTracksToDB:[NSArray arrayWithObject:t]
                 alsoAddToTrackArray:YES];
 
-                    NSMutableArray* deletedTracks = [browserData userDeletedTrackTimes];
+                    NSMutableArray* deletedTracks = [self.docMetaData userDeletedTrackTimes];
                 if ([deletedTracks containsObject:[t creationTime]])
                 {
                     [deletedTracks removeObject:[t creationTime]];
@@ -3370,7 +2761,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 
 -(void) deleteTracks:(NSArray*)arr;
 {
-	NSMutableArray* trackArray = [browserData trackArray];
+	NSMutableArray* trackArray = [self.docMetaData trackArray];
     NSUInteger num = [arr count];
 	if ((trackArray != nil) && (num > 0))
 	{
@@ -3387,7 +2778,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 			}
 		}
 		[[undo prepareWithInvocationTarget:self] addTracks:arr];
-        NSMutableArray* deletedTracks = [browserData userDeletedTrackTimes];
+        NSMutableArray* deletedTracks = [self.docMetaData userDeletedTrackTimes];
 		for (int i=0; i<num; i++)
 		{
 			Track* t = [arr objectAtIndex:i];
@@ -3422,7 +2813,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 
 -(void)trackArrayChanged:(BOOL)expandLastItem
 {
-	///NSMutableArray* trackArray = [browserData trackArray];
+	///NSMutableArray* trackArray = [docMetaData trackArray];
 	///[trackArray sortUsingSelector:@selector(compareByDate:)];
 	[tbWindowController storeExpandedState];
 	[tbWindowController buildBrowser:expandLastItem];
@@ -3444,7 +2835,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 		[undo setActionName:@"Edit activity"];
 	}
 	[[undo prepareWithInvocationTarget:self] replaceTrack:newTrack with:oldTrack];
-	NSMutableArray* trackArray = [browserData trackArray];
+	NSMutableArray* trackArray = [self.docMetaData trackArray];
 	[trackArray removeObjectIdenticalTo:oldTrack];
 	[self addTracksToDB:[NSArray arrayWithObject:newTrack]
 	alsoAddToTrackArray:YES];
@@ -3552,7 +2943,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 {
 	NSMutableArray* returnArr = [NSMutableArray arrayWithArray:arr];
     NSUInteger numNew = [arr count];
-	NSMutableArray* trackArray = [browserData trackArray];
+	NSMutableArray* trackArray = [self.docMetaData trackArray];
 	for (int i=0; i<numNew; i++)
 	{
 		Track* track = [arr objectAtIndex:i];
@@ -3593,7 +2984,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 	if (sts == YES)
 	{
 		NSArray* arr = [importedTrackArray sortedArrayUsingSelector:@selector(comparator:)];
-		//NSMutableArray* trackArray = [browserData trackArray];
+		//NSMutableArray* trackArray = [docMetaData trackArray];
 		arr = [self pruneNewTrackArray:arr];
 		if ([arr count] > 0)
 		{
@@ -3629,7 +3020,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 	if (sts == YES)
 	{
 		NSArray* arr = [importedTrackArray sortedArrayUsingSelector:@selector(comparator:)];
-		//NSMutableArray* trackArray = [browserData trackArray];
+		//NSMutableArray* trackArray = [docMetaData trackArray];
 		arr = [self pruneNewTrackArray:arr];
 		//[trackArray addObjectsFromArray:arr];
 		[self addTracksToDB:arr
@@ -3657,7 +3048,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 {
 	if (ata)
 	{
-		NSMutableArray* trackArray = [browserData trackArray];
+		NSMutableArray* trackArray = [self.docMetaData trackArray];
 		[trackArray addObjectsFromArray:arr];
 	}
 	for (Track* t in arr)
@@ -3677,7 +3068,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 	if (sts == YES)
 	{
 		NSArray* arr = [importedTrackArray sortedArrayUsingSelector:@selector(comparator:)];
-		//NSMutableArray* trackArray = [browserData trackArray];
+		//NSMutableArray* trackArray = [docMetaData trackArray];
 		arr = [self pruneNewTrackArray:arr];
 		if ([arr count] > 0)
 		{
@@ -3711,7 +3102,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 	if (sts == YES)
 	{
 		NSArray* arr = [importedTrackArray sortedArrayUsingSelector:@selector(comparator:)];
-		//NSMutableArray* trackArray = [browserData trackArray];
+		//NSMutableArray* trackArray = [docMetaData trackArray];
 		arr = [self pruneNewTrackArray:arr];
 		if ([arr count] > 0)
 		{
@@ -3791,37 +3182,36 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 
 -(int)numberOfSavesSinceLocalBackup;
 {
-	return [browserData numberOfSavesSinceLocalBackup];
+	return [self.docMetaData numberOfSavesSinceLocalBackup];
 }
 
 
 -(int)numberOfSavesSinceMobileMeBackup
 {
-	return [browserData numberOfSavesSinceMobileMeBackup];
+    return 0;
 }
 
 
 -(void)setNumberOfSavesSinceLocalBackup:(int)n
 {
-	[browserData setNumberOfSavesSinceLocalBackup:n];
+	[self.docMetaData setNumberOfSavesSinceLocalBackup:n];
 }
 
 
 -(void)setNumberOfSavesSinceMobileMeBackup:(int)n
 {
-	[browserData setNumberOfSavesSinceMobileMeBackup:n];
 }
 
 
 -(BOOL)usesEquipmentLog
 {
-	int flags = [browserData flags];
+	int flags = [self.docMetaData flags];
 	return FLAG_IS_SET(flags, kUsesEquipmentLog);
 }
 
 -(void)setUsesEquipmentLog:(BOOL)uses
 {
-	int savedFlags = [browserData flags];
+	int savedFlags = [self.docMetaData flags];
 	int temp = savedFlags;
 	if (uses)
 	{
@@ -3833,7 +3223,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 	}
 	if (temp != savedFlags)
 	{
-		[browserData setFlags:temp];
+		[self.docMetaData setFlags:temp];
 		[self updateChangeCount:NSChangeDone];
 	}
 }
@@ -3869,27 +3259,27 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 
 -(void)setInitialEquipmentLogData:(NSMutableDictionary*)eld
 {
-	[browserData setInitialEquipmentLogData:eld];
+	[self.docMetaData setInitialEquipmentLogData:eld];
 	[self updateChangeCount:NSChangeDone];
 }
 
 
 -(NSMutableDictionary*)initialEquipmentLogData
 {
-	return [browserData initialEquipmentLogData];
+	return [self.docMetaData initialEquipmentLogData];
 }
 
 
 
 -(void)setDocumentDateRange:(NSArray*)datesArray;
 {
-	[browserData setStartEndDateArray:datesArray];
+	[self.docMetaData setStartEndDateArray:datesArray];
 	[self updateChangeCount:NSChangeDone];
 }
 
 -(NSArray*)documentDateRange
 {
-	return [browserData startEndDateArray];
+	return [self.docMetaData startEndDateArray];
 }
 
 + (BOOL)autosavesInPlace {
@@ -3904,6 +3294,267 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 // (Optional) also disable Versions UI if you don’t use it
 + (BOOL)preservesVersions {
     return NO;
+}
+
+- (BOOL)ensureOpenDBMForURL:(NSURL *)url error:(NSError **)outError
+{
+    // If we already have a DBM pointed at this URL, reuse it.
+    if (self.documentDBM != nil) {
+        if ([self.documentDBM.databaseURL isEqual:url]) {
+            return YES;
+        }
+        // Different file -> close old before opening new.
+        [self teardownDocumentDBM];
+    }
+
+    DatabaseManager *dbm = [[DatabaseManager alloc] initWithURL:url];
+    NSError *err = nil;
+    if (![dbm open:&err]) {
+        if (outError) {
+            *outError = err;
+        }
+        [dbm release];
+        return NO;
+    }
+
+    // Build stores on top and ensure schema.
+    ActivityStore *a = [[ActivityStore alloc] initWithDatabaseManager:dbm];
+    TrackPointStore *p = [[TrackPointStore alloc] initWithDatabaseManager:dbm];
+    IdentifierStore *i = [[IdentifierStore alloc] initWithDatabaseManager:dbm];
+
+    if (!([a createSchemaIfNeeded:&err] &&
+          [p createSchemaIfNeeded:&err] &&
+          [i createSchemaIfNeeded:&err])) {
+
+        if (outError) {
+            *outError = err;
+        }
+        [a release];
+        [p release];
+        [i release];
+        [dbm close];
+        [dbm release];
+        return NO;
+    }
+
+    self.documentDBM     = dbm;
+    self.activityStore   = a;
+    self.trackPointStore = p;
+    self.identifierStore = i;
+
+    [a release];
+    [p release];
+    [i release];
+    [dbm release];
+    return YES;
+}
+
+- (void)teardownDocumentDBM
+{
+    if (self.activityStore) {
+        [self.activityStore release];
+        self.activityStore = nil;
+    }
+    if (self.trackPointStore) {
+        [self.trackPointStore release];
+        self.trackPointStore = nil;
+    }
+    if (self.identifierStore) {
+        [self.identifierStore release];
+        self.identifierStore = nil;
+    }
+    if (self.documentDBM) {
+        [self.documentDBM close];
+        [self.documentDBM release];
+        self.documentDBM = nil;
+    }
+}
+
+#pragma mark - Incremental decision
+
+- (BOOL)shouldDoIncrementalSaveForOperation:(NSSaveOperationType)op
+{
+    // Incremental is ONLY for:
+    //  - Normal Save / Autosave,
+    //  - When we already have a live DBM open on the SAME on-disk file,
+    //  - When the destination equals the document’s current fileURL,
+    //  - And we are not "Save As…" or "Export".
+    //
+    // Atomic (temp export + replace) for:
+    //  - First save of Untitled (no DBM),
+    //  - Save As…,
+    //  - Export/duplicate,
+    //  - Any time fileURL != destination.
+
+    if (op == NSSaveAsOperation || op == NSSaveToOperation) {
+        return NO;
+    }
+
+    if (self.fileURL == nil) {
+        return NO;
+    }
+
+    if (self.documentDBM == nil) {
+        return NO;
+    }
+
+    NSURL *dbmURL = self.documentDBM.databaseURL;
+    if (dbmURL == nil) {
+        return NO;
+    }
+
+    // Must match the same file on disk
+    if (![dbmURL isEqual:self.fileURL]) {
+        return NO;
+    }
+
+    return YES;
+}
+
+
+#pragma mark - Writable DBM acquisition
+
+- (DatabaseManager *)documentDBMForURL:(NSURL *)url
+                                 error:(NSError **)outError
+{
+    if (url == nil) {
+        if (outError) {
+            *outError = [NSError errorWithDomain:NSCocoaErrorDomain
+                                            code:NSFileWriteInvalidFileNameError
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Nil destination URL"}];
+        }
+        return nil;
+    }
+
+    // Reuse current writable DBM if it points at the same URL.
+    if (self.documentDBM != nil) {
+        NSURL *currentURL = nil;
+        if ([self.documentDBM respondsToSelector:@selector(url)]) {
+            // If DatabaseManager exposes its URL, use it to confirm reuse.
+            currentURL = [self.documentDBM performSelector:@selector(url)];
+        }
+
+        if (currentURL == nil || [currentURL isEqual:url]) {
+            return self.documentDBM;
+        }
+
+        // Different target URL -> retire the existing DBM and dependent stores.
+        @try {
+            [self.activityStore release];
+            self.activityStore = nil;
+
+            [self.trackPointStore release];
+            self.trackPointStore = nil;
+
+            [self.identifierStore release];
+            self.identifierStore = nil;
+
+            [self.documentDBM close];
+        } @catch (__unused id e) {
+            // Best effort; continue cleanup.
+        }
+
+        [self.documentDBM release];
+        self.documentDBM = nil;
+    }
+
+    // Create a fresh writable DBM for the requested URL.
+    NSError *openErr = nil;
+    DatabaseManager *dbm = [[DatabaseManager alloc] initWithURL:url];
+    if (![dbm open:&openErr]) {
+        if (outError) {
+            *outError = openErr ?: [NSError errorWithDomain:NSCocoaErrorDomain
+                                                       code:NSFileWriteUnknownError
+                                                   userInfo:@{NSLocalizedDescriptionKey:@"Failed to open writable database"}];
+        }
+        [dbm release];
+        return nil;
+    }
+
+    self.documentDBM = dbm;   // property retains
+    [dbm release];            // balance our alloc
+
+    return self.documentDBM;
+}
+
+// Optional shim so any older call sites keep working.
+// Internally just forwards to the canonical helper above.
+- (DatabaseManager *)currentWritableDBMForURL:(NSURL *)url
+                                        error:(NSError **)outError
+{
+    return [self documentDBMForURL:url error:outError];
+}
+
+#pragma mark - Ensure writable stores for a DBM
+
+- (void)ensureWritableStoresForDBM:(DatabaseManager *)dbm
+                     activityStore:(ActivityStore * __autoreleasing *)outAct
+                  trackPointStore:(TrackPointStore * __autoreleasing *)outTP
+                 identifierStore:(IdentifierStore * __autoreleasing *)outID
+{
+    if (dbm == nil) {
+        NSLog(@"[TrackBrowserDocument] ensureWritableStoresForDBM: received nil dbm");
+        if (outAct) *outAct = nil;
+        if (outTP)  *outTP  = nil;
+        if (outID)  *outID  = nil;
+        return;
+    }
+
+    // Always (re)create stores bound to this DBM to avoid cross-DBM mixups.
+    ActivityStore   *newAct = [[ActivityStore alloc]   initWithDatabaseManager:dbm];
+    TrackPointStore *newTP  = [[TrackPointStore alloc] initWithDatabaseManager:dbm];
+    IdentifierStore *newID  = [[IdentifierStore alloc] initWithDatabaseManager:dbm];
+
+    NSError *schemaErr = nil;
+    BOOL ok =
+        [newAct createSchemaIfNeeded:&schemaErr] &&
+        [newTP  createSchemaIfNeeded:&schemaErr] &&
+        [newID  createSchemaIfNeeded:&schemaErr];
+
+    if (!ok) {
+        NSLog(@"[TrackBrowserDocument] ensureWritableStoresForDBM: schema ensure failed: %@", schemaErr);
+
+        if (outAct) *outAct = nil;
+        if (outTP)  *outTP  = nil;
+        if (outID)  *outID  = nil;
+
+        [newAct release];
+        [newTP  release];
+        [newID  release];
+        return;
+    }
+
+    // Swap onto document properties.
+    if (self.activityStore != nil) {
+        [self.activityStore release];
+    }
+    self.activityStore = newAct;
+
+    if (self.trackPointStore != nil) {
+        [self.trackPointStore release];
+    }
+    self.trackPointStore = newTP;
+
+    if (self.identifierStore != nil) {
+        [self.identifierStore release];
+    }
+    self.identifierStore = newID;
+
+    // Hand back to caller (autoreleased so callers aren’t forced to manage retains).
+    if (outAct) {
+        *outAct = [[self.activityStore retain] autorelease];
+    }
+    if (outTP) {
+        *outTP = [[self.trackPointStore retain] autorelease];
+    }
+    if (outID) {
+        *outID = [[self.identifierStore retain] autorelease];
+    }
+
+    // We created with alloc/init; the properties retained them.
+    [newAct release];
+    [newTP  release];
+    [newID  release];
 }
 
 @end

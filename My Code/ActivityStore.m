@@ -488,7 +488,8 @@ static BOOL ASCEnsureColumn(sqlite3 *db,
         // --------- UUID (required) ----------
         NSString *uuid = [track respondsToSelector:@selector(uuid)] ? [track uuid] : [track valueForKey:@"uuid"];
         if (uuid.length == 0) {
-            err = [NSError errorWithDomain:@"ActivityStore" code:-1
+            err = [NSError errorWithDomain:@"ActivityStore"
+                                      code:-1
                                   userInfo:@{NSLocalizedDescriptionKey:@"Track uuid is required"}];
             return NO;
         }
@@ -496,7 +497,10 @@ static BOOL ASCEnsureColumn(sqlite3 *db,
         // --------- Dirty flags (default "all dirty" if absent) ----------
         uint32_t dirtyMask = 0xFFFFFFFFu;
         BOOL haveDirty = NO;
-        @try { dirtyMask = (uint32_t)[[track valueForKey:@"dirtyMask"] unsignedIntValue]; haveDirty = YES; } @catch (__unused id e) {}
+        @try {
+            dirtyMask = (uint32_t)[[track valueForKey:@"dirtyMask"] unsignedIntValue];
+            haveDirty = YES;
+        } @catch (__unused id e) {}
         BOOL metaDirty = haveDirty ? ((dirtyMask & (1u<<0)) != 0) : YES; // kDirtyMeta
         BOOL lapsDirty = haveDirty ? ((dirtyMask & (1u<<1)) != 0) : YES; // kDirtyLaps
 
@@ -504,23 +508,48 @@ static BOOL ASCEnsureColumn(sqlite3 *db,
         sqlite3_int64 trackID = 0;
         int points_saved = 0;
         {
+            // Try to read id + points_saved (schema may not have points_saved yet)
             sqlite3_stmt *q = NULL;
-            if (sqlite3_prepare_v2(db, "SELECT id, COALESCE(points_saved,0) FROM activities WHERE uuid=?1;", -1, &q, NULL) != SQLITE_OK) {
-                err = [NSError errorWithDomain:@"ActivityStore" code:sqlite3_errcode(db)
-                                      userInfo:@{NSLocalizedDescriptionKey:@(sqlite3_errmsg(db) ?: "prepare SELECT id failed")}];
-                return NO;
+            int rc = sqlite3_prepare_v2(db, "SELECT id, COALESCE(points_saved,0) FROM activities WHERE uuid=?1;", -1, &q, NULL);
+            if (rc == SQLITE_OK) {
+                sqlite3_bind_text(q, 1, uuid.UTF8String, -1, SQLITE_TRANSIENT);
+                if (sqlite3_step(q) == SQLITE_ROW) {
+                    trackID = sqlite3_column_int64(q, 0);
+                    points_saved = sqlite3_column_int(q, 1);
+                    NSLog(@"points have been saved %s for %s", (points_saved ? "YES" : "NO"), [track.name UTF8String]);
+                }
+                sqlite3_finalize(q);
+            } else {
+                // Fallback for older DBs without points_saved column
+                sqlite3_stmt *q1 = NULL;
+                if (sqlite3_prepare_v2(db, "SELECT id FROM activities WHERE uuid=?1;", -1, &q1, NULL) == SQLITE_OK) {
+                    sqlite3_bind_text(q1, 1, uuid.UTF8String, -1, SQLITE_TRANSIENT);
+                    if (sqlite3_step(q1) == SQLITE_ROW) {
+                        trackID = sqlite3_column_int64(q1, 0);
+                    }
+                }
+                if (q1) {
+                    sqlite3_finalize(q1);
+                }
+                if (trackID > 0) {
+                    sqlite3_stmt *qp = NULL;
+                    if (sqlite3_prepare_v2(db, "SELECT 1 FROM points WHERE track_id=?1 LIMIT 1;", -1, &qp, NULL) == SQLITE_OK) {
+                        sqlite3_bind_int64(qp, 1, trackID);
+                        points_saved = (sqlite3_step(qp) == SQLITE_ROW) ? 1 : 0;
+                    }
+                    if (qp) {
+                        sqlite3_finalize(qp);
+                    }
+                }
             }
-            sqlite3_bind_text(q, 1, uuid.UTF8String, -1, SQLITE_TRANSIENT);
-            if (sqlite3_step(q) == SQLITE_ROW) {
-                trackID      = sqlite3_column_int64(q, 0);
-                points_saved = sqlite3_column_int(q, 1);
-            }
-            sqlite3_finalize(q);
         }
 
         // --------- Safe early-out (only if row already exists) ----------
         BOOL pointsEverSaved = NO; // default to NO — only skip if we really know points are saved
-        @try { pointsEverSaved = [[track valueForKey:@"pointsEverSaved"] boolValue]; } @catch (__unused id e) {}
+        @try {
+            pointsEverSaved = [[track valueForKey:@"pointsEverSaved"] boolValue];
+        } @catch (__unused id e) {}
+
         if (trackID > 0 && !metaDirty && !lapsDirty && (points_saved || pointsEverSaved)) {
             return YES;
         }
@@ -545,13 +574,19 @@ static BOOL ASCEnsureColumn(sqlite3 *db,
             int firmwareVersion = [track respondsToSelector:@selector(firmwareVersion)] ? [track firmwareVersion] : [[track valueForKey:@"firmwareVersion"] intValue];
 
             NSArray<NSURL *> *photoURLs = nil;
-            if ([track respondsToSelector:@selector(photoURLs)]) photoURLs = [track photoURLs];
-            else @try { photoURLs = [track valueForKey:@"photoURLs"]; } @catch (__unused id e) {}
+            if ([track respondsToSelector:@selector(photoURLs)]) {
+                photoURLs = [track photoURLs];
+            } else {
+                @try { photoURLs = [track valueForKey:@"photoURLs"]; } @catch (__unused id e) {}
+            }
             NSString *photosJSON = URLsToJSON(photoURLs);
 
             NSArray<NSString *> *localMedia = nil;
-            if ([track respondsToSelector:@selector(localMediaItems)]) localMedia = [track localMediaItems];
-            else @try { localMedia = [track valueForKey:@"localMediaItems"]; } @catch (__unused id e) {}
+            if ([track respondsToSelector:@selector(localMediaItems)]) {
+                localMedia = [track localMediaItems];
+            } else {
+                @try { localMedia = [track valueForKey:@"localMediaItems"]; } @catch (__unused id e) {}
+            }
             NSString *localMediaJSON = StringsToJSON(localMedia);
 
             double srcDistance       = [track respondsToSelector:@selector(srcDistance)]       ? [track srcDistance]       : [[track valueForKey:@"srcDistance"] doubleValue];
@@ -570,16 +605,22 @@ static BOOL ASCEnsureColumn(sqlite3 *db,
             double srcMovingTime     = [track respondsToSelector:@selector(srcMovingTime)]     ? [track srcMovingTime]     : [[track valueForKey:@"srcMovingTime"] doubleValue];
 
             NSNumber *stravaActivityID = nil;
-            if ([track respondsToSelector:@selector(stravaActivityID)]) stravaActivityID = [track stravaActivityID];
-            else @try { stravaActivityID = [track valueForKey:@"stravaActivityID"]; } @catch (__unused id e) {}
+            if ([track respondsToSelector:@selector(stravaActivityID)]) {
+                stravaActivityID = [track stravaActivityID];
+            } else {
+                @try { stravaActivityID = [track valueForKey:@"stravaActivityID"]; } @catch (__unused id e) {}
+            }
 
             NSString *tzName = nil;
             if ([track respondsToSelector:@selector(timeZoneName)]) {
                 tzName = [track timeZoneName];
             } else if ([track respondsToSelector:@selector(timeZone)]) {
                 id tz = [track timeZoneName];
-                if ([tz isKindOfClass:[NSTimeZone class]])   tzName = [(NSTimeZone *)tz name];
-                else if ([tz isKindOfClass:[NSString class]]) tzName = (NSString *)tz;
+                if ([tz isKindOfClass:[NSTimeZone class]]) {
+                    tzName = [(NSTimeZone *)tz name];
+                } else if ([tz isKindOfClass:[NSString class]]) {
+                    tzName = (NSString *)tz;
+                }
             } else {
                 @try { tzName = [track valueForKey:@"timeZone"]; } @catch (__unused id e) {}
             }
@@ -587,8 +628,11 @@ static BOOL ASCEnsureColumn(sqlite3 *db,
             NSArray *attrs   = [track respondsToSelector:@selector(attributes)] ? [track attributes] : [track valueForKey:@"attributes"];
             NSArray *markers = [track respondsToSelector:@selector(markers)]    ? [track markers]    : [track valueForKey:@"markers"];
             id       od      = nil;
-            if ([track respondsToSelector:@selector(overrideData)]) od = [track performSelector:@selector(overrideData)];
-            else @try { od = [track valueForKey:@"overrideData"]; } @catch (__unused id e) {}
+            if ([track respondsToSelector:@selector(overrideData)]) {
+                od = [track performSelector:@selector(overrideData)];
+            } else {
+                @try { od = [track valueForKey:@"overrideData"]; } @catch (__unused id e) {}
+            }
 
             NSString *attrsJSON    = AttributesToJSON(attrs);
             NSString *markersJSON  = MarkersToJSON(markers);
@@ -649,7 +693,8 @@ static BOOL ASCEnsureColumn(sqlite3 *db,
 
             sqlite3_stmt *act = NULL;
             if (sqlite3_prepare_v2(db, upsert, -1, &act, NULL) != SQLITE_OK) {
-                err = [NSError errorWithDomain:@"ActivityStore" code:sqlite3_errcode(db)
+                err = [NSError errorWithDomain:@"ActivityStore"
+                                          code:sqlite3_errcode(db)
                                       userInfo:@{NSLocalizedDescriptionKey:@(sqlite3_errmsg(db))}];
                 return NO;
             }
@@ -669,14 +714,20 @@ static BOOL ASCEnsureColumn(sqlite3 *db,
             sqlite3_bind_text  (act,13,  (markersJSON  ?: @"").UTF8String,   -1, SQLITE_TRANSIENT);
             sqlite3_bind_text  (act,14,  (overrideJSON ?: @"").UTF8String,   -1, SQLITE_TRANSIENT);
             sqlite3_bind_int   (act,15,  secondsFromGMT);
-            if (tzName.length) sqlite3_bind_text(act,16, tzName.UTF8String, -1, SQLITE_TRANSIENT);
-            else               sqlite3_bind_null(act,16);
+            if (tzName.length) {
+                sqlite3_bind_text(act,16, tzName.UTF8String, -1, SQLITE_TRANSIENT);
+            } else {
+                sqlite3_bind_null(act,16);
+            }
             sqlite3_bind_int   (act,17,  flags);
             sqlite3_bind_int   (act,18,  deviceID);
             sqlite3_bind_int   (act,19,  firmwareVersion);
             sqlite3_bind_text  (act,20, (photosJSON ?: @"").UTF8String, -1, SQLITE_TRANSIENT);
-            if (stravaActivityID) sqlite3_bind_int64(act,21, (sqlite3_int64)stravaActivityID.longLongValue);
-            else                  sqlite3_bind_null (act,21);
+            if (stravaActivityID) {
+                sqlite3_bind_int64(act,21, (sqlite3_int64)stravaActivityID.longLongValue);
+            } else {
+                sqlite3_bind_null (act,21);
+            }
             sqlite3_bind_double(act, 22, srcDistance);
             sqlite3_bind_double(act, 23, srcMaxSpeed);
             sqlite3_bind_double(act, 24, srcAvgHeartrate);
@@ -694,7 +745,8 @@ static BOOL ASCEnsureColumn(sqlite3 *db,
             sqlite3_bind_text  (act, 36, (localMediaJSON ?: @"[]").UTF8String, -1, SQLITE_TRANSIENT);
 
             if (sqlite3_step(act) != SQLITE_DONE) {
-                err = [NSError errorWithDomain:@"ActivityStore" code:sqlite3_errcode(db)
+                err = [NSError errorWithDomain:@"ActivityStore"
+                                          code:sqlite3_errcode(db)
                                       userInfo:@{NSLocalizedDescriptionKey:@(sqlite3_errmsg(db) ?: "UPSERT activities failed")}];
                 sqlite3_finalize(act);
                 return NO;
@@ -705,15 +757,19 @@ static BOOL ASCEnsureColumn(sqlite3 *db,
             if (trackID == 0) {
                 sqlite3_stmt *sel = NULL;
                 if (sqlite3_prepare_v2(db, "SELECT id FROM activities WHERE uuid=?1;", -1, &sel, NULL) != SQLITE_OK) {
-                    err = [NSError errorWithDomain:@"ActivityStore" code:sqlite3_errcode(db)
+                    err = [NSError errorWithDomain:@"ActivityStore"
+                                              code:sqlite3_errcode(db)
                                           userInfo:@{NSLocalizedDescriptionKey:@(sqlite3_errmsg(db) ?: "reselect id failed")}];
                     return NO;
                 }
                 sqlite3_bind_text(sel, 1, uuid.UTF8String, -1, SQLITE_TRANSIENT);
-                if (sqlite3_step(sel) == SQLITE_ROW) trackID = sqlite3_column_int64(sel, 0);
+                if (sqlite3_step(sel) == SQLITE_ROW) {
+                    trackID = sqlite3_column_int64(sel, 0);
+                }
                 sqlite3_finalize(sel);
                 if (trackID == 0) {
-                    err = [NSError errorWithDomain:@"ActivityStore" code:-2
+                    err = [NSError errorWithDomain:@"ActivityStore"
+                                              code:-2
                                           userInfo:@{NSLocalizedDescriptionKey:@"Failed to resolve activities.id after upsert"}];
                     return NO;
                 }
@@ -748,9 +804,9 @@ static BOOL ASCEnsureColumn(sqlite3 *db,
                 " distance_mi,max_speed_mph,avg_speed_mph,begin_lat,begin_lon,end_lat,end_lon,device_total_time_s,"
                 " average_hr,max_hr,average_cad,max_cad,calories,intensity,trigger_method,selected,stats_calculated)"
                 " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
-                sqlite3_stmt *lapStmt=NULL;
+                sqlite3_stmt *lapStmt = NULL;
                 if (sqlite3_prepare_v2(db, insLap, -1, &lapStmt, NULL) == SQLITE_OK) {
-                    for (Lap* lap in laps) {
+                    for (Lap *lap in laps) {
                         sqlite3_bind_int64 (lapStmt, 1, trackID);
                         sqlite3_bind_int   (lapStmt, 2, [lap respondsToSelector:@selector(index)] ? [lap index] : [[lap valueForKey:@"index"] intValue]);
                         sqlite3_bind_int64 (lapStmt, 3, [lap respondsToSelector:@selector(origStartTime)] ? (sqlite3_int64)llround([[lap origStartTime] timeIntervalSince1970]) : (sqlite3_int64)llround([[lap valueForKey:@"origStartTime"] timeIntervalSince1970]));
@@ -771,13 +827,14 @@ static BOOL ASCEnsureColumn(sqlite3 *db,
                         sqlite3_bind_int   (lapStmt,18, [lap respondsToSelector:@selector(calories)] ? [lap calories] : [[lap valueForKey:@"calories"] intValue]);
                         sqlite3_bind_int   (lapStmt,19, [lap respondsToSelector:@selector(intensity)] ? [lap intensity] : [[lap valueForKey:@"intensity"] intValue]);
                         sqlite3_bind_int   (lapStmt,20, [lap respondsToSelector:@selector(triggerMethod)] ? [lap triggerMethod] : [[lap valueForKey:@"triggerMethod"] intValue]);
-                        sqlite3_bind_int   (lapStmt,21, [lap respondsToSelector:@selector(selected)] ? ([lap selected] ? 1:0) : ([[lap valueForKey:@"selected"] boolValue] ? 1:0));
-                        sqlite3_bind_int   (lapStmt,22, [lap respondsToSelector:@selector(statsCalculated)] ? ([lap statsCalculated] ? 1:0) : ([[lap valueForKey:@"statsCalculated"] boolValue] ? 1:0));
+                        sqlite3_bind_int   (lapStmt,21, [lap respondsToSelector:@selector(selected)] ? ([lap selected] ? 1 : 0) : ([[lap valueForKey:@"selected"] boolValue] ? 1 : 0));
+                        sqlite3_bind_int   (lapStmt,22, [lap respondsToSelector:@selector(statsCalculated)] ? ([lap statsCalculated] ? 1 : 0) : ([[lap valueForKey:@"statsCalculated"] boolValue] ? 1 : 0));
 
                         if (sqlite3_step(lapStmt) != SQLITE_DONE) {
                             sqlite3_finalize(lapStmt);
                             sqlite3_exec(db, "ROLLBACK TO save_laps; RELEASE save_laps;", NULL, NULL, NULL);
-                            err = [NSError errorWithDomain:@"ActivityStore" code:sqlite3_errcode(db)
+                            err = [NSError errorWithDomain:@"ActivityStore"
+                                                      code:sqlite3_errcode(db)
                                                   userInfo:@{NSLocalizedDescriptionKey:@(sqlite3_errmsg(db) ?: "insert lap failed")}];
                             return NO;
                         }
@@ -798,29 +855,42 @@ static BOOL ASCEnsureColumn(sqlite3 *db,
             } @catch (__unused id e) {}
         }
 
-        // Points are immutable and saved elsewhere (first-time only).
+        // NOTE: Points are immutable and saved elsewhere (first-time only).
         return YES;
     };
 
     if (_dbm) {
-        dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-        [_dbm performWrite:^(sqlite3 *db, DBErrorBlock fail){
-            ok = work(db);
-            if (!ok && err) fail(err);
-        } completion:^(__unused NSError *e){
-            if (e && !err) err = [e retain];
-            dispatch_semaphore_signal(sem);
-        }];
-        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-        dispatch_release(sem);
-        if (err) { [err autorelease]; }
+        if ([_dbm respondsToSelector:@selector(isOnWriteQueue)] && [_dbm isOnWriteQueue]) {
+            ok = work([_dbm rawSQLite]);
+        } else {
+            dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+            [_dbm performWrite:^(sqlite3 *db, DBErrorBlock fail){
+                ok = work(db);
+                if (!ok && err) {
+                    fail(err);
+                }
+            } completion:^(__unused NSError *e){
+                if (e && !err) {
+                    err = [e retain];
+                }
+                dispatch_semaphore_signal(sem);
+            }];
+            dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+            dispatch_release(sem);
+            if (err) {
+                [err autorelease];
+            }
+        }
     } else {
         ok = work(_db);
     }
 
-    if (!ok && error) *error = err;
+    if (!ok && error) {
+        *error = err;
+    }
     return ok;
 }
+
 
 - (BOOL)saveAllTracks:(NSArray *)tracks
                 error:(NSError **)error
@@ -894,80 +964,99 @@ static int LoggingPermissiveAuth(void *ud, int action,
     __block BOOL ok = NO;
     __block NSError *err = nil;
 
+    // Initialize outputs to safe defaults
+    if (outUuid)            *outUuid = nil;
+    if (outTableInfo)       *outTableInfo = nil;
+    if (outSplitsTableInfo) *outSplitsTableInfo = nil;
+    if (outStartTime)       *outStartTime = nil;
+    if (outEndTime)         *outEndTime = nil;
+    if (outLastSyncTime)    *outLastSyncTime = nil;
+    if (outFlags)           *outFlags = 0;
+    if (outTotalTracks)     *outTotalTracks = 0;
+    if (outI3)              *outI3 = 0;
+    if (outI4)              *outI4 = 0;
+
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
 
     [_dbm performRead:^(sqlite3 *db) {
-        @autoreleasepool { // ensure any autoreleases are contained
-
-            const char *sql =
-              "SELECT id, uuid_s, tableInfo_json, splitsTableInfo_json, "
-              "       startDate_s, endDate_s, lastSyncTime_s, "
-              "       flags, totalTracks, int3, int4 "
-              "FROM meta WHERE id=1;";
-
+        @autoreleasepool {
             sqlite3_stmt *st = NULL;
-            int rc = sqlite3_prepare_v2(db, sql, -1, &st, NULL);
-            if (rc != SQLITE_OK) {
-                err = [NSError errorWithDomain:@"ActivityStore" code:rc
-                                       userInfo:@{NSLocalizedDescriptionKey:@(sqlite3_errmsg(db))}];
-                goto done;
-            }
 
-            if (sqlite3_step(st) == SQLITE_ROW) {
-                // Build RETAINED/COPIED results
-                if (outUuid) {
-                    const unsigned char *uuidTxt = sqlite3_column_text(st, 1);
-                    *outUuid = uuidTxt ? [[NSString alloc] initWithUTF8String:(const char *)uuidTxt] : nil;
+            do {
+                if (!db) {
+                    err = [NSError errorWithDomain:@"ActivityStore" code:-1
+                                          userInfo:@{NSLocalizedDescriptionKey:@"DB handle is NULL"}];
+                    break;
                 }
-                if (outTableInfo) {
-                    NSDictionary *ti = ColumnInfoDictFromJSONText(sqlite3_column_text(st, 2));
-                    *outTableInfo = [ti copy]; // immutable copy == retain
+
+                const char *sql =
+                  "SELECT id, uuid_s, tableInfo_json, splitsTableInfo_json, "
+                  "       startDate_s, endDate_s, lastSyncTime_s, "
+                  "       flags, totalTracks, int3, int4 "
+                  "FROM meta WHERE id=1;";
+
+                int rc = sqlite3_prepare_v2(db, sql, -1, &st, NULL);
+                if (rc != SQLITE_OK || !st) {
+                    const char *msg = sqlite3_errmsg(db);
+                    // Treat missing table as “defaults OK” on read-only DBs
+                    if (msg && strstr(msg, "no such table")) { ok = YES; break; }
+                    err = [NSError errorWithDomain:@"ActivityStore" code:rc
+                                          userInfo:@{NSLocalizedDescriptionKey: msg ? @(msg) : @"prepare failed"}];
+                    break;
                 }
-                if (outSplitsTableInfo) {
-                    NSDictionary *si = ColumnInfoDictFromJSONText(sqlite3_column_text(st, 3));
-                    *outSplitsTableInfo = [si copy];
+
+                rc = sqlite3_step(st);
+                if (rc == SQLITE_ROW) {
+                    if (outUuid) {
+                        const unsigned char *uuidTxt = sqlite3_column_text(st, 1);
+                        *outUuid = uuidTxt ? [[NSString alloc] initWithUTF8String:(const char *)uuidTxt] : nil;
+                    }
+                    if (outTableInfo) {
+                        NSDictionary *ti = ColumnInfoDictFromJSONText(sqlite3_column_text(st, 2));
+                        *outTableInfo = [ti copy];
+                    }
+                    if (outSplitsTableInfo) {
+                        NSDictionary *si = ColumnInfoDictFromJSONText(sqlite3_column_text(st, 3));
+                        *outSplitsTableInfo = [si copy];
+                    }
+                    if (outStartTime)     *outStartTime     = [DateFromEpoch(sqlite3_column_int64(st, 4)) retain];
+                    if (outEndTime)       *outEndTime       = [DateFromEpoch(sqlite3_column_int64(st, 5)) retain];
+                    if (outLastSyncTime)  *outLastSyncTime  = [DateFromEpoch(sqlite3_column_int64(st, 6)) retain];
+                    if (outFlags)         *outFlags         = sqlite3_column_int(st, 7);
+                    if (outTotalTracks)   *outTotalTracks   = sqlite3_column_int(st, 8);
+                    if (outI3)            *outI3            = sqlite3_column_int(st, 9);
+                    if (outI4)            *outI4            = sqlite3_column_int(st,10);
+
+                    ok = YES;
+                } else if (rc == SQLITE_DONE) {
+                    // No row present; return defaults on RO handle
+                    ok = YES;
+                } else {
+                    err = [NSError errorWithDomain:@"ActivityStore" code:rc
+                                          userInfo:@{NSLocalizedDescriptionKey:@(sqlite3_errmsg(db))}];
                 }
-                if (outStartTime)     *outStartTime     = [DateFromEpoch(sqlite3_column_int64(st, 4)) retain];
-                if (outEndTime)       *outEndTime       = [DateFromEpoch(sqlite3_column_int64(st, 5)) retain];
-                if (outLastSyncTime)  *outLastSyncTime  = [DateFromEpoch(sqlite3_column_int64(st, 6)) retain];
-                if (outFlags)         *outFlags         = sqlite3_column_int(st, 7);
-                if (outTotalTracks)   *outTotalTracks   = sqlite3_column_int(st, 8);
-                if (outI3)            *outI3            = sqlite3_column_int(st, 9);
-                if (outI4)            *outI4            = sqlite3_column_int(st,10);
+            } while (0);
 
-                ok = YES;
-            } else {
-                // Ensure default singleton row exists; return defaults (also retained/copy where needed)
-                (void)sqlite3_finalize(st); st = NULL;
-                (void)sqlite3_exec(db, "INSERT OR IGNORE INTO meta (id) VALUES (1);", NULL, NULL, NULL);
-
-                if (outUuid)            *outUuid = nil;
-                if (outTableInfo)       *outTableInfo = nil;
-                if (outSplitsTableInfo) *outSplitsTableInfo = nil;
-                if (outStartTime)       *outStartTime = nil;
-                if (outEndTime)         *outEndTime = nil;
-                if (outLastSyncTime)    *outLastSyncTime = nil;
-                if (outFlags)           *outFlags = 0;
-                if (outTotalTracks)     *outTotalTracks = 0;
-                if (outI3)              *outI3 = 0;
-                if (outI4)              *outI4 = 0;
-
-                ok = YES;
-            }
-
-        done:
             if (st) sqlite3_finalize(st);
+
+            // >>> retain err BEFORE the pool drains so caller can safely use it
+            if (err) [err retain];
         }
-    } completion:^{
+
+        // Signal from inside the DB queue (no hop to main → no deadlock)
         dispatch_semaphore_signal(sem);
-    }];
+
+    } completion:NULL];
 
     dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     dispatch_release(sem);
 
-    if (!ok && error) *error = err;
+    if (!ok && error) *error = [err autorelease];
+    else [err release]; // nil-safe
+
     return ok;
 }
+
 
 #pragma mark - Load all tracks (routed via performRead when available)
 
@@ -980,7 +1069,26 @@ static int LoggingPermissiveAuth(void *ud, int action,
     __block NSError *err = nil;
 
     void (^work)(sqlite3 *) = ^(sqlite3 *db){
-        const char *selA =
+
+        // First try with points_saved / points_count (new schema)
+        const char *selA_with_flags =
+          "SELECT id,uuid,name,creation_time_s,creation_time_override_s,"
+          " distance_mi,weight_lb,altitude_smooth_factor,equipment_weight_lb,"
+          " device_total_time_s,moving_speed_only,has_distance_data,"
+          " attributes_json, markers_json, override_json,"
+          " seconds_from_gmt_at_sync, time_zone,"
+          " flags, device_id, firmware_version,"
+          " photo_urls_json, strava_activity_id,"
+          " src_distance,src_max_speed,src_avg_heartrate,src_max_heartrate,src_avg_temperature,"
+          " src_max_elevation,src_min_elevation,src_avg_power,src_max_power,src_avg_cadence,"
+          " src_total_climb,src_kilojoules,src_elapsed_time_s,src_moving_time_s,"
+          " local_media_items_json,"
+          " COALESCE(points_saved,0),"
+          " COALESCE(points_count,0) "
+          "FROM activities ORDER BY creation_time_s;";
+
+        // Fallback (older schema w/o points_saved/points_count)
+        const char *selA_legacy =
           "SELECT id,uuid,name,creation_time_s,creation_time_override_s,"
           " distance_mi,weight_lb,altitude_smooth_factor,equipment_weight_lb,"
           " device_total_time_s,moving_speed_only,has_distance_data,"
@@ -995,19 +1103,25 @@ static int LoggingPermissiveAuth(void *ud, int action,
           "FROM activities ORDER BY creation_time_s;";
 
         sqlite3_stmt *a = NULL;
-        if (sqlite3_prepare_v2(db, selA, -1, &a, NULL) != SQLITE_OK) {
-            err = [NSError errorWithDomain:@"ActivityStore"
-                                      code:sqlite3_errcode(db)
-                                  userInfo:@{NSLocalizedDescriptionKey:
-                                             @(sqlite3_errmsg(db) ?: "load prepare failed")}];
-            return;
+        BOOL hasPointsFlags = (sqlite3_prepare_v2(db, selA_with_flags, -1, &a, NULL) == SQLITE_OK);
+        if (!hasPointsFlags) {
+            if (sqlite3_prepare_v2(db, selA_legacy, -1, &a, NULL) != SQLITE_OK) {
+                err = [NSError errorWithDomain:@"ActivityStore"
+                                          code:sqlite3_errcode(db)
+                                      userInfo:@{NSLocalizedDescriptionKey:
+                                                 @(sqlite3_errmsg(db) ?: "load prepare failed")}];
+                return;
+            }
         }
 
         NSInteger total = tt;
         int idx = 0;
 
         while (sqlite3_step(a) == SQLITE_ROW) {
-            if (progress) progress(idx++, total);
+            if (progress) {
+                progress(idx, total);
+            }
+            idx++;
 
             sqlite3_int64 trackID = sqlite3_column_int64(a, 0);
 
@@ -1027,18 +1141,48 @@ static int LoggingPermissiveAuth(void *ud, int action,
             double asf  = sqlite3_column_double(a,7);
             double eqw  = sqlite3_column_double(a,8);
             double devT = sqlite3_column_double(a,9);
-            BOOL moving = sqlite3_column_int(a,10)!=0;
-            BOOL hasD   = sqlite3_column_int(a,11)!=0;
+            BOOL moving = sqlite3_column_int(a,10) != 0;
+            BOOL hasD   = sqlite3_column_int(a,11) != 0;
 
-            if ([t respondsToSelector:@selector(setUuid:)]) [t setUuid:uuid]; else @try { [t setValue:uuid forKey:@"uuid"]; } @catch (__unused id e) {}
-            if ([t respondsToSelector:@selector(setName:)]) [t setName:name]; else @try { [t setValue:name forKey:@"name"]; } @catch (__unused id e) {}
-            if ([t respondsToSelector:@selector(setCreationTime:)]) [t setCreationTime:ct]; else @try { [t setValue:ct forKey:@"creationTime"]; } @catch (__unused id e) {}
-            if ([t respondsToSelector:@selector(setCreationTimeOverride:)]) [t setCreationTimeOverride:cto]; else @try { [t setValue:cto forKey:@"creationTimeOverride"]; } @catch (__unused id e) {}
-            if ([t respondsToSelector:@selector(setDistance:)]) [t setDistance:dist]; else @try { [t setValue:@(dist) forKey:@"distance"]; } @catch (__unused id e) {}
-            if ([t respondsToSelector:@selector(setWeight:)]) [t setWeight:wt]; else @try { [t setValue:@(wt) forKey:@"weight"]; } @catch (__unused id e) {}
-            if ([t respondsToSelector:@selector(setAltitudeSmoothingFactor:)]) [t setAltitudeSmoothingFactor:asf];
-            if ([t respondsToSelector:@selector(setEquipmentWeight:)])       [t setEquipmentWeight:eqw];
-            if ([t respondsToSelector:@selector(setDeviceTotalTime:)])       [t setDeviceTotalTime:devT];
+            if ([t respondsToSelector:@selector(setUuid:)]) {
+                [t setUuid:uuid];
+            } else {
+                @try { [t setValue:uuid forKey:@"uuid"]; } @catch (__unused id e) {}
+            }
+            if ([t respondsToSelector:@selector(setName:)]) {
+                [t setName:name];
+            } else {
+                @try { [t setValue:name forKey:@"name"]; } @catch (__unused id e) {}
+            }
+            if ([t respondsToSelector:@selector(setCreationTime:)]) {
+                [t setCreationTime:ct];
+            } else {
+                @try { [t setValue:ct forKey:@"creationTime"]; } @catch (__unused id e) {}
+            }
+            if ([t respondsToSelector:@selector(setCreationTimeOverride:)]) {
+                [t setCreationTimeOverride:cto];
+            } else {
+                @try { [t setValue:cto forKey:@"creationTimeOverride"]; } @catch (__unused id e) {}
+            }
+            if ([t respondsToSelector:@selector(setDistance:)]) {
+                [t setDistance:dist];
+            } else {
+                @try { [t setValue:@(dist) forKey:@"distance"]; } @catch (__unused id e) {}
+            }
+            if ([t respondsToSelector:@selector(setWeight:)]) {
+                [t setWeight:wt];
+            } else {
+                @try { [t setValue:@(wt) forKey:@"weight"]; } @catch (__unused id e) {}
+            }
+            if ([t respondsToSelector:@selector(setAltitudeSmoothingFactor:)]) {
+                [t setAltitudeSmoothingFactor:asf];
+            }
+            if ([t respondsToSelector:@selector(setEquipmentWeight:)]) {
+                [t setEquipmentWeight:eqw];
+            }
+            if ([t respondsToSelector:@selector(setDeviceTotalTime:)]) {
+                [t setDeviceTotalTime:devT];
+            }
             @try { [t setValue:@(moving) forKey:@"movingSpeedOnly"]; } @catch (__unused id e) {}
             @try { [t setValue:@(hasD)   forKey:@"hasDistanceData"]; } @catch (__unused id e) {}
 
@@ -1049,11 +1193,19 @@ static int LoggingPermissiveAuth(void *ud, int action,
 
             NSArray<NSString *> *attrs = AttributesFromJSONString(attrsTxt);
             NSMutableArray *attrsMut = [[attrs mutableCopy] autorelease];
-            if ([t respondsToSelector:@selector(setAttributes:)]) [t setAttributes:attrsMut]; else @try { [t setValue:attrsMut forKey:@"attributes"]; } @catch (__unused id e) {}
+            if ([t respondsToSelector:@selector(setAttributes:)]) {
+                [t setAttributes:attrsMut];
+            } else {
+                @try { [t setValue:attrsMut forKey:@"attributes"]; } @catch (__unused id e) {}
+            }
 
             NSArray *markers = MarkersFromJSONString(markersTxt);
             NSMutableArray *markersMut = [[markers mutableCopy] autorelease];
-            if ([t respondsToSelector:@selector(setMarkers:)]) [t setMarkers:markersMut]; else @try { [t setValue:markersMut forKey:@"markers"]; } @catch (__unused id e) {}
+            if ([t respondsToSelector:@selector(setMarkers:)]) {
+                [t setMarkers:markersMut];
+            } else {
+                @try { [t setValue:markersMut forKey:@"markers"]; } @catch (__unused id e) {}
+            }
 
             OverrideData *od = OverrideFromJSON(overrideTxt);
             if (od) {
@@ -1075,34 +1227,47 @@ static int LoggingPermissiveAuth(void *ud, int action,
 
             const unsigned char *photosTxt = sqlite3_column_text(a, 20);
             NSArray<NSURL *> *photoURLs = URLsFromJSONString(photosTxt);
-            if ([t respondsToSelector:@selector(setPhotoURLs:)]) { [t setPhotoURLs:photoURLs]; }
-            else @try { [t setValue:photoURLs forKey:@"photoURLs"]; } @catch (__unused id e) {}
+            if ([t respondsToSelector:@selector(setPhotoURLs:)]) {
+                [t setPhotoURLs:photoURLs];
+            } else {
+                @try { [t setValue:photoURLs forKey:@"photoURLs"]; } @catch (__unused id e) {}
+            }
 
             NSNumber *sIDNum = (sqlite3_column_type(a, 21) != SQLITE_NULL)
                                ? [NSNumber numberWithLongLong:(long long)sqlite3_column_int64(a,21)]
                                : nil;
 
-            if ([t respondsToSelector:@selector(setSecondsFromGMT:)]) [t setSecondsFromGMT:secsFromGMT];
-            if ([t respondsToSelector:@selector(setFlags:)])          [t setFlags:flags];
-            if ([t respondsToSelector:@selector(setDeviceID:)])       [t setDeviceID:deviceID];
-            if ([t respondsToSelector:@selector(setFirmwareVersion:)])[t setFirmwareVersion:firmwareVersion];
-
-            if (tzNameLoaded.length) {
-                if ([t respondsToSelector:@selector(setTimeZoneName:)]) [t setTimeZoneName:tzNameLoaded];
-                else @try { [t setValue:tzNameLoaded forKey:@"timeZone"]; } @catch (__unused id e) {}
+            if ([t respondsToSelector:@selector(setSecondsFromGMT:)]) {
+                [t setSecondsFromGMT:secsFromGMT];
+            }
+            if ([t respondsToSelector:@selector(setFlags:)]) {
+                [t setFlags:flags];
+            }
+            if ([t respondsToSelector:@selector(setDeviceID:)]) {
+                [t setDeviceID:deviceID];
+            }
+            if ([t respondsToSelector:@selector(setFirmwareVersion:)]) {
+                [t setFirmwareVersion:firmwareVersion];
             }
 
-            // src* metrics
-#define SETF(_sel, _idx) do { \
-    double _v = (sqlite3_column_type(a, (_idx)) == SQLITE_NULL) ? 0.0 : sqlite3_column_double(a, (_idx)); \
-    if ([t respondsToSelector:@selector(_sel:)]) [t _sel:(float)_v]; \
-    else @try { [t setValue:@((float)_v) forKey:@#_sel]; } @catch (__unused id e) {} \
-} while(0)
-#define SETD(_sel, _idx) do { \
-    double _v = (sqlite3_column_type(a, (_idx)) == SQLITE_NULL) ? 0.0 : sqlite3_column_double(a, (_idx)); \
-    if ([t respondsToSelector:@selector(_sel:)]) [t _sel:_v]; \
-    else @try { [t setValue:@(_v) forKey:@#_sel]; } @catch (__unused id e) {} \
-} while(0)
+            if (tzNameLoaded.length) {
+                if ([t respondsToSelector:@selector(setTimeZoneName:)]) {
+                    [t setTimeZoneName:tzNameLoaded];
+                } else {
+                    @try { [t setValue:tzNameLoaded forKey:@"timeZone"]; } @catch (__unused id e) {}
+                }
+            }
+
+//#define SETF(_sel, _idx) do { \
+//    double _v = (sqlite3_column_type(a, (_idx)) == SQLITE_NULL) ? 0.0 : sqlite3_column_double(a, (_idx)); \
+//    if ([t respondsToSelector:@selector(_sel:)]) { [t _sel:(float)_v]; } \
+//    else { @try { [t setValue:@((float)_v) forKey:@#_sel]; } @catch (__unused id e) {} } \
+//} while(0)
+//#define SETD(_sel, _idx) do { \
+//    double _v = (sqlite3_column_type(a, (_idx)) == SQLITE_NULL) ? 0.0 : sqlite3_column_double(a, (_idx)); \
+//    if ([t respondsToSelector:@selector(_sel:)]) { [t _sel:_v]; } \
+//    else { @try { [t setValue:@(_v) forKey:@#_sel]; } @catch (__unused id e) {} } \
+//} while(0)
 
             SETF(setSrcDistance,       22);
             SETF(setSrcMaxSpeed,       23);
@@ -1119,8 +1284,11 @@ static int LoggingPermissiveAuth(void *ud, int action,
             SETD(setSrcElapsedTime,    34);
             SETD(setSrcMovingTime,     35);
 
-            if ([t respondsToSelector:@selector(setStravaActivityID:)]) [t setStravaActivityID:sIDNum];
-            else @try { [t setValue:sIDNum forKey:@"stravaActivityID"]; } @catch (__unused id e) {}
+            if ([t respondsToSelector:@selector(setStravaActivityID:)]) {
+                [t setStravaActivityID:sIDNum];
+            } else {
+                @try { [t setValue:sIDNum forKey:@"stravaActivityID"]; } @catch (__unused id e) {}
+            }
 
             const unsigned char *mediaTxt = sqlite3_column_text(a, 36);
             NSArray<NSString *> *localMediaItems = StringsFromJSONString(mediaTxt);
@@ -1130,40 +1298,86 @@ static int LoggingPermissiveAuth(void *ud, int action,
                 @try { [t setValue:localMediaItems forKey:@"localMediaItems"]; } @catch (__unused id e) {}
             }
 
-            // Laps (no points) — use the same 'db' (not _db)
+            // --- pointsEverSaved / pointsCount ---
+            if (hasPointsFlags) {
+                int psCol = 37;
+                int pcCol = 38;
+                BOOL ps = (sqlite3_column_type(a, psCol) == SQLITE_NULL) ? NO : (sqlite3_column_int(a, psCol) != 0);
+                int  pc = (sqlite3_column_type(a, pcCol) == SQLITE_NULL) ? 0  : sqlite3_column_int(a, pcCol);
+
+                NSLog(@"points saved for %s: %s, calling setPointsEverSaved",[t.name UTF8String], (ps ? "YES" : "NO"));
+                @try {
+                    if ([t respondsToSelector:@selector(setPointsEverSaved:)]) {
+                        [t setPointsEverSaved:ps];
+                    } else {
+                        [t setValue:@(ps) forKey:@"pointsEverSaved"];
+                    }
+                } @catch (__unused id e) {}
+
+                @try {
+                    if ([t respondsToSelector:@selector(setPointsCount:)]) {
+                        [t setPointsCount:pc];
+                    } else {
+                        [t setValue:@(pc) forKey:@"pointsCount"];
+                    }
+                } @catch (__unused id e) {}
+            } else {
+                // Legacy fallback: set pointsEverSaved if any points exist for this trackID
+                BOOL ps = NO;
+                sqlite3_stmt *qp = NULL;
+                if (sqlite3_prepare_v2(db, "SELECT 1 FROM points WHERE track_id=?1 LIMIT 1;", -1, &qp, NULL) == SQLITE_OK) {
+                    sqlite3_bind_int64(qp, 1, trackID);
+                    ps = (sqlite3_step(qp) == SQLITE_ROW);
+                }
+                if (qp) {
+                    sqlite3_finalize(qp);
+                }
+                NSLog(@"no hasPointFlags, points saved for %s: %s, calling setPointsEverSaved",[t.name UTF8String], (ps ? "YES" : "NO"));
+                @try {
+                    if ([t respondsToSelector:@selector(setPointsEverSaved:)]) {
+                        [t setPointsEverSaved:ps];
+                    } else {
+                        [t setValue:@(ps) forKey:@"pointsEverSaved"];
+                    }
+                } @catch (__unused id e) {}
+
+                // pointsCount not available without an extra COUNT(*); skip for perf.
+            }
+
+            // Laps (no points)
             sqlite3_stmt *l = NULL;
             NSMutableArray *lapsArr = [NSMutableArray array];
             const char *selL =
               "SELECT lap_index,orig_start_time_s,start_time_delta_s,total_time_s,"
               " distance_mi,max_speed_mph,avg_speed_mph,begin_lat,begin_lon,end_lat,end_lon,"
               " device_total_time_s,average_hr,max_hr,average_cad,max_cad,calories,intensity,trigger_method,selected,stats_calculated"
-              " FROM laps WHERE track_id=? ORDER BY lap_index;";
+              " FROM laps WHERE track_id=?1 ORDER BY lap_index;";
 
             if (sqlite3_prepare_v2(db, selL, -1, &l, NULL) == SQLITE_OK) {
                 sqlite3_bind_int64(l, 1, trackID);
                 while (sqlite3_step(l) == SQLITE_ROW) {
                     Lap *lp = [Lap new];
-                    if ([lp respondsToSelector:@selector(setIndex:)])          [lp setIndex:sqlite3_column_int(l,0)];
-                    if ([lp respondsToSelector:@selector(setOrigStartTime:)])   [lp setOrigStartTime:DateFromEpoch(sqlite3_column_int64(l,1))];
-                    if ([lp respondsToSelector:@selector(setStartingWallClockTimeDelta:)])  [lp setStartingWallClockTimeDelta:sqlite3_column_double(l,2)];
-                    if ([lp respondsToSelector:@selector(setTotalTime:)])       [lp setTotalTime:sqlite3_column_double(l,3)];
-                    if ([lp respondsToSelector:@selector(setDistance:)])        [lp setDistance:sqlite3_column_double(l,4)];
-                    if ([lp respondsToSelector:@selector(setMaxSpeed:)])        [lp setMaxSpeed:sqlite3_column_double(l,5)];
-                    if ([lp respondsToSelector:@selector(setAvgSpeed:)])        [lp setAvgSpeed:sqlite3_column_double(l,6)];
-                    if ([lp respondsToSelector:@selector(setBeginLatitude:)])   [lp setBeginLatitude:sqlite3_column_double(l,7)];
-                    if ([lp respondsToSelector:@selector(setBeginLongitude:)])  [lp setBeginLongitude:sqlite3_column_double(l,8)];
-                    if ([lp respondsToSelector:@selector(setEndLatitude:)])     [lp setEndLatitude:sqlite3_column_double(l,9)];
-                    if ([lp respondsToSelector:@selector(setEndLongitude:)])    [lp setEndLongitude:sqlite3_column_double(l,10)];
-                    if ([lp respondsToSelector:@selector(setDeviceTotalTime:)]) [lp setDeviceTotalTime:sqlite3_column_double(l,11)];
-                    if ([lp respondsToSelector:@selector(setAvgHeartRate:)])    [lp setAvgHeartRate:sqlite3_column_int(l,12)];
-                    if ([lp respondsToSelector:@selector(setMaxHeartRate:)])    [lp setMaxHeartRate:sqlite3_column_int(l,13)];
-                    if ([lp respondsToSelector:@selector(setAverageCadence:)])  [lp setAverageCadence:sqlite3_column_int(l,14)];
-                    if ([lp respondsToSelector:@selector(setMaxCadence:)])      [lp setMaxCadence:sqlite3_column_int(l,15)];
-                    if ([lp respondsToSelector:@selector(setCalories:)])        [lp setCalories:sqlite3_column_int(l,16)];
-                    if ([lp respondsToSelector:@selector(setIntensity:)])       [lp setIntensity:sqlite3_column_int(l,17)];
-                    if ([lp respondsToSelector:@selector(setTriggerMethod:)])   [lp setTriggerMethod:sqlite3_column_int(l,18)];
-                    if ([lp respondsToSelector:@selector(setSelected:)])        [lp setSelected:(sqlite3_column_int(l,19)!=0)];
-                    if ([lp respondsToSelector:@selector(setStatsCalculated:)]) [lp setStatsCalculated:(sqlite3_column_int(l,20)!=0)];
+                    if ([lp respondsToSelector:@selector(setIndex:)])          { [lp setIndex:sqlite3_column_int(l,0)]; }
+                    if ([lp respondsToSelector:@selector(setOrigStartTime:)])   { [lp setOrigStartTime:DateFromEpoch(sqlite3_column_int64(l,1))]; }
+                    if ([lp respondsToSelector:@selector(setStartingWallClockTimeDelta:)]) { [lp setStartingWallClockTimeDelta:sqlite3_column_double(l,2)]; }
+                    if ([lp respondsToSelector:@selector(setTotalTime:)])       { [lp setTotalTime:sqlite3_column_double(l,3)]; }
+                    if ([lp respondsToSelector:@selector(setDistance:)])        { [lp setDistance:sqlite3_column_double(l,4)]; }
+                    if ([lp respondsToSelector:@selector(setMaxSpeed:)])        { [lp setMaxSpeed:sqlite3_column_double(l,5)]; }
+                    if ([lp respondsToSelector:@selector(setAvgSpeed:)])        { [lp setAvgSpeed:sqlite3_column_double(l,6)]; }
+                    if ([lp respondsToSelector:@selector(setBeginLatitude:)])   { [lp setBeginLatitude:sqlite3_column_double(l,7)]; }
+                    if ([lp respondsToSelector:@selector(setBeginLongitude:)])  { [lp setBeginLongitude:sqlite3_column_double(l,8)]; }
+                    if ([lp respondsToSelector:@selector(setEndLatitude:)])     { [lp setEndLatitude:sqlite3_column_double(l,9)]; }
+                    if ([lp respondsToSelector:@selector(setEndLongitude:)])    { [lp setEndLongitude:sqlite3_column_double(l,10)]; }
+                    if ([lp respondsToSelector:@selector(setDeviceTotalTime:)]) { [lp setDeviceTotalTime:sqlite3_column_double(l,11)]; }
+                    if ([lp respondsToSelector:@selector(setAvgHeartRate:)])    { [lp setAvgHeartRate:sqlite3_column_int(l,12)]; }
+                    if ([lp respondsToSelector:@selector(setMaxHeartRate:)])    { [lp setMaxHeartRate:sqlite3_column_int(l,13)]; }
+                    if ([lp respondsToSelector:@selector(setAverageCadence:)])  { [lp setAverageCadence:sqlite3_column_int(l,14)]; }
+                    if ([lp respondsToSelector:@selector(setMaxCadence:)])      { [lp setMaxCadence:sqlite3_column_int(l,15)]; }
+                    if ([lp respondsToSelector:@selector(setCalories:)])        { [lp setCalories:sqlite3_column_int(l,16)]; }
+                    if ([lp respondsToSelector:@selector(setIntensity:)])       { [lp setIntensity:sqlite3_column_int(l,17)]; }
+                    if ([lp respondsToSelector:@selector(setTriggerMethod:)])   { [lp setTriggerMethod:sqlite3_column_int(l,18)]; }
+                    if ([lp respondsToSelector:@selector(setSelected:)])        { [lp setSelected:(sqlite3_column_int(l,19) != 0)]; }
+                    if ([lp respondsToSelector:@selector(setStatsCalculated:)]) { [lp setStatsCalculated:(sqlite3_column_int(l,20) != 0)]; }
                     [lapsArr addObject:lp];
                     [lp release];
                 }
@@ -1172,7 +1386,9 @@ static int LoggingPermissiveAuth(void *ud, int action,
             @try { [t setValue:lapsArr forKey:@"laps"]; } @catch (__unused id e) {}
 
             [out addObject:t];
-            if ([t respondsToSelector:@selector(fixupTrack)]) [t fixupTrack];
+            if ([t respondsToSelector:@selector(fixupTrack)]) {
+                [t fixupTrack];
+            }
             [t release];
         }
 
@@ -1186,11 +1402,12 @@ static int LoggingPermissiveAuth(void *ud, int action,
         dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
         dispatch_release(sem);
     } else {
-        // Fallback if you constructed ActivityStore with a raw sqlite3*
         work(_db);
     }
 
-    if (err && error) *error = err;
+    if (err && error) {
+        *error = err;
+    }
     return out;
 }
 
@@ -1550,5 +1767,158 @@ static int LoggingPermissiveAuth(void *ud, int action,
 }
 
 
+- (BOOL)trackIDForTrack:(Track *)track
+                  outID:(sqlite3_int64 *)outID
+                  error:(NSError **)error
+{
+    if (!track || !outID) { if (error) *error = [NSError errorWithDomain:@"ActivityStore"
+                                                                    code:-1
+                                                                userInfo:@{NSLocalizedDescriptionKey:@"Nil args"}]; return NO; }
+    NSString *uuid = nil;
+    if ([track respondsToSelector:@selector(uuid)]) uuid = [track uuid];
+    else @try { uuid = [track valueForKey:@"uuid"]; } @catch (__unused id e) {}
+    if (uuid.length == 0) { if (error) *error = [NSError errorWithDomain:@"ActivityStore"
+                                                                    code:-2
+                                                                userInfo:@{NSLocalizedDescriptionKey:@"Missing track uuid"}]; return NO; }
+
+    __block BOOL ok = NO;
+    __block NSError *err = nil;
+    __block sqlite3_int64 tid = 0;
+
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    [_dbm performRead:^(sqlite3 *db) {
+        sqlite3_stmt *st = NULL;
+        if (sqlite3_prepare_v2(db, "SELECT id FROM activities WHERE uuid=?1;", -1, &st, NULL) == SQLITE_OK) {
+            sqlite3_bind_text(st, 1, uuid.UTF8String, -1, SQLITE_TRANSIENT);
+            if (sqlite3_step(st) == SQLITE_ROW) tid = sqlite3_column_int64(st, 0);
+        } else {
+            err = [NSError errorWithDomain:@"ActivityStore" code:sqlite3_errcode(db)
+                                  userInfo:@{NSLocalizedDescriptionKey:@(sqlite3_errmsg(db) ?: "prepare id lookup failed")}];
+        }
+        if (st) sqlite3_finalize(st);
+        ok = (tid != 0 && err == nil);
+    } completion:^{ dispatch_semaphore_signal(sem);}];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    dispatch_release(sem);
+
+    if (!ok && error) *error = err ?: [NSError errorWithDomain:@"ActivityStore" code:-3 userInfo:@{NSLocalizedDescriptionKey:@"No activities row for uuid"}];
+    if (ok) *outID = tid;
+    return ok;
+}
+
+
+// ActivityStore.m
+- (BOOL)ensureActivityRowForTrack:(Track *)track
+                         outTrackID:(int64_t *)outID
+                              error:(NSError **)error
+{
+    if (track == nil || outID == NULL) {
+        if (error) {
+            *error = [NSError errorWithDomain:@"ActivityStore"
+                                         code:-1
+                                     userInfo:@{NSLocalizedDescriptionKey:@"Nil args"}];
+        }
+        return NO;
+    }
+
+    __block BOOL ok = YES;
+    __block NSError *err = nil;
+    __block int64_t tid = 0;
+
+    void (^work)(sqlite3 *) = ^(sqlite3 *db) {
+        NSString *uuid = [track respondsToSelector:@selector(uuid)] ? [track uuid] : nil;
+        if (uuid.length == 0) {
+            err = [NSError errorWithDomain:@"ActivityStore" code:-2
+                                  userInfo:@{NSLocalizedDescriptionKey:@"Track uuid is required"}];
+            ok = NO;
+            return;
+        }
+
+        // Try to find it
+        sqlite3_stmt *q = NULL;
+        if (sqlite3_prepare_v2(db, "SELECT id FROM activities WHERE uuid=?1;", -1, &q, NULL) == SQLITE_OK) {
+            sqlite3_bind_text(q, 1, uuid.UTF8String, -1, SQLITE_TRANSIENT);
+            if (sqlite3_step(q) == SQLITE_ROW) {
+                tid = sqlite3_column_int64(q, 0);
+            }
+        }
+        if (q) sqlite3_finalize(q);
+        if (tid) {
+            return; // already exists
+        }
+
+        // Insert a stub row with UUID; prefer RETURNING when available
+        sqlite3_stmt *ins = NULL;
+        const char *sqlRet =
+            "INSERT INTO activities(uuid) VALUES(?1) "
+            "ON CONFLICT(uuid) DO NOTHING "
+            "RETURNING id;";
+        int rc = sqlite3_prepare_v2(db, sqlRet, -1, &ins, NULL);
+        if (rc == SQLITE_OK) {
+            sqlite3_bind_text(ins, 1, uuid.UTF8String, -1, SQLITE_TRANSIENT);
+            if (sqlite3_step(ins) == SQLITE_ROW) {
+                tid = sqlite3_column_int64(ins, 0);
+            }
+            sqlite3_finalize(ins);
+        }
+
+        if (!tid) {
+            sqlite3_stmt *ins2 = NULL;
+            if (sqlite3_prepare_v2(db, "INSERT OR IGNORE INTO activities(uuid) VALUES(?1);", -1, &ins2, NULL) != SQLITE_OK) {
+                err = [NSError errorWithDomain:@"ActivityStore" code:sqlite3_errcode(db)
+                                      userInfo:@{NSLocalizedDescriptionKey:@(sqlite3_errmsg(db) ?: "prepare INSERT uuid failed")}];
+                ok = NO;
+                return;
+            }
+            sqlite3_bind_text(ins2, 1, uuid.UTF8String, -1, SQLITE_TRANSIENT);
+            if (sqlite3_step(ins2) != SQLITE_DONE) {
+                err = [NSError errorWithDomain:@"ActivityStore" code:sqlite3_errcode(db)
+                                      userInfo:@{NSLocalizedDescriptionKey:@(sqlite3_errmsg(db) ?: "step INSERT uuid failed")}];
+                sqlite3_finalize(ins2);
+                ok = NO;
+                return;
+            }
+            sqlite3_finalize(ins2);
+
+            // re-select id
+            sqlite3_stmt *sel = NULL;
+            if (sqlite3_prepare_v2(db, "SELECT id FROM activities WHERE uuid=?1;", -1, &sel, NULL) == SQLITE_OK) {
+                sqlite3_bind_text(sel, 1, uuid.UTF8String, -1, SQLITE_TRANSIENT);
+                if (sqlite3_step(sel) == SQLITE_ROW) {
+                    tid = sqlite3_column_int64(sel, 0);
+                }
+            }
+            if (sel) sqlite3_finalize(sel);
+            if (!tid) {
+                err = [NSError errorWithDomain:@"ActivityStore" code:-3
+                                      userInfo:@{NSLocalizedDescriptionKey:@"Failed to create/find activities row"}];
+                ok = NO;
+            }
+        }
+    };
+
+    if (_dbm) {
+        dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+        [_dbm performWrite:^(sqlite3 *db, DBErrorBlock fail){
+            work(db);
+            if (!ok && err) { fail(err); }
+        } completion:^(__unused NSError *e){
+            if (e && !err) { err = [e retain]; ok = NO; }
+            dispatch_semaphore_signal(sem);
+        }];
+        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+        dispatch_release(sem);
+        if (err) { [err autorelease]; }
+    } else {
+        work(_db);
+    }
+
+    if (ok) {
+        *outID = tid;
+    } else if (error) {
+        *error = err;
+    }
+    return ok;
+}
 
 @end

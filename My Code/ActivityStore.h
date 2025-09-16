@@ -3,6 +3,7 @@
 //  Ascent
 //
 
+#import "DatabaseDefs.h"
 #import <Foundation/Foundation.h>
 #import <sqlite3.h>
 
@@ -11,9 +12,6 @@
 @class DatabaseManager;   // <-- NEW (forward-declare; no hard import)
 
 NS_ASSUME_NONNULL_BEGIN
-
-// You already have this typedef somewhere; leaving here in case it lives with ActivityStore
-typedef void (^ASProgress)(NSInteger done, NSInteger total);
 
 @interface ActivityStore : NSObject {
 @private
@@ -62,6 +60,16 @@ typedef void (^ASProgress)(NSInteger done, NSInteger total);
 - (NSArray<Track *> *)loadAllTracks:(NSError * _Nullable * _Nullable)error
                        totalTracks:(NSInteger)tt
                     progressBlock:(ASProgress _Nullable)progress;
+
+- (BOOL)trackIDForTrack:(Track *)track
+                  outID:(sqlite3_int64 *)outID
+                  error:(NSError **)error;
+
+// ActivityStore.h
+- (BOOL)ensureActivityRowForTrack:(Track *)track
+                         outTrackID:(int64_t *)outID
+                              error:(NSError **)error;
+
 
 @end
 

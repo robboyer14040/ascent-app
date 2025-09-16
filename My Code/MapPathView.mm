@@ -363,7 +363,8 @@ BOOL terraServerMap(int dt)
 		font = [NSFont boldSystemFontOfSize:7.0];
 		mileageMarkerTextAttrs = [[NSMutableDictionary alloc] init];
 		[mileageMarkerTextAttrs setObject:font forKey:NSFontAttributeName];
-		[mileageMarkerTextAttrs setObject:[NSColor colorNamed:@"TextPrimary"] forKey:NSForegroundColorAttributeName];
+        // text always black in markers, with white background
+		[mileageMarkerTextAttrs setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
 		dataInProgress = [[NSMutableData data] retain];
 		cacheFilePath = [[Utils getMapTilesPath] retain];
 		connection = nil;

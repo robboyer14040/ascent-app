@@ -14,6 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 typedef void (^DBErrorBlock)(NSError *error);
 typedef void (^DBVoidBlock)(void);
 
+
+
 @interface DatabaseManager : NSObject {
 @private
     NSURL *_databaseURL;
@@ -33,10 +35,12 @@ typedef void (^DBVoidBlock)(void);
 // Accessors
 @property (nonatomic, readonly) NSURL *databaseURL;
 @property (nonatomic, readonly) dispatch_queue_t writeQueue;
+@property (nonatomic, readonly) dispatch_queue_t readQueue;   // NEW
 @property(nonatomic, readonly) BOOL readOnly;
 
 
 - (sqlite3 *)rawSQLite; // use only on writeQueue
+- (BOOL)isOnWriteQueue;
 
 // Queue helpers
 - (void)performSyncOnWriteQueue:(DBVoidBlock)block;
@@ -44,6 +48,7 @@ typedef void (^DBVoidBlock)(void);
           completion:(void (^_Nullable)(NSError *_Nullable error))completion;
 - (void)performRead:(void (^)(sqlite3 *db))block
          completion:(void (^_Nullable)(void))completion;
+- (void)performReadSync:(void (^)(sqlite3 *db))block;
 
 // Maintenance
 - (BOOL)checkpointTruncate:(NSError **)error;

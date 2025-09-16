@@ -402,6 +402,8 @@ static NSArray<NSURL *> *ASCPhotoURLsFromStravaPhotos(id photosObj) {
                 // Track header (CREATE IT HERE)
                 Track *track = [[[Track alloc] init] autorelease];
 
+                track.dirtyMask = kDirtyMeta;
+                
                 // Strava id → uuid (string) + numeric id
                 id actIDObj = Safe(act[@"id"]);
                 NSString *uuid = actIDObj ? [[actIDObj description] copy] : nil;

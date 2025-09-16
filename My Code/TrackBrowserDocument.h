@@ -14,11 +14,15 @@
 @class Lap;
 @class Track;
 @class TrackPoint;
-@class TrackBrowserData;
+@class DocumentMetaData;
 @class BackupDelegate;
 @class EquipmentLog;
 @class EquipmentListWindowController;
 @class ProgressBarController;
+@class DatabaseManager;
+@class ActivityStore;
+@class TrackPointStore;
+@class IdentifierStore;
 
 extern int kSearchTitles;
 extern int kSearchNotes;
@@ -34,19 +38,19 @@ NSString * const AscentUTIDatabase      = @"com.montebellosoftware.ascent.db";
 {
 	Track*							currentlySelectedTrack;
 	Lap*							selectedLap;
-	TrackBrowserData*				browserData;
 	ADWindowController*				adWindowController;
 	TBWindowController*				tbWindowController;
 	BackupDelegate*					backupDelegate;
-	EquipmentLog*					equipmentLog;
-	NSMutableDictionary*			equipmentLogDataDict;	// per-document equipment log totals
     NSURL*                          databaseFileURL;
-	BOOL							equipmentTotalsNeedUpdate;
 }
+@property (nonatomic, retain) DocumentMetaData  *docMetaData;
 @property (nonatomic) BOOL equipmentTotalsNeedUpdate;
-
 @property(nonatomic, retain) EquipmentLog* equipmentLog;
 @property(nonatomic, retain) NSMutableDictionary* equipmentLogDataDict;
+@property (nonatomic, retain) DatabaseManager   *documentDBM;       // canonical writable DBM for this doc's file
+@property (nonatomic, retain) ActivityStore     *activityStore;      // built on documentDBM
+@property (nonatomic, retain) TrackPointStore   *trackPointStore;    // built on documentDBM
+@property (nonatomic, retain) IdentifierStore   *identifierStore;    // built on documentDBM
 
 - (void)syncGPS;
 - (NSDate*)lastSyncTime;
@@ -98,4 +102,5 @@ NSString * const AscentUTIDatabase      = @"com.montebellosoftware.ascent.db";
 -(NSArray*)documentDateRange;
 -(NSString*)uuid;
 -(void)setDatabaseFileURL:(NSURL*) url;
+-(NSURL*)databaseFileURL;
 @end

@@ -143,7 +143,6 @@
               operation:NSCompositingOperationSourceOver
                fraction:1.0];
 
-   [[self window] flushWindow];
 }
 
 

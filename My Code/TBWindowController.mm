@@ -53,6 +53,7 @@
 #import "WeatherAPI.h"
 #import "LocationAPI.h"
 #import "TrackPointStore.h"
+#import "DatabaseManager.h"
 
 #import <unistd.h>			// for sleep
 
@@ -367,7 +368,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 -(void)dismissDetailedMapWindow:(id)sender;
 - (void)doToggleCalendarAndBrowser:(int)v;
 - (void)splitDragComplete:(NSNotification *)notification;
-- (void)_fetchMissingItemsForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter;
+- (BOOL)_fetchMissingItemsForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter;
 - (void)_fetchWeatherAndGEOInfoForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter;
 - (BOOL)chooseStravaRootFolderAndSaveBookmarkFromWindow:(NSWindow *)win;
 - (NSImage *)imageUnderStravaRootForRelativePath:(NSString *)relPath error:(NSError **)error;
@@ -4477,8 +4478,8 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 {
     if (trk && ([[trk points] count] == 0) && !(ShiftKeyIsDown()))
     {
-        [self _fetchMissingItemsForTrack:trk selectTrackAfter:YES];
-        return;
+        if (![self _fetchMissingItemsForTrack:trk selectTrackAfter:YES])
+            return;
     }
     if ((currentlySelectedTrack != trk) ||
         (currentlySelectedLap != lap))
@@ -5044,7 +5045,7 @@ int searchTagToMask(int searchTag)
                 if (!lastSyncTime || ([lastSyncTime compare:[NSDate distantPast]] == NSOrderedSame)) {
                     NSDate *now = [NSDate date];
                     lastSyncTime = [cal dateByAddingUnit:NSCalendarUnitMonth
-                                                   value:-1
+                                                   value:-3
                                                   toDate:now options:0];
                 }
 
@@ -6781,11 +6782,31 @@ int searchTagToMask(int searchTag)
 //------------------------------------------------------------------------------
 
 // use to fetch points, description, photos
-
-- (void)_fetchMissingItemsForTrack:(Track*)track  selectTrackAfter:(BOOL)selectAfter
+// returns YES if everything is ready to go, NO if things are still updating async
+- (BOOL)_fetchMissingItemsForTrack:(Track*)track  selectTrackAfter:(BOOL)selectAfter
 {
+    if (track.points.count == 0 /*&& track.pointsEverSaved */)
+    {
+        NSURL* url = tbDocument.fileURL;
+        if (url)
+        {
+            DatabaseManager* dbm = [[[DatabaseManager alloc] initWithURL:url
+                                                                readOnly:YES] autorelease];
+            TrackPointStore* tpStore = [[[TrackPointStore alloc] initWithDatabaseManager:dbm] autorelease];
+            NSError* err = nil;
+            NSArray* pts = [[tpStore loadPointsForTrackUUID:track.uuid error:&err] autorelease];
+            if (pts) {
+                NSLog(@"loaded %d points for %s", (int)pts.count, [track.name UTF8String]);
+                track.points = [[pts mutableCopy] autorelease];
+                track.pointsCount    = (int)pts.count;
+                track.pointsEverSaved = NO; // default for new track
+                [track fixupTrack];
+             }
+        }
+    }
+    
+
     BOOL stravaFirst = ShiftKeyIsDown() || ([track.points count] == 0);
-  
     if (stravaFirst)
     {
         [self startProgressIndicator:@"fetching detailed Strava info..."];
@@ -6811,21 +6832,12 @@ int searchTagToMask(int searchTag)
             [self endProgressIndicator];
             
         }];
-    }
-    if (!stravaFirst) {
-        if (track.points.count == 0 && track.pointsEverSaved)
-        {
-            TrackPointStore *tpStore = [[TrackPointStore alloc] init];
-            NSError* err = nil;
-            NSArray* pts = [tpStore loadPointsForTrackUUID:track.uuid error:&err];
-            if (pts) {
-                track.points = [[pts mutableCopy] autorelease];
-            }
-        }
         [self _fetchWeatherAndGEOInfoForTrack:track
                              selectTrackAfter:NO];
+        return NO;
     }
-}
+    return YES;
+ }
 
 
 - (void)_fetchWeatherAndGEOInfoForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter

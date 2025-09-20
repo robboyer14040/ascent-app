@@ -5045,7 +5045,7 @@ int searchTagToMask(int searchTag)
                 if (!lastSyncTime || ([lastSyncTime compare:[NSDate distantPast]] == NSOrderedSame)) {
                     NSDate *now = [NSDate date];
                     lastSyncTime = [cal dateByAddingUnit:NSCalendarUnitMonth
-                                                   value:-3
+                                                   value:-24
                                                   toDate:now options:0];
                 }
 

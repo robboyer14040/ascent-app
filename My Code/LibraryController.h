@@ -78,11 +78,15 @@ typedef NS_ERROR_ENUM(AscentLibraryControllerErrorDomain, AscentLibraryControlle
     dispatch_queue_t _controllerQueue;
     AscentLibrary *_activeLibrary;
     id<LibraryControllerDelegate> _delegate;
+
+    // Session-wide convenience handle if you want to keep a separate scoped URL.
+    NSURL *_securityScopedURL;
 }
 @property (nonatomic, assign) id<LibraryControllerDelegate> delegate;
 @property (nonatomic, readonly) NSArray<AscentLibrary *> *openLibraries;
 @property (atomic, readonly) AscentLibrary *activeLibrary;
 @property (nonatomic, readonly) dispatch_queue_t controllerQueue;
+@property (nonatomic, readonly, nullable) NSURL *securityScopedURL;
 
 - (instancetype)initWithStateDirectoryURL:(NSURL *)stateDirURL;
 
@@ -91,6 +95,14 @@ typedef NS_ERROR_ENUM(AscentLibraryControllerErrorDomain, AscentLibraryControlle
 
 - (void)openLibraryAtURL:(NSURL *)url
               completion:(void (^_Nullable)(AscentLibrary *_Nullable library, NSError *_Nullable error))completion;
+
+- (void)openLibraryAtURL:(NSURL *)url
+                bookmark:(NSData * _Nullable)bookmark
+              completion:(void (^_Nullable)(AscentLibrary *_Nullable lib, NSError *_Nullable error))completion;
+
+//- (void)reopenFromBookmark:(NSData *)bookmark
+//             suggestedName:(NSString *)displayName
+//                completion:(void (^)(AscentLibrary * _Nullable library, NSError * _Nullable error))completion;
 
 - (void)closeLibrary:(AscentLibrary *)library
           completion:(void (^_Nullable)(NSError *_Nullable error))completion;
@@ -108,6 +120,17 @@ typedef NS_ERROR_ENUM(AscentLibraryControllerErrorDomain, AscentLibraryControlle
 
 - (void)refreshStatsForLibrary:(AscentLibrary *)library
                     completion:(void (^_Nullable)(NSError *_Nullable error))completion;
+
+// Starts security scope and returns a URL you can safely pass to SQLite.
+// Caller should stop access later using the same URL if you keep it.
+// If you use AscentLibrary objects, closeLibrary: will stop based on library.fileURL.
+- (BOOL)startSecurityScopeForURL:(NSURL * _Nonnull)url
+                        bookmark:(NSData * _Nullable)bookmarkData
+                    scopedURLOut:(NSURL * _Nullable __autoreleasing * _Nullable)scopedURLOut
+                           error:(NSError * _Nullable __autoreleasing * _Nullable)outErr;
+
+// Optional session handle. This does not itself start/stop scope.
+- (void)setSecurityScopedURL:(NSURL * _Nullable)url;
 
 @end
 

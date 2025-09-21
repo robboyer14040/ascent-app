@@ -98,50 +98,74 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
 
 #pragma mark Schema
 
-- (BOOL)createSchemaIfNeeded:(NSError **)error {
-    if (_dbm.readOnly) return YES;  // no-op in read-only sessions
-    __block BOOL ok = YES; __block NSError *err = nil;
+- (BOOL)createSchemaIfNeeded:(NSError **)error
+{
+    if (_dbm.readOnly) return YES; // never mutate in read-only sessions
+
+    __block BOOL ok = YES;
+    __block NSError *err = nil;
 
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-    [_dbm performWrite:^(sqlite3 *db, DBErrorBlock fail) {
-        // Nuke any old composite-PK/WITHOUT ROWID table and its index.
-        const char *sql =
-        "DROP INDEX IF EXISTS i_points_track_time;"
-        "DROP TABLE IF EXISTS points;"
-        // Recreate with a surrogate key; duplicates for (track_id, wall_clock_delta_s) are now allowed.
-        "CREATE TABLE points ("
-        "  id                  INTEGER PRIMARY KEY,"   /* Surrogate key (rowid-backed) */
-        "  track_id            INTEGER NOT NULL REFERENCES activities(id) ON DELETE CASCADE,"
-        "  wall_clock_delta_s  INTEGER NOT NULL,"
-        "  active_time_delta_s INTEGER NOT NULL DEFAULT 0,"
-        "  latitude_e7         REAL NOT NULL,"
-        "  longitude_e7        REAL NOT NULL,"
-        "  orig_altitude_cm    REAL DEFAULT 0,"
-        "  heartrate_bpm       REAL DEFAULT 0,"
-        "  cadence_rpm         REAL DEFAULT 0,"
-        "  temperature_c10     REAL DEFAULT 0,"
-        "  speed_mps           REAL DEFAULT 0,"
-        "  power_w             REAL DEFAULT 0,"
-        "  orig_distance_m     REAL DEFAULT 0,"
-        "  flags               INTEGER DEFAULT 0"
-        ");"
-        // Keep a non-unique covering index for fast scans by time within a track.
-        "CREATE INDEX IF NOT EXISTS i_points_track_time "
-        "  ON points(track_id, wall_clock_delta_s, active_time_delta_s);";
 
-        char *errmsg = NULL;
-        if (sqlite3_exec(db, sql, NULL, NULL, &errmsg) != SQLITE_OK) {
-            fail(TPError(db, @"Create points schema (drop/recreate) failed"));
-            if (errmsg) sqlite3_free(errmsg);
+    [_dbm performWrite:^(sqlite3 *db, DBErrorBlock fail) {
+        @autoreleasepool {
+            // Foreign keys should already be ON from DatabaseManager, but be defensive.
+            (void)sqlite3_exec(db, "PRAGMA foreign_keys=ON;", NULL, NULL, NULL);
+
+            char *errmsg = NULL;
+
+            // *** NON-DESTRUCTIVE: only create if missing ***
+            const char *createPoints =
+            "CREATE TABLE IF NOT EXISTS points ("
+            "  id                  INTEGER PRIMARY KEY,"   /* Surrogate key (rowid-backed) */
+            "  track_id            INTEGER NOT NULL REFERENCES activities(id) ON DELETE CASCADE,"
+            "  wall_clock_delta_s  INTEGER NOT NULL,"
+            "  active_time_delta_s INTEGER NOT NULL DEFAULT 0,"
+            "  latitude_e7         REAL NOT NULL,"
+            "  longitude_e7        REAL NOT NULL,"
+            "  orig_altitude_cm    REAL DEFAULT 0,"
+            "  heartrate_bpm       REAL DEFAULT 0,"
+            "  cadence_rpm         REAL DEFAULT 0,"
+            "  temperature_c10     REAL DEFAULT 0,"
+            "  speed_mps           REAL DEFAULT 0,"
+            "  power_w             REAL DEFAULT 0,"
+            "  orig_distance_m     REAL DEFAULT 0,"
+            "  flags               INTEGER DEFAULT 0"
+            ");";
+
+            if (sqlite3_exec(db, createPoints, NULL, NULL, &errmsg) != SQLITE_OK) {
+                NSError *e = TPError(db, @"Create points table failed");
+                fail(e);
+                if (errmsg) { sqlite3_free(errmsg); errmsg = NULL; }
+                return;
+            }
+            if (errmsg) { sqlite3_free(errmsg); errmsg = NULL; }
+
+            const char *createIdx =
+            "CREATE INDEX IF NOT EXISTS i_points_track_time "
+            "  ON points(track_id, wall_clock_delta_s, active_time_delta_s);";
+
+            if (sqlite3_exec(db, createIdx, NULL, NULL, &errmsg) != SQLITE_OK) {
+                NSError *e = TPError(db, @"Create points index failed");
+                fail(e);
+                if (errmsg) { sqlite3_free(errmsg); errmsg = NULL; }
+                return;
+            }
+            if (errmsg) { sqlite3_free(errmsg); errmsg = NULL; }
+
+            // If you ever need a destructive migration during development,
+            // gate it behind a flag and NEVER run it by default:
+            // if (forceRecreate) { DROP ... CREATE ... COPY ... }
         }
     } completion:^(NSError * _Nullable e) {
-        if (e) { ok = NO; err = e; }
+        if (e) { ok = NO; err = [e retain]; }
         dispatch_semaphore_signal(sem);
     }];
+
     dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     dispatch_release(sem);
 
-    if (!ok && error) *error = err;
+    if (!ok && error) *error = [err autorelease];
     return ok;
 }
 
@@ -295,7 +319,9 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
                          error:(NSError **)error
 {
     BOOL already = NO;
-    @try { already = [t pointsEverSaved]; } @catch (__unused id e) {}
+    @try {
+        already = [t pointsEverSaved];
+    } @catch (__unused id e) {}
     if (already) {
         NSLog(@"[TPStore] Skipping points save for %s (pointsEverSaved=YES)", [t.name UTF8String]);
         return YES;
@@ -450,7 +476,8 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
         sqlite3_stmt *upd = NULL;
         int rc_upd = sqlite3_prepare_v2(db,
             "UPDATE activities SET points_saved=1, points_count=?2 WHERE id=?1;", -1, &upd, NULL);
-        NSLog(@"setting points_saved for %s", [t.name UTF8String]);
+        
+        
         if (rc_upd != SQLITE_OK || !upd) {
             fail(TPError(db, [NSString stringWithFormat:@"prepare UPDATE points_saved failed rc=%d xrc=%d: %s",
                               rc_upd, sqlite3_extended_errcode(db), sqlite3_errmsg(db)]));
@@ -467,6 +494,8 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
             sqlite3_finalize(upd);
             return;
         }
+        
+        NSLog(@"[TPStore] set points_saved for %s, inserted %ld points", [t.name UTF8String], insertedCount);
 
         int changed = sqlite3_changes(db);
         if (changed == 0) {
@@ -476,7 +505,9 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
         sqlite3_finalize(upd);
 
         // Mirror in-memory flag
-        @try { [t setValue:@(YES) forKey:@"pointsEverSaved"]; } @catch (__unused id e) {}
+        @try {
+            [t setValue:@(YES) forKey:@"pointsEverSaved"];
+        } @catch (__unused id e) {}
 
     } completion:^(NSError * _Nullable e) {
         if (e) {
@@ -485,6 +516,11 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
         }
         if (rowsCopy)
             free(rowsCopy);
+        
+        // Ensure points are visible to any subsequent open/snapshot
+        if ([_dbm respondsToSelector:@selector(checkpointNow)]) 
+            [_dbm checkpointNow];
+            
         dispatch_semaphore_signal(sem);
     }];
 

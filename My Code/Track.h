@@ -24,7 +24,7 @@ enum
     kDirtyNone     = 0,
     kDirtyMeta     = 1 << 0, // activity row (name/notes/flags/etc.)
     kDirtyLaps     = 1 << 1, // laps array changed
-    // (no points dirty bit: points are immutable once saved)
+    kAllDirty      = 0xffff,
 };
 
 struct tZoneData

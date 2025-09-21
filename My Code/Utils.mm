@@ -1147,7 +1147,7 @@ static float nullConversion(float v) { return v; }
         else
         {
             color = [NSColor blueColor];
-            NSLog(@"Defaults color not found, using a default BLUE FIXME");
+            ///NSLog(@"Defaults color not found, using a default BLUE FIXME");
         }
     }
     return color;

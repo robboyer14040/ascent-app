@@ -36,11 +36,21 @@
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import "AscentImporter.h"
 #import "AscentExporter.h"
+#import "LibraryController.h"
 
 #include <unistd.h>        // for sleep()
 
 
 #define DEBUG_SYNC      0&&ASCENT_DBG
+
+static void ASCLogPathWritable(NSURL *u) {
+    if (!u) return;
+    NSDictionary *a = [[NSFileManager defaultManager] attributesOfItemAtPath:u.path error:NULL];
+    NSNumber *perm = a[NSFilePosixPermissions];
+    BOOL w = (access(u.path.fileSystemRepresentation, W_OK) == 0);
+    NSLog(@"[Save] target=%@ perms=%@ writable=%d", u.path, perm, w);
+}
+
 
 @interface NSString (FilePathModDateComparison)
 - (NSComparisonResult)compareFileModDates:(NSString*)anotherPath;
@@ -63,11 +73,32 @@
 @end
 
 
+NSString* getTracksPath()
+{
+     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
+    NSString *path = [NSMutableString stringWithString:[paths objectAtIndex:0]];
+    path = [path stringByAppendingPathComponent:PROGRAM_NAME];
+    [Utils verifyDirAndCreateIfNecessary:path];
+    path = [path stringByAppendingPathComponent:@"Tracks"];
+    [Utils verifyDirAndCreateIfNecessary:path];
+    return path;
+}
+
+
+//--------- TrackBrowserDocument ---------------------------------------------------------------------------------
+
 @interface TrackBrowserDocument ()
 {
     DocumentMetaData *_stagedBrowserData;   // parsed off-main, consumed by readFromURL:
+    LibraryController *_libraryController;
+    AscentLibrary *_library;
 }
 @property (nonatomic, strong) NSURL *stagedExportURL; // temp file we built
+@property(nonatomic, assign) BOOL hasSecurityScope;
+@property(nonatomic, retain) NSURL *scopedURL;
+@property (nonatomic, strong) LibraryController *libraryController;
+@property (nonatomic, strong) AscentLibrary *library;
+@property (nonatomic, strong) NSData *libraryBookmark;
 @end
 
 @interface NSDocument (ReadCompletionShim)
@@ -76,25 +107,6 @@
   completionHandler:(void (^)(NSError * _Nullable error))handler;
 @end
 
-
-
-
-
-
-NSString* getTracksPath()
-{
- 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
-	NSString *path = [NSMutableString stringWithString:[paths objectAtIndex:0]];
-	path = [path stringByAppendingPathComponent:PROGRAM_NAME];
-	[Utils verifyDirAndCreateIfNecessary:path];
-	path = [path stringByAppendingPathComponent:@"Tracks"];
-	[Utils verifyDirAndCreateIfNecessary:path];
-	return path;
-}
-
-
-
-//--------- TrackBrowserDocument ---------------------------------------------------------------------------------
 
 @interface TrackBrowserDocument (Private)
 -(int)loadGPSData:(Track**)lastTrackLoaded;
@@ -107,9 +119,7 @@ NSString* getTracksPath()
 -(void)syncDirect:(int*)numLoadedPtr lastTrackLoaded:(Track**)lastTrackLoadedPtr;
 - (void)_presentProgress:(ProgressBarController *)pbc total:(int)total message:(NSString*)msg;
 - (void)_dismissProgress;
-- (BOOL)ensureOpenDBMForURL:(NSURL *)url error:(NSError **)outError;
 - (void)teardownDocumentDBM;
-- (BOOL)shouldDoIncrementalSaveForOperation:(NSSaveOperationType)op;
 
 
 @end
@@ -133,6 +143,7 @@ int kSearchEventType		= 0x0020;
 @synthesize activityStore;
 @synthesize trackPointStore;
 @synthesize identifierStore;
+@synthesize libraryBookmark = _libraryBookmark;
 
 
 + (NSArray<UTType *> *)readableContentTypes {
@@ -163,9 +174,11 @@ int kSearchEventType		= 0x0020;
 
 - (id) init
 {
-	self = [super init];
-	if (self) 
-	{
+    if ((self = [super init])) {
+        NSURL *stateDir = [[[NSFileManager defaultManager] URLsForDirectory:NSApplicationSupportDirectory
+                                                                  inDomains:NSUserDomainMask] firstObject];
+        stateDir = [stateDir URLByAppendingPathComponent:@"Ascent" isDirectory:YES];
+        _libraryController = [[LibraryController alloc] initWithStateDirectoryURL:stateDir];
 		equipmentTotalsNeedUpdate = YES;
 		currentlySelectedTrack = nil;
 		selectedLap = nil;
@@ -197,6 +210,9 @@ int kSearchEventType		= 0x0020;
     [databaseFileURL release];
 	[backupDelegate release];
 	[self.docMetaData release];
+    [_libraryController release];
+    [_library release];
+    [_libraryBookmark release];
 	[selectedLap release];
 	[currentlySelectedTrack release];
 	[equipmentLog release];
@@ -1598,7 +1614,7 @@ deviceIsPluggedIn:YES];
 }
 
 
-- (NSURL*)databaseFileURL:(NSURL*)url
+- (NSURL*)databaseFileURL
 {
     return databaseFileURL;
 }
@@ -1928,134 +1944,288 @@ deviceIsPluggedIn:YES];
 }
 
 
+- (BOOL)shouldPreferIncrementalForOperation:(NSSaveOperationType)op
+                                 destination:(NSURL *)destURL
+{
+    if (op == NSSaveAsOperation) {
+        return NO;
+    }
+    if (op == NSSaveToOperation) {
+        return NO;
+    }
+    if (self.fileURL == nil) {
+        return NO;
+    }
+    if (destURL != nil && ![destURL isEqual:self.fileURL]) {
+        return NO;
+    }
+    return YES; // Save / Autosave to the same on-disk file
+}
+
 - (void)saveToURL:(NSURL *)url
            ofType:(NSString *)type
  forSaveOperation:(NSSaveOperationType)op
 completionHandler:(void (^)(NSError * _Nullable error))handler
 {
     // Progress UI (main thread)
-    NSString *name = [[url URLByDeletingPathExtension] lastPathComponent];
-    NSString *displayName = [name stringByRemovingPercentEncoding] ?: name;
+    NSString *base = [[url URLByDeletingPathExtension] lastPathComponent];
+    NSString *displayName = [base stringByRemovingPercentEncoding];
+    if (displayName.length == 0) {
+        displayName = base ?: @"document";
+    }
     [self startProgressIndicator:[NSString stringWithFormat:@"saving “%@”…", displayName]];
 
-    // Decide incremental vs full export up front (main thread, cheap)
-    BOOL doIncremental = [self shouldDoIncrementalSaveForOperation:op];
+    // Prefer incremental based on op + URLs — do NOT require an existing AscentLibrary
+    BOOL preferIncremental = [self shouldPreferIncrementalForOperation:op destination:url];
 
-    if (doIncremental) {
-        // ----- Incremental path: write directly into the current writable DB -----
-        dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-            NSError *exportErr = nil;
+    // ---------- Incremental path (open library lazily / with bookmark) ----------
+    if (preferIncremental) {
+        NSURL *docURL = self.fileURL;
 
-            // Ensure we have a writable DBM for the *document’s* URL
-            DatabaseManager *dbm = [self currentWritableDBMForURL:self.fileURL error:&exportErr];
-            ActivityStore   *actStore = nil;
-            TrackPointStore *tpStore  = nil;
-            IdentifierStore *idStore  = nil;
+        NSLog(@"SAVING INCREMENTALLY… %s", [displayName UTF8String]);
 
-            if (dbm != nil && exportErr == nil) {
-                [self ensureWritableStoresForDBM:dbm
-                                    activityStore:&actStore
-                                 trackPointStore:&tpStore
-                                identifierStore:&idStore];
+        // Reuse an already-open scoped library if we have it.
+        AscentLibrary *lib = self.library;
+
+        // Try any open library with the same URL.
+        if (lib == nil) {
+            for (AscentLibrary *candidate in [self.libraryController openLibraries]) {
+                if ([[candidate fileURL] isEqual:docURL]) {
+                    lib = candidate;
+                    break;
+                }
             }
+        }
 
-            if (dbm == nil || actStore == nil || tpStore == nil || idStore == nil || exportErr != nil) {
+        // Before kicking off the background incremental export:
+        id saveToken = [self changeCountTokenForSaveOperation:NSSaveOperation];
+
+        void (^runIncremental)(AscentLibrary *) = ^(AscentLibrary *useLib){
+            dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+                @autoreleasepool {
+                    NSError *exportErr = nil;
+                    AscentExporter *exporter = [[[AscentExporter alloc] init] autorelease];
+                    BOOL ok = [exporter performIncrementalExportWithMetaData:self.docMetaData
+                                                             databaseManager:useLib.db
+                                                               activityStore:useLib.activities
+                                                            trackPointStore:useLib.points
+                                                           identifierStore:useLib.identifiers
+                                                                      error:&exportErr];
+
+                    // Own the error across the queue hop
+                    NSError *errForMain = [exportErr retain];
+
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        NSError *err = [errForMain autorelease];
+
+                        [self _dismissProgress];
+
+                        if (ok) {
+                            // On the main queue, after a successful incremental save:
+                            [self updateChangeCountWithToken:saveToken forSaveOperation:NSSaveOperation];
+
+                            // Sync NSDocument’s idea of the file’s mtime with reality
+                            NSError *attrErr = nil;
+                            NSDictionary *attrs = [[NSFileManager defaultManager] attributesOfItemAtPath:self.fileURL.path
+                                                                                                    error:&attrErr];
+                            NSDate *mod = [attrs objectForKey:NSFileModificationDate];
+                            if (mod != nil) {
+                                [self setFileModificationDate:mod];
+                            }
+
+                            [self updateChangeCount:NSChangeCleared];
+                            [self.libraryController refreshStatsForLibrary:useLib completion:nil];
+
+                            if (handler != nil) {
+                                handler(nil);
+                            }
+                        } else {
+                            if (handler != nil) {
+                                handler(err ?: [NSError errorWithDomain:@"AscentExporter"
+                                                                   code:-1
+                                                               userInfo:@{NSLocalizedDescriptionKey:@"Incremental save failed"}]);
+                            }
+                        }
+                    });
+                }
+            });
+        };
+
+        if (lib != nil) {
+            runIncremental(lib);
+            return;
+        }
+
+        // Open using a bookmark if we have one cached (from prior Save/Save As)
+        NSData *bm = nil;
+        if ([self respondsToSelector:@selector(libraryBookmark)]) {
+            bm = [self valueForKey:@"libraryBookmark"];
+        }
+        if (bm == nil && self.library != nil) {
+            bm = self.library.bookmarkData;
+        }
+
+        [self.libraryController openLibraryAtURL:docURL
+                                        bookmark:bm
+                                      completion:^(AscentLibrary *opened, NSError *openErr)
+        {
+            if (openErr != nil || opened == nil) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self _dismissProgress];
-                    if (handler) {
-                        handler(exportErr ?: [NSError errorWithDomain:@"AscentExporter"
-                                                                 code:-1
-                                                             userInfo:@{NSLocalizedDescriptionKey:@"No writable database available for incremental save"}]);
+                    if (handler != nil) {
+                        handler(openErr ?: [NSError errorWithDomain:@"AscentExporter"
+                                                               code:-1
+                                                           userInfo:@{NSLocalizedDescriptionKey:
+                                                                      @"Failed to open scoped library for incremental save"}]);
                     }
                 });
                 return;
             }
 
-            AscentExporter *exporter = [[[AscentExporter alloc] init] autorelease];
-            BOOL ok = [exporter performIncrementalExportWithMetaData:self.docMetaData
-                                                    databaseManager:dbm
-                                                      activityStore:actStore
-                                                   trackPointStore:tpStore
-                                                  identifierStore:idStore
-                                                             error:&exportErr];
+            // Cache for the next save
+            if ([self respondsToSelector:@selector(setLibrary:)]) {
+                self.library = opened;
+            }
+            if ([self respondsToSelector:@selector(setLibraryBookmark:)]
+                && self.libraryBookmark == nil
+                && opened.bookmarkData != nil) {
+                self.libraryBookmark = opened.bookmarkData;
+            }
 
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self _dismissProgress];
-
-                if (ok) {
-                    // Keep document identity (incremental doesn’t replace the file)
-                    // Clear dirty state
-                    [self updateChangeCount:NSChangeCleared];
-
-                    if (handler) {
-                        handler(nil);
-                    }
-                } else {
-                    if (handler) {
-                        handler(exportErr);
-                    }
-                }
-            });
-        });
+            runIncremental(opened);
+        }];
 
         return;
     }
 
-    // ----- Full export path (stage to temp then atomic replace) -----
+    // ---------- Full export path ----------
+    [self performFullExportToURL:url
+                          ofType:type
+                forSaveOperation:op
+               completionHandler:handler];
+}
+
+
+- (void)performFullExportToURL:(NSURL *)url
+                        ofType:(NSString *)type
+              forSaveOperation:(NSSaveOperationType)op
+             completionHandler:(void (^)(NSError * _Nullable error))handler
+{
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-        NSError *exportErr = nil;
+        @autoreleasepool {
+            NSError *exportErr = nil;
 
-        AscentExporter *exporter = [[[AscentExporter alloc] init] autorelease];
-        NSURL *tmp = [exporter exportDocumentToTemporaryURLWithProgress:^(NSInteger done, NSInteger total) {
-            // Progress UI on main thread
+            AscentExporter *exporter = [[[AscentExporter alloc] init] autorelease];
+            NSURL *tmp = [exporter exportDocumentToTemporaryURLWithProgress:^(NSInteger done, NSInteger total) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                });
+            } metaData:self.docMetaData
+                 error:&exportErr];
+
+            // Own values across the queue hop
+            NSError *errForMain = [exportErr retain];
+            NSURL   *tmpForMain = [tmp retain];
+
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[[SharedProgressBar sharedInstance] controller] incrementDiv];
-            });
-        } metaData:self.docMetaData
-             error:&exportErr];
+                NSError *err = [errForMain autorelease];
+                NSURL   *staged = [tmpForMain autorelease];
 
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (tmp == nil || exportErr != nil) {
+                if (staged == nil || err != nil) {
+                    [self _dismissProgress];
+                    if (handler != nil) {
+                        handler(err ?: [NSError errorWithDomain:@"AscentExporter"
+                                                           code:-1
+                                                       userInfo:@{NSLocalizedDescriptionKey:@"Full export failed"}]);
+                    }
+                    return;
+                }
+
+                self.stagedExportURL = staged;
+
+                NSError *writeErr = nil;
+                BOOL ok = [self writeSafelyToURL:url
+                                          ofType:type
+                                forSaveOperation:op
+                                           error:&writeErr];
+
+                // Cleanup the staged file
+                if (self.stagedExportURL != nil) {
+                    [[NSFileManager defaultManager] removeItemAtURL:self.stagedExportURL error:NULL];
+                    self.stagedExportURL = nil;
+                }
+
                 [self _dismissProgress];
-                if (handler) {
-                    handler(exportErr);
+
+                if (!ok) {
+                    if (handler != nil) {
+                        handler(writeErr);
+                    }
+                    return;
                 }
-                return;
-            }
 
-            self.stagedExportURL = tmp;
-
-            NSError *writeErr = nil;
-            BOOL ok = [self writeSafelyToURL:url
-                                      ofType:type
-                            forSaveOperation:op
-                                       error:&writeErr];
-
-            // Cleanup + UI
-            if (self.stagedExportURL != nil) {
-                [[NSFileManager defaultManager] removeItemAtURL:self.stagedExportURL error:NULL];
-                self.stagedExportURL = nil;
-            }
-            [self _dismissProgress];
-
-            if (ok) {
-                // Adopt the new identity for Save / Save As
+                // Adopt new identity on Save / Save As…
                 if (op == NSSaveOperation || op == NSSaveAsOperation) {
-                    if (self.fileURL == nil || ![self.fileURL isEqual:url]) {
+                    BOOL isNewIdentity = (self.fileURL == nil) || ![self.fileURL isEqual:url];
+
+                    if (isNewIdentity) {
                         [self setFileURL:url];
-                    }
-                    NSDocumentController *dc = [NSDocumentController sharedDocumentController];
-                    if ([dc respondsToSelector:@selector(noteNewRecentDocumentURL:)]) {
-                        [dc noteNewRecentDocumentURL:url];
+
+                        NSDocumentController *dc = [NSDocumentController sharedDocumentController];
+                        if ([dc respondsToSelector:@selector(noteNewRecentDocumentURL:)]) {
+                            [dc noteNewRecentDocumentURL:url];
+                        }
+
+#if TARGET_OS_OSX
+                        NSError *bmErr = nil;
+                        NSData *bookmark = [url bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope
+                                         includingResourceValuesForKeys:nil
+                                                          relativeToURL:nil
+                                                                  error:&bmErr];
+                        if (bookmark == nil) {
+                            NSLog(@"[Save] Warning: failed to create bookmark for %@: %@", url.path, bmErr);
+                        }
+
+                        // Eagerly open (and scope) the library so the next save can be incremental.
+                        [self.libraryController openLibraryAtURL:url
+                                                        bookmark:bookmark
+                                                      completion:^(AscentLibrary *lib, NSError *openErr) {
+                            if (openErr != nil || lib == nil) {
+                                NSLog(@"[Save] Warning: failed to adopt/open library for %@: %@", url.path, openErr);
+                            } else {
+                                if ([self respondsToSelector:@selector(setLibrary:)]) {
+                                    self.library = lib;
+                                }
+                                if ([self respondsToSelector:@selector(setLibraryBookmark:)]
+                                    && bookmark != nil) {
+                                    self.libraryBookmark = bookmark;
+                                }
+                                [self.libraryController refreshStatsForLibrary:lib completion:nil];
+                            }
+                        }];
+#else
+                        [self.libraryController openLibraryAtURL:url
+                                                        bookmark:nil
+                                                      completion:^(AscentLibrary *lib, NSError *openErr) {
+                            if (openErr != nil || lib == nil) {
+                                NSLog(@"[Save] Warning: failed to adopt/open library for %@: %@", url.path, openErr);
+                            } else {
+                                if ([self respondsToSelector:@selector(setLibrary:)]) {
+                                    self.library = lib;
+                                }
+                            }
+                        }];
+#endif
                     }
                 }
-                [self updateChangeCount:NSChangeCleared];
-            }
 
-            if (handler) {
-                handler(ok ? nil : writeErr);
-            }
-        });
+                [self updateChangeCount:NSChangeCleared];
+
+                if (handler != nil) {
+                    handler(nil);
+                }
+            });
+        }
     });
 }
 
@@ -3296,120 +3466,26 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
     return NO;
 }
 
-- (BOOL)ensureOpenDBMForURL:(NSURL *)url error:(NSError **)outError
-{
-    // If we already have a DBM pointed at this URL, reuse it.
-    if (self.documentDBM != nil) {
-        if ([self.documentDBM.databaseURL isEqual:url]) {
-            return YES;
-        }
-        // Different file -> close old before opening new.
-        [self teardownDocumentDBM];
-    }
 
-    DatabaseManager *dbm = [[DatabaseManager alloc] initWithURL:url];
-    NSError *err = nil;
-    if (![dbm open:&err]) {
-        if (outError) {
-            *outError = err;
-        }
-        [dbm release];
-        return NO;
-    }
-
-    // Build stores on top and ensure schema.
-    ActivityStore *a = [[ActivityStore alloc] initWithDatabaseManager:dbm];
-    TrackPointStore *p = [[TrackPointStore alloc] initWithDatabaseManager:dbm];
-    IdentifierStore *i = [[IdentifierStore alloc] initWithDatabaseManager:dbm];
-
-    if (!([a createSchemaIfNeeded:&err] &&
-          [p createSchemaIfNeeded:&err] &&
-          [i createSchemaIfNeeded:&err])) {
-
-        if (outError) {
-            *outError = err;
-        }
-        [a release];
-        [p release];
-        [i release];
-        [dbm close];
-        [dbm release];
-        return NO;
-    }
-
-    self.documentDBM     = dbm;
-    self.activityStore   = a;
-    self.trackPointStore = p;
-    self.identifierStore = i;
-
-    [a release];
-    [p release];
-    [i release];
-    [dbm release];
-    return YES;
-}
 
 - (void)teardownDocumentDBM
 {
-    if (self.activityStore) {
-        [self.activityStore release];
-        self.activityStore = nil;
-    }
-    if (self.trackPointStore) {
-        [self.trackPointStore release];
-        self.trackPointStore = nil;
-    }
-    if (self.identifierStore) {
-        [self.identifierStore release];
-        self.identifierStore = nil;
-    }
-    if (self.documentDBM) {
-        [self.documentDBM close];
-        [self.documentDBM release];
-        self.documentDBM = nil;
+    if (self.identifierStore) { [self.identifierStore release]; self.identifierStore = nil; }
+    if (self.trackPointStore) { [self.trackPointStore release]; self.trackPointStore = nil; }
+    if (self.activityStore)   { [self.activityStore release];   self.activityStore   = nil; }
+    if (self.documentDBM)     { [self.documentDBM close];       [self.documentDBM release]; self.documentDBM = nil; }
+
+    if (self.hasSecurityScope && self.scopedURL) {
+        [self.scopedURL stopAccessingSecurityScopedResource];
+        [self.scopedURL release];
+        self.scopedURL = nil;
+        self.hasSecurityScope = NO;
     }
 }
+
 
 #pragma mark - Incremental decision
 
-- (BOOL)shouldDoIncrementalSaveForOperation:(NSSaveOperationType)op
-{
-    // Incremental is ONLY for:
-    //  - Normal Save / Autosave,
-    //  - When we already have a live DBM open on the SAME on-disk file,
-    //  - When the destination equals the document’s current fileURL,
-    //  - And we are not "Save As…" or "Export".
-    //
-    // Atomic (temp export + replace) for:
-    //  - First save of Untitled (no DBM),
-    //  - Save As…,
-    //  - Export/duplicate,
-    //  - Any time fileURL != destination.
-
-    if (op == NSSaveAsOperation || op == NSSaveToOperation) {
-        return NO;
-    }
-
-    if (self.fileURL == nil) {
-        return NO;
-    }
-
-    if (self.documentDBM == nil) {
-        return NO;
-    }
-
-    NSURL *dbmURL = self.documentDBM.databaseURL;
-    if (dbmURL == nil) {
-        return NO;
-    }
-
-    // Must match the same file on disk
-    if (![dbmURL isEqual:self.fileURL]) {
-        return NO;
-    }
-
-    return YES;
-}
 
 
 #pragma mark - Writable DBM acquisition
@@ -3477,84 +3553,5 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
     return self.documentDBM;
 }
 
-// Optional shim so any older call sites keep working.
-// Internally just forwards to the canonical helper above.
-- (DatabaseManager *)currentWritableDBMForURL:(NSURL *)url
-                                        error:(NSError **)outError
-{
-    return [self documentDBMForURL:url error:outError];
-}
-
-#pragma mark - Ensure writable stores for a DBM
-
-- (void)ensureWritableStoresForDBM:(DatabaseManager *)dbm
-                     activityStore:(ActivityStore * __autoreleasing *)outAct
-                  trackPointStore:(TrackPointStore * __autoreleasing *)outTP
-                 identifierStore:(IdentifierStore * __autoreleasing *)outID
-{
-    if (dbm == nil) {
-        NSLog(@"[TrackBrowserDocument] ensureWritableStoresForDBM: received nil dbm");
-        if (outAct) *outAct = nil;
-        if (outTP)  *outTP  = nil;
-        if (outID)  *outID  = nil;
-        return;
-    }
-
-    // Always (re)create stores bound to this DBM to avoid cross-DBM mixups.
-    ActivityStore   *newAct = [[ActivityStore alloc]   initWithDatabaseManager:dbm];
-    TrackPointStore *newTP  = [[TrackPointStore alloc] initWithDatabaseManager:dbm];
-    IdentifierStore *newID  = [[IdentifierStore alloc] initWithDatabaseManager:dbm];
-
-    NSError *schemaErr = nil;
-    BOOL ok =
-        [newAct createSchemaIfNeeded:&schemaErr] &&
-        [newTP  createSchemaIfNeeded:&schemaErr] &&
-        [newID  createSchemaIfNeeded:&schemaErr];
-
-    if (!ok) {
-        NSLog(@"[TrackBrowserDocument] ensureWritableStoresForDBM: schema ensure failed: %@", schemaErr);
-
-        if (outAct) *outAct = nil;
-        if (outTP)  *outTP  = nil;
-        if (outID)  *outID  = nil;
-
-        [newAct release];
-        [newTP  release];
-        [newID  release];
-        return;
-    }
-
-    // Swap onto document properties.
-    if (self.activityStore != nil) {
-        [self.activityStore release];
-    }
-    self.activityStore = newAct;
-
-    if (self.trackPointStore != nil) {
-        [self.trackPointStore release];
-    }
-    self.trackPointStore = newTP;
-
-    if (self.identifierStore != nil) {
-        [self.identifierStore release];
-    }
-    self.identifierStore = newID;
-
-    // Hand back to caller (autoreleased so callers aren’t forced to manage retains).
-    if (outAct) {
-        *outAct = [[self.activityStore retain] autorelease];
-    }
-    if (outTP) {
-        *outTP = [[self.trackPointStore retain] autorelease];
-    }
-    if (outID) {
-        *outID = [[self.identifierStore retain] autorelease];
-    }
-
-    // We created with alloc/init; the properties retained them.
-    [newAct release];
-    [newTP  release];
-    [newID  release];
-}
 
 @end

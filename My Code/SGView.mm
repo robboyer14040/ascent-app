@@ -341,7 +341,7 @@ NSInteger compareDates(id dt1, id dt2, void* ctx)
 {
    int num = 0;
    int i;
-   int numInArray = [typeInfoArray count];;
+    NSUInteger numInArray = [typeInfoArray count];;
    for (i=0; i<numInArray; i++)
    {
       if ([[typeInfoArray objectAtIndex:i] enabled]) num++;

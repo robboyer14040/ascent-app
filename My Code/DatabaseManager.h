@@ -32,6 +32,9 @@ typedef void (^DBVoidBlock)(void);
 - (BOOL)open:(NSError **)error;
 - (void)close;
 
+- (void)checkpointNow; // best-effort, safe to call anytime
+- (BOOL)enableWALIfPossible;
+
 // Accessors
 @property (nonatomic, readonly) NSURL *databaseURL;
 @property (nonatomic, readonly) dispatch_queue_t writeQueue;

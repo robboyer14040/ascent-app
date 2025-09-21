@@ -17,7 +17,7 @@
 		NSFont* font = [NSFont systemFontOfSize:14];
 		textFontAttrs = [[NSMutableDictionary alloc] init];
 		[textFontAttrs setObject:font forKey:NSFontAttributeName];
-		[textFontAttrs setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
+		[textFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"] forKey:NSForegroundColorAttributeName];
 		centeredText = nil;
     }
     return self;
@@ -52,7 +52,7 @@
 		NSSize size = [centeredText sizeWithAttributes:textFontAttrs];
 		float x = dbounds.origin.x + dbounds.size.width/2.0 - size.width/2.0;
 		float y = (dbounds.size.height/2.0) - (size.height/2.0);
-		[textFontAttrs setObject:[[NSColor blackColor] colorWithAlphaComponent:0.50] forKey:NSForegroundColorAttributeName];
+		[textFontAttrs setObject:[[NSColor colorNamed:@"TextPrimary"] colorWithAlphaComponent:0.50] forKey:NSForegroundColorAttributeName];
 		[centeredText drawAtPoint:NSMakePoint(x,y) 
 		withAttributes:textFontAttrs];
 	}

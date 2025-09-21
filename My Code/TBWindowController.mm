@@ -261,7 +261,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
 		NSMutableDictionary *fontAttrs = [[[NSMutableDictionary alloc] init] autorelease];
 		NSFont* font =  [NSFont fontWithName:@"Lucida Grande" size:12.0];
 		[fontAttrs setObject:font forKey:NSFontAttributeName];
-		[fontAttrs setObject:[[NSColor blackColor] colorWithAlphaComponent:0.50] forKey:NSForegroundColorAttributeName];
+		[fontAttrs setObject:[[NSColor colorNamed:@"TextPrimary"] colorWithAlphaComponent:0.50] forKey:NSForegroundColorAttributeName];
 		NSSize size = [placeholderText sizeWithAttributes:fontAttrs];
 		float x = dbounds.origin.x + dbounds.size.width/2.0 - size.width/2.0;
 		float y = (dbounds.size.height/2.0) - (size.height/2.0);
@@ -560,7 +560,7 @@ static NSToolbarItem* addToolbarItem(NSMutableDictionary *theDict,NSString *iden
                  NSFontAttributeName, txtColor, NSForegroundColorAttributeName,  nil];
     
     txtFont = [NSFont boldSystemFontOfSize:12];
-    txtColor = [NSColor blackColor];
+    txtColor = [NSColor colorNamed:@"TextPrimary"];
     activityAttrs = [NSDictionary dictionaryWithObjectsAndKeys:txtFont,
                      NSFontAttributeName, txtColor, NSForegroundColorAttributeName,  nil];
     reverseSort = [Utils boolFromDefaults:RCBDefaultBrowserSortInReverse];
@@ -2900,7 +2900,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
     {
         [aCell setFont:boldLineMediumFont];
     }
-    if (txtColor == nil) txtColor =  [NSColor blackColor];
+    if (txtColor == nil) txtColor =  [NSColor colorNamed:@"TextPrimary"];
     [aCell setTextColor:txtColor];
 }
 
@@ -3127,7 +3127,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
                 switch ([bi type])
                 {
                     default:
-                        txtColor = [NSColor blackColor];
+                        txtColor = [NSColor colorNamed:@"TextPrimary"];
                         break;
                         
                     case kTypeYear:
@@ -3154,7 +3154,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
             switch ([bi type])
             {
                 default:
-                    if (txtColor == nil) txtColor = [NSColor blackColor];
+                    if (txtColor == nil) txtColor = [NSColor colorNamed:@"TextPrimary"];
                     [aCell setFont:lineFont];
                     break;
                     
@@ -3169,7 +3169,7 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
                     break;
             }
         }
-        if (txtColor == nil) txtColor =  [NSColor blackColor];
+        if (txtColor == nil) txtColor =  [NSColor colorNamed:@"TextPrimary"];
         [aCell setTextColor:txtColor];
         
     }
@@ -5044,8 +5044,8 @@ int searchTagToMask(int searchTag)
                 NSCalendar *cal = [NSCalendar currentCalendar];
                 if (!lastSyncTime || ([lastSyncTime compare:[NSDate distantPast]] == NSOrderedSame)) {
                     NSDate *now = [NSDate date];
-                    lastSyncTime = [cal dateByAddingUnit:NSCalendarUnitMonth
-                                                   value:-3
+                    lastSyncTime = [cal dateByAddingUnit:NSCalendarUnitWeekOfYear
+                                                   value:-1
                                                   toDate:now options:0];
                 }
 

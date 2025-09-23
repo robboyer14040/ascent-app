@@ -65,11 +65,12 @@ NS_ASSUME_NONNULL_BEGIN
                   outID:(sqlite3_int64 *)outID
                   error:(NSError **)error;
 
-// ActivityStore.h
 - (BOOL)ensureActivityRowForTrack:(Track *)track
                          outTrackID:(int64_t *)outID
                               error:(NSError **)error;
 
+- (BOOL)deleteTracks:(NSArray<Track *> *)tracks
+               error:(NSError * _Nullable * _Nullable)error;
 
 @end
 

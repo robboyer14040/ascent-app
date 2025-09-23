@@ -321,9 +321,10 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
     BOOL already = NO;
     @try {
         already = [t pointsEverSaved];
-    } @catch (__unused id e) {}
+    }
+    @catch (__unused id e) {}
     if (already) {
-        NSLog(@"[TPStore] Skipping points save for %s (pointsEverSaved=YES)", [t.name UTF8String]);
+        NSLog(@"[TPStore - replacePointsForTrack] Skipping points save for %s (pointsEverSaved=YES)", [t.name UTF8String]);
         return YES;
     }
 
@@ -495,11 +496,13 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
             return;
         }
         
-        NSLog(@"[TPStore] set points_saved for %s, inserted %ld points", [t.name UTF8String], insertedCount);
+        NSLog(@"[TPStore - replacePointsForTrack] SAVED POINTS and set points_saved for \"%s\", inserted %ld points",
+              [t.name UTF8String],
+              insertedCount);
 
         int changed = sqlite3_changes(db);
         if (changed == 0) {
-            NSLog(@"[TPStore] WARNING: UPDATE points changed 0 rows (id=%lld file=%s)",
+            NSLog(@"[TPStore - replacePointsForTrack] WARNING: UPDATE points changed 0 rows (id=%lld file=%s)",
                   (long long)trackID, sqlite3_db_filename(db, "main") ?: "");
         }
         sqlite3_finalize(upd);
@@ -507,6 +510,7 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
         // Mirror in-memory flag
         @try {
             [t setValue:@(YES) forKey:@"pointsEverSaved"];
+            t.dirtyMask |= kDirtyMeta;
         } @catch (__unused id e) {}
 
     } completion:^(NSError * _Nullable e) {
@@ -518,7 +522,7 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
             free(rowsCopy);
         
         // Ensure points are visible to any subsequent open/snapshot
-        if ([_dbm respondsToSelector:@selector(checkpointNow)]) 
+        if ([_dbm respondsToSelector:@selector(checkpointNow)])
             [_dbm checkpointNow];
             
         dispatch_semaphore_signal(sem);

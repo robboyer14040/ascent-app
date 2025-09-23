@@ -99,6 +99,8 @@ NSString* getTracksPath()
 @property (nonatomic, strong) LibraryController *libraryController;
 @property (nonatomic, strong) AscentLibrary *library;
 @property (nonatomic, strong) NSData *libraryBookmark;
+
+- (void)syncFileModDateFromDiskAtURL:(NSURL *)u;
 @end
 
 @interface NSDocument (ReadCompletionShim)
@@ -1751,60 +1753,51 @@ deviceIsPluggedIn:YES];
               error:(NSError **)outError
 {
     NSLog(@"readFromURL: %s", [[url description] UTF8String]);
-    
-    // 0) Bring the app to front so our windows actually show
+
+    // 0) Bring the app to front so our windows actually show.
     if (![NSApp isActive]) {
         [NSApp activateIgnoringOtherApps:YES];
     }
 
-    // 1) If the splash is visible, mirror status there, but we will STILL
-    //    show the progress panel below it so there’s always a UI.
+    // 1) Splash / progress UI.
     SplashPanelController *sp = [SplashPanelController sharedInstance];
-    BOOL splashWanted = sp && sp.window && sp.window.isVisible;
+    BOOL splashWanted = (sp && sp.window && sp.window.isVisible);
 
     NSString *name = [[url URLByDeletingPathExtension] lastPathComponent];
-    NSString *displayName = [name stringByRemovingPercentEncoding] ?: name;
+    NSString *displayName = [name stringByRemovingPercentEncoding];
+    if (displayName.length == 0) {
+        displayName = name ?: @"document";
+    }
+
     NSModalSession splashSession = NULL;
-    if (splashWanted)
-    {
-         // Make absolutely sure this window is eligible
+    if (splashWanted) {
         NSWindow *w = sp.window;
-        [w setLevel:NSStatusWindowLevel + 1];
+        [w setLevel:(NSStatusWindowLevel + 1)];
         w.collectionBehavior |= (NSWindowCollectionBehaviorCanJoinAllSpaces |
                                  NSWindowCollectionBehaviorFullScreenAuxiliary);
         [w orderFrontRegardless];
-       [sp updateMessage:[NSString stringWithFormat:@"opening “%@”…", displayName]];
+        [sp updateMessage:[NSString stringWithFormat:@"opening “%@”…", displayName]];
 
-        // Kick a modal session so AppKit will *definitely* show it now.
         splashSession = [NSApp beginModalSessionForWindow:w];
-       // Run a couple of steps immediately to flush it onto screen
         for (int i = 0; i < 4; i++) {
             [NSApp runModalSession:splashSession];
         }
-    }
-    else
-    {
-        // 2) Show a standalone progress window (kept below the splash if present)
+    } else {
         ProgressBarController *pbc = [[[SharedProgressBar sharedInstance] controller] retain];
-        NSWindow *pbWin = [pbc window]; // ensure nib loads
+        NSWindow *pbWin = [pbc window];
         pbWin.collectionBehavior |= (NSWindowCollectionBehaviorCanJoinAllSpaces |
                                      NSWindowCollectionBehaviorFullScreenAuxiliary);
         pbWin.level = NSStatusWindowLevel;
         [pbc showWindow:self];
-
-        [pbc begin:[NSString stringWithFormat:@"opening “%@”…",displayName]
-         divisions:(int)0];
-
-        // Don’t rely on makeKey during launch; force it in front visually:
+        [pbc begin:[NSString stringWithFormat:@"opening “%@”…", displayName] divisions:0];
         [pbWin orderFrontRegardless];
         [pbWin displayIfNeeded];
+        [pbc release]; // controller is retained by its singleton
     }
-     
 
-    // Give AppKit a tick to paint *now* so you can actually see the window
     CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.01, false);
 
-    // 3) Kick heavy work off-main
+    // 2) Background load + (for DB UTI) open the AscentLibrary so we have a live connection to reuse.
     __block NSError *bgErr = nil;
     __block BOOL ok = NO;
 
@@ -1815,34 +1808,95 @@ deviceIsPluggedIn:YES];
             @try {
                 if ([typeName isEqualToString:AscentUTIDatabase]) {
                     __block BOOL madeDeterminate = NO;
+
                     AscentImporter *importer = [[[AscentImporter alloc] init] autorelease];
                     ok = [importer loadDatabaseFile:url
                                        documentMeta:self.docMetaData
                                            progress:^(NSInteger doneCount, NSInteger total) {
                         dispatch_async(dispatch_get_main_queue(), ^{
-                            // Flip to determinate as soon as total is known
- 
-                            if ([sp.window isVisible]) {
+                            if (splashWanted) {
                                 if (total > 0) {
                                     [sp updateProgress:(int)doneCount total:(int)total];
                                 }
-                            }
-                            else
-                            {
+                            } else {
                                 if (!madeDeterminate && total > 0) {
                                     madeDeterminate = YES;
                                     [[[SharedProgressBar sharedInstance] controller]
-                                            begin:[NSString stringWithFormat:@"opening “%@”…",displayName]
+                                        begin:[NSString stringWithFormat:@"opening “%@”…", displayName]
                                         divisions:(int)total];
                                 }
                                 [[[SharedProgressBar sharedInstance] controller] incrementDiv];
-
                             }
                         });
                     }];
+
+                    if (ok) {
+#if TARGET_OS_OSX
+                        // Create or reuse a bookmark so we can start scope in the library open.
+                        NSData *bm = self.libraryBookmark;
+                        if (bm == nil) {
+                            NSError *bmErr = nil;
+                            NSData *fresh =
+                                [url bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope
+                                 includingResourceValuesForKeys:nil
+                                                  relativeToURL:nil
+                                                          error:&bmErr];
+                            if (fresh != nil) {
+                                bm = fresh;
+                            } else {
+                                // Not fatal inside the container; keep going without a bookmark.
+                                NSLog(@"[Document] bookmark create failed for %@: %@", url.path, bmErr);
+                            }
+                        }
+#else
+                        NSData *bm = nil;
+#endif
+                        // Open the library now (single connection), so later incremental saves just reuse it.
+                        __block AscentLibrary *openedLib = nil;
+                        __block NSError *openErr = nil;
+                        dispatch_semaphore_t semOpen = dispatch_semaphore_create(0);
+
+                        [self.libraryController openLibraryAtURL:url
+                                                        bookmark:bm
+                                                      completion:^(AscentLibrary *lib, NSError *err) {
+                            openedLib = [lib retain];
+                            openErr   = [err retain];
+                            dispatch_semaphore_signal(semOpen);
+                        }];
+
+                        dispatch_semaphore_wait(semOpen, DISPATCH_TIME_FOREVER);
+                        dispatch_release(semOpen);
+
+                        if (openedLib != nil && openErr == nil) {
+                            // Replace any previous library with the newly opened one.
+                            if (self.library != openedLib) {
+                                [self.library release];
+                                self.library = [openedLib retain];
+                            }
+#if TARGET_OS_OSX
+                            if (self.libraryBookmark == nil && openedLib.bookmarkData != nil) {
+                                self.libraryBookmark = openedLib.bookmarkData;
+                            }
+#endif
+                            [openedLib release];
+                        } else {
+                            ok = NO;
+                            if (openErr != nil) {
+                                bgErr = openErr; // already retained above
+                            } else {
+                                bgErr = [[NSError errorWithDomain:@"Ascent.Document"
+                                                             code:-1001
+                                                         userInfo:@{NSLocalizedDescriptionKey:
+                                                                    @"Failed to open library for document"}] retain];
+                            }
+                            if (openedLib != nil) {
+                                [openedLib release];
+                            }
+                        }
+                    }
                 } else if ([typeName isEqualToString:AscentUTIDatabaseOLD]) {
                     NSData *data = [NSData dataWithContentsOfURL:url options:0 error:&bgErr];
-                    if (data) {
+                    if (data != nil) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
                         id obj = [NSUnarchiver unarchiveObjectWithData:data];
@@ -1858,45 +1912,49 @@ deviceIsPluggedIn:YES];
                         ok = YES;
 
                         dispatch_async(dispatch_get_main_queue(), ^{
-                            if (splashWanted)
-                            {
+                            if (splashWanted) {
                                 [sp updateMessage:@"Opening…"];
-                            }
-                            else
-                            {
+                            } else {
                                 [[[SharedProgressBar sharedInstance] controller] incrementDiv];
                                 [[[SharedProgressBar sharedInstance] controller] incrementDiv];
                             }
                         });
+                    } else {
+                        ok = NO;
                     }
                 } else {
-                    bgErr = [NSError errorWithDomain:NSCocoaErrorDomain
-                                                code:NSFileReadUnknownError
-                                            userInfo:@{ NSLocalizedDescriptionKey : @"Unsupported document type" }];
+                    ok = NO;
+                    bgErr = [[NSError errorWithDomain:NSCocoaErrorDomain
+                                                 code:NSFileReadUnknownError
+                                             userInfo:@{ NSLocalizedDescriptionKey : @"Unsupported document type" }] retain];
                 }
-            } @catch (NSException *ex) {
-                bgErr = [NSError errorWithDomain:NSCocoaErrorDomain
-                                            code:-3
-                                        userInfo:@{ NSLocalizedDescriptionKey : @"Exception while reading document",
-                                                    @"exception" : ex.reason ?: @"" }];
             }
+            @catch (NSException *ex) {
+                ok = NO;
+                bgErr = [[NSError errorWithDomain:NSCocoaErrorDomain
+                                             code:-3
+                                         userInfo:@{ NSLocalizedDescriptionKey : @"Exception while reading document",
+                                                     @"exception" : (ex.reason ?: @"") }] retain];
+            }
+
             dispatch_semaphore_signal(done);
         }
     });
 
-    // 4) Keep UI responsive while waiting for background work
+    // 3) Keep UI responsive while waiting.
     while (dispatch_semaphore_wait(done, dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_MSEC))) {
-        if (splashSession) {
-            // Drive the splash modal session; this *forces* paint
+        if (splashSession != NULL) {
             [NSApp runModalSession:splashSession];
         } else {
-            // Fallback if not using splash
             [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode
                                   beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.005]];
         }
     }
-    
-    
+    dispatch_release(done);
+
+    // 4) Tear down progress UI.
+    // ... everything above unchanged ...
+
     if (splashWanted) {
         [sp updateProgress:100 total:100];
         [sp updateMessage:@"building browser..."];
@@ -1913,6 +1971,16 @@ deviceIsPluggedIn:YES];
         splashSession = NULL;
     }
 
+    // If open/import was successful, sync NSDocument's view of the mod date.
+    // Do this on main to avoid the external-change sheet on the first save after reopen.
+    if (ok) {
+        [self syncFileModDateFromDiskAtURL:url];
+
+        // Ensure AppKit sees a clean state right after open
+        [self updateChangeCount:NSChangeCleared];
+    }
+
+    // Standard error out
     if (!ok && outError) {
         *outError = bgErr ?: [NSError errorWithDomain:NSCocoaErrorDomain
                                                  code:NSFileReadUnknownError
@@ -1947,6 +2015,9 @@ deviceIsPluggedIn:YES];
 - (BOOL)shouldPreferIncrementalForOperation:(NSSaveOperationType)op
                                  destination:(NSURL *)destURL
 {
+    if (op == NSAutosaveInPlaceOperation) {
+        return YES;
+    }
     if (op == NSSaveAsOperation) {
         return NO;
     }
@@ -1962,33 +2033,35 @@ deviceIsPluggedIn:YES];
     return YES; // Save / Autosave to the same on-disk file
 }
 
+
 - (void)saveToURL:(NSURL *)url
            ofType:(NSString *)type
  forSaveOperation:(NSSaveOperationType)op
 completionHandler:(void (^)(NSError * _Nullable error))handler
 {
-    // Progress UI (main thread)
+    // -------- Progress UI (main) --------
     NSString *base = [[url URLByDeletingPathExtension] lastPathComponent];
     NSString *displayName = [base stringByRemovingPercentEncoding];
     if (displayName.length == 0) {
-        displayName = base ?: @"document";
+        displayName = (base ?: @"document");
     }
-    [self startProgressIndicator:[NSString stringWithFormat:@"saving “%@”…", displayName]];
+    
+    if (op != NSAutosaveInPlaceOperation)
+        [self startProgressIndicator:[NSString stringWithFormat:@"saving “%@”…", displayName]];
 
-    // Prefer incremental based on op + URLs — do NOT require an existing AscentLibrary
+    // Decide incremental vs full.
     BOOL preferIncremental = [self shouldPreferIncrementalForOperation:op destination:url];
 
-    // ---------- Incremental path (open library lazily / with bookmark) ----------
+    // ---------- Incremental path ----------
     if (preferIncremental) {
         NSURL *docURL = self.fileURL;
-
         NSLog(@"SAVING INCREMENTALLY… %s", [displayName UTF8String]);
 
-        // Reuse an already-open scoped library if we have it.
-        AscentLibrary *lib = self.library;
+        // 1) Reuse an already-open library if available.
+        __block AscentLibrary *lib = self.library;
 
-        // Try any open library with the same URL.
         if (lib == nil) {
+            // 2) Try any other open library with the same URL.
             for (AscentLibrary *candidate in [self.libraryController openLibraries]) {
                 if ([[candidate fileURL] isEqual:docURL]) {
                     lib = candidate;
@@ -1997,14 +2070,36 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
             }
         }
 
-        // Before kicking off the background incremental export:
+        // NSDocument save-token (pre-acquired on main).
         id saveToken = [self changeCountTokenForSaveOperation:NSSaveOperation];
 
-        void (^runIncremental)(AscentLibrary *) = ^(AscentLibrary *useLib){
+        // Helper: perform the export off-main using the given library.
+        void (^runIncremental)(AscentLibrary *useLib) = ^(AscentLibrary *useLib) {
             dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
                 @autoreleasepool {
+                    // --- Reset connection to avoid stale SQLITE_BUSY/LOCKED ---
+                    [[useLib db] close];
+
+                    NSError *reopenErr = nil;
+                    if (![[useLib db] open:&reopenErr]) {
+                        NSError *errForMain = [reopenErr retain];
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            NSError *err = [errForMain autorelease];
+                            [self _dismissProgress];
+                            if (handler) {
+                                handler(err ?: [NSError errorWithDomain:@"AscentExporter"
+                                                                   code:-1
+                                                               userInfo:@{NSLocalizedDescriptionKey:
+                                                                          @"Reopen failed before incremental save"}]);
+                            }
+                        });
+                        return;
+                    }
+                             
+                    
                     NSError *exportErr = nil;
                     AscentExporter *exporter = [[[AscentExporter alloc] init] autorelease];
+
                     BOOL ok = [exporter performIncrementalExportWithMetaData:self.docMetaData
                                                              databaseManager:useLib.db
                                                                activityStore:useLib.activities
@@ -2012,7 +2107,6 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
                                                            identifierStore:useLib.identifiers
                                                                       error:&exportErr];
 
-                    // Own the error across the queue hop
                     NSError *errForMain = [exportErr retain];
 
                     dispatch_async(dispatch_get_main_queue(), ^{
@@ -2021,19 +2115,21 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
                         [self _dismissProgress];
 
                         if (ok) {
-                            // On the main queue, after a successful incremental save:
+                            // Tell NSDocument the save succeeded (token-based API keeps it non-racy).
                             [self updateChangeCountWithToken:saveToken forSaveOperation:NSSaveOperation];
 
-                            // Sync NSDocument’s idea of the file’s mtime with reality
+                            // Sync the mod-date so AppKit doesn’t think an external app changed the file.
                             NSError *attrErr = nil;
-                            NSDictionary *attrs = [[NSFileManager defaultManager] attributesOfItemAtPath:self.fileURL.path
-                                                                                                    error:&attrErr];
+                            NSDictionary *attrs =
+                                [[NSFileManager defaultManager] attributesOfItemAtPath:self.fileURL.path error:&attrErr];
                             NSDate *mod = [attrs objectForKey:NSFileModificationDate];
                             if (mod != nil) {
-                                [self setFileModificationDate:mod];
+                                [self syncFileModDateFromDiskAtURL:self.fileURL];
                             }
 
                             [self updateChangeCount:NSChangeCleared];
+
+                            // Optional stats refresh.
                             [self.libraryController refreshStatsForLibrary:useLib completion:nil];
 
                             if (handler != nil) {
@@ -2056,7 +2152,7 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
             return;
         }
 
-        // Open using a bookmark if we have one cached (from prior Save/Save As)
+        // 3) No open library: open one (asynchronously) and then run the export.
         NSData *bm = nil;
         if ([self respondsToSelector:@selector(libraryBookmark)]) {
             bm = [self valueForKey:@"libraryBookmark"];
@@ -2082,7 +2178,7 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
                 return;
             }
 
-            // Cache for the next save
+            // Cache for subsequent saves.
             if ([self respondsToSelector:@selector(setLibrary:)]) {
                 self.library = opened;
             }
@@ -2436,6 +2532,22 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 	}
 	[track setPoints:pts];
 	if (upd) [self updateTrack:track];
+}
+
+
+- (void)close
+{
+    NSLog(@"document close...");
+    AscentLibrary *lib = [self.library retain];
+
+    [super close];
+
+    if (lib != nil) {
+        [self.libraryController closeLibrary:lib completion:nil];
+        [lib release];
+    }
+
+    self.library = nil;
 }
 
 
@@ -2947,6 +3059,22 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 				[undo setActionName:@"Delete activities"];
 			}
 		}
+        
+        if (self.library == nil || self.library.db == nil) {
+            NSLog(@"[tbDoc - deleteTracks] no database library or dbm, file has never been saved, so can't delete database tracks");
+        } else {
+            NSError* err = nil;
+            ActivityStore* actStore = [[[ActivityStore alloc] initWithDatabaseManager:self.library.db] autorelease];
+            [actStore deleteTracks:arr
+                             error:&err];
+            if (err != nil) {
+                NSLog(@"[TBDoc] database deleteTracks failed for %ld tracks, status \"%@\"", arr.count, [err description]);
+            } else {
+                NSLog(@"[TBDoc] successfully deleted %ld tracks+points from database", arr.count);
+                [self syncFileModDateFromDiskAtURL:self.fileURL];
+            }
+        }
+        
 		[[undo prepareWithInvocationTarget:self] addTracks:arr];
         NSMutableArray* deletedTracks = [self.docMetaData userDeletedTrackTimes];
 		for (int i=0; i<num; i++)
@@ -2957,6 +3085,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 			{
 				if (![deletedTracks containsObject:[t creationTime]])
 				{
+                    t.dirtyMask = kDirtyMeta | kDirtyLaps;  // make sure it's saved if re-added
 					[t setEquipmentUUIDs:[equipmentLog equipmentUUIDsForTrack:t]];
 					[deletedTracks addObject:[t creationTime]];
 					//NSLog(@"ADDED track at time %@ to user deleted list", [t creationTime]);
@@ -2967,6 +3096,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
  		[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackSelectionChanged" object:nil];
        
 		[self trackArrayChanged:NO];
+        
 #if 0
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
 		[tbWindowController storeExpandedState];
@@ -3453,12 +3583,12 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 }
 
 + (BOOL)autosavesInPlace {
-    return NO;  // opt in
+    return YES;  // opt in
 }
 
 // 2) Disable periodic draft autosaving
 - (NSTimeInterval)autosavingDelay {
-    return 0.0;   // 0 disables the autosave timer
+    return 10.0;   // 0 disables the autosave timer
 }
 
 // (Optional) also disable Versions UI if you don’t use it
@@ -3553,5 +3683,28 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
     return self.documentDBM;
 }
 
+
+- (void)syncFileModDateFromDiskAtURL:(NSURL *)u
+{
+    if (u == nil) {
+        return;
+    }
+
+    NSError *attrErr = nil;
+    NSDictionary *attrs =
+        [[NSFileManager defaultManager] attributesOfItemAtPath:u.path error:&attrErr];
+
+    NSDate *mod = [attrs objectForKey:NSFileModificationDate];
+    if (mod != nil) {
+        // Must happen on main; this is an NSDocument property.
+        if (![NSThread isMainThread]) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self setFileModificationDate:mod];
+            });
+        } else {
+            [self setFileModificationDate:mod];
+        }
+    }
+}
 
 @end

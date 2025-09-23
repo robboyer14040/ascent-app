@@ -440,72 +440,73 @@
                 shouldSavePoints = NO;
             }
 
-            if (shouldSavePoints) {
-                
-                NSLog(@"[EXPORTER] is saving points");
-                
-                NSArray *pts = nil;
-                if ([t respondsToSelector:@selector(points)]) {
-                    pts = [t points];
-                } else {
-                    @try { pts = [t valueForKey:@"points"]; } @catch (__unused id e) {}
+            NSArray *pts = nil;
+            if ([t respondsToSelector:@selector(points)]) {
+                pts = [t points];
+            } else {
+                @try { pts = [t valueForKey:@"points"]; } @catch (__unused id e) {}
+            }
+            NSUInteger n = pts.count;
+
+            NSLog(@"[EXPORTER - performIncrementalExportWithMetaData] pointsEverSaved for \"%s\": %s, now have %ld points",
+                  [t.name UTF8String],
+                  (shouldSavePoints ? "NO" : "YES"),
+                  n);
+            
+            if (shouldSavePoints && n > 0) {
+
+                TPRow *rows = (TPRow *)calloc(n, sizeof(TPRow));
+                if (rows == NULL) {
+                    if (outError) {
+                        *outError = [NSError errorWithDomain:@"AscentExporter"
+                                                        code:ENOMEM
+                                                    userInfo:@{ NSLocalizedDescriptionKey : @"Out of memory building TPRow buffer" }];
+                    }
+                    return NO;
                 }
 
-                NSUInteger n = pts.count;
-                if (n > 0) {
-                    TPRow *rows = (TPRow *)calloc(n, sizeof(TPRow));
-                    if (rows == NULL) {
-                        if (outError) {
-                            *outError = [NSError errorWithDomain:@"AscentExporter"
-                                                            code:ENOMEM
-                                                        userInfo:@{ NSLocalizedDescriptionKey : @"Out of memory building TPRow buffer" }];
-                        }
-                        return NO;
+                for (NSUInteger i = 0; i < n; i++) {
+                    TrackPoint *p = (TrackPoint *)pts[i];
+
+                    rows[i].wall_clock_delta_s  = [p wallClockDelta];
+                    rows[i].active_time_delta_s = [p activeTimeDelta];
+                    rows[i].latitude_e7         = [p latitude];
+                    rows[i].longitude_e7        = [p longitude];
+                    rows[i].orig_altitude_cm    = [p origAltitude];
+                    rows[i].orig_distance_m     = [p origDistance];
+                    rows[i].heartrate_bpm       = [p heartrate];
+                    rows[i].cadence_rpm         = [p cadence];
+                    rows[i].temperature_c10     = [p temperature];  // if you store C*10, ensure value matches schema
+                    rows[i].speed_mps           = [p speed];
+                    rows[i].power_w             = [p power];
+                    rows[i].flags               = [p flags];
+                }
+
+                BOOL okPts = [tpStore replacePointsForTrack:t
+                                                   fromRows:rows
+                                                      count:n
+                                                      error:&err];
+                free(rows);
+
+                if (!okPts) {
+                    if (outError) {
+                        *outError = err ?: [NSError errorWithDomain:@"AscentExporter"
+                                                               code:-6
+                                                           userInfo:@{ NSLocalizedDescriptionKey : @"replacePointsForTrack failed" }];
                     }
+                    return NO;
+                }
 
-                    for (NSUInteger i = 0; i < n; i++) {
-                        TrackPoint *p = (TrackPoint *)pts[i];
-
-                        rows[i].wall_clock_delta_s  = [p wallClockDelta];
-                        rows[i].active_time_delta_s = [p activeTimeDelta];
-                        rows[i].latitude_e7         = [p latitude];
-                        rows[i].longitude_e7        = [p longitude];
-                        rows[i].orig_altitude_cm    = [p origAltitude];
-                        rows[i].orig_distance_m     = [p origDistance];
-                        rows[i].heartrate_bpm       = [p heartrate];
-                        rows[i].cadence_rpm         = [p cadence];
-                        rows[i].temperature_c10     = [p temperature];  // if you store C*10, ensure value matches schema
-                        rows[i].speed_mps           = [p speed];
-                        rows[i].power_w             = [p power];
-                        rows[i].flags               = [p flags];
+                // Mark as saved in-memory (so subsequent passes can skip)
+                NSLog(@"[Exporter - performIncrementalExportWithMetaData] setting pointsEverSaved for \"%s\" to YES", [t.name UTF8String]);
+                if ([t respondsToSelector:@selector(setPointsEverSaved:)]) {
+                    [t setPointsEverSaved:YES];
+                } else {
+                    @try {
+                        [t setValue:@(YES)
+                             forKey:@"pointsEverSaved"];
                     }
-
-                    BOOL okPts = [tpStore replacePointsForTrack:t
-                                                       fromRows:rows
-                                                          count:n
-                                                          error:&err];
-                    free(rows);
-
-                    if (!okPts) {
-                        if (outError) {
-                            *outError = err ?: [NSError errorWithDomain:@"AscentExporter"
-                                                                   code:-6
-                                                               userInfo:@{ NSLocalizedDescriptionKey : @"replacePointsForTrack failed" }];
-                        }
-                        return NO;
-                    }
-
-                    // Mark as saved in-memory (so subsequent passes can skip)
-                    NSLog(@"[Exporter] setting pointsEverSaved for %s to YES", [t.name UTF8String]);
-                   if ([t respondsToSelector:@selector(setPointsEverSaved:)]) {
-                        [t setPointsEverSaved:YES];
-                    } else {
-                        @try {
-                            [t setValue:@(YES)
-                                 forKey:@"pointsEverSaved"];
-                        }
-                        @catch (__unused id e) {}
-                    }
+                    @catch (__unused id e) {}
                 }
             }
         } // @autoreleasepool

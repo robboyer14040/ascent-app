@@ -5044,8 +5044,8 @@ int searchTagToMask(int searchTag)
                 NSCalendar *cal = [NSCalendar currentCalendar];
                 if (!lastSyncTime || ([lastSyncTime compare:[NSDate distantPast]] == NSOrderedSame)) {
                     NSDate *now = [NSDate date];
-                    lastSyncTime = [cal dateByAddingUnit:NSCalendarUnitWeekOfYear
-                                                   value:-1
+                    lastSyncTime = [cal dateByAddingUnit:NSCalendarUnitMonth
+                                                   value:-48
                                                   toDate:now options:0];
                 }
 
@@ -6799,7 +6799,7 @@ int searchTagToMask(int searchTag)
                 NSLog(@"loaded %d points for %s", (int)pts.count, [track.name UTF8String]);
                 track.points = [[pts mutableCopy] autorelease];
                 track.pointsCount    = (int)pts.count;
-                track.pointsEverSaved = NO; // default for new track
+                track.pointsEverSaved = YES; 
                 [track fixupTrack];
              }
         }

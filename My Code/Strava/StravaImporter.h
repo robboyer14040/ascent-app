@@ -6,7 +6,6 @@
 //  Copyright © 2025 Montebello Software, LLC. All rights reserved.
 //
 
-// StravaImporter.h (MRC)
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN

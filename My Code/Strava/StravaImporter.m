@@ -666,7 +666,8 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
             __block NSDictionary *streamsByType = nil;
             if (activityID) {
                 streamsByType = [[[StravaAPI shared] fetchStreamsForActivityID:activityID error:&streamsErr] retain];
-                if (streamsErr && !firstError) firstError = [streamsErr retain];
+                if (streamsErr && !firstError)
+                    firstError = [streamsErr retain];
             }
             
             // Detail + Photos (async, in parallel)
@@ -675,8 +676,10 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
             if (activityID) {
                 dispatch_group_enter(g);
                 [[StravaAPI shared] fetchActivityDetail:activityID completion:^(NSDictionary *a, NSError *e) {
-                    if (a) detail = [a retain];
-                    if (e && !firstError) firstError = [e retain];
+                    if (a)
+                        detail = [a retain];
+                    if (e && !firstError)
+                        firstError = [e retain];
                     dispatch_group_leave(g);
                 }];
                 
@@ -685,7 +688,7 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
                                               rootMediaURL:mediaURL
                                                 completion:^(NSArray<NSString *> * photoFilenames, NSError * error) {
                     track.localMediaItems = photoFilenames;
-                    
+                    track.dirtyMask |= kDirtyMeta;
                     dispatch_group_leave(g);
                 }];
             }
@@ -697,8 +700,11 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
                 if (desc.length) {
                     if ([track respondsToSelector:@selector(setAttribute:usingString:)]) {
                         [track setAttribute:kNotes usingString:desc];
+                        track.dirtyMask |= kDirtyMeta;
                     } else {
-                        @try { [track setValue:desc forKey:@"notes"]; } @catch (__unused id e) {}
+                        @try {
+                            [track setValue:desc forKey:@"notes"];
+                        } @catch (__unused id e) {}
                     }
                 }
  
@@ -706,13 +712,15 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
                 if (dev.length) {
                     if ([track respondsToSelector:@selector(setAttribute:usingString:)]) {
                         [track setAttribute:kComputer usingString:dev];
-                    }
+                        track.dirtyMask |= kDirtyMeta;
+                   }
                 }
                 
                 NSNumber* suffer = SafeNum(detail[@"suffer_score"]);
                 if (suffer) {
                     if ([track respondsToSelector:@selector(setAttribute:usingString:)]) {
                         [track setAttribute:kSufferScore usingString:[suffer description]];
+                        track.dirtyMask |= kDirtyMeta;
                     }
                 }
 
@@ -721,13 +729,17 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
                 if (photosPayload) {
                     NSArray<NSURL *> *urls = ExtractPhotoURLs(photosPayload);
                     if (urls.count) {
+                        track.dirtyMask |= kDirtyMeta;
                         if ([track respondsToSelector:@selector(setPhotoURLs:)]) {
                             [track setPhotoURLs:urls];
                         } else {
-                            @try { [track setValue:urls forKey:@"photoURLs"]; } @catch (__unused id e) {}
+                            @try {
+                                [track setValue:urls forKey:@"photoURLs"];
+                            } @catch (__unused id e) {}
                         }
                     }
-                    [photosPayload release]; photosPayload = nil;
+                    [photosPayload release];
+                    photosPayload = nil;
                 }
                 
                 
@@ -744,14 +756,19 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
                             track.pointsEverSaved = NO; // default for new track
 
                         } @catch (__unused id e) {}
-                        if ([track respondsToSelector:@selector(fixupTrack)]) [track fixupTrack];
+                        if ([track respondsToSelector:@selector(fixupTrack)])
+                            [track fixupTrack];
                     }
                     [streamsByType release]; streamsByType = nil;
                 }
                 
-                if (detail) { [detail release]; detail = nil; }
+                if (detail) {
+                    [detail release];
+                    detail = nil;
+                }
                 
-                if (completion) completion(firstError);
+                if (completion)
+                    completion(firstError);
                 [firstError release];
             });
         }

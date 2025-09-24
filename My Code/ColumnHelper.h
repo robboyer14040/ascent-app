@@ -8,21 +8,13 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class TrackBrowserDocument;
-@class MyTableHeaderView;
 @class StaticColumnInfo;
 
 @interface ColumnHelper : NSObject 
-{
-	NSTableView*			tableView;
-	TrackBrowserDocument*	tbDocument;
-	SEL						dictSelector;
-	SEL						setDictSelector;
-	StaticColumnInfo*		staticColumnInfo;
-}
 
-
-- (id)initWithTableView:(NSTableView*)view staticColInfo:(StaticColumnInfo*)sci dictSelector:(SEL)dictSel setDictSelector:(SEL)setDictSel;
+- (id)initWithTableView:(NSTableView*)view staticColInfo:(StaticColumnInfo*)sci
+           dictSelector:(SEL)dictSel
+        setDictSelector:(SEL)setDictSel;
 - (void)rebuild;
 - (BOOL)columnUsesStringCompare:(NSString*)colIdent;
 - (void)columnResized:(NSNotification *)aNotification;

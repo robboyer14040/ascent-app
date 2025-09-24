@@ -15,7 +15,7 @@ static BrowserInfo *        sSingleton = nil;
 
 - (id) initPrivate
 {
-   colInfoDict = [NSMutableDictionary dictionaryWithCapacity:40];
+   self.colInfoDict = [NSMutableDictionary dictionaryWithCapacity:40];
    return self;
 }
 
@@ -38,34 +38,12 @@ static BrowserInfo *        sSingleton = nil;
    return sSingleton;
 }
 
-
-- (NSMutableDictionary *)colInfoDict 
+- (void)dealloc
 {
-   return colInfoDict;
+    [_colInfoDict release];
+    [_splitsColInfoDict release];
+    [super dealloc];
 }
 
-
-- (void)setColInfoDict:(NSMutableDictionary *)value 
-{
-   if (colInfoDict != value) 
-   {
-      colInfoDict = [value mutableCopy];
-   }
-}
-
-
-- (NSMutableDictionary *)splitsColInfoDict 
-{
-   return splitsColInfoDict;
-}
-
-
-- (void)setSplitsColInfoDict:(NSMutableDictionary *)value 
-{
-   if (splitsColInfoDict != value) 
-   {
-      splitsColInfoDict = [value mutableCopy];
-   }
-}
 
 @end

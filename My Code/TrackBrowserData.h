@@ -16,22 +16,7 @@ enum
 };
 
 @interface TrackBrowserData : NSObject <NSCoding>
-{
-@private
-    // Keep legacy ivar names for drop-in compatibility (MRC)
-    NSMutableArray        *trackArray;
-    NSMutableDictionary   *tableInfoDict;          // main browser column info
-    NSMutableDictionary   *splitsTableInfoDict;    // splits table column info
-    NSDate                *lastSyncTime;
-    NSMutableArray        *userDeletedTrackTimes;
-    NSMutableDictionary   *initialEquipmentLogData;
-    NSString              *uuid;
-    NSArray               *startEndDateArray;
-    int                    numberOfSavesSinceLocalBackup;
-    int                    flags;
-}
 
-// Modern properties (retain/assign under MRC)
 @property (nonatomic, retain) NSString *uuid;
 @property (nonatomic, retain) NSMutableArray *trackArray;
 @property (nonatomic, retain) NSMutableDictionary *tableInfoDict;
@@ -40,7 +25,6 @@ enum
 @property (nonatomic, retain) NSMutableArray *userDeletedTrackTimes;
 @property (nonatomic, retain) NSMutableDictionary *initialEquipmentLogData;
 @property (nonatomic, retain) NSArray *startEndDateArray;
-
 @property (nonatomic, assign) int numberOfSavesSinceLocalBackup;
 @property (nonatomic, assign) int flags;
 

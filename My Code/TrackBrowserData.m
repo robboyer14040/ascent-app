@@ -17,23 +17,13 @@
 
 @implementation TrackBrowserData
 
-@synthesize uuid;
-@synthesize trackArray;
-@synthesize tableInfoDict;
-@synthesize splitsTableInfoDict;
-@synthesize lastSyncTime;
-@synthesize userDeletedTrackTimes;
-@synthesize initialEquipmentLogData;
-@synthesize startEndDateArray;
-@synthesize numberOfSavesSinceLocalBackup = _numberOfSavesSinceLocalBackup;
-@synthesize flags = _flags;
 
 - (id)init
 {
     self = [super init];
     if (self)
     {
-        self.flags = 0;
+        _flags = 0;
         self.uuid = [NSString uniqueString];
 
         self.trackArray = [[[NSMutableArray alloc] init] autorelease];
@@ -43,47 +33,51 @@
         self.numberOfSavesSinceLocalBackup = 0;
 
         self.initialEquipmentLogData = [NSMutableDictionary dictionaryWithCapacity:4];
-        SET_FLAG(self->flags, kHasInitialEquipmentLogData);
+        SET_FLAG(_flags, kHasInitialEquipmentLogData);
 
         self.startEndDateArray = [NSArray arrayWithObjects:[NSDate distantPast], [NSDate distantFuture], nil];
     }
     return self;
 }
 
+
 - (void)dealloc
 {
-    [uuid release];
-    [trackArray release];
-    [tableInfoDict release];
-    [splitsTableInfoDict release];
-    [lastSyncTime release];
-    [userDeletedTrackTimes release];
-    [initialEquipmentLogData release];
-    [startEndDateArray release];
+    [_uuid release];
+    [_trackArray release];
+    [_tableInfoDict release];
+    [_splitsTableInfoDict release];
+    [_lastSyncTime release];
+    [_userDeletedTrackTimes release];
+    [_initialEquipmentLogData release];
+    [_startEndDateArray release];
     [super dealloc];
 }
+
 
 #pragma mark - Property overrides to preserve side-effects
 
 - (void)setTableInfoDict:(NSMutableDictionary *)value
 {
-    if (tableInfoDict != value)
+    if (_tableInfoDict != value)
     {
-        [tableInfoDict release];
-        tableInfoDict = [value retain];
+        [_tableInfoDict release];
+        _tableInfoDict = [value retain];
     }
-    [[BrowserInfo sharedInstance] setColInfoDict:tableInfoDict];
+    [[BrowserInfo sharedInstance] setColInfoDict:_tableInfoDict];
 }
+
 
 - (void)setSplitsTableInfoDict:(NSMutableDictionary *)value
 {
-    if (splitsTableInfoDict != value)
+    if (_splitsTableInfoDict != value)
     {
-        [splitsTableInfoDict release];
-        splitsTableInfoDict = [value retain];
+        [_splitsTableInfoDict release];
+        _splitsTableInfoDict = [value retain];
     }
-    [[BrowserInfo sharedInstance] setSplitsColInfoDict:splitsTableInfoDict];
+    [[BrowserInfo sharedInstance] setSplitsColInfoDict:_splitsTableInfoDict];
 }
+
 
 #pragma mark - NSCoding
 
@@ -195,7 +189,7 @@
         BOOL hasInitialEquipmentLogData = NO;
         if (version >= 6)
         {
-            hasInitialEquipmentLogData = FLAG_IS_SET(self.flags, kHasInitialEquipmentLogData);
+            hasInitialEquipmentLogData = FLAG_IS_SET(_flags, kHasInitialEquipmentLogData);
         }
 
         if (hasInitialEquipmentLogData)
@@ -206,7 +200,7 @@
         {
             self.initialEquipmentLogData = [NSMutableDictionary dictionaryWithCapacity:4];
         }
-        SET_FLAG(self->flags, kHasInitialEquipmentLogData);
+        SET_FLAG(_flags, kHasInitialEquipmentLogData);
     }
     @catch (NSException *exception)
     {
@@ -221,6 +215,7 @@
 
     return self;
 }
+
 
 - (void)encodeWithCoder:(NSCoder *)coder
 {
@@ -262,7 +257,7 @@
     [coder encodeObject:self.userDeletedTrackTimes];
 
     // added in version 7 (flag indicates presence)
-    SET_FLAG(self->flags, kHasInitialEquipmentLogData);
+    SET_FLAG(_flags, kHasInitialEquipmentLogData);
     [coder encodeObject:self.initialEquipmentLogData];
 }
 

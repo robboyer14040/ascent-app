@@ -22,7 +22,17 @@
 - (MyTableHeaderView*) initWithHelper:(ColumnHelper*)h;
 - (NSMenu *)menuOfColumns;
 - (void)setMenuOfColumns:(NSMenu *)value;
+@end
 
+
+@interface ColumnHelper ()
+{
+    NSTableView*            tableView;
+    TrackBrowserDocument*   tbDocument;
+    SEL                     dictSelector;
+    SEL                     setDictSelector;
+    StaticColumnInfo*       staticColumnInfo;
+}
 @end
 
 
@@ -35,8 +45,8 @@
 {
 	if (self = [super init])
 	{
-		tableView = view;
-		staticColumnInfo = sci;
+		tableView = [view retain];
+		staticColumnInfo = [sci retain];
 		dictSelector = dictSel;
 		setDictSelector = setDictSel;
 		NSWindow* w = [tableView window];
@@ -47,6 +57,8 @@
 
 - (void) dealloc
 {
+    [tableView release];
+    [staticColumnInfo release];
     [super dealloc];
 }
 
@@ -61,7 +73,6 @@
 {
 	[[self document] updateChangeCount:NSChangeDone];
 }
-
 
 
 - (void) buildColumnDict
@@ -138,8 +149,6 @@
 }
 
 
-
-
 -(NSMenu*) buildColumnMenu
 {
 	//NSMutableDictionary* ciDict = [[self document] tableInfoDict];
@@ -191,7 +200,7 @@
 #endif
             NSCellStateValue state = ([ci order] == kNotInBrowser) ? NSControlStateValueOff : NSControlStateValueOn;
 			[mi setState:state];
-			[mi setTag:[ci tag]];
+			[mi setTag:[ci colTag]];
 			[menu  addItem:mi];
 		}
 	}

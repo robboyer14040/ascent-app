@@ -201,6 +201,12 @@ static tColInfo sSplitsColInfo[] =
 @end
 
 
+@interface ColumnInfo ()
+{
+    tColInfo*      _colInfo;
+}
+@end
+
 
 @implementation ColumnInfo
 
@@ -209,7 +215,7 @@ static tColInfo sSplitsColInfo[] =
 	self = [super init];
 	if (0 != info)
 	{
-		colInfo = info;
+		_colInfo = info;
 		NSString* label = [self columnLabel];
 		int flags = info->flags;
 		if ((flags & kUseNumberFormatter) != 0)
@@ -249,8 +255,8 @@ static tColInfo sSplitsColInfo[] =
 
 -(void) dealloc
 {
-    [title release];
-    [formatter release];
+    [_title release];
+    [_formatter release];
     [super dealloc];
 }
 
@@ -272,10 +278,12 @@ static tColInfo sSplitsColInfo[] =
    return [self mutableCopyWithZone:zone];
 }
 
+
 - (id) copy
 {
    return [self copyWithZone:nil];
 }
+
 
 - (id) mutableCopy
 {
@@ -285,7 +293,7 @@ static tColInfo sSplitsColInfo[] =
 
 - (tColInfo*) colInfo
 {
-   return colInfo;
+   return _colInfo;
 }
 
 
@@ -296,8 +304,8 @@ static tColInfo sSplitsColInfo[] =
    int version = CUR_VERSION;
    float spareFloat = 0.0f;
    [coder encodeValueOfObjCType:@encode(int) at:&version];
-   [coder encodeValueOfObjCType:@encode(int) at:&order];
-   [coder encodeValueOfObjCType:@encode(float) at:&width];
+   [coder encodeValueOfObjCType:@encode(int) at:&_order];
+   [coder encodeValueOfObjCType:@encode(float) at:&_width];
    [coder encodeValueOfObjCType:@encode(float) at:&spareFloat];
    [coder encodeValueOfObjCType:@encode(float) at:&spareFloat];
 }
@@ -315,26 +323,21 @@ static tColInfo sSplitsColInfo[] =
 											  userInfo:nil];			  
 	   @throw e;
    }
-   [coder decodeValueOfObjCType:@encode(int) at:&order];
-   [coder decodeValueOfObjCType:@encode(float) at:&width];
+   [coder decodeValueOfObjCType:@encode(int) at:&_order];
+   [coder decodeValueOfObjCType:@encode(float) at:&_width];
    [coder decodeValueOfObjCType:@encode(float) at:&fval];      // spare
    [coder decodeValueOfObjCType:@encode(float) at:&fval];      // spare
    return self;
 }      
 
 
-- (NSString *)title 
-{
-   return title;
-}
-
 
 - (NSString *)menuLabel;
 {
-   switch (colInfo->tag)
+   switch (_colInfo->tag)
    {
       default:
-         return [NSString stringWithUTF8String:colInfo->menuLabel];
+         return [NSString stringWithUTF8String:_colInfo->menuLabel];
          
       case kMT_Keyword1:
          return [Utils stringFromDefaults:RCBDefaultKeyword1Label];
@@ -350,10 +353,10 @@ static tColInfo sSplitsColInfo[] =
 
 - (NSString *)columnLabel;
 {
-   switch (colInfo->tag)
+   switch (_colInfo->tag)
    {
       default:
-		  return [NSString stringWithUTF8String:colInfo->columnLabel];
+		  return [NSString stringWithUTF8String:_colInfo->columnLabel];
          
       case kMT_Keyword1:
          return [Utils stringFromDefaults:RCBDefaultKeyword1Label];
@@ -369,80 +372,26 @@ static tColInfo sSplitsColInfo[] =
 
 - (NSString *)ident
 {
-   return [NSString stringWithFormat:@"%s", colInfo->ident];
+   return [NSString stringWithFormat:@"%s", _colInfo->ident];
 }
 
 
-- (void)setTitle:(NSString *)value 
+- (int)colTag 
 {
-   if (title != value)
-   {
-       [title release];
-       title = [value retain];
-   }
+   return _colInfo->tag;
 }
 
-
-- (NSFormatter *)formatter 
-{
-   return formatter;
-}
-
-
-- (void)setFormatter:(NSFormatter *)value {
-   if (formatter != value) 
-   {
-       [formatter release];
-       formatter = [value retain];
-   }
-}
-
-
-- (float)width 
-{
-   return width;
-}
-
-
-- (void)setWidth:(float)value 
-{
-   if (width != value) 
-   {
-      width = value;
-   }
-}
-
-
-- (int)order 
-{
-   return order;
-}
-
-
-- (void)setOrder:(int)value 
-{
-   if (order != value) 
-   {
-      order = value;
-   }
-}
-
-
-- (int)tag 
-{
-   return colInfo->tag;
-}
 
 - (int)flags {
-   return colInfo->flags;
+   return _colInfo->flags;
 }
 
 
 - (NSComparisonResult)compare:(ColumnInfo *)ci
 {
-   if (order < [ci order])
+   if (_order < [ci order])
       return NSOrderedAscending;
-   else if (order > [ci order])
+   else if (_order > [ci order])
       return NSOrderedDescending;
    else
       return NSOrderedSame;
@@ -457,7 +406,7 @@ static tColInfo sSplitsColInfo[] =
 
 - (NSComparisonResult)compareUsingTitle:(ColumnInfo *)ci
 {
-   return [title caseInsensitiveCompare:[ci title]]; 
+   return [_title caseInsensitiveCompare:[ci title]];
 }
 
 
@@ -490,7 +439,7 @@ static const tLegendInfo sLegendInfo[] = {
 - (NSString*)getLegend
 {
 	BOOL useStatute = [Utils boolFromDefaults:RCBDefaultUnitsAreEnglishKey];
-	return [NSString stringWithUTF8String:useStatute ? sLegendInfo[colInfo->unitType].statuteLegend : sLegendInfo[colInfo->unitType].metricLegend];
+	return [NSString stringWithUTF8String:useStatute ? sLegendInfo[_colInfo->unitType].statuteLegend : sLegendInfo[_colInfo->unitType].metricLegend];
 }
 
 

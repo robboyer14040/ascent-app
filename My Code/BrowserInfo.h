@@ -10,19 +10,10 @@
 
 
 @interface BrowserInfo : NSObject 
-{
-   NSMutableDictionary*    colInfoDict;
-   NSMutableDictionary*    splitsColInfoDict;
-}
+@property(nonatomic, retain) NSMutableDictionary* colInfoDict;
+@property(nonatomic, retain) NSMutableDictionary* splitsColInfoDict;
 
 + (void) initialize;
 + (BrowserInfo*) sharedInstance;
-
-
--(NSMutableDictionary*) colInfoDict;
--(void) setColInfoDict:(NSMutableDictionary*)dict;
--(NSMutableDictionary*) splitsColInfoDict;
--(void) setSplitsColInfoDict:(NSMutableDictionary*)dict;
-
 
 @end

@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+
 typedef struct _colInfo
 {
 	const char* columnLabel;      // what the user sees at the top of the column
@@ -63,71 +64,45 @@ enum
 
 
 @interface StaticColumnInfo : NSObject
-{
-}
 - (int) numPossibleColumns;
 - (tColInfo*) nthPossibleColumnInfo:(int)nth;
 @end
+
 
 @interface MainBrowserStaticColumnInfo : StaticColumnInfo
-{
-}
 - (int) numPossibleColumns;
 - (tColInfo*) nthPossibleColumnInfo:(int)nth;
 @end
+
 
 @interface SplitsTableStaticColumnInfo : StaticColumnInfo
-{
-}
 - (int) numPossibleColumns;
 - (tColInfo*) nthPossibleColumnInfo:(int)nth;
 @end
-
 
 
 @interface ColumnInfo : NSObject <NSCopying, NSMutableCopying>
-{
-    NSString*      title;
-    NSFormatter*   formatter;
-    tColInfo*      colInfo;
-    float          width;
-    int            order;
-}
 
-
-- (NSString*)getLegend;
+@property(nonatomic, retain) NSString* title;
+@property(nonatomic, retain) NSFormatter* formatter;
+@property(nonatomic) float width;
+@property(nonatomic) int order;
+@property (nonatomic, copy) NSString *menuName;
 
 - (ColumnInfo*) initWithInfo:(tColInfo*)colInfo;
-
 - (id)mutableCopyWithZone:(NSZone *)zone;
 
+- (NSString*)getLegend;
 - (NSString *)menuLabel;
 - (NSString *)columnLabel;
-
-- (NSString *)title;
-- (void)setTitle:(NSString *)value;
-
-- (NSFormatter *)formatter;
-- (void)setFormatter:(NSFormatter *)value;
-
-- (float)width;
-- (void)setWidth:(float)value;
-
-- (int)order;
-- (void)setOrder:(int)value;
-
 - (int) flags;
-
-- (int) tag;
-
+- (int) colTag;
 - (NSString*)ident;
 
 - (NSComparisonResult)compare:(ColumnInfo *)ci;
 
-- (tColInfo*) colInfo;
-
-@property (nonatomic, copy) NSString *menuName;
 - (NSComparisonResult)compareUsingMenuName:(ColumnInfo *)other;
+- (tColInfo*) colInfo;
 
 @end
 

@@ -1,5 +1,5 @@
 //
-//  DocumentMetaData.m
+//  TrackBrowserData.m
 //  Ascent
 //
 //  Created by Rob Boyer on 9/15/25.
@@ -8,14 +8,14 @@
 
 #import "Defs.h"
 #import "StringAdditions.h"
-#import "DocumentMetaData.h"
+#import "TrackBrowserData.h"
 #import "Track.h"
 #import "BrowserInfo.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 #define CUR_VERSION 8
 
-@implementation DocumentMetaData
+@implementation TrackBrowserData
 
 @synthesize uuid;
 @synthesize trackArray;

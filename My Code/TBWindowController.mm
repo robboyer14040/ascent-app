@@ -5044,8 +5044,8 @@ int searchTagToMask(int searchTag)
                 NSCalendar *cal = [NSCalendar currentCalendar];
                 if (!lastSyncTime || ([lastSyncTime compare:[NSDate distantPast]] == NSOrderedSame)) {
                     NSDate *now = [NSDate date];
-                    lastSyncTime = [cal dateByAddingUnit:NSCalendarUnitMonth
-                                                   value:-48
+                    lastSyncTime = [cal dateByAddingUnit:NSCalendarUnitYear
+                                                   value:-10
                                                   toDate:now options:0];
                 }
 
@@ -5903,17 +5903,23 @@ int searchTagToMask(int searchTag)
 
     NSError *unarchErr = nil;
     NSKeyedUnarchiver *ua = [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:&unarchErr];
-    if (!ua) { NSLog(@"Paste: %@", unarchErr); return; }
+    if (!ua) {
+        NSLog(@"Paste: %@", unarchErr);
+        return;
+    }
     ua.requiresSecureCoding = NO; // <-- matches your copy path
 
     id root = [ua decodeObjectForKey:NSKeyedArchiveRootObjectKey];
     [ua finishDecoding];
 
     NSArray<Track *> *arr = ([root isKindOfClass:NSArray.class] ? root : nil);
-    if (!arr) { NSLog(@"Paste: root is not NSArray"); return; }
+    if (!arr) {
+        NSLog(@"Paste: root is not NSArray");
+        return;
+    }
 
-    NSInteger numNew = arr.count;
-    NSInteger numOld = tbDocument.trackArray.count;
+   /// NSInteger numNew = arr.count;
+   /// NSInteger numOld = tbDocument.trackArray.count;
 
     [self storeExpandedState];
     [tbDocument addTracks:arr];
@@ -6801,12 +6807,13 @@ int searchTagToMask(int searchTag)
                 track.pointsCount    = (int)pts.count;
                 track.pointsEverSaved = YES; 
                 [track fixupTrack];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackChanged" object:track];
              }
         }
     }
     
 
-    BOOL stravaFirst = ShiftKeyIsDown() || ([track.points count] == 0);
+    BOOL stravaFirst = ShiftKeyIsDown() || (([track.points count] == 0) && (track.stravaActivityID != nil));
     if (stravaFirst)
     {
         [self startProgressIndicator:@"fetching detailed Strava info..."];
@@ -6948,7 +6955,27 @@ int searchTagToMask(int searchTag)
     NSInteger idxDate = ASCCol(col, @"Activity Date");
     NSInteger idxName = ASCCol(col, @"Activity Name");
     NSInteger idxDesc = ASCCol(col, @"Activity Description");
-    NSInteger idxMedia= ASCCol(col, @"Media");
+    NSInteger idxMedia = ASCCol(col, @"Media");
+    NSInteger idxElapsedTime = ASCCol(col, @"Elapsed Time");
+    NSInteger idxMovingTime = ASCCol(col, @"Moving Time");
+    NSInteger idxDistance = ASCCol(col, @"Distance");
+    NSInteger idxMaxHR = ASCCol(col, @"Max Heart Rate");
+    NSInteger idxWeight = ASCCol(col, @"Athlete Weight");
+    NSInteger idxMaxSpd = ASCCol(col, @"Max Speed");
+    NSInteger idxAvgSpd = ASCCol(col, @"Average Speed");
+    NSInteger idxClimb = ASCCol(col, @"Elevation Gain");
+    NSInteger idxMaxGrd = ASCCol(col, @"Max Grade");
+    NSInteger idxAvgGrd = ASCCol(col, @"Average Grade");
+    NSInteger idxMaxCad = ASCCol(col, @"Max Cadence");
+    NSInteger idxAvgCad = ASCCol(col, @"Avg Cadence");
+    NSInteger idxAvgHR = ASCCol(col, @"Average Heart Rate");
+    NSInteger idxMaxPwr = ASCCol(col, @"Max Watts");
+    NSInteger idxAvgPwr = ASCCol(col, @"Average Watts");
+    NSInteger idxMaxTmp = ASCCol(col, @"Max Temperature");
+    NSInteger idxAvgTmp = ASCCol(col, @"Average Temperature");
+    NSInteger idxBike = ASCCol(col, @"Bike");
+    NSInteger idxElevLow = ASCCol(col, @"Elevation Low");
+    NSInteger idxElevHigh = ASCCol(col, @"Elevation High");
 
     if (idxID < 0 || idxDate < 0 || idxName < 0 || idxDesc < 0) {
         NSLog(@"Strava CSV: required headers missing");
@@ -7053,6 +7080,72 @@ int searchTagToMask(int searchTag)
         if (desc) {
             [track setAttribute:kNotes usingString:desc];
         }
+        
+//        NSString *bike = (idxBike < (NSInteger)fields.count) ? fields[idxBike] : @"";
+//        if (bike) {
+//            [track setAttribute:kEquipment usingString:bike];
+//        }
+
+        
+        NSString *etimeStr = (idxElapsedTime < (NSInteger)fields.count) ? fields[idxElapsedTime] : @"";
+        double etime = etimeStr.doubleValue;
+        if (etime > 0) {
+            track.srcElapsedTime = etime;
+        }
+
+        NSString *mtimeStr = (idxMovingTime < (NSInteger)fields.count) ? fields[idxMovingTime] : @"";
+        double mtime = mtimeStr.doubleValue;
+        if (mtime > 0) {
+            track.srcMovingTime = mtime;
+        }
+
+        NSString *hrStr = (idxMaxHR < (NSInteger)fields.count) ? fields[idxMaxHR] : @"";
+        float hr = hrStr.floatValue;
+        if (hr > 0.0) {
+            track.srcMaxHeartrate = hr;
+        }
+
+        hrStr = (idxAvgHR < (NSInteger)fields.count) ? fields[idxAvgHR] : @"";
+        hr = hrStr.floatValue;
+        if (hr > 0.0) {
+            track.srcAvgHeartrate = hr;
+        }
+
+        NSString *spdStr = (idxMaxSpd < (NSInteger)fields.count) ? fields[idxMaxSpd] : @"";
+        float v = spdStr.floatValue;
+        if (v > 0.0) {
+            track.srcMaxSpeed = v;
+        }
+
+        NSString *pwrStr = (idxMaxPwr < (NSInteger)fields.count) ? fields[idxMaxPwr] : @"";
+        v = pwrStr.floatValue;
+        if (v > 0.0) {
+            track.srcMaxPower = v;
+        }
+
+        pwrStr = (idxAvgPwr < (NSInteger)fields.count) ? fields[idxAvgPwr] : @"";
+        v = pwrStr.floatValue;
+        if (v > 0.0) {
+            track.srcAvgPower = v;
+        }
+
+        NSString* elevStr = (idxElevLow < (NSInteger)fields.count) ? fields[idxElevLow] : @"";
+        v = elevStr.floatValue;
+        track.srcMinElevation = v;
+
+        elevStr = (idxElevHigh < (NSInteger)fields.count) ? fields[idxElevHigh] : @"";
+        v = elevStr.floatValue;
+        track.srcMaxElevation = v;
+
+        NSString *climbStr = (idxClimb < (NSInteger)fields.count) ? fields[idxClimb] : @"";
+        float climb = climbStr.floatValue;
+        track.srcTotalClimb = climb;
+
+        NSString *wtStr = (idxWeight < (NSInteger)fields.count) ? fields[idxWeight] : @"";
+        float wt = wtStr.floatValue;
+        if (wt > 0.0) {
+            [track setWeight:wt];
+        }
 
         // --- Media (optional, pipe-separated, strip "media/" prefix) ---
         if (idxMedia >= 0 && idxMedia < (NSInteger)fields.count) {
@@ -7072,6 +7165,9 @@ int searchTagToMask(int searchTag)
                 }
             }
         }
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackChanged" object:track];
+        track.dirtyMask |= kDirtyMeta;
+        [tbDocument updateChangeCount:NSChangeDone];
     }
 
     return !hadError;

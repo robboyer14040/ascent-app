@@ -12,13 +12,13 @@
 #import "TrackPointStore.h"
 #import "IdentifierStore.h"
 #import "DatabaseManager.h"
-#import "DocumentMetaData.h"
+#import "TrackBrowserData.h"
 
 
 @implementation AscentImporter
 
 - (BOOL)loadDatabaseFile:(NSURL *)url
-            documentMeta:(DocumentMetaData *)docMeta
+            documentMeta:(TrackBrowserData *)docMeta
                 progress:(ASProgress)prog
 {
     if (url == nil || docMeta == nil) {
@@ -74,7 +74,7 @@
         if (!worked) {
             NSLog(@"[AscentImporter] Failed to load META info: %@", err);
         } else {
-            // 4) Push META into DocumentMetaData
+            // 4) Push META into TrackBrowserData
             if (tableInfo != nil) {
                 docMeta.tableInfoDict = [NSMutableDictionary dictionaryWithDictionary:tableInfo];
             }

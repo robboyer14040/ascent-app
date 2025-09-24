@@ -12,7 +12,7 @@
 #import "IdentifierStore.h"
 #import "Track.h"
 #import "TrackPoint.h"
-#import "DocumentMetaData.h"
+#import "TrackBrowserData.h"
 
 
 @implementation AscentExporter {
@@ -34,7 +34,7 @@
 
 
 - (NSURL *)exportDocumentToTemporaryURLWithProgress:(ASProgress)progress
-                                           metaData:(DocumentMetaData *)docMeta
+                                           metaData:(TrackBrowserData *)docMeta
                                               error:(NSError **)outError
 {
     if (outError != NULL) {
@@ -319,7 +319,7 @@
 }
 
 
-- (BOOL)performIncrementalExportWithMetaData:(DocumentMetaData *)docMeta
+- (BOOL)performIncrementalExportWithMetaData:(TrackBrowserData *)docMeta
                             databaseManager:(DatabaseManager *)dbm
                               activityStore:(ActivityStore *)actStore
                            trackPointStore:(TrackPointStore *)tpStore

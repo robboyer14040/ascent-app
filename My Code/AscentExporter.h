@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "DatabaseDefs.h"
 
-@class DocumentMetaData;
+@class TrackBrowserData;
 @class DatabaseManager;
 @class ActivityStore;
 @class TrackPointStore;
@@ -21,10 +21,10 @@
 - (instancetype)initWithURL:(NSURL *)dbURL;
 
 - (NSURL *)exportDocumentToTemporaryURLWithProgress:(ASProgress)progress
-                                           metaData:(DocumentMetaData*)docMeta
+                                           metaData:(TrackBrowserData*)docMeta
                                               error:(NSError **)outError;
 
-- (BOOL)performIncrementalExportWithMetaData:(DocumentMetaData *)docMeta
+- (BOOL)performIncrementalExportWithMetaData:(TrackBrowserData *)docMeta
                             databaseManager:(DatabaseManager *)dbm
                               activityStore:(ActivityStore *)actStore
                            trackPointStore:(TrackPointStore *)tpStore

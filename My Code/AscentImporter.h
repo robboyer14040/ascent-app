@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "DatabaseDefs.h"
 
-@class DocumentMetaData;
+@class TrackBrowserData;
 
 // ASProgress is assumed to be typedef'ed elsewhere, same as your existing code.
 
@@ -18,7 +18,7 @@
 // Loads a database at `url` (read-only) and populates `docMeta`.
 // Returns YES on success. Progress (0..totalTracks-1, totalTracks) is forwarded.
 - (BOOL)loadDatabaseFile:(NSURL *)url
-            documentMeta:(DocumentMetaData *)docMeta
+            documentMeta:(TrackBrowserData *)docMeta
                 progress:(ASProgress)prog;
 
 @end

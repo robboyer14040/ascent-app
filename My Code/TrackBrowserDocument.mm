@@ -32,7 +32,7 @@
 #import "DatabaseManager.h"
 #import "IdentifierStore.h"
 #import "SplashPanelController.h"
-#import "DocumentMetaData.h"
+#import "TrackBrowserData.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import "AscentImporter.h"
 #import "AscentExporter.h"
@@ -89,7 +89,7 @@ NSString* getTracksPath()
 
 @interface TrackBrowserDocument ()
 {
-    DocumentMetaData *_stagedBrowserData;   // parsed off-main, consumed by readFromURL:
+    TrackBrowserData *_stagedBrowserData;   // parsed off-main, consumed by readFromURL:
     LibraryController *_libraryController;
     AscentLibrary *_library;
 }
@@ -184,7 +184,7 @@ int kSearchEventType		= 0x0020;
 		equipmentTotalsNeedUpdate = YES;
 		currentlySelectedTrack = nil;
 		selectedLap = nil;
-        self.docMetaData = [[[DocumentMetaData alloc] init] autorelease];
+        self.docMetaData = [[[TrackBrowserData alloc] init] autorelease];
 		backupDelegate = [[BackupDelegate alloc] initWithDocument:self];
 		tbWindowController = nil;
         databaseFileURL = nil;
@@ -1703,10 +1703,10 @@ deviceIsPluggedIn:YES];
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
                    id obj = [NSUnarchiver unarchiveObjectWithData:data];
 #pragma clang diagnostic pop
-                    if ([obj isKindOfClass:[DocumentMetaData class]]) {
+                    if ([obj isKindOfClass:[TrackBrowserData class]]) {
                         self.docMetaData = obj;
                     } else {
-                        DocumentMetaData *bd = [[[DocumentMetaData alloc] init] autorelease];
+                        TrackBrowserData *bd = [[[TrackBrowserData alloc] init] autorelease];
                         [bd setTrackArray:obj];
                         self.docMetaData = bd; // retained
                     }
@@ -1901,11 +1901,11 @@ deviceIsPluggedIn:YES];
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
                         id obj = [NSUnarchiver unarchiveObjectWithData:data];
 #pragma clang diagnostic pop
-                        DocumentMetaData *bd = nil;
-                        if ([obj isKindOfClass:[DocumentMetaData class]]) {
+                        TrackBrowserData *bd = nil;
+                        if ([obj isKindOfClass:[TrackBrowserData class]]) {
                             bd = obj;
                         } else {
-                            bd = [[DocumentMetaData alloc] init];
+                            bd = [[TrackBrowserData alloc] init];
                             [bd setTrackArray:obj];
                         }
                         self.docMetaData = bd; // retained
@@ -2937,6 +2937,8 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
          Track* t = [arr objectAtIndex:i];
          if ([trackArray indexOfObject:t] == NSNotFound)
          {
+             t.dirtyMask |= kDirtyMeta;
+        
 			 ///[trackArray addObject:t];
 			 [self addTracksToDB:[NSArray arrayWithObject:t]
 			 alsoAddToTrackArray:YES];

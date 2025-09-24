@@ -561,6 +561,7 @@ static NSArray<NSURL *> *ASCPhotoURLsFromStravaPhotos(id photosObj) {
                 if (progressCopy) {
                     dispatch_async(dispatch_get_main_queue(), ^{ progressCopy(idx++, numActivities); });
                 }
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackChanged" object:track];
 
 
                 [rowPool drain];
@@ -756,8 +757,10 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
                             track.pointsEverSaved = NO; // default for new track
 
                         } @catch (__unused id e) {}
-                        if ([track respondsToSelector:@selector(fixupTrack)])
+                        if ([track respondsToSelector:@selector(fixupTrack)]) {
                             [track fixupTrack];
+                            [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackChanged" object:track];
+                        }
                     }
                     [streamsByType release]; streamsByType = nil;
                 }

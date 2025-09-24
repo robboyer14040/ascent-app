@@ -295,7 +295,7 @@
 		D4F779192E706E820032D5EE /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4F779182E706E820032D5EE /* CoreLocation.framework */; };
 		D4F779302E73071B0032D5EE /* LocationAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F7792F2E73071B0032D5EE /* LocationAPI.m */; };
 		D4FE95F32E78548400670ACB /* AscentExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D4FE95F22E78548400670ACB /* AscentExporter.m */; };
-		D4FE95F72E78586400670ACB /* DocumentMetaData.m in Sources */ = {isa = PBXBuildFile; fileRef = D4FE95F62E78586400670ACB /* DocumentMetaData.m */; };
+		D4FE95F72E78586400670ACB /* TrackBrowserData.m in Sources */ = {isa = PBXBuildFile; fileRef = D4FE95F62E78586400670ACB /* TrackBrowserData.m */; };
 		D4FE95FA2E785E4900670ACB /* AscentImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D4FE95F92E785E4900670ACB /* AscentImporter.m */; };
 /* End PBXBuildFile section */
 
@@ -848,8 +848,8 @@
 		D4F7792F2E73071B0032D5EE /* LocationAPI.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = LocationAPI.m; path = "My Code/LocationAPI.m"; sourceTree = "<group>"; };
 		D4FE95F22E78548400670ACB /* AscentExporter.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = AscentExporter.m; path = "My Code/AscentExporter.m"; sourceTree = SOURCE_ROOT; };
 		D4FE95F42E7854AE00670ACB /* AscentExporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AscentExporter.h; path = "My Code/AscentExporter.h"; sourceTree = SOURCE_ROOT; };
-		D4FE95F52E78584E00670ACB /* DocumentMetaData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DocumentMetaData.h; path = "My Code/DocumentMetaData.h"; sourceTree = "<group>"; };
-		D4FE95F62E78586400670ACB /* DocumentMetaData.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = DocumentMetaData.m; path = "My Code/DocumentMetaData.m"; sourceTree = "<group>"; };
+		D4FE95F52E78584E00670ACB /* TrackBrowserData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TrackBrowserData.h; path = "My Code/TrackBrowserData.h"; sourceTree = "<group>"; };
+		D4FE95F62E78586400670ACB /* TrackBrowserData.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = TrackBrowserData.m; path = "My Code/TrackBrowserData.m"; sourceTree = "<group>"; };
 		D4FE95F82E785E2000670ACB /* AscentImporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AscentImporter.h; path = "My Code/AscentImporter.h"; sourceTree = SOURCE_ROOT; };
 		D4FE95F92E785E4900670ACB /* AscentImporter.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = AscentImporter.m; path = "My Code/AscentImporter.m"; sourceTree = SOURCE_ROOT; };
 		D4FE95FB2E7869E400670ACB /* DatabaseDefs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DatabaseDefs.h; path = "My Code/DatabaseDefs.h"; sourceTree = SOURCE_ROOT; };
@@ -1077,8 +1077,8 @@
 				D4F13A212E4EAE4600462944 /* TrackDataEntryController.mm */,
 				D4F13A222E4EAE4600462944 /* TransparentView.h */,
 				D4F13A232E4EAE4600462944 /* TransparentView.mm */,
-				D4FE95F52E78584E00670ACB /* DocumentMetaData.h */,
-				D4FE95F62E78586400670ACB /* DocumentMetaData.m */,
+				D4FE95F52E78584E00670ACB /* TrackBrowserData.h */,
+				D4FE95F62E78586400670ACB /* TrackBrowserData.m */,
 			);
 			name = "Track Browser";
 			sourceTree = "<group>";
@@ -2076,7 +2076,7 @@
 				D4F13CE22E4EAE4600462944 /* GPX.mm in Sources */,
 				D4F13CE32E4EAE4600462944 /* main.m in Sources */,
 				D4F13CE42E4EAE4600462944 /* TransportPanelController.mm in Sources */,
-				D4FE95F72E78586400670ACB /* DocumentMetaData.m in Sources */,
+				D4FE95F72E78586400670ACB /* TrackBrowserData.m in Sources */,
 				D4F13CE62E4EAE4600462944 /* ColumnHelper.mm in Sources */,
 				D4F13CE72E4EAE4600462944 /* ImportDateEntryController.mm in Sources */,
 				D4F13CE82E4EAE4600462944 /* ADStatsView.mm in Sources */,

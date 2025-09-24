@@ -21,6 +21,7 @@
 	if ((self = [super initWithFrame:frameRect]) != nil) {
 		// Add initialization code here
 		currentTrack = lastTrack = nil;
+        selectedLap = nil;
 		dpath = [[NSBezierPath alloc] init];
 		lpath = [[NSBezierPath alloc] init];
 		plottedPoints = [[NSMutableArray alloc] init];
@@ -31,7 +32,8 @@
 		font = [NSFont systemFontOfSize:18];
 		textFontAttrs = [[NSMutableDictionary alloc] init];
 		[textFontAttrs setObject:font forKey:NSFontAttributeName];
-		[textFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"]                        forKey:NSForegroundColorAttributeName];
+		[textFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"]
+                          forKey:NSForegroundColorAttributeName];
 	}
 	return self;
 }
@@ -39,6 +41,13 @@
 
 - (void)dealloc
 {
+    [splitsArray release];
+    [plottedPoints release];
+    [transparentView release];
+    [tickFontAttrs release];
+    [textFontAttrs release];
+    [currentTrack release];
+    [selectedLap release];
     [super dealloc];
 }
 
@@ -62,7 +71,7 @@
 
 -(void) setTransparentView:(TransparentMapView*)v
 {
-   transparentView = v;
+   transparentView = [v retain];
 }
 
 
@@ -331,207 +340,6 @@ static float calcY(float ymin, float ymax, float h, float v)
 }
 
 
-
-#if 0
-- (void)drawRect:(NSRect)rect
-{
-	NSRect bounds = [self bounds];
-	NSRect drawBounds = [self drawBounds];
-
-	//NSShadow *dropShadow = [[[NSShadow alloc] init] autorelease];
-	//[dropShadow setShadowColor:[NSColor blackColor]];
-	//[dropShadow setShadowBlurRadius:5];
-	//[dropShadow setShadowOffset:NSMakeSize(0,-3)];
-
-	// save graphics state
-	[NSGraphicsContext saveGraphicsState];
-
-	//[dropShadow set];
-
-	// fill the desired area
-    [[NSColor colorNamed:@"BackgroundPrimary"] set];
-	[NSBezierPath fillRect:bounds];
-	[[[NSColor blackColor] colorWithAlphaComponent:0.6] set];
-	[NSBezierPath setDefaultLineWidth:1.0];
-	[NSBezierPath strokeRect:[self drawBounds]];
-   
-	// restore state
-	[NSGraphicsContext restoreGraphicsState];
-
-	if ((currentTrack != nil) && [currentTrack hasElevationData] && ([[currentTrack goodPoints] count] > 1))
-	{
-		BOOL isStatute = [Utils boolFromDefaults:RCBDefaultUnitsAreEnglishKey];
-		NSRect plotBounds = [self getPlotBounds];
-		lastTrack = currentTrack;
-		NSMutableArray* pts = [currentTrack goodPoints];
-		NSNumber *mxn, *mnn;
-		[Utils maxMinAlt:pts
-					 max:&mxn
-					 min:&mnn];
-		
-		///NSNumber* numMaxAlt = [pts valueForKeyPath:@"@max.altitude"];		// in FEET
-		float maxAltNative = [Utils convertClimbValue:[mxn floatValue]];
-		float dmNative = [Utils convertClimbValue:[Utils floatFromDefaults:RCBDefaultMaxAltitude]];
-		if ((dmNative > 0) && (maxAltNative < dmNative))
-		{
-			maxAltNative = dmNative;
-		}
-		if (isStatute)
-			maxAltNative = (float)((((int)maxAltNative+99)/100)*100);
-		else
-			maxAltNative = (float)((((int)maxAltNative+19)/20)*20);
-		
-		///NSNumber* numMinAlt = [pts valueForKeyPath:@"@min.altitude"];		// in FEET
-		float minAltNative = [Utils convertClimbValue:[mnn floatValue]];
-		if (isStatute)
-			minAltNative = (float)((((int)minAltNative-199)/100)*100); 
-		else
-			minAltNative = (float)((((int)minAltNative-39)/20)*20);
-
-		NSNumber* num = [pts valueForKeyPath:@"@max.distance"];
-		maxdist = [num floatValue];
-		float incr;
-		numVertTickPoints = AdjustRuler(10, minAltNative, maxAltNative, &incr);
-		float altDifNative = (numVertTickPoints)*incr;
-		//maxalt = minalt + altdif;
-		minAltNative = maxAltNative - altDifNative;
-		if (isStatute)
-		{
-			maxalt = maxAltNative;
-			minalt = minAltNative;
-			altdif = altDifNative;
-		}
-		else
-		{
-			maxalt = MetersToFeet(maxAltNative);
-			minalt = MetersToFeet(minAltNative);
-			altdif = MetersToFeet(altDifNative);
-		}
-		
-		[dpath removeAllPoints];
-		float w = plotBounds.size.width;
-		float h = plotBounds.size.height;
-		float x = plotBounds.origin.x;
-		float y = plotBounds.origin.y;
-		//float dy = h*.05;
-		//h -= (dy*2);
-		numPts = (int)[pts count];
-		[plottedPoints removeAllObjects];
-		float dur = 0.0;
-		if (numPts > 0)
-		{
-			TrackPoint* lastPt = [pts objectAtIndex:(numPts-1)];
-			//if ([[lastPt DATE_METHOD] timeIntervalSinceDate:[currentTrack creationTime]] > [currentTrack DURATION_METHOD])
-			if ([lastPt DATE_METHOD] > [currentTrack DURATION_METHOD])
-			{
-				dur = [currentTrack duration];
-			}
-			else
-			{
-				dur = [currentTrack DURATION_METHOD];
-			}
-		}
-		if ((numPts > 0) && (maxdist > 0.0))
-		{
-			// y += dy; 
-			[dpath setLineWidth:1.0];
-			//[dpath setLineJoinStyle:NSLineJoinStyleRound]];
-			NSPoint p;
-			TrackPoint* pt = [pts objectAtIndex:0];
-			p.x = x;
-			float alt = [currentTrack firstValidAltitudeUsingGoodPoints:0];
-			if (alt == BAD_ALTITUDE) alt = 0.0;
-			p.y = y + ((alt-minalt) * h)/altdif;
-			MapPoint* mpt = [[MapPoint alloc] initWithPoint:p time:[pt DATE_METHOD] speed:[pt speed]];
-			[plottedPoints addObject:mpt];
-			[dpath moveToPoint:p];
-			int i = 1;
-			float lastdist = 0;
-			while (i < numPts)
-			{
-				pt = [pts objectAtIndex:i];
-				//float alt = [pt altitude];
-				alt = [currentTrack firstValidAltitudeUsingGoodPoints:i];
-				if (alt == BAD_ALTITUDE) alt = 0.0;
-				float dist = [pt distance];
-				if (dist < lastdist) dist = lastdist;
-				lastdist = dist;
-				if (xAxisIsTime)
-				{
-					//NSTimeInterval t = [[pt DATE_METHOD] timeIntervalSinceDate:[currentTrack creationTime]];
-					NSTimeInterval t = [pt DATE_METHOD];
-					if (dur > 0.0) 
-						p.x = x + ((w*t)/(dur));
-					else
-						p.x = x;
-				}
-				else
-				{
-					p.x = x + ((w*dist)/(maxdist));
-				}
-				p.y = y + (((alt-minalt) * h)/altdif);
-				//NSLog(@"[%1.0f,%1.0f]", p.x, p.y);
-				MapPoint* mpt = [[MapPoint alloc] initWithPoint:p time:[pt DATE_METHOD] speed:[pt speed]];
-				[plottedPoints addObject:mpt];
-				[dpath lineToPoint:p];
-				++i;
-			}
-		}
-		
-		
-		//[[NSColor colorNamed:@"BackgroundPrimary"] set];
-		//[NSBezierPath fillRect:bounds];
-		NSRect tbounds = [self drawTickMarks:numVertTickPoints];
-
-		[self drawRangeIndicator:kAltitude
-						  bounds:tbounds
-						 xoffset:0
-							axis:0
-						  ymaxGR:maxalt						// in FEET
-						  yminGR:minalt						// in FEET
-							ymax:[mxn floatValue]		// in FEET
-							ymin:[mnn floatValue]];	// in FEET
-		
-		if ((numPts > 0) && ![dpath isEmpty])
-		{
-			[[NSColor colorNamed:@"TextPrimary"] set];
-			[dpath setLineWidth:0.5];
-			[dpath stroke];
-			[[[Utils colorFromDefaults:RCBDefaultAltitudeColor] colorWithAlphaComponent:1.0] set];
-			NSPoint p = [dpath currentPoint];
-			p.y = plotBounds.origin.y;
-			[dpath lineToPoint:p];
-			p.x = plotBounds.origin.x;
-			[dpath lineToPoint:p];
-			[dpath closePath];
-			[dpath fill];
-		}
-	  
-		[self drawAnimationBitmap];
-		//[[NSColor blackColor] set];
-		//[NSBezierPath strokeRect:[self drawBounds]];
-		[self drawSelectedLap];
-		[self drawSelectedSplits];
-
-		[[NSColor blackColor] set];
-		[NSBezierPath setDefaultLineWidth:0.4];
-		[NSBezierPath strokeRect:NSInsetRect(bounds, -0.4, 0.4)];
-	}
-	else
-	{
-		//[[NSColor colorWithCalibratedRed:(217.0/255.0) green:(217.0/255.0) blue:(217.0/255.0) alpha:1.0] set];
-		//[NSBezierPath fillRect:drawBounds];
-		NSString* s = currentTrack ? @"No Altitude Data" : @"No Activity Selected";
-		NSSize size = [s sizeWithAttributes:textFontAttrs];
-		float x = drawBounds.origin.x + drawBounds.size.width/2.0 - size.width/2.0;
-		float y = (drawBounds.size.height/2.0) - (size.height/2.0);
-		[textFontAttrs setObject:[[NSColor blackColor] colorWithAlphaComponent:0.20] forKey:NSForegroundColorAttributeName];
-		[s drawAtPoint:NSMakePoint(x,y) 
-		withAttributes:textFontAttrs];
-	}
-}
-#endif
-
 - (void)drawRect:(NSRect)rect
 {
     NSRect bounds = [self bounds];
@@ -747,7 +555,8 @@ static float calcY(float ymin, float ymax, float h, float v)
 {
 	if (currentTrack != tr)
 	{
-		currentTrack = tr;
+        [currentTrack release];
+		currentTrack = [tr retain];
 	}
 	xAxisIsTime = [Utils intFromDefaults:RCBDefaultXAxisType] > 0 ? YES : NO;
 	[transparentView setHidden:(currentTrack == nil)||([[currentTrack goodPoints] count] <= 1)];
@@ -765,7 +574,8 @@ static float calcY(float ymin, float ymax, float h, float v)
 {
    if (selectedLap != value) 
    {
-       selectedLap = value;
+       [selectedLap release];
+       selectedLap = [value retain];
       [self setNeedsDisplay:YES];
    }
 }
@@ -775,7 +585,8 @@ static float calcY(float ymin, float ymax, float h, float v)
 {
 	if (splitsArray != value)
 	{
-		splitsArray = value;
+        [splitsArray release];
+		splitsArray = [value retain];
 	}
 	[self setNeedsDisplay:YES];
 }

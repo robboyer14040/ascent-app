@@ -14,7 +14,7 @@
 @class Lap;
 @class Track;
 @class TrackPoint;
-@class DocumentMetaData;
+@class TrackBrowserData;
 @class BackupDelegate;
 @class EquipmentLog;
 @class EquipmentListWindowController;
@@ -43,7 +43,7 @@ NSString * const AscentUTIDatabase      = @"com.montebellosoftware.ascent.db";
 	BackupDelegate*					backupDelegate;
     NSURL*                          databaseFileURL;
 }
-@property (nonatomic, retain) DocumentMetaData  *docMetaData;
+@property (nonatomic, retain) TrackBrowserData  *docMetaData;
 @property (nonatomic) BOOL equipmentTotalsNeedUpdate;
 @property(nonatomic, retain) EquipmentLog* equipmentLog;
 @property(nonatomic, retain) NSMutableDictionary* equipmentLogDataDict;

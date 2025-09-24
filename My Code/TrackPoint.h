@@ -27,16 +27,7 @@ enum tImportFlag
 
 NS_ASSUME_NONNULL_BEGIN
 
-///@interface TrackPoint : NSObject <NSCoding, NSMutableCopying>
 @interface TrackPoint : NSObject <NSSecureCoding, NSCopying, NSMutableCopying>
-{
-    float       climbSoFar;            // not stored
-    float       descentSoFar;        // not stored
-    BOOL        validLatLon;
-}
-
-// sequence index
-//@property (nonatomic) NSInteger seq;
 
 @property (nonatomic) NSTimeInterval wallClockDelta;
 @property (nonatomic) NSTimeInterval activeTimeDelta;
@@ -52,7 +43,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) float origDistance;
 @property (nonatomic) float distance;
 @property (nonatomic) float gradient;
+@property (nonatomic) float climbSoFar;
+@property (nonatomic) float descentSoFar;
 @property (nonatomic) int flags;
+@property (nonatomic) BOOL validLatLon;
 
 + (void) resetStartTime:(NSDate*)startTime;         // for use in converting old point data that had dates instead of delta times
 
@@ -67,59 +61,24 @@ NS_ASSUME_NONNULL_BEGIN
                 speed:(float)speed        // in mph
              distance:(float)distance;    // in miles
 
-- (id)initWithDeadZoneMarker:(NSTimeInterval)wallClockDelta activeTimeDelta:(NSTimeInterval)activeTimeDelta;
+- (id)initWithDeadZoneMarker:(NSTimeInterval)wallClockDelta     activeTimeDelta:(NSTimeInterval)activeTimeDelta;
 - (id)mutableCopyWithZone:(NSZone * _Nullable)zone;
 
-//- (NSDate *)date;
-//- (void)setDate:(NSDate *)d;
-//- (NSDate *)activeTime;
-//- (void)setActiveTime:(NSDate *)value;
-- (NSTimeInterval)wallClockDelta;
-- (void)setWallClockDelta:(NSTimeInterval)value;
-- (NSTimeInterval)activeTimeDelta;
-- (void)setActiveTimeDelta:(NSTimeInterval)value;
-- (float)latitude;
 - (void)setLatitude:(float)l;
-- (float)longitude;
 - (void)setLongitude:(float)l;
-- (float)origAltitude;
-- (void)setOrigAltitude:(float)a;
-- (float)altitude;
-- (void)setAltitude:(float)a;
-- (float)heartrate;
-- (void)setHeartrate:(float)h;
-- (float)cadence;
-- (void)setCadence:(float)c;
-- (int)flags;
-- (void)setFlags:(int)f;
-- (float)temperature;
-- (void)setTemperature:(float)t;
-- (float)speed;
-- (void)setSpeed:(float)s;
 - (float)pace;
-- (float)distance;
 - (float)power;
 - (void)setPower:(float)p;
 - (void)setCalculatedPower:(float)p;
 - (BOOL)powerIsCalculated;
 - (void)setDistance:(float)d;       // set calculated distance
-- (float)gradient;
-- (void)setGradient:(float)g;
-- (BOOL)validLatLon;
-- (void)setValidLatLon:(BOOL)v;
 - (BOOL)validAltitude;
 - (BOOL)validDistance;
 - (BOOL)validOrigDistance;
 - (BOOL)validHeartrate;
 - (BOOL)isDeadZoneMarker;
-- (float)climbSoFar;
-- (void)setClimbSoFar:(float)value;
-- (float)descentSoFar;
-- (void)setDescentSoFar:(float)value;
 - (BOOL)speedOverridden;
 - (void)setSpeedOverriden:(BOOL)set;
-- (float)origDistance;
-- (void)setOrigDistance:(float)d;      // set distance as reported by device
 - (void)setDistanceToOriginal;
 - (BOOL)isFirstPointInLap;
 - (void)setIsFirstPointInLap:(BOOL)set;
@@ -132,8 +91,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSNumber*)heartrateAsNumber;
 - (NSNumber*)powerAsNumber;
 
--(BOOL)importFlagState:(int)item;
--(void)setImportFlagState:(int)item state:(BOOL)missing;
+- (BOOL)importFlagState:(int)item;
+- (void)setImportFlagState:(int)item state:(BOOL)missing;
 - (BOOL)beginningOfDeadZone;
 - (BOOL)setBeginningOfDeadZone;
 - (BOOL)endOfDeadZone;

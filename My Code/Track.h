@@ -5,13 +5,12 @@
 //  Created by Rob Boyer on 7/11/06.
 //  Copyright 2006 rcb Construction. All rights reserved.
 //
-///#warning USING Track.h from here
 
 
 #import <Cocoa/Cocoa.h>
 #import "StatDefs.h"
 #import "Defs.h"
-#import <objc/runtime.h>
+
 
 enum
 {
@@ -43,19 +42,6 @@ struct tLatLonBounds
 @class TrackPoint;
 @class OverrideData;
 
-@interface LapInfo : NSObject
-{
-   Lap*				lap;
-   int				startingPointIdx;
-   int				numPoints;
-   NSTimeInterval	activeTimeDelta;
-}
-- (id) initWithData:(Lap*)lap startIdx:(int)sp numPoints:(int)np;
-- (int) numPoints;
-- (int) startingPointIndex;
-- (NSTimeInterval) activeTimeDelta;
-@end
-
 
 // flag definitions for Track 'flags' field
 enum
@@ -85,50 +71,56 @@ struct tPeakIntervalData
 };
 
 
-@interface Track : NSObject <NSCoding, NSMutableCopying> 
-{
-	// fields that are stored persistently
-    NSNumber*           stravaActivityID;
-	NSString*			uuid;
-	NSDate*				creationTime;
-	NSDate*				creationTimeOverride;		// if user has over-ridden original creationtime
-	NSString*			name;
-	NSMutableArray*		points;
-	NSMutableArray*		attributes;
-	///NSMutableArray*		laps;
-	NSMutableArray*		markers;
-	NSMutableArray*		goodPoints;
-	float				distance;
-	float				weight;
-	float				altitudeSmoothingFactor;	
-	float				equipmentWeight;
-    ///NSTimeInterval      deviceTotalTime;                // for use when no data points; does NOT include stops
-	int					secondsFromGMT;           // must be int!!!
-	OverrideData*		overrideData;                   // only present if one or more data items have been overridden
-	int					flags;
-	int					deviceID;					
-	///int					firmwareVersion;
-	// temporary values, not stored persistently ------------------------
-	tPeakIntervalData*	peakIntervalData;			// dimensioned numPeakDataTypes * numPeakIntervals (5sec, 10sec, 30sec, etc)
-	NSArray*			equipmentUUIDs;	
-	NSString*			mainEquipmentUUID;
-	NSMutableArray*		lapInfoArray;
-	struct tStatData	statsArray[kST_NumStats];
-	///float				minGradientDistance;
-	NSTimeInterval		animTime;
-	///NSTimeInterval		animTimeBegin;
-	///NSTimeInterval		animTimeEnd;
-	int					animIndex;
-	int					hrzCacheStart, hrzCacheEnd;
-	int					nhrzCacheStart[kMaxZoneType+1], nhrzCacheEnd[kMaxZoneType+1];
-	NSTimeInterval		cachedHRZoneTime[kNumHRZones];
-	NSTimeInterval		cachedNonHRZoneTime[kMaxZoneType+1][kNumNonHRZones];
-	///int					animID;
-	BOOL				statsCalculated;
-	///BOOL				movingSpeedOnly;
-	///BOOL				hasDistanceData;
-}
+@interface LapInfo : NSObject
 
+@property(nonatomic, retain) Lap* lap;
+@property(nonatomic) int numPoints;
+@property(nonatomic) int startingPointIndex;
+@property(nonatomic) NSTimeInterval activeTimeDelta;
+
+- (id) initWithData:(Lap*)lap startIdx:(int)sp numPoints:(int)np;
+
+@end
+
+
+
+@interface Track : NSObject <NSCoding, NSMutableCopying>
+
+@property(nonatomic, retain) NSString* uuid;
+@property(nonatomic, retain) NSString* name;
+@property(nonatomic, retain) NSNumber* stravaActivityID;
+@property(nonatomic, retain) NSDate* creationTime;
+@property(nonatomic, retain) NSArray* equipmentUUIDs;
+@property(nonatomic, retain) NSString* mainEquipmentUUID;
+@property(nonatomic) float equipmentWeight;
+@property(nonatomic) NSTimeInterval deviceTotalTime;
+@property(nonatomic) int firmwareVersion;
+@property(nonatomic) int animID;
+@property(nonatomic) float minGradientDistance;
+@property(nonatomic) NSTimeInterval animTimeBegin;
+@property(nonatomic) NSTimeInterval animTimeEnd;
+@property(nonatomic, retain) NSMutableArray* laps;
+@property(nonatomic) BOOL movingSpeedOnly;
+@property(nonatomic) BOOL hasDistanceData;
+@property(nonatomic, retain) NSDate* creationTimeOverride;
+@property(nonatomic, retain) NSMutableArray* points;
+@property(nonatomic, retain) NSMutableArray* attributes;
+@property(nonatomic, retain) NSMutableArray* markers;
+@property(nonatomic, assign) float distance;
+@property(nonatomic, assign) float weight;
+@property(nonatomic, assign) float altitudeSmoothingFactor;
+@property(nonatomic, assign) int secondsFromGMT;
+@property(nonatomic, retain) OverrideData* overrideData;
+@property(nonatomic, assign) int flags;
+@property(nonatomic, assign) int deviceID;
+@property(nonatomic, retain) NSMutableArray* lapInfoArray;
+@property(nonatomic, assign) NSTimeInterval animTime;
+@property(nonatomic, assign) int animIndex;
+@property(nonatomic, retain) NSArray<NSURL *> *photoURLs;  // array of file or web URLs
+@property(nonatomic, retain) NSArray<NSString*> *localMediaItems;  // array of filenames, stored somewhere locally
+@property(nonatomic, assign) BOOL pointsEverSaved;     // mirrors activities.points_saved
+@property(nonatomic, assign) int  pointsCount;         // number of points loaded
+@property(nonatomic, assign) uint32_t dirtyMask;       // meta bits, laps bits, etc.
 // items from track source - used if points not available, stored persistently
 @property(nonatomic) float srcDistance;
 @property(nonatomic) float srcMaxSpeed;
@@ -146,35 +138,8 @@ struct tPeakIntervalData
 @property(nonatomic) NSTimeInterval srcMovingTime;
 @property(nonatomic, retain) NSString* timeZoneName;
 
-
-
-@property(nonatomic, retain) NSNumber* stravaActivityID;
-@property(nonatomic, retain) NSArray* equipmentUUIDs;
-@property(nonatomic, retain) NSString* mainEquipmentUUID;
-@property(nonatomic) float equipmentWeight;
-@property(nonatomic) NSTimeInterval deviceTotalTime;
-@property(nonatomic) int firmwareVersion;
-@property(nonatomic) int animID;
-@property(nonatomic) float minGradientDistance;
-@property(nonatomic) NSTimeInterval animTimeBegin;
-@property(nonatomic) NSTimeInterval animTimeEnd;
-@property(nonatomic, retain) NSMutableArray* laps;
-@property(nonatomic) BOOL movingSpeedOnly;
-@property(nonatomic) BOOL hasDistanceData;
-@property(nonatomic, retain) NSArray<NSURL *> *photoURLs;  // array of file or web URLs
-@property(nonatomic, retain) NSArray<NSString*> *localMediaItems;  // array of filenames, stored somewhere locally
-@property(nonatomic, assign) BOOL pointsEverSaved;     // mirrors activities.points_saved
-@property(nonatomic, assign) int  pointsCount;         // number of points loaded
-@property(nonatomic, assign) uint32_t dirtyMask;       // meta bits, laps bits, etc.
-
-
 - (NSComparisonResult) comparator:(Track*)track;
 -(void) doFixupAndCalcGradients;
-
--(int)deviceID;
--(void)setDeviceID:(int)devID;
--(float)altitudeSmoothingFactor;
--(void)setAltitudeSmoothingFactor:(float)v;
 
 // use device lap data for lame devices like the 310xt that give ambiguous 
 // point data that is difficult to process
@@ -183,12 +148,10 @@ struct tPeakIntervalData
 
 - (id)mutableCopyWithZone:(NSZone *)zone;
 
-- (OverrideData*) overrideData;
 - (void) setOverrideValue:(tStatType)stat index:(int)idx value:(float)v;
 - (float) overrideValue:(tStatType)stat index:(int)idx;
 - (void) clearOverride:(tStatType)idx;
 - (BOOL) isOverridden:(tStatType)idx;
-- (void)setOverrideData:(OverrideData*)od;
 
 - (BOOL) hasDevicePower;
 - (void) setHasDevicePower:(BOOL)has;
@@ -198,11 +161,6 @@ struct tPeakIntervalData
 - (BOOL)hasElevationData;
 - (BOOL)hasLocationData;
 
-- (NSDate *)creationTime;
-- (void)setCreationTime:(NSDate *)t;
-
-- (NSDate *)creationTimeOverride;
-- (void)setCreationTimeOverride:(NSDate *)d;
 - (void)clearCreationTimeOverride;
 
 - (int)secondsFromGMT;
@@ -211,29 +169,16 @@ struct tPeakIntervalData
 - (NSComparisonResult) compareByDate:(Track*)anotherTrack;
 - (NSComparisonResult) compareByMovingDuration:(Track*)anotherTrack;
 
-- (NSString *)name;
-- (void)setName:(NSString *)n;
-
-- (int)flags;
-- (void)setFlags:(int)f;
-
 - (float)distance;
 - (void)setDistance:(float)d;
 
 - (void) setAttribute:(int)attr usingString:(NSString*)s;
 - (NSString*) attribute:(int)attr;
-- (void) setAttributes:(NSMutableArray *)arr;
-- (NSMutableArray*) attributes;
 
-- (NSMutableArray*)points;
 - (void)setPoints:(NSMutableArray*)p;
--(void) setPointsAndAdjustTimeDistance:(NSMutableArray*)pts newStartTime:(NSDate*)nst distanceOffset:(float)distOffset;
+- (void)setPointsAndAdjustTimeDistance:(NSMutableArray*)pts newStartTime:(NSDate*)nst distanceOffset:(float)distOffset;
 
-- (NSMutableArray*)laps;
 - (void)setLaps:(NSMutableArray*)l;
-
-- (NSMutableArray*)markers;
-- (void)setMarkers:(NSMutableArray*)m;
 
 - (NSTimeInterval)duration;
 - (NSString *)durationAsString;
@@ -333,10 +278,6 @@ struct tPeakIntervalData
 - (int)lapStartingIndex:(Lap*)lap;		// returns index in GOOD POINTS array!
 - (void)calculateLapStats:(Lap*)lap;
 -(void) copyOrigDistance;
--(BOOL) hasDistance;
-
-- (float)weight;
-- (void)setWeight:(float)w;
 
 -(void)calculatePower;
 -(void)setEnableCalculationOfPower:(BOOL)en;
@@ -346,11 +287,6 @@ struct tPeakIntervalData
 - (void)calculateTrackStats;
 - (void)calculateStats:(struct tStatData*)sArray startIdx:(int)startingGoodIdx endIdx:(int)endingGoodIdx;
 - (void)calcGradients;
-
-- (void) setAnimTime:(NSTimeInterval)at;
-- (NSTimeInterval) animTime;
-- (void) setAnimIndex:(int)idx;
-- (int) animIndex;
 
 - (NSTimeInterval)timeInHRZone:(int)zone;
 - (NSTimeInterval)timeInHRZoneForInterval:(int)zone start:(int)sidx end:(int)eidx;
@@ -370,7 +306,6 @@ struct tPeakIntervalData
 
 - (int)findIndexOfFirstPointAtOrAfterDistanceUsingGoodPoints:(float)dist  startAt:(int)startIdx;	// DOES use good points
 
-
 -(float) firstValidLatitude;
 -(float) firstValidLongitude;
 -(float) firstValidAltitude:(int)sidx;
@@ -388,8 +323,6 @@ struct tPeakIntervalData
 - (BOOL) useOrigDistance;
 
 -(NSString*) buildTextOutput:(char)sep;
--(NSString*) uuid;
--(void) setUuid:(NSString*)uid;
 
 -(BOOL)uploadToMobile;
 -(void)setUploadToMobile:(BOOL)up;

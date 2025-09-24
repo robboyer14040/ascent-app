@@ -6,7 +6,6 @@
 //  Copyright 2006 rcb Construction. All rights reserved.
 //
 
-#import "Defs.h"
 #import "Track.h"
 #import "TrackPoint.h"
 #import "Lap.h"
@@ -25,48 +24,25 @@
 
 - (id) initWithData:(Lap*)lp startIdx:(int)sp numPoints:(int)np
 {
-   lap = lp;
-   startingPointIdx = sp;
-   numPoints = np;
-   return [super init];
+    self.lap = lp;
+    _startingPointIndex = sp;
+    _numPoints = np;
+    return [super init];
 }
 
 
 - (id) init
 {
-   return [self initWithData:nil startIdx:0 numPoints:0];
+    return [self initWithData:nil
+                     startIdx:0
+                    numPoints:0];
 }
 
 
 - (void) dealloc
 {
+    self.lap = nil;
     [super dealloc];
-}
-
-- (Lap*) lap
-{
-   return lap;
-}
-
-
-- (int) numPoints
-{
-   return numPoints;
-}
-
-- (int) startingPointIndex
-{
-   return startingPointIdx;
-}
-
-- (NSTimeInterval) activeTimeDelta
-{
-    return activeTimeDelta;
-}
-
-- (void) setActiveTimeDelta:(NSTimeInterval) atd
-{
-    activeTimeDelta = atd;
 }
 
 @end
@@ -76,60 +52,39 @@
 //------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------
 
-
-//------------------------------------------------------------------------------------------
-
 @interface Track ()
+{
+    NSMutableArray*     _goodPoints;
+    tPeakIntervalData*  _peakIntervalData;            // dimensioned numPeakDataTypes * numPeakIntervals (5sec, 10sec, 30sec, etc)
+    struct tStatData    _statsArray[kST_NumStats];
+    NSTimeInterval      _cachedHRZoneTime[kNumHRZones];
+    NSTimeInterval      _cachedNonHRZoneTime[kMaxZoneType+1][kNumNonHRZones];
+    int                 _nhrzCacheStart[kMaxZoneType+1];
+    int                 _nhrzCacheEnd[kMaxZoneType+1];
+}
+@property(nonatomic, assign) int hrzCacheStart;
+@property(nonatomic, assign) int hrzCacheEnd;
+@property(nonatomic, assign) BOOL statsCalculated;
 
-
--(void)calcPeaks;
+- (void)calcPeaks;
 - (float)realDurationOfLap:(Lap*)lap;
 - (void) checkPowerData;
 - (void)fixLapDurations;
 
 @end
 
+
+
 @implementation Track
-@synthesize photoURLs = _photoURLs;
-@synthesize localMediaItems = _localMediaItems;
-
-@synthesize stravaActivityID = _stravaActivityID;
-@synthesize timeZoneName = _timeZoneName;
-@synthesize equipmentUUIDs;
-@synthesize mainEquipmentUUID;
-@synthesize equipmentWeight;
-@synthesize firmwareVersion;
-@synthesize animID;
-@synthesize minGradientDistance;
-@synthesize animTimeBegin;
-@synthesize animTimeEnd;
-@synthesize laps;
-@synthesize deviceTotalTime;
-
-// items from track source - used if points not available, stored persistently
-@synthesize srcDistance;
-@synthesize srcMaxSpeed;
-@synthesize srcAvgHeartrate;
-@synthesize srcMaxHeartrate;
-@synthesize srcAvgTemperature;
-@synthesize srcMaxElevation;
-@synthesize srcMinElevation;
-@synthesize srcAvgPower;
-@synthesize srcMaxPower;
-@synthesize srcAvgCadence;
-@synthesize srcTotalClimb;
-@synthesize srcKilojoules;
-@synthesize srcElapsedTime;
-@synthesize srcMovingTime;
 
 
 - (id)init
 {
     self = [super init];
     _stravaActivityID = 0;
-    attributes = [[NSMutableArray alloc] initWithCapacity:kNumAttributes];
+    _attributes = [[NSMutableArray alloc] initWithCapacity:kNumAttributes];
     int i;
-    for (i=0; i<kNumAttributes; i++) [attributes addObject:@""];
+    for (i=0; i<kNumAttributes; i++) [_attributes addObject:@""];
 
     // set default attributes
     NSString* activity;
@@ -142,64 +97,64 @@
         eventType = @kTraining;
     
     [self setUuid:[NSString uniqueString]];
-    [attributes replaceObjectAtIndex:kActivity withObject:activity];
-    [attributes replaceObjectAtIndex:kEffort withObject:@""];
-    [attributes replaceObjectAtIndex:kDisposition withObject:@""];
-    [attributes replaceObjectAtIndex:kEventType withObject:eventType];
-    [attributes replaceObjectAtIndex:kWeather withObject:@""];
+    [_attributes replaceObjectAtIndex:kActivity withObject:activity];
+    [_attributes replaceObjectAtIndex:kEffort withObject:@""];
+    [_attributes replaceObjectAtIndex:kDisposition withObject:@""];
+    [_attributes replaceObjectAtIndex:kEventType withObject:eventType];
+    [_attributes replaceObjectAtIndex:kWeather withObject:@""];
     // ALWAYS store values in STATUTE units!!!
-    //[attributes replaceObjectAtIndex:kWeight withObject:[self getStatuteDefaultWeightAsString]];
-    weight = [Utils floatFromDefaults:RCBDefaultWeight];
+    //[_attributes replaceObjectAtIndex:kWeight withObject:[self getStatuteDefaultWeightAsString]];
+    _weight = [Utils floatFromDefaults:RCBDefaultWeight];
 
-    points = [[NSMutableArray alloc] init];
-    laps = [[NSMutableArray alloc] init];
-    lapInfoArray = [[NSMutableArray alloc] init];
-    markers = [[NSMutableArray alloc] init];
-    goodPoints = [[NSMutableArray alloc] init];
+    _points = [[NSMutableArray alloc] init];
+    _laps = [[NSMutableArray alloc] init];
+    _lapInfoArray = [[NSMutableArray alloc] init];
+    _markers = [[NSMutableArray alloc] init];
+    _goodPoints = [[NSMutableArray alloc] init];
     _pointsEverSaved = NO;
     _pointsCount = 0;
     _dirtyMask = 0;
-    name = @"";
-    creationTime = nil;
-    creationTimeOverride = nil;
-    deviceTotalTime = 0.0;
-    distance = 0.0;
-    animTime = 0.0;
-    animIndex = 0;
-    peakIntervalData = 0;
-    deviceID = -1;
-    firmwareVersion = 0;
+    _name = @"";
+    _creationTime= nil;
+    _creationTimeOverride = nil;
+    _hasDistanceData = NO;
+    _deviceTotalTime = 0.0;
+    _distance = 0.0;
+    _animTime = 0.0;
+    _animIndex = 0;
+    _peakIntervalData = 0;
+    _deviceID = -1;
+    _firmwareVersion = 0;
     NSTimeZone* tz = [NSTimeZone localTimeZone];
-    secondsFromGMT = (int)[tz secondsFromGMTForDate:[NSDate date]];
+    _secondsFromGMT = (int)[tz secondsFromGMTForDate:[NSDate date]];
     [self initNonPersistantData];
-    hrzCacheStart = hrzCacheEnd = -42;
-    flags = 0;
-    equipmentWeight = kDefaultEquipmentWeight;
+    _hrzCacheStart = _hrzCacheEnd = -42;
+    _flags = 0;
+    _equipmentWeight = kDefaultEquipmentWeight;
     if ([Utils boolFromDefaults:RCBDefaultUseDistanceDataEnabled])
     {
-        SET_FLAG(flags, kUseOrigDistance);
+        SET_FLAG(_flags, kUseOrigDistance);
     }
-    overrideData = [[OverrideData alloc] init];
+    _overrideData = [[OverrideData alloc] init];
     ///BOOL calcPower = [Utils boolFromDefaults:RCBDefaultCalculatePowerIfAbsent];
     [self setEnableCalculationOfPower:YES];
-    altitudeSmoothingFactor = [Utils floatFromDefaults:RCBDefaultAltitudeSmoothingPercentage];
+    _altitudeSmoothingFactor = [Utils floatFromDefaults:RCBDefaultAltitudeSmoothingPercentage];
     
-    srcDistance = 0.0;
-    srcMaxSpeed = 0.0;
-    srcAvgHeartrate = 0.0;
-    srcMaxHeartrate = 0.0;
-    srcAvgTemperature = 0.0;
-    srcMaxElevation = 0.0;
-    srcMinElevation = 0.0;
-    srcAvgPower = 0.0;
-    srcMaxPower = 0.0;
-    srcAvgCadence = 0.0;
-    srcTotalClimb = 0.0;
-    srcKilojoules = 0.0;
-    srcElapsedTime = 0.0;
-    srcMovingTime = 0.0;
+    _srcDistance = 0.0;
+    _srcMaxSpeed = 0.0;
+    _srcAvgHeartrate = 0.0;
+    _srcMaxHeartrate = 0.0;
+    _srcAvgTemperature = 0.0;
+    _srcMaxElevation = 0.0;
+    _srcMinElevation = 0.0;
+    _srcAvgPower = 0.0;
+    _srcMaxPower = 0.0;
+    _srcAvgCadence = 0.0;
+    _srcTotalClimb = 0.0;
+    _srcKilojoules = 0.0;
+    _srcElapsedTime = 0.0;
+    _srcMovingTime = 0.0;
 
-    
     return self;
 }
 
@@ -209,35 +164,19 @@
 #if 0&&DEBUG_LEAKS
     NSLog(@"  TRACK dealloc'd... ");
 #endif
-    [attributes release];
-    [laps release];
-    [points release];
-    [markers release];
-    [equipmentUUIDs release];
-    [overrideData release];
-     free(peakIntervalData);
+    [_attributes release];
+    [_laps release];
+    [_points release];
+    [_markers release];
+    [_equipmentUUIDs release];
+    [_overrideData release];
     [_photoURLs release];
     [_localMediaItems release];
     [_stravaActivityID release];
     [_timeZoneName release];
+    free(_peakIntervalData);
     [super dealloc];
 }
-
-
--(NSString*) uuid
-{
-    return uuid;
-}
-
-
--(void) setUuid:(NSString*)s
-{
-    if (uuid != s)
-    {
-        uuid = [s retain];      // added retain, FIXME
-    }
-}
-
 
 
 -(void)initNonPersistantData
@@ -246,32 +185,23 @@
     {
         for (int j=0; j<kNumValsPerStat; j++)
         {
-            statsArray[i].vals[j] = 0.0;
+            _statsArray[i].vals[j] = 0.0;
         }
-        statsArray[i].atActiveTimeDelta[kMin] = statsArray[i].atActiveTimeDelta[kMax] = 0.0;
+        _statsArray[i].atActiveTimeDelta[kMin] = _statsArray[i].atActiveTimeDelta[kMax] = 0.0;
     }
     
-    statsCalculated = NO;
+    _statsCalculated = NO;
     self.movingSpeedOnly = YES;
-    minGradientDistance = 175.0;      // feet, tweaky adjustment
-    peakIntervalData = 0;
+    _minGradientDistance = 175.0;      // feet, tweaky adjustment
+    _peakIntervalData = 0;
     self.equipmentUUIDs = nil;
-    animTimeBegin = 0.0;
-    animTimeEnd = 0.0;
+    _animTimeBegin = 0.0;
+    _animTimeEnd = 0.0;
     self.mainEquipmentUUID = nil;
-    distance = 0.0;
+    _distance = 0.0;
 }
 
 
--(void)setOverrideData:(OverrideData*)od
-{
-	if (od != overrideData)
-	{
-		overrideData = [od retain];
-	}
-}
-
-// not sure why mutableCopyWithZone for a NSMutableArray doesn't do this...
 -(NSMutableArray*)deepCopyOfMutableArray:(NSArray*)arr zone:(NSZone*)zn
 {
     NSUInteger num = [arr count];
@@ -287,53 +217,45 @@
 -(id)mutableCopyWithZone:(NSZone *)zone
 {
 	Track* newTrack = [[Track allocWithZone:zone] init];
-	[newTrack setCreationTime:[creationTime copy]];
-	[newTrack setCreationTimeOverride:[creationTimeOverride copy]];
-	[newTrack setName:[name copy]];
-	[newTrack setAttributes:[self deepCopyOfMutableArray:attributes zone:zone]];
-	[newTrack setLaps:[self deepCopyOfMutableArray:laps zone:zone]];
-	[newTrack setPoints:[self deepCopyOfMutableArray:points zone:zone]];
-	[newTrack setMarkers:[self deepCopyOfMutableArray:markers zone:zone]];
+	[newTrack setCreationTime:_creationTime];
+	[newTrack setCreationTimeOverride:_creationTimeOverride];
+	[newTrack setName:_name];
+	[newTrack setAttributes:[self deepCopyOfMutableArray:_attributes zone:zone]];
+	[newTrack setLaps:[self deepCopyOfMutableArray:_laps zone:zone]];
+	[newTrack setPoints:[self deepCopyOfMutableArray:_points zone:zone]];
+	[newTrack setMarkers:[self deepCopyOfMutableArray:_markers zone:zone]];
     // equipmentUUIDs is a property and doesn't need to be retained
-	[newTrack setEquipmentUUIDs:[self deepCopyOfMutableArray:equipmentUUIDs zone:zone]];
+	[newTrack setEquipmentUUIDs:[self deepCopyOfMutableArray:_equipmentUUIDs zone:zone]];
 	[newTrack setMainEquipmentUUID:[self mainEquipmentUUID]];
-	[newTrack setSecondsFromGMT:secondsFromGMT];
-	[newTrack setDistance:distance];
-	[newTrack setWeight:weight];
-	[newTrack setOverrideData:[overrideData mutableCopyWithZone:zone]];
-	[newTrack setSecondsFromGMT:secondsFromGMT];
-	[newTrack setDeviceID:deviceID];
-	[newTrack setAltitudeSmoothingFactor:altitudeSmoothingFactor];
-	[newTrack setDeviceTotalTime:deviceTotalTime];
-	newTrack->flags = flags;
+	[newTrack setSecondsFromGMT:_secondsFromGMT];
+	[newTrack setDistance:_distance];
+	[newTrack setWeight:_weight];
+	[newTrack setOverrideData:[_overrideData mutableCopyWithZone:zone]];
+	[newTrack setSecondsFromGMT:_secondsFromGMT];
+	[newTrack setDeviceID:_deviceID];
+	[newTrack setAltitudeSmoothingFactor:_altitudeSmoothingFactor];
+	[newTrack setDeviceTotalTime:_deviceTotalTime];
+	[newTrack setFlags:_flags];
 	return newTrack;
-}
-
--(int)deviceID
-{
-	return deviceID;
 }
 
 
 -(void)setDeviceID:(int)devID
 {
 	static int sDevID = 0;
-	deviceID = devID;
+	_deviceID = devID;
 	if (sDevID == 0)
 	{
-#if _DEBUG
-		NSLog(@"set device ID to %d", devID);
-#endif
 		sDevID = devID;
 	}
 	switch( devID )
 	{
 		case kGarminEdgeDeviceID:
-			altitudeSmoothingFactor = 25.0;
+			_altitudeSmoothingFactor = 25.0;
 			break;
 			
 		case kGarminForerunnerDeviceID:
-			altitudeSmoothingFactor = 80.0;
+            _altitudeSmoothingFactor = 80.0;
 			break;
 		
 		default:
@@ -342,25 +264,11 @@
 }
 
 
--(void)setAltitudeSmoothingFactor:(float)v
-{
-	altitudeSmoothingFactor = v;
-}
-
-
--(float)altitudeSmoothingFactor
-{
-	return altitudeSmoothingFactor;
-}
-
-
 - (NSString*) getStatuteDefaultWeightAsString
 {
    float v = [Utils floatFromDefaults:RCBDefaultWeight];
    return  [NSString stringWithFormat:@"%0.1f", v];
 }   
-
-
 
 
 #define TRACK_CUR_VERSION		9
@@ -388,82 +296,79 @@
 }
 
 
-#define DEBUG_DECODE		0
-
 - (id)initWithCoder:(NSCoder *)coder
 {
-#if DEBUG_DECODE
-	static int count = 0;
-	printf("decoding track %d\n", ++count);
-	if (count == 56)
-	{
-		printf("wtf!\n");
-	}
-#endif
-	self = [super init];
-	int version;
-	[coder decodeValueOfObjCType:@encode(int) at:&version];
-	if (version > TRACK_CUR_VERSION)
-	{
-		NSException *e = [NSException exceptionWithName:ExFutureVersionName
-												 reason:ExFutureVersionReason
-											   userInfo:nil];			  
-		@throw e;
-	}
-	points = [[NSMutableArray alloc] init];
-	lapInfoArray = [[NSMutableArray alloc] init];
-	[self setLaps:nil];
-	[self setMarkers:nil];
-	NSMutableArray* inMarkers = nil;
-	float fval;
-	float fWeight;
-	//int ival;
-	statsCalculated = NO;
-	NSTimeZone* tz = [NSTimeZone localTimeZone];
-	secondsFromGMT = (int)[tz secondsFromGMTForDate:[NSDate date]];
-	[self setName:[coder decodeObject]];
-	[self setCreationTime:[coder decodeObject]];
-	[TrackPoint resetStartTime:[self creationTime]];	// needed to convert earlier point data
-	[self setPoints:[coder decodeObject]];
-	[self setAttributes:[coder decodeObject]];
-	[Lap resetStartTime:[self creationTime]];			// needed to convert earlier lap data
-	NSArray* inLaps = [coder decodeObject];
+    self = [super init];
+    int version;
+    [coder decodeValueOfObjCType:@encode(int) at:&version];
+    if (version > TRACK_CUR_VERSION)
+    {
+        NSException *e = [NSException exceptionWithName:ExFutureVersionName
+                                                 reason:ExFutureVersionReason
+                                               userInfo:nil];
+        @throw e;
+    }
+    _points = [[NSMutableArray alloc] init];
+    _lapInfoArray = [[NSMutableArray alloc] init];
+    [self setLaps:nil];
+    [self setMarkers:nil];
+    float fWeight;
+    
+    _statsCalculated = NO;
+    NSTimeZone* tz = [NSTimeZone localTimeZone];
+    _secondsFromGMT = (int)[tz secondsFromGMTForDate:[NSDate date]];
+    
+	self.name = [coder decodeObject];
+	
+    self.creationTime = [coder decodeObject];
+	[TrackPoint resetStartTime:[self creationTime]];    // needed to convert earlier point data
+    [Lap resetStartTime:[self creationTime]];           // needed to convert earlier lap data
+
+    self.points = [coder decodeObject];
+
+    self.attributes = [coder decodeObject];
+	
+    NSArray* inLaps = [coder decodeObject];
 	NSMutableArray* outLaps = [self checkLaps:inLaps];
-	[coder decodeValueOfObjCType:@encode(float) at:&fval];
-	if ((distance > 10000.0) || (distance < 0.01))
-	{
-		distance = 0.0;
-	}
-	[self setDistance:fval];
+    self.laps = outLaps;
+    if (_laps == nil)
+       self.laps = [NSMutableArray array];
+
+    float fval;
+    [coder decodeValueOfObjCType:@encode(float) at:&fval];
+    if ((fval > 10000.0) || (fval < 0.01))
+    {
+        fval = 0.0;
+    }
+    self.distance = fval;
 
 	[coder decodeValueOfObjCType:@encode(float) at:&fWeight];   // added in v4   
-	[coder decodeValueOfObjCType:@encode(float) at:&altitudeSmoothingFactor];      // added in v8
-	[coder decodeValueOfObjCType:@encode(float) at:&equipmentWeight];			// changed in v9 from spare (did not incr version)
-	[coder decodeValueOfObjCType:@encode(float) at:&deviceTotalTime];      // changed in v9 from spare (did not incr version)
+	[coder decodeValueOfObjCType:@encode(float) at:&_altitudeSmoothingFactor];      // added in v8
+	[coder decodeValueOfObjCType:@encode(float) at:&_equipmentWeight];			// changed in v9 from spare (did not incr version)
+	[coder decodeValueOfObjCType:@encode(float) at:&_deviceTotalTime];      // changed in v9 from spare (did not incr version)
 
 	int secsFromGMT;
-	[coder decodeValueOfObjCType:@encode(int) at:&secsFromGMT];   // spare only valid in V3 or up
-	//NSLog(@"track offset from GMT: %02.2d:%02.2d:%02.2d", secsFromGMT/(3600), (secsFromGMT/60) % 60, secsFromGMT % 60);
+	[coder decodeValueOfObjCType:@encode(int) at:&secsFromGMT];     // spare only valid in V3 or up
 
-	[coder decodeValueOfObjCType:@encode(int) at:&flags];       // added in v5
+	[coder decodeValueOfObjCType:@encode(int) at:&_flags];          // added in v5
 
-	[coder decodeValueOfObjCType:@encode(int) at:&deviceID];    // added in v8
+	[coder decodeValueOfObjCType:@encode(int) at:&_deviceID];       // added in v8
 
-	[coder decodeValueOfObjCType:@encode(int) at:&firmwareVersion];   // changed from spare during v9
+	[coder decodeValueOfObjCType:@encode(int) at:&_firmwareVersion];   // changed from spare during v9
 
 	if (version > 1)
 	{
-		[self setMarkers:[coder decodeObject]];
+		self.markers = [coder decodeObject];
 	}
 	
 	if (version > 2)
 	{
-		[self setSecondsFromGMT:secsFromGMT];
+		self.secondsFromGMT = secsFromGMT;
 	}
 	
 	if (version > 3)
 	{
-		weight = fWeight;
+		self.weight = fWeight;
 	}
 	else
 	{
@@ -473,45 +378,46 @@
 		{
 			w = [Utils floatFromDefaults:RCBDefaultWeight];
 		}
-		weight = w;
+		self.weight = w;
 	}
 	
 	if (version > 5)
 	{
-		[self setOverrideData:[coder decodeObject]];
+		self.overrideData = [coder decodeObject];
 	}
+     
 	if (version > 6)
 	{
-		[self setCreationTimeOverride:[coder decodeObject]]; 
+		self.creationTimeOverride = [coder decodeObject];
 	}
 	else
 	{
-		overrideData = [[OverrideData alloc] init];
-		CLEAR_FLAG(flags, kOverrideCreationTime);		// make SURE this flag isn't set
+		_overrideData = [[OverrideData alloc] init];
+		CLEAR_FLAG(_flags, kOverrideCreationTime);		// make SURE this flag isn't set
 	}
-	if (FLAG_IS_SET(flags, kOverrideCreationTime) && (creationTimeOverride == nil))
+     
+	if (FLAG_IS_SET(_flags, kOverrideCreationTime) && (_creationTimeOverride == nil))
 	{
-		CLEAR_FLAG(flags, kOverrideCreationTime);		// make SURE this flag isn't set
-	}	
+		CLEAR_FLAG(_flags, kOverrideCreationTime);		// make SURE this flag isn't set
+	}
 	
 	if (version > 8)
 	{
-		[self setUuid:[coder decodeObject]];
+		self.uuid = [coder decodeObject];
 	}
 	else
 	{
-		[self setUuid:[NSString uniqueString]];
+        self.uuid = [NSString uniqueString];
 	}
-	if (outLaps == nil) 
-		outLaps = [NSMutableArray array];
-	if (inMarkers == nil)
-		inMarkers = [NSMutableArray array];
-	goodPoints = [[NSMutableArray alloc] init];
+     
+	
+    if (_markers == nil)
+		self.markers = [NSMutableArray array];
+     
+	_goodPoints = [[NSMutableArray alloc] init];
 
 	[self initNonPersistantData];
-	[self setLaps:outLaps];
 	[self fixupTrack];
-	[self setMarkers:inMarkers];
 	return self;
 }
 
@@ -533,54 +439,51 @@
 	int version = TRACK_CUR_VERSION;
 	//int spareInt = 0;
 	[coder encodeValueOfObjCType:@encode(int) at:&version];
-	[coder encodeObject:name];
-	[coder encodeObject:creationTime];
-	[coder encodeObject:points];
-	[coder encodeObject:attributes];
-	[coder encodeObject:laps];
-	[coder encodeValueOfObjCType:@encode(float) at:&distance];
-	[coder encodeValueOfObjCType:@encode(float) at:&weight];                // added in v4
-	[coder encodeValueOfObjCType:@encode(float) at:&altitudeSmoothingFactor];	// added in v8
-	[coder encodeValueOfObjCType:@encode(float) at:&equipmentWeight];       // changed in v9 from spare (did not incr version)
-	[coder encodeValueOfObjCType:@encode(float) at:&deviceTotalTime];       // changed in v9 from spare (did not incr version)
-	[coder encodeValueOfObjCType:@encode(int) at:&secondsFromGMT];    // only valid in v3 or higher
-	[coder encodeValueOfObjCType:@encode(int) at:&flags];                   // added in v5
-	[coder encodeValueOfObjCType:@encode(int) at:&deviceID];				// added in v8
-	[coder encodeValueOfObjCType:@encode(int) at:&firmwareVersion];			// changed from spare during v9
-	[coder encodeObject:markers];				// added in v2
-	[coder encodeObject:overrideData];			// added in v6
-	[coder encodeObject:creationTimeOverride];	// added in v7
-	[coder encodeObject:uuid];					// added in v9
+	[coder encodeObject:_name];
+	[coder encodeObject:_creationTime];
+	[coder encodeObject:_points];
+	[coder encodeObject:_attributes];
+	[coder encodeObject:_laps];
+	[coder encodeValueOfObjCType:@encode(float) at:&_distance];
+	[coder encodeValueOfObjCType:@encode(float) at:&_weight];                // added in v4
+	[coder encodeValueOfObjCType:@encode(float) at:&_altitudeSmoothingFactor];	// added in v8
+	[coder encodeValueOfObjCType:@encode(float) at:&_equipmentWeight];       // changed in v9 from spare (did not incr version)
+	[coder encodeValueOfObjCType:@encode(float) at:&_deviceTotalTime];       // changed in v9 from spare (did not incr version)
+	[coder encodeValueOfObjCType:@encode(int) at:&_secondsFromGMT];    // only valid in v3 or higher
+	[coder encodeValueOfObjCType:@encode(int) at:&_flags];                   // added in v5
+	[coder encodeValueOfObjCType:@encode(int) at:&_deviceID];				// added in v8
+	[coder encodeValueOfObjCType:@encode(int) at:&_firmwareVersion];			// changed from spare during v9
+	[coder encodeObject:_markers];				// added in v2
+	[coder encodeObject:_overrideData];			// added in v6
+	[coder encodeObject:_creationTimeOverride];	// added in v7
+	[coder encodeObject:_uuid];					// added in v9
 }
-
-
 
 
 - (NSMutableArray*) goodPoints
 {
-   if ([goodPoints count] == 0)
+   if ([_goodPoints count] == 0)
    {
-       NSUInteger num = [points count];
+       NSUInteger num = [_points count];
       int i;
       for (i=0; i<num; i++)
       {
-         TrackPoint* pt = [points objectAtIndex:i];
+         TrackPoint* pt = [_points objectAtIndex:i];
          if ([pt isDeadZoneMarker]) continue;
-         [goodPoints addObject:pt];
+         [_goodPoints addObject:pt];
       }
    }
-   return goodPoints;
+   return _goodPoints;
 }
-
 
 
 -(int) findNextGoodAltIdx:(int)startIdx
 {
    int i = startIdx;
-   NSUInteger num = [points count];
+   NSUInteger num = [_points count];
    while (i < num)
    {
-      TrackPoint* pt = [points objectAtIndex:i];
+      TrackPoint* pt = [_points objectAtIndex:i];
        if ([pt validAltitude])
       {
          return i;
@@ -624,7 +527,6 @@
 
 
 
-
 //-------------------------------------------------------------------------------------------------------------
 //---- LAP-RELATED METHODS ------------------------------------------------------------------------------------
 
@@ -633,12 +535,12 @@
 
 - (int) findLapIndex:(Lap*)lap
 {
-    NSUInteger numLaps = [laps count];
+    NSUInteger numLaps = [_laps count];
 	int ret = -1;
 	int idx;
 	for (idx=0; idx<numLaps; idx++)
 	{
-		if (lap == [laps objectAtIndex:idx])
+		if (lap == [_laps objectAtIndex:idx])
 		{
 			ret = idx;
 			break;
@@ -690,8 +592,8 @@
 
 - (void) updateLapInfoArray
 {
-	[lapInfoArray removeAllObjects];
-    NSUInteger numLaps = [laps count];
+	[_lapInfoArray removeAllObjects];
+    NSUInteger numLaps = [_laps count];
 	int last = 0;
 	int i;
 	NSArray* pts = [self goodPoints];
@@ -699,7 +601,7 @@
 	NSTimeInterval activeTimeDelta = 0.0;
 	for (i=0; i<numLaps; i++)
 	{
-		Lap* lap = [laps objectAtIndex:i];
+		Lap* lap = [_laps objectAtIndex:i];
 		float std = [lap startingWallClockTimeDelta];
 		int sp = [self findFirstGoodPointAtOrAfterDelta:std startAt:last];
 		int np = 0;
@@ -712,7 +614,7 @@
 		{
 			if (i < (numLaps-1))
 			{
-				Lap* nextLap = [laps objectAtIndex:i+1];
+				Lap* nextLap = [_laps objectAtIndex:i+1];
 				float nstd = [nextLap startingWallClockTimeDelta];
 				int endi = [self findFirstGoodPointAtOrAfterDelta:nstd startAt:sp];
 				if (endi == -1) endi = count - 1;		// if fell off the end, set to last point
@@ -728,7 +630,7 @@
 		last = sp + np - 1;
 		if (last < 0) last = 0;
 		LapInfo* li = [[LapInfo alloc] initWithData:lap startIdx:sp numPoints:np];
-		[lapInfoArray addObject:li];
+		[_lapInfoArray addObject:li];
 		//printf("lap %d active time delta %0.1f\n", activeTimeDelta);
 		[li setActiveTimeDelta:activeTimeDelta];
 		activeTimeDelta += [self movingDurationOfLap:lap];
@@ -738,11 +640,11 @@
 
 - (void) invalidateAllLapStats
 {
-    NSUInteger num = [laps count];
+    NSUInteger num = [_laps count];
 	int i;
 	for (i=0; i<num; i++)
 	{
-		Lap* lap = [laps objectAtIndex:i];
+		Lap* lap = [_laps objectAtIndex:i];
 		[lap setStatsCalculated:NO];
 	}
 }
@@ -754,7 +656,7 @@
 	int idx = [self findLapIndex:lap];
 	if (idx >= 0)
 	{
-		li = [lapInfoArray objectAtIndex:idx];
+		li = [_lapInfoArray objectAtIndex:idx];
 	}
 	return li;
 }
@@ -768,7 +670,7 @@
 	{
 #if 0
 		int sp = [li startingPointIndex];
-		if (lap && laps && (lap != [laps objectAtIndex:0]))	// starting lap is assumed to start at time 0
+		if (lap && laps && (lap != [_laps objectAtIndex:0]))	// starting lap is assumed to start at time 0
 			answer = [[goodPoints objectAtIndex:sp] activeTimeDelta];
 #endif
 		answer = [li activeTimeDelta];
@@ -816,7 +718,8 @@
 	}
 }
 
-- (float)statForLap:(Lap*)lap statType:(tStatType)stat index:(int)idx atActiveTimeDelta:(NSTimeInterval*)atTime 
+
+- (float)statForLap:(Lap*)lap statType:(tStatType)stat index:(int)idx atActiveTimeDelta:(NSTimeInterval*)atTime
 {
 	[self calculateLapStats:lap];
 	struct tStatData* data = [lap getStat:stat];
@@ -1041,10 +944,10 @@
 -(int)lapIndexOfPoint:(TrackPoint*)pt
 {
 	float ptTime = [pt wallClockDelta];
-    int numLaps = (int)[laps count];
+    int numLaps = (int)[_laps count];
 	for (int i=numLaps-1; i>=0; i--)
 	{
-		Lap* lap = [laps objectAtIndex:i];
+		Lap* lap = [_laps objectAtIndex:i];
 		if (ptTime >= [lap startingWallClockTimeDelta])
 		{
 			return i;
@@ -1061,13 +964,13 @@
 	if (lap != nil)
 	{
 		NSDate* leTime = nil;
-        NSUInteger numLaps = [laps count];
+        NSUInteger numLaps = [_laps count];
 		int idx = [self findLapIndex:lap];
 		if ((idx >= 0) && (idx < numLaps))
 		{
 			if (idx < (numLaps-1))
 			{
-				Lap* nextLap = [laps objectAtIndex:idx+1];
+				Lap* nextLap = [_laps objectAtIndex:idx+1];
 				leTime = [self lapStartTime:nextLap];
 			}
 			else
@@ -1108,24 +1011,24 @@
 
 - (void)addLapInFront:(Lap*)lap
 {
-	if ([laps containsObject:lap] == NO)
+	if ([_laps containsObject:lap] == NO)
 	{
-	   if ([laps count] > 0)
+	   if ([_laps count] > 0)
 	   {
 		   NSTimeInterval std = [lap startingWallClockTimeDelta];
-		   Lap* firstLap = [laps objectAtIndex:0];
+		   Lap* firstLap = [_laps objectAtIndex:0];
 		   if ([firstLap startingWallClockTimeDelta] == std)
 		   {
 			   [firstLap setStartingWallClockTimeDelta:std +[lap totalTime]];
 		   }
 	   }
-	   [laps addObject:lap];
-		[laps sortUsingSelector:@selector(compare:)];
-		//NSLog(@"added lap %d to %@, total: %d\n", [lap index], name, [laps count]);
+	   [_laps addObject:lap];
+		[_laps sortUsingSelector:@selector(compare:)];
+		//NSLog(@"added lap %d to %@, total: %d\n", [lap index], name, [_laps count]);
 	}
 	else
 	{
-		//NSLog(@"skipped lap %d %@ (already there), total: %d\n", [lap index], name, [laps count]);
+		//NSLog(@"skipped lap %d %@ (already there), total: %d\n", [lap index], name, [_laps count]);
 	}
 	[self updateLapInfoArray];
 }
@@ -1137,7 +1040,7 @@
 	int idx = [self findIndexOfFirstPointAtOrAfterActiveTimeDelta:atActiveTimeDelta];
 	if (idx > 0)
 	{ 
-		TrackPoint* firstPoint = [points objectAtIndex:idx];
+		TrackPoint* firstPoint = [_points objectAtIndex:idx];
 		NSTimeInterval lapStartWallClockDelta = [firstPoint wallClockDelta];
         NSTimeInterval lapStartActiveTimeDelta = [firstPoint activeTimeDelta];
 		// laps can only be inserted 10 seconds after track start or 10 seconds before the end
@@ -1145,11 +1048,11 @@
 		{
 			NSDate* startDate = [[self creationTime] dateByAddingTimeInterval:lapStartWallClockDelta];
 			
-			int numLaps = (int)[laps count];
+			int numLaps = (int)[_laps count];
 			int insertBeforeIndex = numLaps;
 			for (int i = 0; i<numLaps; i++)
 			{
-				Lap* lap = [laps objectAtIndex:i];
+				Lap* lap = [_laps objectAtIndex:i];
 				if ([lap startingWallClockTimeDelta] > lapStartWallClockDelta)
 				{
 					insertBeforeIndex = i;
@@ -1162,12 +1065,12 @@
             float prevLapActiveTimeDelta = prevLap ? [self lapActiveTimeDelta:prevLap] : 0.0;
             if (insertBeforeIndex < numLaps)
 			{
-				nextLap = [laps objectAtIndex:insertBeforeIndex];
+				nextLap = [_laps objectAtIndex:insertBeforeIndex];
                 
 			}
 			if (insertBeforeIndex > 0)
 			{
-				prevLap = [laps objectAtIndex:insertBeforeIndex-1];
+				prevLap = [_laps objectAtIndex:insertBeforeIndex-1];
 			}
 			lap = [[Lap alloc] initWithGPSData:insertBeforeIndex
 						startTimeSecsSince1970:(time_t)[startDate timeIntervalSince1970]
@@ -1205,10 +1108,10 @@
             }
 			for (int i = insertBeforeIndex; i<numLaps; i++)
 			{
-				[(Lap*)[laps objectAtIndex:i] setIndex:i+1];
+				[(Lap*)[_laps objectAtIndex:i] setIndex:i+1];
 			}
-			[laps addObject:lap];
-			[laps sortUsingSelector:@selector(compare:)];
+			[_laps addObject:lap];
+			[_laps sortUsingSelector:@selector(compare:)];
 			[self setUseDeviceLapData:NO];	// this will cause issues with the 310xt
 			[self updateLapInfoArray];
 			[self invalidateAllLapStats];
@@ -1221,21 +1124,21 @@
 - (BOOL)deleteLap:(Lap*)lap
 {
 	BOOL ret = NO;
-	if (([laps containsObject:lap] == YES) && ([laps count] > 1))
+	if (([_laps containsObject:lap] == YES) && ([_laps count] > 1))
 	{
-		int numLaps = (int)[laps count];
-		int lapIndex = (int)[laps indexOfObject:lap];
+		int numLaps = (int)[_laps count];
+		int lapIndex = (int)[_laps indexOfObject:lap];
 		Lap* prevLap = nil;
 		Lap* nextLap = nil;
 		if (lapIndex > 0)
 		{
-			prevLap = [laps objectAtIndex:lapIndex-1];
+			prevLap = [_laps objectAtIndex:lapIndex-1];
 		}
 		if (lapIndex < (numLaps-1))
 		{
-			nextLap = [laps objectAtIndex:lapIndex+1];
+			nextLap = [_laps objectAtIndex:lapIndex+1];
 		}
-		[laps removeObject:lap];
+		[_laps removeObject:lap];
 		if (prevLap)
 		{
 			// previous lap is now extended to contain lap being deleted
@@ -1315,19 +1218,19 @@
 
 - (BOOL) isTimeOfDayInLap:(Lap*)l tod:(NSDate*)tod
 {
-    NSUInteger num = [laps count];
+    NSUInteger num = [_laps count];
    int i;
    NSDate* endTime = [NSDate distantFuture];
   // NSDate* startTime = [l startTime];
    NSDate* startTime = [self lapStartTime:l];
    for (i=0; i<num; i++)
    {
-      if ([laps objectAtIndex:i] == l)
+      if ([_laps objectAtIndex:i] == l)
       {
          if (i < (num-1))
          {
-            //endTime = [[laps objectAtIndex:i+1] startTime];
-			 endTime = [self lapStartTime:[laps objectAtIndex:i+1]];
+            //endTime = [[_laps objectAtIndex:i+1] startTime];
+			 endTime = [self lapStartTime:[_laps objectAtIndex:i+1]];
          }
          break;
       }
@@ -1531,9 +1434,9 @@ static int				sLastGoodAltIdx         = 0;
 {
 	int count = (int)[pts count];
 	float smoothingFactor = 0.0;
-	if (IS_BETWEEN(1.0, altitudeSmoothingFactor, 100.0))
+	if (IS_BETWEEN(1.0, _altitudeSmoothingFactor, 100.0))
 	{
-		smoothingFactor = altitudeSmoothingFactor;
+		smoothingFactor = _altitudeSmoothingFactor;
 	}
 	else
 	{
@@ -1766,11 +1669,11 @@ static int sSpikeCount = 0;
 - (float) nextGoodSpeed:(int)sidx
 {
 	float ptSpd  = BAD_SPEED;
-	int ct = (int)[points count];
+	int ct = (int)[_points count];
 	int i = sidx;
 	while (i < ct)
 	{
-		TrackPoint* pt = [points objectAtIndex:i];
+		TrackPoint* pt = [_points objectAtIndex:i];
 		if (![pt isDeadZoneMarker])
 		{
 			ptSpd = [pt speed];
@@ -1781,39 +1684,6 @@ static int sSpikeCount = 0;
 	return ptSpd;
 }
 
-#if 0
-- (float) filterSpeed:(float)spd lastSpeed:(float)lgs idx:(int)idx
-{
-	float filteredSpeed = lgs;
-	if (![self isSpike:spd 
-			 lastSpeed:lgs])             // remove obvious outliers
-	{
-		if ([self needsFilter:spd
-					lastSpeed:lgs])
-		{
-			if (lgs > 1.0)
-			{
-				float nextSpeed = [self nextGoodSpeed:idx+1];
-				filteredSpeed = lgs * [self filterFactor:lgs];
-				if ((filteredSpeed > lgs) && (nextSpeed != BAD_SPEED) && (nextSpeed < filteredSpeed))
-				{
-					filteredSpeed = (lgs + nextSpeed)/2.0;
-					printf(" ======> raw:%0.1f lgs:%0.1f next:%0.1f filtered:%0.1f\n", spd, lgs, nextSpeed, filteredSpeed);
-				}
-			}
-			else 
-			{
-				filteredSpeed = spd/3.0;	// pretty lame filter, could do something a lot better here
-			}
-		}
-		else
-		{
-			filteredSpeed = spd;
-		}
-	}
-	return filteredSpeed;
-}
-#else
 - (float) filterSpeed:(float)spd lastSpeed:(float)lgs idx:(int)idx
 {
 	float filteredSpeed = lgs;
@@ -1830,7 +1700,6 @@ static int sSpikeCount = 0;
 	///printf("%d lgs: %0.1f spd:%0.1f filtered:%0.1f spikes:%d %s\n", idx, lgs, spd, filteredSpeed, sSpikeCount, foo);
 	return filteredSpeed;
 }
-#endif
 
 - (TrackPoint*) findNextValidGPSGoodPoint:(int)startIdx
 {
@@ -1931,10 +1800,10 @@ static int sSpikeCount = 0;
 -(void) copyOrigDistance
 {
 	float distSoFar = 0.0;
-    NSUInteger num = [points count];
+    NSUInteger num = [_points count];
 	for (int i=0; i<num; i++)
 	{
-		TrackPoint* pt = [points objectAtIndex:i];
+		TrackPoint* pt = [_points objectAtIndex:i];
 		float origDistance = [pt origDistance];
 		if (origDistance == BAD_DISTANCE)
 		{
@@ -1952,13 +1821,6 @@ static int sSpikeCount = 0;
 }
 
 
--(BOOL) hasDistance
-{
-	return self.hasDistanceData;
-}
-
-
-
 
 -(void) setDistanceAndSpeed:(BOOL)doFiltering
 {
@@ -1970,20 +1832,20 @@ static int sSpikeCount = 0;
 	NSMutableArray* pts = [self points];
 	int num = (int)[pts count];
 	int lapIndex = 0;
-	int numLaps = (int)[laps count];
-	NSTimeInterval nextLapWallTimeStart = (laps && (numLaps > 0)) ? [[laps objectAtIndex:0] startingWallClockTimeDelta] : 0.0;
+	int numLaps = (int)[_laps count];
+	NSTimeInterval nextLapWallTimeStart = (_laps && (numLaps > 0)) ? [[_laps objectAtIndex:0] startingWallClockTimeDelta] : 0.0;
 	for (int i=0; i<num; i++)
 	{
 		TrackPoint* pt = [pts objectAtIndex:i];	
 		// find the first point in the lap; it's used below to filter out bad readings from the 705 at lap markers 
 		// (it always reports speed as zero at the point right at the lap marker).
-		if (([pt wallClockDelta] >=  nextLapWallTimeStart) && laps && (numLaps > lapIndex))
+		if (([pt wallClockDelta] >=  nextLapWallTimeStart) && _laps && (numLaps > lapIndex))
 		{
 			[pt setIsFirstPointInLap:YES];
 			++lapIndex;
 			if (lapIndex < numLaps)
 			{
-				Lap* lap = [laps objectAtIndex:lapIndex];
+				Lap* lap = [_laps objectAtIndex:lapIndex];
 				nextLapWallTimeStart = [lap startingWallClockTimeDelta];
 			}
 		}
@@ -2044,7 +1906,7 @@ static int sSpikeCount = 0;
 	BOOL hasDevicePower = NO;
 	BOOL hasCadence = NO;
 	BOOL hasLocationData = NO;
-	CLEAR_FLAG(flags, kPowerDataCalculatedOrZeroed);
+	CLEAR_FLAG(_flags, kPowerDataCalculatedOrZeroed);
 	NSMutableArray* pts = [self points];
 	int num = (int)[pts count];
 	if (num > 0)
@@ -2208,31 +2070,31 @@ static int sSpikeCount = 0;
 		[firstPoint setLongitude:[self firstValidLongitude]];
 		//[self setCreationTime:[firstPoint date]];
 	}
-	if (peakIntervalData)
+	if (_peakIntervalData)
 	{
-		free(peakIntervalData);
-		peakIntervalData = 0;
+		free(_peakIntervalData);
+		_peakIntervalData = 0;
 	}
 	[self invalidateStats];
 	[self calcGradients];
 	[self setHasDevicePower:hasDevicePower];
 	[self setHasCadence:hasCadence];
 	[self fixLapDurations];	// work around for 310XT-related changes
-	if (hasLocationData) SET_FLAG(flags, kHasLocationData);
+	if (hasLocationData) SET_FLAG(_flags, kHasLocationData);
 }
 
 
 -(void)fixLapDurations
 {
-	BOOL hasDeviceTime = FLAG_IS_SET(flags, kHasDeviceTime);
-	for (Lap* lap in laps)
+	BOOL hasDeviceTime = FLAG_IS_SET(_flags, kHasDeviceTime);
+	for (Lap* lap in _laps)
 	{
 		float wallTotalTime = [lap totalTime];
 		float deviceTime = [lap deviceTotalTime];
 		if (!hasDeviceTime && deviceTime == 0 && wallTotalTime != 0)
 		{
 			[lap setDeviceTotalTime:wallTotalTime];
-			SET_FLAG(flags, kHasDeviceTime);
+			SET_FLAG(_flags, kHasDeviceTime);
 		}
 	}
 }
@@ -2246,14 +2108,14 @@ static int sSpikeCount = 0;
 
 - (int) findFirstPointAtOrAfterDelta:(NSTimeInterval)delta startAt:(int)idx
 {
-	int num = (int)[points count];
+	int num = (int)[_points count];
 	int i;
 	if (idx < 0) idx = 0;
 	if (idx < num)
 	{
 		for (i=idx; i<num; i++)
 		{
-			TrackPoint* pt = [points objectAtIndex:i];
+			TrackPoint* pt = [_points objectAtIndex:i];
 			//if ([[pt date] compare:time] != NSOrderedAscending)
 			if ([pt wallClockDelta] >= delta)
 			{
@@ -2308,10 +2170,10 @@ static int sSpikeCount = 0;
 
 - (int) findIndexOfFirstPointAtOrAfterActiveTimeDelta:(NSTimeInterval)atd
 {
-	int num = (int)[points count];
+	int num = (int)[_points count];
 	for (int i=0; i<num; i++)
 	{
-		TrackPoint* pt = [points objectAtIndex:i];
+		TrackPoint* pt = [_points objectAtIndex:i];
 		if ([pt activeTimeDelta] >= atd)
 		{
 			return i;
@@ -2338,82 +2200,87 @@ static int sSpikeCount = 0;
 
 - (struct tStatData*)statsArray
 {
-	return statsArray;
+	return _statsArray;
 }
 
 
 - (BOOL) isEqual:(id) t
 {
-   return ([[self creationTime] isEqualToDate:[t creationTime]]);
+    Track* track = (Track*)t;
+    return ([_creationTime isEqualToDate:track.creationTime]);
 }
+
 
 - (NSComparisonResult) comparator:(Track*) t
 {
-	return [[self creationTime] compare:[t creationTime]];
+	return [_creationTime compare:t.creationTime];
 }
 
 
 - (NSDate *)creationTime
 {
-	if (FLAG_IS_SET(flags, kOverrideCreationTime))
+	if (FLAG_IS_SET(_flags, kOverrideCreationTime))
 	{
-		return creationTimeOverride;
+		return _creationTimeOverride;
 	}
 	else
 	{
-		return creationTime;
+		return _creationTime;
 	}
 }
 
-- (void)setCreationTime:(NSDate *)d
-{
-   d = [d copy];
-   creationTime = d;
-}
+//- (void)setCreationTime:(NSDate *)d
+//{
+//   d = [d copy];
+//   _creationTime= d;
+//}
 
 
-- (NSDate *)creationTimeOverride
-{
-	return creationTimeOverride;
-}
+//- (NSDate *)creationTimeOverride
+//{
+//	return creationTimeOverride;
+//}
 
 
 - (void)setCreationTimeOverride:(NSDate *)d
 {
-	d = [d copy];
-	creationTimeOverride = d;
-	if (d)
-	{
-		SET_FLAG(flags, kOverrideCreationTime);
-	}
-	else
-	{
-		CLEAR_FLAG(flags, kOverrideCreationTime);
-	}
+    if (d != _creationTimeOverride)
+    {
+        [_creationTimeOverride release];
+        _creationTimeOverride = [d retain];
+        if (d)
+        {
+            SET_FLAG(_flags, kOverrideCreationTime);
+        }
+        else
+        {
+            CLEAR_FLAG(_flags, kOverrideCreationTime);
+        }
+    }
 }
 
 
 - (void)clearCreationTimeOverride
 {
-	CLEAR_FLAG(flags, kOverrideCreationTime);
-	creationTimeOverride = nil;
+	CLEAR_FLAG(_flags, kOverrideCreationTime);
+	self.creationTimeOverride = nil;
 }
 
 
 
 
-- (int)secondsFromGMT 
-{
-   return secondsFromGMT;
-}
-
-- (void)setSecondsFromGMT:(int)value 
-{
-   if (secondsFromGMT != value) {
-      secondsFromGMT = value;
-   }
-}
-
+//- (int)secondsFromGMT 
+//{
+//   return secondsFromGMT;
+//}
+//
+//- (void)setSecondsFromGMT:(int)value 
+//{
+//   if (secondsFromGMT != value) {
+//      secondsFromGMT = value;
+//   }
+//}
+//
 
 
 - (NSComparisonResult) compareByDate:(Track*)anotherTrack
@@ -2435,63 +2302,16 @@ static int sSpikeCount = 0;
 
 
 
-- (NSString *)name
-{
-   return name;
-   
-}
-
-- (void)setName:(NSString *)n
-{
-   n = [n copy];
-   name = n;
-}
-
-- (void) setAttributes:(NSMutableArray*)arr
-{
-	if (attributes != arr)
-	{
-		attributes = arr;
-	}
-    [attributes retain];    
-}
-
-
-- (int)flags
-{
-    return flags;
-}
-
-
-- (void)setFlags:(int)f
-{
-    flags = f;
-}
-
-
-- (NSMutableArray*) attributes
-{
-   return attributes;
-}
-
-
-
-- (void)setDistance:(float)d
-{
-	distance = d;
-}
-
-
 - (void) setAttribute:(int)attr usingString:(NSString*)s
 {
-    // in case number of attributes has increased...
-    while ([attributes count] < kNumAttributes) {
-        [attributes addObject:@""];
+    // in case number of _attributes has increased...
+    while ([_attributes count] < kNumAttributes) {
+        [_attributes addObject:@""];
     }
         
-	if ((attr < [attributes count]) && (s != nil))
+	if ((attr < [_attributes count]) && (s != nil))
 	{
-		[attributes replaceObjectAtIndex:attr withObject:[s copy]];
+		[_attributes replaceObjectAtIndex:attr withObject:[s copy]];
 	   [[NSNotificationCenter defaultCenter] postNotificationName:@"InvalidateBrowserCache" object:nil];
 	}
 }
@@ -2499,22 +2319,15 @@ static int sSpikeCount = 0;
 
 - (NSString*) attribute:(int)attr
 {
-   if (attr < [attributes count])
+   if (attr < [_attributes count])
    {
-      return [attributes objectAtIndex:attr];
+      return [_attributes objectAtIndex:attr];
    }
    else
    {
       return @"";
    }
 }
-
-
-- (NSMutableArray*)points
-{
-   return points;
-}
-
 
 
 -(void) setPointsAndAdjustTimeDistance:(NSMutableArray*)pts newStartTime:(NSDate*)nst distanceOffset:(float)distOffset
@@ -2524,7 +2337,7 @@ static int sSpikeCount = 0;
 	NSMutableArray* pointsToUpdate;
 	if (timeDelta >= 0.0)
 	{
-		pointsToUpdate = points;		// removing points from beginning, update time/distance of EXISTING points
+		pointsToUpdate = _points;		// removing points from beginning, update time/distance of EXISTING points
 										// new points ('pts') are assumed to be a SUBSET of the existing set
 	}
 	else
@@ -2556,22 +2369,22 @@ static int sSpikeCount = 0;
 				}
 			}
 			[self invalidateStats];
-			if (laps)
+			if (_laps)
 			{
-				count = (int)[laps count];
+				count = (int)[_laps count];
 				for (int i=0; i<count; i++)
 				{
-					Lap* lap = [laps objectAtIndex:i];
+					Lap* lap = [_laps objectAtIndex:i];
 					[lap setStartingWallClockTimeDelta:[lap startingWallClockTimeDelta] - timeDelta];
 				}
 				[self updateLapInfoArray];
 			}
-			if (markers && distOffset != 0.0)
+			if (_markers && distOffset != 0.0)
 			{
-				count = (int)[markers count];
+				count = (int)[_markers count];
 				for (int i=0; i<count; i++)
 				{
-					PathMarker* mrkr = [markers objectAtIndex:i];
+					PathMarker* mrkr = [_markers objectAtIndex:i];
 					float newd = [mrkr distance] - distOffset;
 					[mrkr setDistance:newd];
 				}
@@ -2585,53 +2398,26 @@ static int sSpikeCount = 0;
 
 - (void)setPoints:(NSMutableArray*)p
 {
-    if (p == nil)
+    if (p != _points)
     {
-        NSLog(@"wtf");
+        [_points release];
+        _points = [p retain];
+        [_goodPoints removeAllObjects];      // force re-retrieval
+        [self updateLapInfoArray];
+        [self invalidateAllLapStats];
     }
-    else
-    {
-        if (points != p)
-        {
-            points = [p retain];
-        }
-    }
-	[goodPoints removeAllObjects];      // force re-retrieval
-	[self updateLapInfoArray];
-	[self invalidateAllLapStats];
-}
-
-
-- (NSMutableArray*)laps
-{
-   return laps;
 }
 
 
 - (void)setLaps:(NSMutableArray*)l
 {
-	if (l != laps)
-	{
-		laps = [l retain];
-	}
-	[self updateLapInfoArray];
-	[self invalidateAllLapStats];
-}
-
-
-- (NSMutableArray*)markers
-{
-   return markers;
-}
-
-
-- (void)setMarkers:(NSMutableArray*)ms
-{
-	if (ms != markers)
-	{
-		markers = [ms retain];
-	}
-    //NSLog(@"track:setMarkers %x %d", markers, [markers retainCount]);
+    if (l != _laps)
+    {
+        [_laps release];
+        _laps = [l retain];
+        [self updateLapInfoArray];
+        [self invalidateAllLapStats];
+    }
 }
 
 
@@ -2656,22 +2442,22 @@ static int sSpikeCount = 0;
 
 - (NSTimeInterval)duration
 {
-    if (points.count == 0)
+    if (_points.count == 0)
     {
-        return srcElapsedTime;
+        return _srcElapsedTime;
     }
     
 	float val = 0.0;
-	if ([overrideData isOverridden:kST_Durations])
+	if ([_overrideData isOverridden:kST_Durations])
 	{
-		val = [overrideData value:kST_Durations index:kElapsed];
+		val = [_overrideData value:kST_Durations index:kElapsed];
 	}
 	else
 	{
 
 		if ([self usingDeviceLapData])
 		{
-            int numLaps = (int)[laps count];
+            int numLaps = (int)[_laps count];
 			if (numLaps > 0)
 			{
                 float lapDur = 0.0;
@@ -2679,7 +2465,7 @@ static int sSpikeCount = 0;
                 {
                     for (int i=0; i<numLaps; i++)
                     {
-                        Lap* lap = [laps objectAtIndex:i];
+                        Lap* lap = [_laps objectAtIndex:i];
                         lapDur += [self durationOfLap:lap];
                     }
                 }
@@ -2696,8 +2482,8 @@ static int sSpikeCount = 0;
 			val = [self stat:kST_Durations
 					   index:kElapsed
 		   atActiveTimeDelta:0];
-            if (distance == 0 && deviceTotalTime > val)
-                val = deviceTotalTime;
+            if (_distance == 0 && _deviceTotalTime > val)
+                val = _deviceTotalTime;
 		}
 		float movingDuration = [self movingDuration];
 		if (val < movingDuration)
@@ -2740,26 +2526,26 @@ static int sSpikeCount = 0;
 
 - (NSTimeInterval)movingDuration
 {
-    if (points.count == 0.0)
+    if (_points.count == 0.0)
     {
-        return srcMovingTime;
+        return _srcMovingTime;
     }
     
 	float val = 0.0;
-	if ([overrideData isOverridden:kST_Durations])
+	if ([_overrideData isOverridden:kST_Durations])
 	{
-		val = [overrideData value:kST_Durations index:kMoving];
+		val = [_overrideData value:kST_Durations index:kMoving];
 	}
 	else
 	{
-		int numLaps = (int)[laps count];
+		int numLaps = (int)[_laps count];
         // if distance is 0, then we by definition have no difference between "moving" and "active" time
         // so add moving duration of laps (which will use "device total time")
-		if ((distance <= 0.0) || ([self usingDeviceLapData] && (numLaps > 0) && (![overrideData isOverridden:kST_Durations])))
+		if ((_distance <= 0.0) || ([self usingDeviceLapData] && (numLaps > 0) && (![_overrideData isOverridden:kST_Durations])))
 		{
 			for (int i=0; i<numLaps; i++)
 			{
-				Lap* lap = [laps objectAtIndex:i];
+				Lap* lap = [_laps objectAtIndex:i];
 				val += [self movingDurationOfLap:lap];
 			}
 		}
@@ -2778,9 +2564,9 @@ static int sSpikeCount = 0;
 {
 	NSTimeInterval answer = 0.0;
 
-	if ([self usingDeviceLapData] || (distance <= 0.0))
+	if ([self usingDeviceLapData] || (_distance <= 0.0))
 	{
-        if (FLAG_IS_SET(flags, kHasDeviceTime))
+        if (FLAG_IS_SET(_flags, kHasDeviceTime))
         {
             answer = [lap deviceTotalTime];
         }
@@ -2879,13 +2665,13 @@ static int sSpikeCount = 0;
 
 - (void)calcTimeInNonHRZones:(int)type startIdx:(int)sidx endIdx:(int)eidx
 {
-	if ((nhrzCacheStart[type] != sidx) || (nhrzCacheEnd[type] != eidx))
+	if ((_nhrzCacheStart[type] != sidx) || (_nhrzCacheEnd[type] != eidx))
 	{
 		for (int zn = 0; zn<kNumNonHRZones; zn++)
 		{
-			cachedNonHRZoneTime[type][zn] = 0.0;
+			_cachedNonHRZoneTime[type][zn] = 0.0;
 		}
-		nhrzCacheStart[type] = sidx; nhrzCacheEnd[type] = eidx;
+		_nhrzCacheStart[type] = sidx; _nhrzCacheEnd[type] = eidx;
 		NSArray* pts = [self goodPoints];
 		float min[kNumNonHRZones];
 		NSString* key;
@@ -2954,14 +2740,15 @@ static int sSpikeCount = 0;
 						((type != kPaceDefaults) && (v >= min[zn])))
 					{
 						//cachedNonHRZoneTime[type][zn] += [[nextPt activeTime] timeIntervalSinceDate:[pt activeTime]];
-						cachedNonHRZoneTime[type][zn] += [nextPt activeTimeDelta] - [pt activeTimeDelta];
+						_cachedNonHRZoneTime[type][zn] += [nextPt activeTimeDelta] - [pt activeTimeDelta];
 						break;
 					}
 				}
 			}
 			for (int zn = 0; zn<kNumNonHRZones; zn++)
 			{
-				if (cachedNonHRZoneTime[type][zn] < 0.0) cachedNonHRZoneTime[type][zn] = 0.0;
+				if (_cachedNonHRZoneTime[type][zn] < 0.0)
+                    _cachedNonHRZoneTime[type][zn] = 0.0;
 			}
 		}
 	}
@@ -2970,9 +2757,9 @@ static int sSpikeCount = 0;
 
 - (void)calcTimeInHRZones:(int)sidx endIdx:(int)eidx
 {
-	if ((hrzCacheStart != sidx) || (hrzCacheEnd != eidx))
+	if ((_hrzCacheStart != sidx) || (_hrzCacheEnd != eidx))
 	{
-		hrzCacheStart = sidx; hrzCacheEnd = eidx;
+		_hrzCacheStart = sidx; _hrzCacheEnd = eidx;
 		NSArray* pts = [self goodPoints];
 		int min[kNumHRZones];
 		min[4] = [Utils intFromDefaults:RCBDefaultZone5Threshold];
@@ -2983,7 +2770,7 @@ static int sSpikeCount = 0;
 
 		for (int zn = 0; zn<kNumHRZones; zn++)
 		{
-			cachedHRZoneTime[zn] = 0.0;
+			_cachedHRZoneTime[zn] = 0.0;
 		}
 		for (int i=sidx; i<eidx; i++)
 		{
@@ -2995,14 +2782,15 @@ static int sSpikeCount = 0;
 				if (hr >= min[zn])
 				{
 					//cachedHRZoneTime[zn] += [[nextPt activeTime] timeIntervalSinceDate:[pt activeTime]];
-					cachedHRZoneTime[zn] += ([nextPt activeTimeDelta] - [pt activeTimeDelta]);
+					_cachedHRZoneTime[zn] += ([nextPt activeTimeDelta] - [pt activeTimeDelta]);
 					break;
 				}
 			}
 		}
 		for (int zn = 0; zn<kNumHRZones; zn++)
 		{
-			if (cachedHRZoneTime[zn] < 0.0) cachedHRZoneTime[zn] = 0.0;
+			if (_cachedHRZoneTime[zn] < 0.0)
+                _cachedHRZoneTime[zn] = 0.0;
 		}
 	}
 }
@@ -3012,7 +2800,7 @@ static int sSpikeCount = 0;
 {
     NSArray* pts = [self goodPoints];
    [self calcTimeInHRZones:0 endIdx:(int)[pts count]-1];
-   return cachedHRZoneTime[zone];
+   return _cachedHRZoneTime[zone];
 }
 
 
@@ -3020,7 +2808,7 @@ static int sSpikeCount = 0;
 {
 	NSArray* pts = [self goodPoints];
 	[self calcTimeInNonHRZones:type startIdx:0 endIdx:(int)[pts count]-1];
-	return cachedNonHRZoneTime[type][zone];
+	return _cachedNonHRZoneTime[type][zone];
 }
 
 
@@ -3047,29 +2835,29 @@ static int sSpikeCount = 0;
 - (NSTimeInterval)timeInHRZoneForInterval:(int)zone start:(int)sidx end:(int)eidx;
 {
 	[self calcTimeInHRZones:sidx endIdx:eidx];
-	return cachedHRZoneTime[zone];
+	return _cachedHRZoneTime[zone];
 }
 
 
 - (NSTimeInterval)timeInNonHRZoneForInterval:(int)type zone:(int)zone start:(int)sidx end:(int)eidx
 {
 	[self calcTimeInNonHRZones:type startIdx:sidx endIdx:eidx];
-	return cachedNonHRZoneTime[type][zone];
+	return _cachedNonHRZoneTime[type][zone];
 }
 
 - (NSTimeInterval)timeLapInHRZone:(int)zone lap:(Lap*)lap
 {
 	float ret = 0.0;
-	int num = (int)[lapInfoArray count];
+	int num = (int)[_lapInfoArray count];
 	int i;
 	for (i=0; i<num; i++)
 	{
-		LapInfo* li = [lapInfoArray objectAtIndex:i];
+		LapInfo* li = [_lapInfoArray objectAtIndex:i];
 		if ([li lap] == lap)
 		{
 			int sp = [li startingPointIndex];
 			[self calcTimeInHRZones:sp endIdx:sp + [li numPoints]-1];
-			ret = cachedHRZoneTime[zone];
+			ret = _cachedHRZoneTime[zone];
 		}
 	}
 	return ret;
@@ -3078,16 +2866,16 @@ static int sSpikeCount = 0;
 - (NSTimeInterval)timeLapInNonHRZone:(int)type zone:(int)zone lap:(Lap*)lap
 {
 	float ret = 0.0;
-	int num = (int)[lapInfoArray count];
+	int num = (int)[_lapInfoArray count];
 	int i;
 	for (i=0; i<num; i++)
 	{
-		LapInfo* li = [lapInfoArray objectAtIndex:i];
+		LapInfo* li = [_lapInfoArray objectAtIndex:i];
 		if ([li lap] == lap)
 		{
 			int sp = [li startingPointIndex];
 			[self calcTimeInNonHRZones:type startIdx:sp endIdx:sp + [li numPoints]-1];
-			ret = cachedNonHRZoneTime[type][zone];
+			ret = _cachedNonHRZoneTime[type][zone];
 		}
 	}
 	return ret;
@@ -3096,19 +2884,19 @@ static int sSpikeCount = 0;
 
 
 
-- (float)weight
-{
-   //NSString* s = [self attribute:kWeight];
-   //return [s floatValue];
-   return weight;
-}
-
-
-- (void)setWeight:(float)w
-{
-   weight = w;
-}
-
+//- (float)weight
+//{
+//   //NSString* s = [self attribute:kWeight];
+//   //return [s floatValue];
+//   return weight;
+//}
+//
+//
+//- (void)setWeight:(float)w
+//{
+//   weight = w;
+//}
+//
 
 - (tLatLonBounds) getLatLonBounds
 {
@@ -3117,10 +2905,10 @@ static int sSpikeCount = 0;
 	bds.maxLat = kMinPossibleLatitude;
 	bds.minLon = kMaxPossibleLongitude;
 	bds.maxLon = kMinPossibleLongitude;
-	int num = (int)[points count];
+	int num = (int)[_points count];
 	for (int i=0; i<num; i++)
 	{
-		TrackPoint* pt = [points objectAtIndex:i];
+		TrackPoint* pt = [_points objectAtIndex:i];
 		if ([pt validLatLon])
 		{
 			float lat = [pt latitude];
@@ -3137,13 +2925,13 @@ static int sSpikeCount = 0;
 
 - (float) minLatitude
 {
-   int num = (int)[points count];
+   int num = (int)[_points count];
    int i;
    float min = kMaxPossibleLatitude;
    
    for (i=0; i<num; i++)
    {
-      TrackPoint* pt = [points objectAtIndex:i];
+      TrackPoint* pt = [_points objectAtIndex:i];
       float lat = [pt latitude];
       if ([pt validLatLon] && (lat < min)) min = lat;
    }
@@ -3153,13 +2941,13 @@ static int sSpikeCount = 0;
 
 - (float) minLongitude
 {
-   int num = (int)[points count];
+   int num = (int)[_points count];
    int i;
    float min = kMaxPossibleLongitude;
    
    for (i=0; i<num; i++)
    {
-      TrackPoint* pt = [points objectAtIndex:i];
+      TrackPoint* pt = [_points objectAtIndex:i];
       float lon = [pt longitude];
       if ([pt validLatLon] && (lon < min)) min = lon;
    }
@@ -3169,13 +2957,13 @@ static int sSpikeCount = 0;
 
 - (float) maxLatitude
 {
-   int num = (int)[points count];
+   int num = (int)[_points count];
    int i;
    float max = kMinPossibleLatitude;
    
    for (i=0; i<num; i++)
    {
-      TrackPoint* pt = [points objectAtIndex:i];
+      TrackPoint* pt = [_points objectAtIndex:i];
       float lat = [pt latitude];
       if ([pt validLatLon] && (lat > max)) max = lat;
    }
@@ -3184,13 +2972,13 @@ static int sSpikeCount = 0;
 
 - (float) maxLongitude
 {
-   int num = (int)[points count];
+   int num = (int)[_points count];
    int i;
    float max = kMinPossibleLongitude;
    
    for (i=0; i<num; i++)
    {
-      TrackPoint* pt = [points objectAtIndex:i];
+      TrackPoint* pt = [_points objectAtIndex:i];
       float lon = [pt longitude];
       if ([pt validLatLon] && (lon > max)) max = lon;
    }
@@ -3250,7 +3038,7 @@ static int sSpikeCount = 0;
 				float dist = [pt distance];
 				dist = dist * 5280.0;   // calculate in feet
 				float deltaDist = (dist - lastDist);
-				if ((deltaDist > 0.0) && (deltaDist >= minGradientDistance) && [pt validAltitude])
+				if ((deltaDist > 0.0) && (deltaDist >= _minGradientDistance) && [pt validAltitude])
 				{
 				   float gradient = ((alt-lastAlt)/deltaDist) * 100.0;    // tangent calculation
 				   lastDist = dist;
@@ -3262,7 +3050,7 @@ static int sSpikeCount = 0;
 			}
 			[pt setGradient:lastGradient];
 		}
-		if (hasElevationData) SET_FLAG(flags, kHasElevationData);
+		if (hasElevationData) SET_FLAG(_flags, kHasElevationData);
 		
 	}
 }
@@ -3387,7 +3175,7 @@ enum
 	NSArray* pts = [self points];
 	
     int numPoints = (int)[pts count];
-    int numGoodPoints = (int)[goodPoints count];
+    int numGoodPoints = (int)[_goodPoints count];
 	if (!(IS_BETWEEN(0, startingGoodIdx, numGoodPoints)) ||
 		!(IS_BETWEEN(0, endingGoodIdx, numGoodPoints))) return;		// nothing to do here;
 	
@@ -3494,11 +3282,11 @@ enum
 				if ((i >= sidx) && !haveStartedAlt) 
 				{
 				   haveStartedAlt = YES;
-				   startClimb = [pt climbSoFar];
-				   startDescent = [pt descentSoFar];
+				   startClimb = pt.climbSoFar;
+				   startDescent = pt.descentSoFar;
 				}
-				endClimb = [pt climbSoFar];
-				endDescent = [pt descentSoFar];
+				endClimb = pt.climbSoFar;
+				endDescent = pt.descentSoFar;
             
 				// check for max/min altitude
 				if ([pt validAltitude])
@@ -3512,8 +3300,8 @@ enum
 				}
 
 				// gradient
-				float gradient = [pt gradient];
-				[self storeMinMaxAvgStat:grdData 
+				float gradient = pt.gradient;
+				[self storeMinMaxAvgStat:grdData
 								   value:gradient 
 							   nextValue:(nextPointIsDeadZoneMarker ? gradient : [nxtpt gradient])
 							   deltaTime:deltaActiveTime              // uses ACTIVE time
@@ -3521,7 +3309,7 @@ enum
 							  atDistance:[pt distance]];
             
 				// heartrate
-				float hr = [pt heartrate];
+				float hr = pt.heartrate;
 				if ((hr > MIN_HR) && (dt < MAX_HR_DELTA_SECS))
 				{
 					[self storeMinMaxAvgStat:hrData 
@@ -3533,8 +3321,8 @@ enum
 				   hrTime += dt;
 				}
 				// speed
-				float speed = [pt speed];
-				[self storeMinMaxAvgStat:spdData 
+				float speed = pt.speed;
+				[self storeMinMaxAvgStat:spdData
 								   value:speed 
 							   nextValue:(nextPointIsDeadZoneMarker ? speed : [nxtpt speed])
 							   deltaTime:dt
@@ -3552,7 +3340,7 @@ enum
 				   spdTime += dt;
 				}
 				// cadence
-				float cad = [pt cadence];
+				float cad = pt.cadence;
 				if ((cad > 1.0) && (cad < 254.50))  // 255 is no value
 				{
 				   [self storeMinMaxAvgStat:cadData 
@@ -3565,7 +3353,7 @@ enum
 				   hasCadence = YES;
 				}
 				//power
-				float power = [pt power];
+				float power = pt.power;
 				if (power >= 0.0)  // neg is no value
 				{
 					[self storeMinMaxAvgStat:pwrData 
@@ -3578,8 +3366,8 @@ enum
 					hasPower = YES;
 				}
 				// temperature
-				float temperature = [pt temperature];
-				if (temperature != 0.0)  
+				float temperature = pt.temperature;
+				if (temperature != 0.0)
 				{
 					[self storeMinMaxAvgStat:temperatureData 
 									   value:temperature 
@@ -3601,8 +3389,8 @@ enum
 		 TrackPoint* pt = [pts objectAtIndex:i];
 		 if (/*[pt validAltitude]*/ ![pt isDeadZoneMarker])
 		 {
-			endClimb = [pt climbSoFar];
-			endDescent = [pt descentSoFar];
+			endClimb = pt.climbSoFar;
+			endDescent = pt.descentSoFar;
 			break;
 		 }
 		 ++i;
@@ -3637,7 +3425,7 @@ enum
 			// need to convert miles to feet
 			float dist = (edist - sdist);
 			float distInFeet = (dist*5280.0);
-			if (distInFeet >= minGradientDistance)
+			if (distInFeet >= _minGradientDistance)
 			{
 				grdData->vals[kAvg] = ((endAlt - startAlt)/(dist*5280.0)) * 100.0;
 			}
@@ -3668,12 +3456,13 @@ enum
 	}
 }
 
+
 -(float)getTotalDistanceUsingLaps
 {
 	float td = 0.0;
-	if (laps && [laps count] > 0)
+	if (_laps && [_laps count] > 0)
 	{
-		NSNumber* num = [laps valueForKeyPath:@"@sum.distance"];
+		NSNumber* num = [_laps valueForKeyPath:@"@sum.distance"];
 		td = [num floatValue];
 	}
 	return td;
@@ -3681,58 +3470,58 @@ enum
 
 - (void) calculateTrackStats
 {
-	if (statsCalculated == NO)
+	if (_statsCalculated == NO)
 	{
-		statsCalculated = YES;
+		_statsCalculated = YES;
 		if ([[self goodPoints] count] > 0)
 		{
-			[self calculateStats:statsArray startIdx:0 endIdx:(int)[[self goodPoints] count]-1];
+			[self calculateStats:_statsArray startIdx:0 endIdx:(int)[[self goodPoints] count]-1];
 			// fill in other stats not
-			struct tStatData* distData = &statsArray[kST_Distance];
-			if (distance <= 0.0)
-				distance = [self getTotalDistanceUsingLaps];
-			distData->vals[kVal] = distance;
-			// override the normal 'average' calculation for moving speed, and just 
+			struct tStatData* distData = &_statsArray[kST_Distance];
+			if (_distance <= 0.0)
+				_distance = [self getTotalDistanceUsingLaps];
+			distData->vals[kVal] = _distance;
+			// override the normal 'average' calculation for moving speed, and just
 			// divide distance by moving duration
 			// plug in calorie data, for now we get it from laps (Garmin calculation) @@FIXME@@
-			//struct tStatData* calData = &statsArray[kST_Calories];
-			//NSNumber* num = [laps valueForKeyPath:@"@sum.calories"];
+			//struct tStatData* calData = &_statsArray[kST_Calories];
+			//NSNumber* num = [_laps valueForKeyPath:@"@sum.calories"];
 			//calData->vals[kVal] = [num floatValue];
 		}
 		else
 		{
 			// no points; fill in what we can from laps, if they exists
-			if (laps && [laps count] > 0)
+			if (_laps && [_laps count] > 0)
 			{
 				float totalDistance = [self getTotalDistanceUsingLaps];
-				statsArray[kST_Distance].vals[kVal] = totalDistance;
-				statsArray[kST_Heartrate].vals[kMax] = [[laps valueForKeyPath:@"@max.maxHeartRate"] floatValue];
-				statsArray[kST_Heartrate].vals[kAvg] = [[laps valueForKeyPath:@"@avg.averageHeartRate"] floatValue];	// @@FIMXE@@ (incorporate time)
-				statsArray[kST_Cadence].vals[kAvg] = [[laps valueForKeyPath:@"@avg.averageCadence"] floatValue];	// @@FIMXE@@ (incorporate time)
-				statsArray[kST_Speed].vals[kMax] = statsArray[kST_MovingSpeed].vals[kMax] = [[laps valueForKeyPath:@"@max.maxSpeed"] floatValue];	
-				statsArray[kST_Calories].vals[kVal] = [[laps valueForKeyPath:@"@sum.calories"] floatValue];
-				float totalTime = [[laps  valueForKeyPath:@"@sum.totalTime"] floatValue];
-				statsArray[kST_Durations].vals[kElapsed] = statsArray[kST_Durations].vals[kMoving] = totalTime;
+				_statsArray[kST_Distance].vals[kVal] = totalDistance;
+				_statsArray[kST_Heartrate].vals[kMax] = [[_laps valueForKeyPath:@"@max.maxHeartRate"] floatValue];
+				_statsArray[kST_Heartrate].vals[kAvg] = [[_laps valueForKeyPath:@"@avg.averageHeartRate"] floatValue];	// @@FIMXE@@ (incorporate time)
+				_statsArray[kST_Cadence].vals[kAvg] = [[_laps valueForKeyPath:@"@avg.averageCadence"] floatValue];	// @@FIMXE@@ (incorporate time)
+				_statsArray[kST_Speed].vals[kMax] = _statsArray[kST_MovingSpeed].vals[kMax] = [[_laps valueForKeyPath:@"@max.maxSpeed"] floatValue];	
+				_statsArray[kST_Calories].vals[kVal] = [[_laps valueForKeyPath:@"@sum.calories"] floatValue];
+				float totalTime = [[_laps  valueForKeyPath:@"@sum.totalTime"] floatValue];
+				_statsArray[kST_Durations].vals[kElapsed] = _statsArray[kST_Durations].vals[kMoving] = totalTime;
 				if (totalTime > 0.0)
 				{
-					statsArray[kST_Speed].vals[kAvg] = statsArray[kST_MovingSpeed].vals[kAvg] = totalDistance/totalTime;
+					_statsArray[kST_Speed].vals[kAvg] = _statsArray[kST_MovingSpeed].vals[kAvg] = totalDistance/totalTime;
 				}
 			}
             else
             {
                 // no points data yet, use anything stored in track
                 float totalDistance = [self distance];
-                statsArray[kST_Distance].vals[kVal] = totalDistance;
-                statsArray[kST_Heartrate].vals[kMax] = [self maxHeartrate:nil];
-                statsArray[kST_Heartrate].vals[kAvg] = [self avgHeartrate];
-                statsArray[kST_Cadence].vals[kAvg] = [self avgCadence];
-                statsArray[kST_Power].vals[kAvg] = [self avgPower];
-                statsArray[kST_Power].vals[kMax] = [self maxPower:nil];
-                statsArray[kST_Speed].vals[kMax] = [self avgSpeed];
-                statsArray[kST_MovingSpeed].vals[kMax] = [self maxSpeed:nil];
-                ///statsArray[kST_Calories].vals[kVal] = [[laps valueForKeyPath:@"@sum.calories"] floatValue];
-                statsArray[kST_Durations].vals[kElapsed] = [self duration];
-                statsArray[kST_Durations].vals[kMoving] = [self movingDuration];
+                _statsArray[kST_Distance].vals[kVal] = totalDistance;
+                _statsArray[kST_Heartrate].vals[kMax] = [self maxHeartrate:nil];
+                _statsArray[kST_Heartrate].vals[kAvg] = [self avgHeartrate];
+                _statsArray[kST_Cadence].vals[kAvg] = [self avgCadence];
+                _statsArray[kST_Power].vals[kAvg] = [self avgPower];
+                _statsArray[kST_Power].vals[kMax] = [self maxPower:nil];
+                _statsArray[kST_Speed].vals[kMax] = [self avgSpeed];
+                _statsArray[kST_MovingSpeed].vals[kMax] = [self maxSpeed:nil];
+                ///_statsArray[kST_Calories].vals[kVal] = [[_laps valueForKeyPath:@"@sum.calories"] floatValue];
+                _statsArray[kST_Durations].vals[kElapsed] = [self duration];
+                _statsArray[kST_Durations].vals[kMoving] = [self movingDuration];
             }
 		}
 	}
@@ -3741,12 +3530,12 @@ enum
 
 - (void)invalidateStats
 {
-   hrzCacheStart = hrzCacheEnd = -42;
+   _hrzCacheStart = _hrzCacheEnd = -42;
    for (int i=0; i <= kMaxZoneType; i++)
    {
-      nhrzCacheStart[i] = nhrzCacheEnd[i] = -42;
+      _nhrzCacheStart[i] = _nhrzCacheEnd[i] = -42;
    }
-   statsCalculated = NO;
+   _statsCalculated = NO;
    [self invalidateAllLapStats];
 }
 
@@ -3754,24 +3543,24 @@ enum
 - (struct tStatData*) getStat:(int)type
 {
 	[self calculateTrackStats];
-	return &statsArray[type];
+	return &_statsArray[type];
 }
 
 
 - (float)stat:(tStatType)stat index:(int)idx atActiveTimeDelta:(NSTimeInterval*)atTime 
 {
 	float val;
-	if ([overrideData isOverridden:stat])
+	if ([_overrideData isOverridden:stat])
 	{
-		val = [overrideData value:stat index:idx];
+		val = [_overrideData value:stat index:idx];
 	}
 	else
 	{
 		[self calculateTrackStats];
-		val = statsArray[stat].vals[idx];
+		val = _statsArray[stat].vals[idx];
 		if ((nil != atTime) && (idx <= kMin))
 		{
-			*atTime = statsArray[stat].atActiveTimeDelta[idx];
+			*atTime = _statsArray[stat].atActiveTimeDelta[idx];
 		}
 	}
 	return val;
@@ -3781,9 +3570,9 @@ enum
 -(float)statOrOverride:(tStatType)stype index:(int)idx atActiveTimeDelta:(NSTimeInterval*)atTime
 {
 	float val;
-	if ([overrideData isOverridden:stype])
+	if ([_overrideData isOverridden:stype])
 	{
-		val = [overrideData value:stype 
+		val = [_overrideData value:stype 
 							index:idx];
 		///if (atTime) *atTime = nil;
 	}
@@ -3800,18 +3589,18 @@ enum
 - (float)distance
 {
 	float val = 0.0;
-    NSUInteger numLaps = laps ? [laps count] : 0;
-	if ([self usingDeviceLapData] && (numLaps > 0) && (![overrideData isOverridden:kST_Distance]))
+    NSUInteger numLaps = _laps ? [_laps count] : 0;
+	if ([self usingDeviceLapData] && (numLaps > 0) && (![_overrideData isOverridden:kST_Distance]))
 	{
 		for (int i=0; i<numLaps; i++)
 		{
-			Lap* lap = [laps objectAtIndex:i];
+			Lap* lap = [_laps objectAtIndex:i];
 			val += [self distanceOfLap:lap];
 		}
 	}
-	else if ([points count] == 0)
+	else if ([_points count] == 0)
     {
-        return distance;
+        return _distance;
     }
     else
 	{
@@ -3826,12 +3615,12 @@ enum
 - (float)maxSpeed
 {
 	float val = 0.0;
-    NSUInteger numLaps = laps ? [laps count] : 0;
-	if ([self usingDeviceLapData] && (numLaps > 0) && (![overrideData isOverridden:kST_Distance]))
+    NSUInteger numLaps = _laps ? [_laps count] : 0;
+	if ([self usingDeviceLapData] && (numLaps > 0) && (![_overrideData isOverridden:kST_Distance]))
 	{
 		for (int i=0; i<numLaps; i++)
 		{
-			Lap* lap = [laps objectAtIndex:i];
+			Lap* lap = [_laps objectAtIndex:i];
 			float ms = [lap maxSpeed];
 			if (ms > val) val = ms;
 		}
@@ -3848,9 +3637,9 @@ enum
 
 - (float)maxSpeed:(NSTimeInterval*)atTime
 {
-    if (points.count == 0)
+    if (_points.count == 0)
     {
-        return srcMaxSpeed;
+        return _srcMaxSpeed;
     }
 	return [self statOrOverride:kST_MovingSpeed
 						  index:kMax
@@ -3860,9 +3649,9 @@ enum
 
 - (float)avgSpeed
 {
-    if (points.count == 0)
+    if (_points.count == 0)
     {
-        return srcElapsedTime ? srcDistance/(srcElapsedTime/3600.0) : 0.0;
+        return _srcElapsedTime ? _srcDistance/(_srcElapsedTime/3600.0) : 0.0;
     }
    NSTimeInterval dur = [self duration];
    if (dur != 0.0)
@@ -3876,14 +3665,14 @@ enum
 
 - (float)avgMovingSpeed
 {
-    if (points.count == 0)
+    if (_points.count == 0)
     {
-        return srcMovingTime ? srcDistance/(srcMovingTime/3600.0) : 0.0;
+        return _srcMovingTime ? _srcDistance/(_srcMovingTime/3600.0) : 0.0;
     }
 	float val;
-	if ([overrideData isOverridden:kST_MovingSpeed])
+	if ([_overrideData isOverridden:kST_MovingSpeed])
 	{
-		val = [overrideData value:kST_MovingSpeed 
+		val = [_overrideData value:kST_MovingSpeed 
 							index:kAvg];
 	}
 	else
@@ -3947,12 +3736,12 @@ enum
 - (float)calories
 {
 	float answer = 0.0;
-	int numLaps = laps ? (int)[laps count] : 0;
-	if ([self usingDeviceLapData] && (numLaps > 0) && (![overrideData isOverridden:kST_Distance]))
+	int numLaps = _laps ? (int)[_laps count] : 0;
+	if ([self usingDeviceLapData] && (numLaps > 0) && (![_overrideData isOverridden:kST_Distance]))
 	{
 		for (int i=0; i<numLaps; i++)
 		{
-			Lap* lap = [laps objectAtIndex:i];
+			Lap* lap = [_laps objectAtIndex:i];
 			answer += [self caloriesForLap:lap];
 		}
 	}
@@ -3969,9 +3758,9 @@ enum
 
 - (float)maxAltitude:(NSTimeInterval*)atTime
 {
-    if (points.count ==0)
+    if (_points.count ==0)
     {
-        return srcMaxElevation;
+        return _srcMaxElevation;
     }
 	return [self statOrOverride:kST_Altitude
 						  index:kMax
@@ -3981,9 +3770,9 @@ enum
 
 - (float)minAltitude:(NSTimeInterval*)atTime
 {
-    if (points.count ==0)
+    if (_points.count ==0)
     {
-        return srcMinElevation;
+        return _srcMinElevation;
     }
 	return [self statOrOverride:kST_Altitude
 						  index:kMin
@@ -4000,19 +3789,19 @@ enum
 
 - (float)maxHeartrate:(NSTimeInterval*)atTime
 {
-    if (points.count == 0)
+    if (_points.count == 0)
     {
-        return srcMaxHeartrate;
+        return _srcMaxHeartrate;
     }
     
 	float val = 0.0;
-	int numLaps = laps ? (int)[laps count] : 0;
-	BOOL useLapData = ([self usingDeviceLapData] && (numLaps > 0) && (![overrideData isOverridden:kST_Heartrate]));
+	int numLaps = _laps ? (int)[_laps count] : 0;
+	BOOL useLapData = ([self usingDeviceLapData] && (numLaps > 0) && (![_overrideData isOverridden:kST_Heartrate]));
 	if (useLapData)
 	{
 		for (int i=0; i<numLaps; i++)
 		{
-			Lap* lap = [laps objectAtIndex:i];
+			Lap* lap = [_laps objectAtIndex:i];
 			float max = [lap maxHeartRate];
 			if (max > val) val = max;
 		}
@@ -4037,9 +3826,9 @@ enum
 
 - (float)avgHeartrate
 {
-    if (points.count == 0)
+    if (_points.count == 0)
     {
-        return srcAvgHeartrate;
+        return _srcAvgHeartrate;
     }
 
     return [self statOrOverride:kST_Heartrate
@@ -4092,9 +3881,9 @@ enum
 
 - (float)avgTemperature
 {
-    if (points.count == 0)
+    if (_points.count == 0)
     {
-        return srcAvgTemperature;
+        return _srcAvgTemperature;
     }
 	return [self statOrOverride:kST_Temperature
 						  index:kAvg
@@ -4112,9 +3901,9 @@ enum
 
 - (float)avgCadence
 {
-    if (points.count == 0)
+    if (_points.count == 0)
     {
-        return srcAvgCadence;
+        return _srcAvgCadence;
     }
 	return [self statOrOverride:kST_Cadence
 						  index:kAvg
@@ -4126,18 +3915,18 @@ enum
 {
 	if (en)
 	{
-		CLEAR_FLAG(flags, kDontCalculatePower);
+		CLEAR_FLAG(_flags, kDontCalculatePower);
 	}
 	else
 	{
-		SET_FLAG(flags, kDontCalculatePower);
+		SET_FLAG(_flags, kDontCalculatePower);
 	}
 }
 
 
 -(BOOL)calculationOfPowerEnabled
 {
-	return FLAG_IS_SET(flags, kDontCalculatePower);
+	return FLAG_IS_SET(_flags, kDontCalculatePower);
 }
 
 -(BOOL)activityIsValidForPowerCalculation
@@ -4158,7 +3947,7 @@ enum
 		float gravConst = 9.8;
 		float rollingResistance = 0.0053;
 		float drag = 0.185;
-		float bikeWeight = PoundsToKilograms(equipmentWeight);
+		float bikeWeight = PoundsToKilograms(_equipmentWeight);
 #if ASCENT_DBG
 		///printf("equipment weight for power calculations: %0.1f kg\n", bikeWeight); 
 #endif
@@ -4180,13 +3969,13 @@ enum
 			}
 			[pt setCalculatedPower:p];
 		}
-		SET_FLAG(flags, kPowerDataCalculatedOrZeroed);
-		if (!calcPower && peakIntervalData) 
+		SET_FLAG(_flags, kPowerDataCalculatedOrZeroed);
+		if (!calcPower && _peakIntervalData) 
 		{
-			free(peakIntervalData);
-			peakIntervalData = 0;
+			free(_peakIntervalData);
+			_peakIntervalData = 0;
 		}
-		statsCalculated = NO;
+		_statsCalculated = NO;
 		[self calculateTrackStats];
 	}
 }
@@ -4194,32 +3983,32 @@ enum
 
 -(void)setEquipmentWeight:(float)iw
 {
-	equipmentWeight = iw;
-	CLEAR_FLAG(flags, kPowerDataCalculatedOrZeroed);
+	_equipmentWeight = iw;
+	CLEAR_FLAG(_flags, kPowerDataCalculatedOrZeroed);
 }
 
 -(void)setStaleEquipmentAttr:(BOOL)v
 {
 	if (v)
 	{
-		SET_FLAG(flags, kEquipmentAttrStale);
+		SET_FLAG(_flags, kEquipmentAttrStale);
 	}
 	else
 	{
-		CLEAR_FLAG(flags, kEquipmentAttrStale);
+		CLEAR_FLAG(_flags, kEquipmentAttrStale);
 	}
 }
 
 
 -(BOOL)staleEquipmentAttr
 {
-	return FLAG_IS_SET(flags, kEquipmentAttrStale);
+	return FLAG_IS_SET(_flags, kEquipmentAttrStale);
 }
 
 
 -(void)checkPowerData
 {
-	if (![self hasDevicePower] && (!FLAG_IS_SET(flags, kPowerDataCalculatedOrZeroed)))
+	if (![self hasDevicePower] && (!FLAG_IS_SET(_flags, kPowerDataCalculatedOrZeroed)))
 	{
 		[self calculatePower];
 	}
@@ -4227,9 +4016,9 @@ enum
 
 - (float)maxPower:(NSTimeInterval*)atTime
 {
-    if (points.count == 0)
+    if (_points.count == 0)
     {
-        return srcMaxPower;
+        return _srcMaxPower;
     }
 	[self checkPowerData];
 	return [self statOrOverride:kST_Power
@@ -4240,9 +4029,9 @@ enum
 
 - (float)avgPower
 {
-    if (points.count == 0)
+    if (_points.count == 0)
     {
-        return srcAvgPower;
+        return _srcAvgPower;
     }
 	[self checkPowerData];
 	return [self statOrOverride:kST_Power
@@ -4254,14 +4043,14 @@ enum
 
 - (float)work
 {
-    if (points.count == 0)
+    if (_points.count == 0)
     {
-        return srcKilojoules;
+        return _srcKilojoules;
     }
 	float val = 0.0;
-	if ([overrideData isOverridden:kST_Power])
+	if ([_overrideData isOverridden:kST_Power])
 	{
-		val = [overrideData value:kST_Power 
+		val = [_overrideData value:kST_Power 
 							index:kWork];
 	}
 	else
@@ -4274,9 +4063,9 @@ enum
 
 - (float)totalClimb
 {
-    if (points.count == 0)
+    if (_points.count == 0)
     {
-        return srcTotalClimb;
+        return _srcTotalClimb;
     }
     return [self statOrOverride:kST_ClimbDescent
                                 index:kMax
@@ -4450,24 +4239,24 @@ enum
 {
 	if (yn) 
 	{
-		SET_FLAG(flags, kUseOrigDistance);
+		SET_FLAG(_flags, kUseOrigDistance);
 	}
 	else
 	{
-		CLEAR_FLAG(flags, kUseOrigDistance);
+		CLEAR_FLAG(_flags, kUseOrigDistance);
 	}
 }
 
 
 - (BOOL) useOrigDistance
 {
-	return FLAG_IS_SET(flags, kUseOrigDistance);
+	return FLAG_IS_SET(_flags, kUseOrigDistance);
 }
 
 
 -(BOOL)usingDeviceLapData
 {
-	return FLAG_IS_SET(flags, kUseDeviceLapData);
+	return FLAG_IS_SET(_flags, kUseDeviceLapData);
 }
 
 
@@ -4475,11 +4264,11 @@ enum
 {
 	if (use) 
 	{
-		SET_FLAG(flags, kUseDeviceLapData);
+		SET_FLAG(_flags, kUseDeviceLapData);
 	}
 	else
 	{
-		CLEAR_FLAG(flags, kUseDeviceLapData);
+		CLEAR_FLAG(_flags, kUseDeviceLapData);
 	}
 }
 
@@ -4488,11 +4277,11 @@ enum
 {
 	if (has) 
 	{
-		SET_FLAG(flags, kHasDeviceTime);
+		SET_FLAG(_flags, kHasDeviceTime);
 	}
 	else
 	{
-		CLEAR_FLAG(flags, kHasDeviceTime);
+		CLEAR_FLAG(_flags, kHasDeviceTime);
 	}
 }
 
@@ -4501,24 +4290,24 @@ enum
 {
 	if (has)
 	{
-		SET_FLAG(flags, kHasCadenceData);
+		SET_FLAG(_flags, kHasCadenceData);
 	}
 	else
 	{
-		CLEAR_FLAG(flags, kHasCadenceData);
+		CLEAR_FLAG(_flags, kHasCadenceData);
 	}
 }
 
 
 -(BOOL)hasCadence
 {
-	return FLAG_IS_SET(flags, kHasCadenceData);
+	return FLAG_IS_SET(_flags, kHasCadenceData);
 }
 
 
 -(BOOL)hasExplicitDeadZones
 {
-    return FLAG_IS_SET(flags, kHasExplicitDeadZones);
+    return FLAG_IS_SET(_flags, kHasExplicitDeadZones);
 }
 
 
@@ -4526,11 +4315,11 @@ enum
 {
     if (has)
     {
-        SET_FLAG(flags, kHasExplicitDeadZones);
+        SET_FLAG(_flags, kHasExplicitDeadZones);
     }
     else
     {
-        CLEAR_FLAG(flags, kHasExplicitDeadZones);
+        CLEAR_FLAG(_flags, kHasExplicitDeadZones);
     }
 }
 
@@ -4542,30 +4331,30 @@ enum
 {
 	if (has)
 	{
-		SET_FLAG(flags, kHasDevicePowerData);
+		SET_FLAG(_flags, kHasDevicePowerData);
 	}
 	else
 	{
-		CLEAR_FLAG(flags, kHasDevicePowerData);
+		CLEAR_FLAG(_flags, kHasDevicePowerData);
 	}
 }
 
 
 -(BOOL)hasDevicePower
 {
-	return FLAG_IS_SET(flags, kHasDevicePowerData);
+	return FLAG_IS_SET(_flags, kHasDevicePowerData);
 }
 
 
 -(BOOL)hasElevationData
 {
-	return FLAG_IS_SET(flags, kHasElevationData);
+	return FLAG_IS_SET(_flags, kHasElevationData);
 }
 
 
 -(BOOL)hasLocationData
 {
-	return FLAG_IS_SET(flags, kHasLocationData);
+	return FLAG_IS_SET(_flags, kHasLocationData);
 }
 
 
@@ -4587,7 +4376,7 @@ struct tInterpData
 	
 	int limit = (int)[self movingDuration];
 	tInterpData* data = (tInterpData*)malloc(sizeof(tInterpData)*(limit + 1));
-	NSEnumerator* enumer = [goodPoints objectEnumerator];
+	NSEnumerator* enumer = [_goodPoints objectEnumerator];
 	TrackPoint* pt = [gpts objectAtIndex:0];
 	float currentTime = [pt activeTimeDelta];
 	tAccessor ysel = (tAccessor)[TrackPoint instanceMethodForSelector:ptSel];
@@ -4624,14 +4413,14 @@ struct tInterpData
 -(tPeakIntervalData*) getPID:(tPeakDataType)ty intervalIndex:(int)pi
 {
 	int np = [Utils numPeakIntervals];
-	tPeakIntervalData* pid = (tPeakIntervalData*)&peakIntervalData[(ty * np) + pi];
+	tPeakIntervalData* pid = (tPeakIntervalData*)&_peakIntervalData[(ty * np) + pi];
 	return pid;
 }
 
 
 -(void)setPeakForIntervalType:(tPeakDataType)ty intervalIndex:(int)pi value:(float)v atActiveTime:(NSTimeInterval)at
 {
-	tPeakIntervalData* pid = [self getPID:ty
+    tPeakIntervalData* pid = [self getPID:ty
 							intervalIndex:pi];
 	pid->value = v;
 	pid->activeTime = at;
@@ -4641,7 +4430,7 @@ struct tInterpData
 -(float)peakForIntervalType:(tPeakDataType)ty intervalIndex:(int)pi peakStartTime:(NSTimeInterval*)pst startingGoodPointIndex:(int*)sgpi
 {
 	[self calcPeaks];
-	tPeakIntervalData* pid = [self getPID:ty
+    tPeakIntervalData* pid = [self getPID:ty
 							intervalIndex:pi];
 	if (pst) *pst = pid->activeTime;
 	if (sgpi)*sgpi = pid->startingGoodPointIndex;
@@ -4651,7 +4440,7 @@ struct tInterpData
 
 -(void)updatePeakForInterval:(tPeakDataType)ty intervalIndex:(int)pi value:(float)v atActiveTime:(NSTimeInterval)at startingGoodPoint:(int)gpidx
 {
-	tPeakIntervalData* pid = [self getPID:ty
+    tPeakIntervalData* pid = [self getPID:ty
 							intervalIndex:pi];
 	if (pid->value < v)
 	{
@@ -4694,16 +4483,16 @@ struct tInterpData
 
 -(void)calcPeaks
 {
-	if (!peakIntervalData)
+	if (!_peakIntervalData)
 	{
 		int numIntervals = [Utils numPeakIntervals];
 		int numPeakDataTypes = [Utils numPeakDataTypes];
-		peakIntervalData = (tPeakIntervalData*)calloc(numIntervals * numPeakDataTypes, sizeof(tPeakIntervalData));
-		if (peakIntervalData)
+		_peakIntervalData = (tPeakIntervalData*)calloc(numIntervals * numPeakDataTypes, sizeof(tPeakIntervalData));
+		if (_peakIntervalData)
 		{
 			for (int dt=0; dt<numPeakDataTypes; dt++)
 			{
-				if ((dt == kPDT_Power) && ([self hasDevicePower] || (FLAG_IS_SET(flags, kPowerDataCalculatedOrZeroed)))) 
+				if ((dt == kPDT_Power) && ([self hasDevicePower] || (FLAG_IS_SET(_flags, kPowerDataCalculatedOrZeroed)))) 
 					[self calcPeaksForType:kPDT_Power
 								   dataSel:@selector(power)];
 			}
@@ -4826,7 +4615,7 @@ static tAttribute sAttributesInCSVHeader[] =
 
 -(BOOL)uploadToMobile
 {
-	return FLAG_IS_SET(flags, kUploadToMobile);
+	return FLAG_IS_SET(_flags, kUploadToMobile);
 }
 
 
@@ -4834,11 +4623,11 @@ static tAttribute sAttributesInCSVHeader[] =
 {
 	if (up)
 	{
-		SET_FLAG(flags, kUploadToMobile);
+		SET_FLAG(_flags, kUploadToMobile);
 	}
 	else
 	{
-		CLEAR_FLAG(flags, kUploadToMobile);
+		CLEAR_FLAG(_flags, kUploadToMobile);
 	}
 }
 
@@ -4849,7 +4638,7 @@ static tAttribute sAttributesInCSVHeader[] =
 
 - (void) setOverrideValue:(tStatType)stat index:(int)idx value:(float)v
 {
-	[overrideData setValue:stat
+	[_overrideData setValue:stat
 					 index:idx
 					 value:v];
 }
@@ -4857,53 +4646,53 @@ static tAttribute sAttributesInCSVHeader[] =
 
 - (float) overrideValue:(tStatType)stat index:(int)idx
 {
-    return [overrideData value:stat index:idx];
+    return [_overrideData value:stat index:idx];
 }
 
 
 - (void) clearOverride:(tStatType)stat
 {
-	return [overrideData clearOverride:stat];
+	return [_overrideData clearOverride:stat];
 }
 
 
 - (BOOL) isOverridden:(tStatType)stat
 {
-	return [overrideData isOverridden:stat];
+	return [_overrideData isOverridden:stat];
 }
 
-- (OverrideData*) overrideData
-{
-    return overrideData;
-}
-
+//- (OverrideData*) overrideData
+//{
+//    return overrideData;
+//}
+//
 
 //--------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------
 //----- Animation control --------------------------------
 
-- (void) setAnimTime:(NSTimeInterval)at
-{
-   animTime = at;
-}
-
-
-- (NSTimeInterval) animTime
-{
-   return animTime;
-}
-
-- (void) setAnimIndex:(int)idx
-{
-   animIndex = idx;
-}
-
-
-- (int) animIndex
-{
-   return animIndex;
-}
+//- (void) setAnimTime:(NSTimeInterval)at
+//{
+//   animTime = at;
+//}
+//
+//
+//- (NSTimeInterval) animTime
+//{
+//   return animTime;
+//}
+//
+//- (void) setAnimIndex:(int)idx
+//{
+//   animIndex = idx;
+//}
+//
+//
+//- (int) animIndex
+//{
+//   return animIndex;
+//}
 
 
 @end

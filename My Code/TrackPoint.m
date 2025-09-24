@@ -26,25 +26,8 @@ enum {
 // Manage legacy decode base time for old archives (v1–v3)
 static NSDate *sStartTime = nil;
 
+
 @implementation TrackPoint
-
-//@synthesize seq = _seq;
-
-@synthesize wallClockDelta = _wallClockDelta;
-@synthesize activeTimeDelta = _activeTimeDelta;
-@synthesize latitude = _latitude;
-@synthesize longitude = _longitude;
-@synthesize origAltitude = _origAltitude;
-@synthesize altitude = _altitude;
-@synthesize heartrate = _heartrate;
-@synthesize cadence = _cadence;
-@synthesize temperature = _temperature;
-@synthesize speed = _speed;
-@synthesize power = _power;
-@synthesize origDistance = _origDistance;
-@synthesize distance = _distance;
-@synthesize gradient = _gradient;
-@synthesize flags = _flags;
 
 + (BOOL)supportsSecureCoding { return YES; }
 
@@ -68,12 +51,13 @@ static NSDate *sStartTime = nil;
         _distance        = BAD_DISTANCE;
         _gradient        = 0;
         _flags           = 0;
-        validLatLon      = NO;
-        climbSoFar       = 0.0f;
-        descentSoFar     = 0.0f;
+        _validLatLon      = NO;
+        _climbSoFar       = 0.0f;
+        _descentSoFar     = 0.0f;
     }
     return self;
 }
+
 
 - (id)initWithGPSData:(NSTimeInterval)wcd
            activeTime:(NSTimeInterval)atd
@@ -93,7 +77,7 @@ static NSDate *sStartTime = nil;
     _activeTimeDelta  = atd;
     _latitude         = lat;
     _longitude        = lon;
-    validLatLon       = [Utils validateLatitude:lat longitude:lon];
+    _validLatLon       = [Utils validateLatitude:lat longitude:lon];
     _heartrate        = (float)hr;
     _origAltitude = _altitude = alt;
     _power            = 0.0f;
@@ -126,11 +110,13 @@ static NSDate *sStartTime = nil;
     return self;
 }
 
+
 - (void)dealloc
 {
     // No object ivars to release; primitives only.
     [super dealloc];
 }
+
 
 - (id)mutableCopyWithZone:(NSZone *)zone
 {
@@ -148,19 +134,21 @@ static NSDate *sStartTime = nil;
     [newPoint setDistance:self.distance];
     [newPoint setGradient:self.gradient];
     [newPoint setOrigDistance:self.origDistance];
-    [newPoint setValidLatLon:validLatLon];
-    [newPoint setClimbSoFar:climbSoFar];
-    [newPoint setDescentSoFar:descentSoFar];
+    [newPoint setValidLatLon:self.validLatLon];
+    [newPoint setClimbSoFar:self.climbSoFar];
+    [newPoint setDescentSoFar:self.descentSoFar];
     [newPoint setPower:self.power];
     newPoint.flags = self.flags;
-   /// newPoint.seq   = self.seq;
+
     return newPoint; // MRC: returned retained
 }
 
 // old school, hackish way of marking dead zones use methods below
 - (BOOL)isDeadZoneMarker
 {
-    return (self.origDistance == BAD_DISTANCE) && (self.latitude == BAD_LATLON) && (self.longitude == BAD_LATLON);
+    return (self.origDistance == BAD_DISTANCE) &&
+        (self.latitude == BAD_LATLON) &&
+        (self.longitude == BAD_LATLON);
 }
 
 - (BOOL)beginningOfDeadZone
@@ -276,9 +264,11 @@ static NSDate *sStartTime = nil;
 
     [coder decodeValueOfObjCType:@encode(int) at:&ival];    // spare
 
-    validLatLon = [Utils validateLatitude:self.latitude longitude:self.longitude];
+    _validLatLon = [Utils validateLatitude:self.latitude
+                                 longitude:self.longitude];
     return self;
 }
+
 
 - (void)encodeWithCoder:(NSCoder *)coder
 {
@@ -332,104 +322,143 @@ static NSDate *sStartTime = nil;
 {
     TrackPoint *p = [[TrackPoint allocWithZone:zone] init];
 
-    ///p->_seq            = _seq;
+    p.wallClockDelta  = _wallClockDelta;
+    p.activeTimeDelta = _activeTimeDelta;
 
-    p->_wallClockDelta  = _wallClockDelta;
-    p->_activeTimeDelta = _activeTimeDelta;
+    p.latitude     = _latitude;
+    p.longitude    = _longitude;
+    p.altitude     = _altitude;
+    p.origAltitude = _origAltitude;
 
-    p->_latitude     = _latitude;
-    p->_longitude    = _longitude;
-    p->_altitude     = _altitude;
-    p->_origAltitude = _origAltitude;
+    p.heartrate    = _heartrate;
+    p.cadence      = _cadence;
+    p.temperature  = _temperature;
+    p.speed        = _speed;
+    p.power        = _power;
 
-    p->_heartrate    = _heartrate;
-    p->_cadence      = _cadence;
-    p->_temperature  = _temperature;
-    p->_speed        = _speed;
-    p->_power        = _power;
+    p.distance     = _distance;
+    p.origDistance = _origDistance;
+    p.gradient     = _gradient;
 
-    p->_distance     = _distance;
-    p->_origDistance = _origDistance;
-    p->_gradient     = _gradient;
+    p.flags        = _flags;
 
-    p->_flags        = _flags;
-
-    p->validLatLon   = validLatLon;
-    p->climbSoFar    = climbSoFar;
-    p->descentSoFar  = descentSoFar;
+    p.validLatLon   = _validLatLon;
+    p.climbSoFar    = _climbSoFar;
+    p.descentSoFar  = _descentSoFar;
 
     return p; // retained (MRC)
 }
 
-- (void)setValidLatLon:(BOOL)v { validLatLon = v; }
-- (BOOL)validLatLon { return validLatLon; }
 
-- (BOOL)validAltitude {
+- (BOOL)validAltitude
+{
     // if altitude is *exactly* 0.0 assume it is a bad value. BAD_ALTITUDE values may have
     // been overridden at the beginning of activities due to a bug in 1.8.x, but they will always be 0.
     return (self.origAltitude != 0.0) && (VALID_ALTITUDE(self.origAltitude));
 }
 
-- (BOOL)validDistance { return VALID_DISTANCE(self.distance); }
-- (BOOL)validOrigDistance { return VALID_DISTANCE(_origDistance); }
-- (BOOL)validHeartrate { return _heartrate > 0; }
 
-- (float)latitude { return _latitude; }
-- (void)setLatitude:(float)l { _latitude = l; validLatLon = [Utils validateLatitude:_latitude longitude:_longitude]; }
+- (BOOL)validDistance
+{
+    return VALID_DISTANCE(self.distance);
+}
 
-- (float)longitude { return _longitude; }
-- (void)setLongitude:(float)l { _longitude = l; validLatLon = [Utils validateLatitude:_latitude longitude:_longitude]; }
 
-- (float)origAltitude { return _origAltitude; }
-- (void)setOrigAltitude:(float)a { _origAltitude = a; }
+- (BOOL)validOrigDistance
+{
+    return VALID_DISTANCE(_origDistance);
+}
 
-- (float)altitude { return _altitude; }
-- (void)setAltitude:(float)a { _altitude = a; }
 
-- (float)heartrate { return _heartrate; }
-- (void)setHeartrate:(float)h { _heartrate = h; }
+- (BOOL)validHeartrate
+{
+    return _heartrate > 0;
+}
 
-- (float)cadence { return _cadence; }
-- (void)setCadence:(float)c { _cadence = c; }
 
-- (int)flags { return _flags; }
-- (void)setFlags:(int)f { _flags = f; }
+- (void)setLatitude:(float)l
+{
+    _latitude = l;
+    _validLatLon = [Utils validateLatitude:_latitude
+                                 longitude:_longitude];
+}
 
-- (float)temperature { return _temperature; }
-- (void)setTemperature:(float)t { _temperature = t; }
 
-- (float)speed { return _speed; }
-- (void)setSpeed:(float)s { _speed = s; }
+- (void)setLongitude:(float)l
+{
+    _longitude = l;
+    _validLatLon = [Utils validateLatitude:_latitude
+                                 longitude:_longitude];
+}
 
-- (float)pace { return (_speed > 0.0f) ? (3600.0f/_speed) : 3600.0f; }
 
-- (float)distance { return _distance; }
-- (void)setDistance:(float)d { _distance = d; }
+- (float)pace
+{
+    return (_speed > 0.0f) ? (3600.0f/_speed) : 3600.0f;
+}
 
-- (float)gradient { return _gradient; }
-- (void)setGradient:(float)g { _gradient = g; }
 
-- (float)climbSoFar { return climbSoFar; }
-- (void)setClimbSoFar:(float)value { if (climbSoFar != value) climbSoFar = value; }
+- (BOOL)speedOverridden
+{
+    return FLAG_IS_SET(_flags, kSpeedOverriden);
+}
 
-- (float)descentSoFar { return descentSoFar; }
-- (void)setDescentSoFar:(float)value { if (descentSoFar != value) descentSoFar = value; }
 
-- (BOOL)speedOverridden { return FLAG_IS_SET(_flags, kSpeedOverriden); }
-- (void)setSpeedOverriden:(BOOL)set { if (set) SET_FLAG(_flags, kSpeedOverriden); else CLEAR_FLAG(_flags, kSpeedOverriden); }
+- (void)setSpeedOverriden:(BOOL)set
+{
+    if (set)
+        SET_FLAG(_flags, kSpeedOverriden);
+    else
+        CLEAR_FLAG(_flags, kSpeedOverriden);
+}
 
-- (BOOL)isFirstPointInLap { return FLAG_IS_SET(_flags, kIsFirstPointInLap); }
-- (void)setIsFirstPointInLap:(BOOL)set { if (set) SET_FLAG(_flags, kIsFirstPointInLap); else CLEAR_FLAG(_flags, kIsFirstPointInLap); }
 
-- (void)setDistanceToOriginal { _distance = _origDistance; }
-- (float)origDistance { return _origDistance; }
-- (void)setOrigDistance:(float)d { _origDistance = d; }
+- (BOOL)isFirstPointInLap
+{
+    return FLAG_IS_SET(_flags, kIsFirstPointInLap);
+}
 
-- (NSNumber*)speedAsNumber { return [NSNumber numberWithFloat:_speed]; }
-- (NSNumber*)paceAsNumber { return [NSNumber numberWithFloat:[self pace]]; }
-- (NSNumber*)cadenceAsNumber { return [NSNumber numberWithFloat:_cadence]; }
-- (NSNumber*)heartrateAsNumber { return [NSNumber numberWithFloat:_heartrate]; }
-- (NSNumber*)powerAsNumber { return [NSNumber numberWithFloat:_power]; }
+
+- (void)setIsFirstPointInLap:(BOOL)set
+{
+    if (set)
+        SET_FLAG(_flags, kIsFirstPointInLap);
+    else
+        CLEAR_FLAG(_flags, kIsFirstPointInLap);
+}
+
+
+- (void)setDistanceToOriginal
+{
+    _distance = _origDistance;
+}
+
+
+- (NSNumber*)speedAsNumber
+{
+    return [NSNumber numberWithFloat:_speed];
+}
+
+- (NSNumber*)paceAsNumber
+{
+    return [NSNumber numberWithFloat:[self pace]];
+}
+
+- (NSNumber*)cadenceAsNumber
+{
+    return [NSNumber numberWithFloat:_cadence];
+}
+
+- (NSNumber*)heartrateAsNumber
+{
+    return [NSNumber numberWithFloat:_heartrate];
+}
+
+- (NSNumber*)powerAsNumber
+{
+    return [NSNumber numberWithFloat:_power];
+}
+
 
 - (void)setPower:(float)p
 {
@@ -452,10 +481,12 @@ static NSDate *sStartTime = nil;
     }
 }
 
+
 - (BOOL)powerIsCalculated
 {
     return FLAG_IS_SET(_flags, kPowerDataCalculated);
 }
+
 
 - (void)setImportFlagState:(int)item state:(BOOL)st
 {
@@ -464,11 +495,13 @@ static NSDate *sStartTime = nil;
     else    CLEAR_FLAG(_flags, flag);
 }
 
+
 - (BOOL)importFlagState:(int)item
 {
     int flag = DATA_ITEM_TO_FLAG(item);
     return FLAG_IS_SET(_flags, flag);
 }
+
 
 - (NSComparisonResult)compare:(TrackPoint*)anotherPoint
 {

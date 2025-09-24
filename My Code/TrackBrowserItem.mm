@@ -13,14 +13,46 @@
 #import "Utils.h"
 #import "EquipmentLog.h"
 
+@interface TrackBrowserItem ()
+{
+    float                    _cachedDistance;
+    float                    _cachedTotalClimb;
+    float                    _cachedTotalDescent;
+    float                    _cachedRateOfClimb;
+    float                    _cachedRateOfDescent;
+    float                    _cachedAvgSpeed;
+    float                    _cachedAvgMovingSpeed;
+    float                    _cachedMaxSpeed;
+    float                    _cachedAvgHeartRate;
+    float                    _cachedMaxHeartRate;
+    float                    _cachedAvgGradient;
+    float                    _cachedMaxGradient;
+    float                    _cachedMinGradient;
+    float                    _cachedAvgCadence;
+    float                    _cachedMaxCadence;
+    float                    _cachedAvgPower;
+    float                    _cachedMaxPower;
+    float                    _cachedWork;
+    float                    _cachedMaxAltitude;
+    float                    _cachedMinAltitude;
+    float                    _cachedAvgAltitude;
+    float                    _cachedCalories;
+    float                    _cachedTimeInHRZ[kNumHRZones];
+    float                    _cachedTimeInNonHRZ[kMaxZoneType+1][kNumNonHRZones];
+    float                    _cachedDuration;
+    float                    _cachedMovingDuration;
+    float                    _cachedWeight;
+    float                    _cachedMaxTemperature;
+    float                    _cachedMinTemperature;
+    float                    _cachedAvgTemperature;
+}
+@end
+
+
 @implementation TrackBrowserItem
 
 #define BAD_FLOAT       999999999.0f
 
-@synthesize parentItem;
-@synthesize sortedChildKeys;
-@synthesize seqno;
-@synthesize sortedChildKeysSeqno;
 
 - (id)init
 {
@@ -61,18 +93,8 @@
 	_cachedDuration = BAD_FLOAT;
 	_cachedMovingDuration = BAD_FLOAT;
 	_cachedWeight = BAD_FLOAT;
-#if 0
-	if ((track != nil) && (lap == nil))
-	{
-	  //printf("invalidate track\n");
-	  [track invalidateStats];
-	}
-	if (lap != nil)
-	{
-	   [lap setStatsCalculated:NO];
-	}
-#endif
-	if (recursively) [[children allValues] makeObjectsPerformSelector:@selector(invalidateCacheRecursively)];
+	if (recursively)
+        [[_children allValues] makeObjectsPerformSelector:@selector(invalidateCacheRecursively)];
 }
 
 
@@ -85,7 +107,7 @@
 - (void)prefChange:(NSNotification *)notification
 {
 	id obj = [notification object];
-	if (!obj || obj == track)
+	if (!obj || obj == _track)
 	{
 		[self invalidateCache:YES];
 	}
@@ -94,9 +116,9 @@
 
 - (void)mustFixup:(NSNotification *)notification
 {
-   if ((track != nil) && (lap == nil))
+   if ((_track != nil) && (_lap == nil))
    {
-      [track fixupTrack];
+      [_track fixupTrack];
    }
 }
 
@@ -104,18 +126,18 @@
 -(id) initWithData:(Track *)t lap:(Lap*)l name:(NSString*)n date:(NSDate*)d  type:(tBrowserItemType)ty parent:(TrackBrowserItem*)par;
 {
 	self = [super init];
-	[self setTrack:t];
-	[self setLap:l];
-	[self setName:n];
-	[self setDate:d];
-	[self setType:ty];
+	self.track  = t;
+    self.lap  = l;
+    self.name = n;
+    self.date = d;
+    self.type = ty;
 	[self invalidateCache:NO];
-	parentItem = par;				// do NOT retain to avoid retain loops
-	expanded = NO;
-	sortedChildKeys = nil;
-	sortedChildKeysSeqno = 0;
-	seqno = 0;
-	children = [[NSMutableDictionary alloc] init];
+	_parentItem = par;				// do NOT retain to avoid retain loops
+	_expanded = NO;
+	_sortedChildKeys= nil;
+	_sortedChildKeysSeqno = 0;
+	_seqno = 0;
+	_children = [[NSMutableDictionary alloc] init];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(prefChange:)
 												 name:@"PreferencesChanged"
@@ -135,12 +157,20 @@
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+    self.track = nil;
+    self.lap = nil;
+    self.date = nil;
+    self.children = nil;
+    self.parentItem = nil;
+    self.sortedChildKeys = nil;
+    self.name = nil;
+    [super dealloc];
 }
 
 
 -(BOOL) isRoot
 {
-   return (children == nil) ? YES : NO;
+   return (_children == nil) ? YES : NO;
 }
 
 
@@ -150,7 +180,7 @@ extern NSString*      gCompareString;
 -(NSComparisonResult) compare:(TrackBrowserItem*)item
 {
    if (gCompareString == nil)
-      return [date compare:[item date]];
+      return [_date compare:[item date]];
    float v1 = [[self valueForKey:gCompareString] floatValue];
    float v2 = [[item valueForKey:gCompareString] floatValue];
    return (v1 < v2) ? NSOrderedAscending : NSOrderedDescending;
@@ -159,7 +189,7 @@ extern NSString*      gCompareString;
 -(NSComparisonResult) reverseCompare:(TrackBrowserItem*)item
 {
    if (gCompareString == nil)
-      return [[item date] compare:date];
+      return [[item date] compare:_date];
    float v1 = [[self valueForKey:gCompareString] floatValue];
    float v2 = [[item valueForKey:gCompareString] floatValue];
    return (v1 > v2) ? NSOrderedAscending : NSOrderedDescending;
@@ -188,112 +218,27 @@ extern NSString*      gCompareString;
 }
 
 
--(BOOL)expanded
-{
-   return expanded;
-}
-
-
--(void)setExpanded:(BOOL)ex
-{
-   expanded = ex;
-}
-
-   
--(NSString*) name
-{
-   return name;
-}
-
-
--(void) setName:(NSString*) n
-{
-   n = [n copy];
-   name = n;
-}
-
-
--(Track *) track
-{
-   return track;
-}
-
-
--(void) setTrack:(Track*) t
-{
-   if (track != t)
-   {
-	   track = t;
-   }
-}
-
-
-- (Lap *)lap 
-{
-	return lap;
-}
-
-
-- (void)setLap:(Lap *)value 
-{
-	if (lap != value) 
-	{
-		lap = value;
-	}
-}
-
-
--(NSDate*) date
-{
-   return date;
-}
-
-
--(void) setDate:(NSDate*) d
-{
-   d = [d copy];
-   date = d;
-}
-
-
-- (tBrowserItemType)type
-{
-   return type;
-}
-
-- (void)setType:(tBrowserItemType)value 
-{
-   type = value;
-}
-
- 
--(NSMutableDictionary*) children
-{
-   return children;
-}
-
-
 -(float) distance
 {
    if (_cachedDistance == BAD_FLOAT)
    {
       float distance = 0.0;
-      if ((track == nil) && (lap == nil))
+      if ((_track == nil) && (_lap == nil))
       {
-         NSEnumerator *enumerator = [children objectEnumerator];
+         NSEnumerator *enumerator = [_children objectEnumerator];
          TrackBrowserItem* bi;
          while ((bi = [enumerator nextObject])) 
          {
             distance += [bi distance];
          }
       }
-      else if (lap == nil)
+      else if (_lap == nil)
       {
-         distance = [Utils convertDistanceValue:[track distance]];
+         distance = [Utils convertDistanceValue:[_track distance]];
       }
       else
       {
-         distance =  [Utils convertDistanceValue:[track distanceOfLap:lap]];
+         distance =  [Utils convertDistanceValue:[_track distanceOfLap:_lap]];
       }
       _cachedDistance = distance;
    }
@@ -306,22 +251,22 @@ extern NSString*      gCompareString;
    if (_cachedTotalClimb == BAD_FLOAT)
    {
       float total = 0.0;
-      if ((track == nil) && (lap == nil))
+      if ((_track == nil) && (_lap == nil))
       {
-         NSEnumerator *enumerator = [children objectEnumerator];
+         NSEnumerator *enumerator = [_children objectEnumerator];
          TrackBrowserItem* bi;
          while ((bi = [enumerator nextObject])) 
          {
             total += [bi totalClimb];
          }
       }
-      else if (lap == nil)
+      else if (_lap == nil)
       {
-         total = [Utils convertClimbValue:[track totalClimb]];
+         total = [Utils convertClimbValue:[_track totalClimb]];
       }
       else
       {
-         total = [Utils convertClimbValue:[track lapClimb:lap]];
+         total = [Utils convertClimbValue:[_track lapClimb:_lap]];
       }
       _cachedTotalClimb = total;
    }
@@ -334,22 +279,22 @@ extern NSString*      gCompareString;
    if (_cachedTotalDescent == BAD_FLOAT)
    {
       float sum = 0.0;
-      if ((track == nil) && (lap == nil))
+      if ((_track == nil) && (_lap == nil))
       {
-         NSEnumerator *enumerator = [children objectEnumerator];
+         NSEnumerator *enumerator = [_children objectEnumerator];
          TrackBrowserItem* bi;
          while ((bi = [enumerator nextObject])) 
          {
             sum += [bi totalDescent];
          }
       }
-      else if (lap == nil)
+      else if (_lap == nil)
       {
-         sum = [Utils convertClimbValue:[track totalDescent]];
+         sum = [Utils convertClimbValue:[_track totalDescent]];
       }
       else
       {
-         sum = [Utils convertClimbValue:[track lapDescent:lap]];
+         sum = [Utils convertClimbValue:[_track lapDescent:_lap]];
       }
       _cachedTotalDescent = sum;
    }
@@ -364,9 +309,9 @@ extern NSString*      gCompareString;
 		float answer = 0.0;
 		float totalClimb = 0.0;
 		float totalDur = 0.0;
-		if ((track == nil) && (lap == nil))
+		if ((_track == nil) && (_lap == nil))
 		{
-			NSEnumerator *enumerator = [children objectEnumerator];
+			NSEnumerator *enumerator = [_children objectEnumerator];
 			TrackBrowserItem* bi;
 			while ((bi = [enumerator nextObject])) 
 			{
@@ -374,15 +319,15 @@ extern NSString*      gCompareString;
 				totalDur += [bi movingDurationAsFloat];
 			}
 		}
-		else if (lap == nil)
+		else if (_lap == nil)
 		{
-			totalClimb += [Utils convertClimbValue:[track totalClimb]];
-			totalDur += [Utils convertDistanceValue:[track movingDuration]];
+			totalClimb += [Utils convertClimbValue:[_track totalClimb]];
+			totalDur += [Utils convertDistanceValue:[_track movingDuration]];
 		}
 		else
 		{
-			totalClimb = [Utils convertClimbValue:[track lapClimb:lap]];
-			totalDur += [Utils convertDistanceValue:[track movingDurationOfLap:lap]];
+			totalClimb = [Utils convertClimbValue:[_track lapClimb:_lap]];
+			totalDur += [Utils convertDistanceValue:[_track movingDurationOfLap:_lap]];
 		}
 		if (totalDur > 0.0) answer = (totalClimb*3600.0)/totalDur;	// convert to ft or m per hour
 		_cachedRateOfClimb = answer;
@@ -398,9 +343,9 @@ extern NSString*      gCompareString;
 		float answer = 0.0;
 		float totalClimb = 0.0;
 		float totalDur = 0.0;
-		if ((track == nil) && (lap == nil))
+		if ((_track == nil) && (_lap == nil))
 		{
-			NSEnumerator *enumerator = [children objectEnumerator];
+			NSEnumerator *enumerator = [_children objectEnumerator];
 			TrackBrowserItem* bi;
 			while ((bi = [enumerator nextObject])) 
 			{
@@ -408,15 +353,15 @@ extern NSString*      gCompareString;
 				totalDur += [bi movingDurationAsFloat];
 			}
 		}
-		else if (lap == nil)
+		else if (_lap == nil)
 		{
-			totalClimb += [Utils convertClimbValue:[track totalDescent]];
-			totalDur += [Utils convertDistanceValue:[track movingDuration]];
+			totalClimb += [Utils convertClimbValue:[_track totalDescent]];
+			totalDur += [Utils convertDistanceValue:[_track movingDuration]];
 		}
 		else
 		{
-			totalClimb = [Utils convertClimbValue:[track lapDescent:lap]];
-			totalDur += [Utils convertDistanceValue:[track movingDurationOfLap:lap]];
+			totalClimb = [Utils convertClimbValue:[_track lapDescent:_lap]];
+			totalDur += [Utils convertDistanceValue:[_track movingDurationOfLap:_lap]];
 		}
 		if (totalDur > 0.0) answer = (totalClimb*3600.0)/totalDur;	// convert to ft or m per hour
 		_cachedRateOfDescent = answer;
@@ -430,11 +375,11 @@ extern NSString*      gCompareString;
    if (_cachedAvgSpeed == BAD_FLOAT)
    {
       float avg = 0.0;
-      if ((track == nil) && (lap == nil))
+      if ((_track == nil) && (_lap == nil))
       {
          float totalDur = 0.0;
          float totalDist = 0.0;
-         NSEnumerator *enumerator = [children objectEnumerator];
+         NSEnumerator *enumerator = [_children objectEnumerator];
          TrackBrowserItem* bi;
          while ((bi = [enumerator nextObject])) 
          {
@@ -446,13 +391,13 @@ extern NSString*      gCompareString;
             avg = totalDist/(totalDur/(60.0*60.0));
          }
       }
-      else if (lap == nil)
+      else if (_lap == nil)
       {
-		  avg = [Utils convertSpeedValue:[track avgSpeed]];
+		  avg = [Utils convertSpeedValue:[_track avgSpeed]];
       }
       else
       {
-          avg = [Utils convertSpeedValue:[track avgLapSpeed:lap]];
+          avg = [Utils convertSpeedValue:[_track avgLapSpeed:_lap]];
       }
       _cachedAvgSpeed = avg;
    }
@@ -480,9 +425,9 @@ extern NSString*      gCompareString;
 	if (_cachedMaxSpeed == BAD_FLOAT)
 	{
 		float max = 0.0;
-		if ((track == nil) && (lap == nil))
+		if ((_track == nil) && (_lap == nil))
 		{
-			NSEnumerator *enumerator = [children objectEnumerator];
+			NSEnumerator *enumerator = [_children objectEnumerator];
 			TrackBrowserItem* bi;
 			while ((bi = [enumerator nextObject])) 
 			{
@@ -490,13 +435,13 @@ extern NSString*      gCompareString;
 				if (m > max) max = m;
 			}
 		}
-		else if (lap == nil)
+		else if (_lap == nil)
 		{
-			max = [Utils convertSpeedValue:[track maxSpeed]];
+			max = [Utils convertSpeedValue:[_track maxSpeed]];
 		}
 		else
 		{
-			max = [Utils convertSpeedValue:[track maxSpeedForLap:lap atActiveTimeDelta:0]];
+			max = [Utils convertSpeedValue:[_track maxSpeedForLap:_lap atActiveTimeDelta:0]];
 		}
 		_cachedMaxSpeed = max;
 	}
@@ -509,10 +454,10 @@ extern NSString*      gCompareString;
    if (_cachedDuration == BAD_FLOAT)
    {
       float dur = 0.0;
-      if ((track == nil) && (lap == nil))
+      if ((_track == nil) && (_lap == nil))
       {
          float sum = 0;
-         NSEnumerator *enumerator = [children objectEnumerator];
+         NSEnumerator *enumerator = [_children objectEnumerator];
          TrackBrowserItem* bi;
          while ((bi = [enumerator nextObject])) 
          {
@@ -520,13 +465,13 @@ extern NSString*      gCompareString;
          }
          dur = sum;
       }
-      else if (lap == nil)
+      else if (_lap == nil)
       {
-         dur = [track durationAsFloat];
+         dur = [_track durationAsFloat];
       }
       else
       {
-		  dur = [track durationOfLap:lap];
+		  dur = [_track durationOfLap:_lap];
      }
       _cachedDuration = dur;
    }
@@ -539,9 +484,9 @@ extern NSString*      gCompareString;
 	if (_cachedMovingDuration == BAD_FLOAT)
 	{
 		float dur = 0.0;
-		if ((track == nil) && (lap == nil))
+		if ((_track == nil) && (_lap == nil))
 		{
-			NSEnumerator *enumerator = [children objectEnumerator];
+			NSEnumerator *enumerator = [_children objectEnumerator];
 			TrackBrowserItem* bi;
 			float sum = 0.0;
 			while ((bi = [enumerator nextObject])) 
@@ -550,13 +495,13 @@ extern NSString*      gCompareString;
 			}
 			dur = sum;
 		}
-		else if (lap == nil)
+		else if (_lap == nil)
 		{
-			dur = [track movingDuration];
+			dur = [_track movingDuration];
 		}
 		else
 		{
-			dur = [track movingDurationOfLap:lap];
+			dur = [_track movingDurationOfLap:_lap];
 		}
 		_cachedMovingDuration = dur;
 	}
@@ -593,22 +538,22 @@ extern NSString*      gCompareString;
 
 -(NSTimeInterval) duration
 {
-   return [track duration];
+   return [_track duration];
 }
 
 
 -(NSString*) title
 {
    NSString* answer = @"";
-   if ((track == nil) && (lap == nil))
+   if ((_track == nil) && (_lap == nil))
    {
    }
-   else if (lap == nil)
+   else if (_lap == nil)
    {
-      answer = [track attribute:kName];
+      answer = [_track attribute:kName];
       if ([answer isEqualToString:@""])
       {
-         answer = [track name];
+         answer = [_track name];
       }
    }
    return answer;
@@ -617,24 +562,24 @@ extern NSString*      gCompareString;
 
 - (NSString*) keyword1
 {
-   if ((track != nil) && (lap == nil))
-      return [track attribute:kKeyword1];
+   if ((_track != nil) && (_lap == nil))
+      return [_track attribute:kKeyword1];
    else
       return @"";
 }
 
 - (NSString*) keyword2
 {
-   if ((track != nil) && (lap == nil))
-      return [track attribute:kKeyword2];
+   if ((_track != nil) && (_lap == nil))
+      return [_track attribute:kKeyword2];
    else
       return @"";
 }
 
 - (NSString*) custom
 {
-   if ((track != nil) && (lap == nil))
-      return [track attribute:kKeyword3];    // custom text field is stored in keyword 3
+   if ((_track != nil) && (_lap == nil))
+      return [_track attribute:kKeyword3];    // custom text field is stored in keyword 3
    else
       return @"";
 }
@@ -642,32 +587,32 @@ extern NSString*      gCompareString;
 
 - (NSString*) notes
 {
-   if ((track != nil) && (lap == nil))
-      return [track attribute:kNotes];
+   if ((_track != nil) && (_lap == nil))
+      return [_track attribute:kNotes];
    else
       return @"";
 }
 
 - (NSString*) location
 {
-   if ((track != nil) && (lap == nil))
-      return [track attribute:kLocation];
+   if ((_track != nil) && (_lap == nil))
+      return [_track attribute:kLocation];
    else
       return @"";
 }
 
 - (NSString*) computer
 {
-   if ((track != nil) && (lap == nil))
-      return [track attribute:kComputer];
+   if ((_track != nil) && (_lap == nil))
+      return [_track attribute:kComputer];
    else
       return @"";
 }
 
 - (NSString*) sufferScore
 {
-   if ((track != nil) && (lap == nil))
-      return [track attribute:kSufferScore];
+   if ((_track != nil) && (_lap == nil))
+      return [_track attribute:kSufferScore];
    else
       return @"";
 }
@@ -678,14 +623,14 @@ extern NSString*      gCompareString;
 	if (_cachedAvgMovingSpeed == BAD_FLOAT)
 	{
 		float answer = 0.0;
-		if ((track == nil) && (lap == nil))
+		if ((_track == nil) && (_lap == nil))
 		{
 			float totalDuration = [self movingDurationAsFloat];
 			if (totalDuration > 0.0)
 			{
 				TrackBrowserItem* bi;
 				float sum = 0;
-				NSEnumerator *enumerator = [children objectEnumerator];
+				NSEnumerator *enumerator = [_children objectEnumerator];
 				while ((bi = [enumerator nextObject])) 
 				{
 					float td = [bi movingDurationAsFloat];
@@ -694,13 +639,13 @@ extern NSString*      gCompareString;
 				answer = sum/totalDuration;
 			}
 		}
-		else if (lap == nil)
+		else if (_lap == nil)
 		{
-			answer = [Utils convertSpeedValue:[track avgMovingSpeed]];
+			answer = [Utils convertSpeedValue:[_track avgMovingSpeed]];
 		}
 		else
 		{
-			answer = [Utils convertSpeedValue:[track movingSpeedForLap:lap]];
+			answer = [Utils convertSpeedValue:[_track movingSpeedForLap:_lap]];
 		}
 		_cachedAvgMovingSpeed = answer;
 	}
@@ -735,9 +680,9 @@ extern NSString*      gCompareString;
    if (_cachedMaxHeartRate == BAD_FLOAT)
    {
       float max = 0.0;
-      if ((track == nil) && (lap == nil))
+      if ((_track == nil) && (_lap == nil))
       {
-         NSEnumerator *enumerator = [children objectEnumerator];
+         NSEnumerator *enumerator = [_children objectEnumerator];
          TrackBrowserItem* bi;
          while ((bi = [enumerator nextObject])) 
          {
@@ -745,14 +690,14 @@ extern NSString*      gCompareString;
             if (m > max) max = m;
          }
       }
-      else if (lap == nil)
+      else if (_lap == nil)
       {
-         max = [track maxHeartrate:nil];
+         max = [_track maxHeartrate:nil];
       }
       else
       {
-         //max = [lap maxHeartRate];
-         max = [track maxHeartrateForLap:lap atActiveTimeDelta:0];
+         //max = [_lap maxHeartRate];
+         max = [_track maxHeartrateForLap:_lap atActiveTimeDelta:0];
       }
       _cachedMaxHeartRate = max;
    }
@@ -765,13 +710,13 @@ extern NSString*      gCompareString;
    if (_cachedAvgHeartRate == BAD_FLOAT)
    {
       float answer = 0.0;
-      if ((track == nil) && (lap == nil))
+      if ((_track == nil) && (_lap == nil))
       {
          float totalDuration = [self durationAsFloat];
          if (totalDuration > 0.0)
          {
             float sum = 0;
-            NSEnumerator *enumerator = [children objectEnumerator];
+            NSEnumerator *enumerator = [_children objectEnumerator];
             TrackBrowserItem* bi;
             while ((bi = [enumerator nextObject])) 
             {
@@ -791,13 +736,13 @@ extern NSString*      gCompareString;
                answer = sum/totalDuration;
          }
       }
-      else if (lap == nil)
+      else if (_lap == nil)
       {
-         answer = [track avgHeartrate];
+         answer = [_track avgHeartrate];
       }
       else
       {
-         answer = [track avgHeartrateForLap:lap];
+         answer = [_track avgHeartrateForLap:_lap];
       }
       _cachedAvgHeartRate = answer;
    }
@@ -811,22 +756,22 @@ extern NSString*      gCompareString;
    if (_cachedCalories == BAD_FLOAT)
    {
       float sum = 0.0;
-      if ((track == nil) && (lap == nil))
+      if ((_track == nil) && (_lap == nil))
       {
-         NSEnumerator *enumerator = [children objectEnumerator];
+         NSEnumerator *enumerator = [_children objectEnumerator];
          TrackBrowserItem* bi;
          while ((bi = [enumerator nextObject])) 
          {
             sum += [bi calories];
          }
       }
-      else if (lap == nil)
+      else if (_lap == nil)
       {
-         sum = [track calories];
+         sum = [_track calories];
       }
       else
       {
-		  sum = [track caloriesForLap:lap];
+		  sum = [_track caloriesForLap:_lap];
       }
       _cachedCalories = sum;
    }
@@ -841,9 +786,9 @@ extern NSString*      gCompareString;
    if (_cachedMaxCadence == BAD_FLOAT)
    {
       float max = 0.0;
-      if ((track == nil) && (lap == nil))
+      if ((_track == nil) && (_lap == nil))
       {
-         NSEnumerator *enumerator = [children objectEnumerator];
+         NSEnumerator *enumerator = [_children objectEnumerator];
          TrackBrowserItem* bi;
          while ((bi = [enumerator nextObject])) 
          {
@@ -851,13 +796,13 @@ extern NSString*      gCompareString;
             if (m > max) max = m;
          }
       }
-      else if (lap == nil)
+      else if (_lap == nil)
       {
-         max = [track maxCadence:nil];
+         max = [_track maxCadence:nil];
       }
       else
       {
-         max = [track maxCadenceForLap:lap atActiveTimeDelta:0];
+         max = [_track maxCadenceForLap:_lap atActiveTimeDelta:0];
       }
       _cachedMaxCadence = max;
    }
@@ -870,9 +815,9 @@ extern NSString*      gCompareString;
 	if (_cachedMaxPower == BAD_FLOAT)
 	{
 		float max = 0.0;
-		if ((track == nil) && (lap == nil))
+		if ((_track == nil) && (_lap == nil))
 		{
-			NSEnumerator *enumerator = [children objectEnumerator];
+			NSEnumerator *enumerator = [_children objectEnumerator];
 			TrackBrowserItem* bi;
 			while ((bi = [enumerator nextObject])) 
 			{
@@ -880,13 +825,13 @@ extern NSString*      gCompareString;
 				if (m > max) max = m;
 			}
 		}
-		else if (lap == nil)
+		else if (_lap == nil)
 		{
-			max = [track maxPower:nil];
+			max = [_track maxPower:nil];
 		}
 		else
 		{
-			max = [track maxPowerForLap:lap atActiveTimeDelta:0];
+			max = [_track maxPowerForLap:_lap atActiveTimeDelta:0];
 		}
 		_cachedMaxPower = max;
 	}
@@ -899,13 +844,13 @@ extern NSString*      gCompareString;
    if (_cachedAvgCadence == BAD_FLOAT)
    {
       float answer = 0.0;
-      if ((track == nil) && (lap == nil))
+      if ((_track == nil) && (_lap == nil))
       {
          float totalDuration = [self durationAsFloat];
          if (totalDuration > 0.0)
          {
             float sum = 0;
-            NSEnumerator *enumerator = [children objectEnumerator];
+            NSEnumerator *enumerator = [_children objectEnumerator];
             TrackBrowserItem* bi;
             while ((bi = [enumerator nextObject])) 
             {
@@ -924,13 +869,13 @@ extern NSString*      gCompareString;
                answer = sum/totalDuration;
          }
       }
-      else if (lap == nil)
+      else if (_lap == nil)
       {
-         answer = [track avgCadence];
+         answer = [_track avgCadence];
       }
       else
       {
-         answer = [track avgCadenceForLap:lap];
+         answer = [_track avgCadenceForLap:_lap];
       }
       _cachedAvgCadence = answer;
    }
@@ -943,10 +888,10 @@ extern NSString*      gCompareString;
 	if (_cachedWork == BAD_FLOAT)
 	{
 		float answer = 0.0;
-		if ((track == nil) && (lap == nil))
+		if ((_track == nil) && (_lap == nil))
 		{
 			float sum = 0;
-			NSEnumerator *enumerator = [children objectEnumerator];
+			NSEnumerator *enumerator = [_children objectEnumerator];
 			TrackBrowserItem* bi;
 			while ((bi = [enumerator nextObject])) 
 			{
@@ -958,13 +903,13 @@ extern NSString*      gCompareString;
 			}
 			answer = sum;
 		}
-		else if (lap == nil)
+		else if (_lap == nil)
 		{
-			answer = [track work];
+			answer = [_track work];
 		}
 		else
 		{
-			answer = [track workForLap:lap];
+			answer = [_track workForLap:_lap];
 		}
 		_cachedWork = answer;
 	}
@@ -977,13 +922,13 @@ extern NSString*      gCompareString;
 	if (_cachedAvgPower == BAD_FLOAT)
 	{
 		float answer = 0.0;
-		if ((track == nil) && (lap == nil))
+		if ((_track == nil) && (_lap == nil))
 		{
 			float totalDuration = [self movingDurationAsFloat];
 			if (totalDuration > 0.0)
 			{
 				float sum = 0;
-				NSEnumerator *enumerator = [children objectEnumerator];
+				NSEnumerator *enumerator = [_children objectEnumerator];
 				TrackBrowserItem* bi;
 				while ((bi = [enumerator nextObject])) 
 				{
@@ -1002,13 +947,13 @@ extern NSString*      gCompareString;
 					answer = sum/totalDuration;
 			}
 		}
-		else if (lap == nil)
+		else if (_lap == nil)
 		{
-			answer = [track avgPower];
+			answer = [_track avgPower];
 		}
 		else
 		{
-			answer = [track avgPowerForLap:lap];
+			answer = [_track avgPowerForLap:_lap];
 		}
 		_cachedAvgPower = answer;
 	}
@@ -1021,9 +966,9 @@ extern NSString*      gCompareString;
    if (_cachedMaxGradient == BAD_FLOAT)
    {
       float max = 0.0;
-      if ((track == nil) && (lap == nil))
+      if ((_track == nil) && (_lap == nil))
       {
-         NSEnumerator *enumerator = [children objectEnumerator];
+         NSEnumerator *enumerator = [_children objectEnumerator];
          TrackBrowserItem* bi;
          while ((bi = [enumerator nextObject])) 
          {
@@ -1031,13 +976,13 @@ extern NSString*      gCompareString;
             if (m > max) max = m;
          }
       }
-      else if (lap == nil)
+      else if (_lap == nil)
       {
-         max = [track maxGradient:nil];
+         max = [_track maxGradient:nil];
       }
       else
       {
-         max = [track maxGradientForLap:lap atActiveTimeDelta:0];
+         max = [_track maxGradientForLap:_lap atActiveTimeDelta:0];
       }
       _cachedMaxGradient = max;
    }
@@ -1049,9 +994,9 @@ extern NSString*      gCompareString;
    if (_cachedMinGradient == BAD_FLOAT)
    {
       float min = 0.0;
-      if ((track == nil) && (lap == nil))
+      if ((_track == nil) && (_lap == nil))
       {
-         NSEnumerator *enumerator = [children objectEnumerator];
+         NSEnumerator *enumerator = [_children objectEnumerator];
          TrackBrowserItem* bi;
          while ((bi = [enumerator nextObject])) 
          {
@@ -1059,13 +1004,13 @@ extern NSString*      gCompareString;
             if (m  < min) min = m;
          }
       }
-      else if (lap == nil)
+      else if (_lap == nil)
       {
-         min = [track minGradient:nil];
+         min = [_track minGradient:nil];
       }
       else
       {
-         min = [track minGradientForLap:lap atActiveTimeDelta:0];
+         min = [_track minGradientForLap:_lap atActiveTimeDelta:0];
       }
       _cachedMinGradient = min;
    }
@@ -1078,13 +1023,13 @@ extern NSString*      gCompareString;
    if (_cachedAvgGradient == BAD_FLOAT)
    {
       float answer = 0.0;
-      if ((track == nil) && (lap == nil))
+      if ((_track == nil) && (_lap == nil))
       {
          float totalDuration = [self durationAsFloat];
          if (totalDuration > 0.0)
          {
             float sum = 0;
-            NSEnumerator *enumerator = [children objectEnumerator];
+            NSEnumerator *enumerator = [_children objectEnumerator];
             TrackBrowserItem* bi;
             while ((bi = [enumerator nextObject])) 
             {
@@ -1094,13 +1039,13 @@ extern NSString*      gCompareString;
             answer = sum/totalDuration;
          }
       } 
-      else if (lap == nil)
+      else if (_lap == nil)
       {
-         answer = [track avgGradient];
+         answer = [_track avgGradient];
       }
       else
       {
-         answer = [track avgGradientForLap:lap];
+         answer = [_track avgGradientForLap:_lap];
       }
       _cachedAvgGradient = answer;
    }
@@ -1113,9 +1058,9 @@ extern NSString*      gCompareString;
 	if (_cachedMaxTemperature == BAD_FLOAT)
 	{
 		float max = 0.0;
-		if ((track == nil) && (lap == nil))
+		if ((_track == nil) && (_lap == nil))
 		{
-			NSEnumerator *enumerator = [children objectEnumerator];
+			NSEnumerator *enumerator = [_children objectEnumerator];
 			TrackBrowserItem* bi;
 			while ((bi = [enumerator nextObject])) 
 			{
@@ -1123,14 +1068,14 @@ extern NSString*      gCompareString;
 				if (m > max) max = m;
 			}
 		}
-		else if (lap == nil)
+		else if (_lap == nil)
 		{
-			max = [track maxTemperature:nil];
+			max = [_track maxTemperature:nil];
 			if (max > 0.0) max = [Utils convertTemperatureValue:max];
 		}
 		else
 		{
-			max = [track maxTemperatureForLap:lap atActiveTimeDelta:0];
+			max = [_track maxTemperatureForLap:_lap atActiveTimeDelta:0];
 			if (max > 0.0) max = [Utils convertTemperatureValue:max];
 		}
 		_cachedMaxTemperature = max;
@@ -1144,9 +1089,9 @@ extern NSString*      gCompareString;
 	if (_cachedMinTemperature == BAD_FLOAT)
 	{
 		float min = 0.0;
-		if ((track == nil) && (lap == nil))
+		if ((_track == nil) && (_lap == nil))
 		{
-			NSEnumerator *enumerator = [children objectEnumerator];
+			NSEnumerator *enumerator = [_children objectEnumerator];
 			TrackBrowserItem* bi;
 			while ((bi = [enumerator nextObject])) 
 			{
@@ -1154,14 +1099,14 @@ extern NSString*      gCompareString;
 				if ((m > 0.0) && (m  < min)) min = m;
 			}
 		}
-		else if (lap == nil)
+		else if (_lap == nil)
 		{
-			min = [track minTemperature:nil];
+			min = [_track minTemperature:nil];
 			if (min > 0.0) min = [Utils convertTemperatureValue:min];
 		}
 		else
 		{
-			min = [track minTemperatureForLap:lap atActiveTimeDelta:0];
+			min = [_track minTemperatureForLap:_lap atActiveTimeDelta:0];
 			if (min > 0.0) min = [Utils convertTemperatureValue:min];
 		}
 		_cachedMinTemperature = min;
@@ -1175,13 +1120,13 @@ extern NSString*      gCompareString;
 	if (_cachedAvgTemperature == BAD_FLOAT)
 	{
 		float answer = 0.0;
-		if ((track == nil) && (lap == nil))
+		if ((_track == nil) && (_lap == nil))
 		{
 			float totalDuration = [self durationAsFloat];
 			if (totalDuration > 0.0)
 			{
 				float sum = 0;
-				NSEnumerator *enumerator = [children objectEnumerator];
+				NSEnumerator *enumerator = [_children objectEnumerator];
 				TrackBrowserItem* bi;
 				while ((bi = [enumerator nextObject])) 
 				{
@@ -1201,14 +1146,14 @@ extern NSString*      gCompareString;
 					answer = sum/totalDuration;
 			}
 		} 
-		else if (lap == nil)
+		else if (_lap == nil)
 		{
-			answer = [track avgTemperature];
+			answer = [_track avgTemperature];
 			if (answer > 0.0) answer = [Utils convertTemperatureValue:answer];
 		}
 		else
 		{
-			answer = [track avgTemperatureForLap:lap];
+			answer = [_track avgTemperatureForLap:_lap];
 			if (answer > 0.0) answer = [Utils convertTemperatureValue:answer];
 		}
 		_cachedAvgTemperature = answer;
@@ -1222,9 +1167,9 @@ extern NSString*      gCompareString;
 	if (_cachedMaxAltitude == BAD_FLOAT)
 	{
 		float max = 0.0;
-		if ((track == nil) && (lap == nil))
+		if ((_track == nil) && (_lap == nil))
 		{
-			NSEnumerator *enumerator = [children objectEnumerator];
+			NSEnumerator *enumerator = [_children objectEnumerator];
 			TrackBrowserItem* bi;
 			while ((bi = [enumerator nextObject])) 
 			{
@@ -1232,13 +1177,13 @@ extern NSString*      gCompareString;
 				if (m > max) max = m;
 			}
 		}
-		else if (lap == nil)
+		else if (_lap == nil)
 		{
-			max =  [Utils convertClimbValue:[track maxAltitude:nil]];
+			max =  [Utils convertClimbValue:[_track maxAltitude:nil]];
 		}
 		else
 		{
-			max =  [Utils convertClimbValue:[track maxAltitudeForLap:lap atActiveTimeDelta:0]];
+			max =  [Utils convertClimbValue:[_track maxAltitudeForLap:_lap atActiveTimeDelta:0]];
 		}
 		_cachedMaxAltitude = max;
 	}
@@ -1251,9 +1196,9 @@ extern NSString*      gCompareString;
 	if (_cachedMinAltitude == BAD_FLOAT)
 	{
 		float min = 0.0;
-		if ((track == nil) && (lap == nil))
+		if ((_track == nil) && (_lap == nil))
 		{
-			NSEnumerator *enumerator = [children objectEnumerator];
+			NSEnumerator *enumerator = [_children objectEnumerator];
 			TrackBrowserItem* bi;
 			while ((bi = [enumerator nextObject])) 
 			{
@@ -1261,13 +1206,13 @@ extern NSString*      gCompareString;
 				if (m  < min) min = m;
 			}
 		}
-		else if (lap == nil)
+		else if (_lap == nil)
 		{
-			min = [Utils convertClimbValue:[track minAltitude:nil]];
+			min = [Utils convertClimbValue:[_track minAltitude:nil]];
 		}
 		else
 		{
-			min = [Utils convertClimbValue:[track minAltitudeForLap:lap atActiveTimeDelta:0]];
+			min = [Utils convertClimbValue:[_track minAltitudeForLap:_lap atActiveTimeDelta:0]];
 		}
 		_cachedMinAltitude = min;
 	}
@@ -1280,13 +1225,13 @@ extern NSString*      gCompareString;
 	if (_cachedAvgAltitude == BAD_FLOAT)
 	{
 		float answer = 0.0;
-		if ((track == nil) && (lap == nil))
+		if ((_track == nil) && (_lap == nil))
 		{
 			float totalDuration = [self durationAsFloat];
 			if (totalDuration > 0.0)
 			{
 				float sum = 0;
-				NSEnumerator *enumerator = [children objectEnumerator];
+				NSEnumerator *enumerator = [_children objectEnumerator];
 				TrackBrowserItem* bi;
 				while ((bi = [enumerator nextObject])) 
 				{
@@ -1296,13 +1241,13 @@ extern NSString*      gCompareString;
 				answer = sum/totalDuration;
 			}
 		} 
-		else if (lap == nil)
+		else if (_lap == nil)
 		{
-			answer = [Utils convertClimbValue:[track avgAltitude]];
+			answer = [Utils convertClimbValue:[_track avgAltitude]];
 		}
 		else
 		{
-			answer = [Utils convertClimbValue:[track avgAltitudeForLap:lap]];
+			answer = [Utils convertClimbValue:[_track avgAltitudeForLap:_lap]];
 		}
 		_cachedAvgAltitude = answer;
 	}
@@ -1322,7 +1267,7 @@ extern NSString*      gCompareString;
 
 -(NSString*) timeInNonHRZAsString:(int)ty zone:(int)zn
 {
-	//float totalDur = [track timeInNonHRZone:ty zone:zn];   
+	//float totalDur = [_track timeInNonHRZone:ty zone:zn];   
 	float totalDur = [self timeInNonHRZone:ty zone:zn];   
 	int hours = (int)totalDur/3600;
 	int mins = (int)(totalDur/60.0) % 60;
@@ -1470,22 +1415,22 @@ extern NSString*      gCompareString;
    if (_cachedTimeInHRZ[zne] == BAD_FLOAT)
    {
       float ans = 0.0;
-      if ((track == nil) && (lap == nil))
+      if ((_track == nil) && (_lap == nil))
       {
-         NSEnumerator *enumerator = [children objectEnumerator];
+         NSEnumerator *enumerator = [_children objectEnumerator];
          TrackBrowserItem* bi;
          while ((bi = [enumerator nextObject])) 
          {
             ans += [bi timeInHRZone:zne];
          }
       }
-      else if (lap == nil)
+      else if (_lap == nil)
       {
-         ans = [track timeInHRZone:zne];
+         ans = [_track timeInHRZone:zne];
       }
       else
       {
-         ans = [track timeLapInHRZone:zne lap:lap];
+         ans = [_track timeLapInHRZone:zne lap:_lap];
       }
       
       _cachedTimeInHRZ[zne] = ans;
@@ -1499,22 +1444,22 @@ extern NSString*      gCompareString;
 	if (_cachedTimeInNonHRZ[ty][zne] == BAD_FLOAT)
 	{
 		float ans = 0.0;
-		if ((track == nil) && (lap == nil))
+		if ((_track == nil) && (_lap == nil))
 		{
-			NSEnumerator *enumerator = [children objectEnumerator];
+			NSEnumerator *enumerator = [_children objectEnumerator];
 			TrackBrowserItem* bi;
 			while ((bi = [enumerator nextObject])) 
 			{
 				ans += [bi timeInNonHRZone:ty zone:zne];
 			}
 		}
-		else if (lap == nil)
+		else if (_lap == nil)
 		{
-			ans = [track timeInNonHRZone:ty zone:zne];
+			ans = [_track timeInNonHRZone:ty zone:zne];
 		}
 		else
 		{
-			ans = [track timeLapInNonHRZone:ty zone:zne lap:lap];
+			ans = [_track timeLapInNonHRZone:ty zone:zne lap:_lap];
 		}
 		
 		_cachedTimeInNonHRZ[ty][zne] = ans;
@@ -1712,8 +1657,8 @@ extern NSString*      gCompareString;
 
 - (NSString*) activity
 {
-   if (track != nil)
-      return [track attribute:kActivity];
+   if (_track != nil)
+      return [_track attribute:kActivity];
    else
       return @"";
 }
@@ -1721,16 +1666,16 @@ extern NSString*      gCompareString;
 
 - (NSString*) equipment
 {
-   if (track != nil)
+   if (_track != nil)
    {
-	   if ([track staleEquipmentAttr])
+	   if ([_track staleEquipmentAttr])
 	   {
-		   [track setAttribute:kEquipment
-				   usingString:[[EquipmentLog sharedInstance] nameStringOfEquipmentItemsForTrack:track]];
-		   [track setStaleEquipmentAttr:NO];
+		   [_track setAttribute:kEquipment
+				   usingString:[[EquipmentLog sharedInstance] nameStringOfEquipmentItemsForTrack:_track]];
+		   [_track setStaleEquipmentAttr:NO];
 	   }
 		   
-	   return [track attribute:kEquipment];
+	   return [_track attribute:kEquipment];
    }
    else
       return @"";
@@ -1742,13 +1687,13 @@ extern NSString*      gCompareString;
    if (_cachedWeight == BAD_FLOAT)
    {
       float answer = 0.0;
-      if (track == nil)
+      if (_track == nil)
       {
          float totalDuration = [self durationAsFloat];
          if (totalDuration > 0.0)
          {
             float sum = 0;
-            NSEnumerator *enumerator = [children objectEnumerator];
+            NSEnumerator *enumerator = [_children objectEnumerator];
             TrackBrowserItem* bi;
             while ((bi = [enumerator nextObject])) 
             {
@@ -1760,7 +1705,7 @@ extern NSString*      gCompareString;
       } 
       else
       {
-         answer = [Utils convertWeightValue:[track weight]];
+         answer = [Utils convertWeightValue:[_track weight]];
       }
       _cachedWeight = answer;
    }
@@ -1770,8 +1715,8 @@ extern NSString*      gCompareString;
 
 - (NSString*) effort;
 {
-   if (track != nil)
-      return [track attribute:kEffort];
+   if (_track != nil)
+      return [_track attribute:kEffort];
    else
       return @"";
 }
@@ -1779,8 +1724,8 @@ extern NSString*      gCompareString;
 
 - (NSString*) disposition;
 {
-   if (track != nil)
-      return [track attribute:kDisposition];
+   if (_track != nil)
+      return [_track attribute:kDisposition];
    else
       return @"";
 }
@@ -1788,8 +1733,8 @@ extern NSString*      gCompareString;
 
 - (NSString*) weather
 {
-   if (track != nil)
-      return [track attribute:kWeather];
+   if (_track != nil)
+      return [_track attribute:kWeather];
    else
       return @"";
 }
@@ -1797,8 +1742,8 @@ extern NSString*      gCompareString;
 
 - (NSString*) eventType
 {
-   if (track != nil)
-      return [track attribute:kEventType];
+   if (_track != nil)
+      return [_track attribute:kEventType];
    else
       return @"";
 }
@@ -1825,8 +1770,8 @@ extern NSString*      gCompareString;
 
 -(NSString*) device
 {
-	if (track != nil)
-		return [self deviceNameFromID:[track deviceID]];
+	if (_track != nil)
+		return [self deviceNameFromID:[_track deviceID]];
 	else
 		return @"";
 }
@@ -1834,8 +1779,8 @@ extern NSString*      gCompareString;
 
 -(NSString*) firmwareVersion
 {
-	if (track != nil)
-		return [NSString stringWithFormat:@"%d", [track firmwareVersion]];
+	if (_track != nil)
+		return [NSString stringWithFormat:@"%d", [_track firmwareVersion]];
 	else
 		return @"";
 }

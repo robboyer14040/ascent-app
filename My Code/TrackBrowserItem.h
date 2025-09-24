@@ -24,76 +24,26 @@ enum tBrowserItemType
 } ;
 
 
-
 @interface TrackBrowserItem : NSObject 
-{
-	NSMutableDictionary*	children;
-	NSString*				name;
-	Track*					track;
-	Lap*					lap;
-	NSDate*					date;
-	__unsafe_unretained TrackBrowserItem*		parentItem;
-	NSArray*				sortedChildKeys;
-	tBrowserItemType		type;
-	int						seqno;
-	int						sortedChildKeysSeqno;
-	BOOL					expanded;
-	float					_cachedDistance;
-	float					_cachedTotalClimb;
-	float					_cachedTotalDescent;
-	float					_cachedRateOfClimb;
-	float					_cachedRateOfDescent;
-	float					_cachedAvgSpeed;
-	float					_cachedAvgMovingSpeed;
-	float					_cachedMaxSpeed;
-	float					_cachedAvgHeartRate;
-	float					_cachedMaxHeartRate;
-	float					_cachedAvgGradient;
-	float					_cachedMaxGradient;
-	float					_cachedMinGradient;
-	float					_cachedAvgCadence;
-	float					_cachedMaxCadence;
-	float					_cachedAvgPower;
-	float					_cachedMaxPower;
-	float					_cachedWork;
-	float					_cachedMaxAltitude;
-	float					_cachedMinAltitude;
-	float					_cachedAvgAltitude;
-	float					_cachedCalories;
-	float					_cachedTimeInHRZ[kNumHRZones];
-	float					_cachedTimeInNonHRZ[kMaxZoneType+1][kNumNonHRZones];
-	float					_cachedDuration;
-	float					_cachedMovingDuration;
-	float					_cachedWeight;
-	float					_cachedMaxTemperature;
-	float					_cachedMinTemperature;
-	float					_cachedAvgTemperature;
-}
 
+@property (nonatomic, retain) NSMutableDictionary* children;
+@property (nonatomic, retain) NSString* name;
+@property (nonatomic, retain) Track* track;
+@property (nonatomic, retain) Lap* lap;
+@property (nonatomic, retain) NSDate* date;
 @property (nonatomic, assign) TrackBrowserItem* parentItem;
 @property (nonatomic, retain) NSArray* sortedChildKeys;
 @property (nonatomic) int seqno;
+@property (nonatomic) tBrowserItemType type;
 @property (nonatomic) int sortedChildKeysSeqno;
+@property (nonatomic) BOOL expanded;
 
 -(id) initWithData:(Track *)t lap:(Lap*)l name:(NSString*)n date:(NSDate*)d type:(tBrowserItemType)ty parent:(TrackBrowserItem*)parentItem;
 -(BOOL) isRoot;
--(NSString*) name;
--(void) setName:(NSString*) n;
--(Track *) track;
--(void) setTrack:(Track*) t;
-- (Lap *)lap;
-- (void)setLap:(Lap *)value;
--(NSMutableDictionary*) children;
--(NSDate*) date;
--(void) setDate:(NSDate *)d;
 -(NSComparisonResult) compare:(TrackBrowserItem*)item;
 -(NSComparisonResult) reverseCompare:(TrackBrowserItem*)item;
 -(NSComparisonResult) compareString:(TrackBrowserItem*)item;
 -(NSComparisonResult) reverseCompareString:(TrackBrowserItem*)item;
--(BOOL)expanded;
--(void)setExpanded:(BOOL)ex;
-- (tBrowserItemType)type;
-- (void)setType:(tBrowserItemType)value;
 - (void) invalidateCache:(BOOL)recursively;
 
 -(float) distance;

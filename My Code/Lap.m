@@ -2,20 +2,27 @@
 //  Lap.mm
 //  TLP
 //
-//  Created by Rob Boyer on 7/31/06.g
+//  Created by Rob Boyer on 7/31/06.
 //  Copyright 2006 rcb Construction. All rights reserved.
 //
-
 
 #import "Defs.h"
 #import "Lap.h"
 
+static NSDate *sTrackStartTime = nil;
 
-static NSDate* sTrackStartTime = nil;
+// Private state: C-array and any impl-only bits that cannot be properties.
+@interface Lap ()
+{
+    struct tStatData _statsArray[kST_NumStats];
+}
+@end
+
 
 @implementation Lap
 
-- (id) initWithGPSData:(int)idx
+
+- (id)initWithGPSData:(int)idx
 startTimeSecsSince1970:(time_t)sts
              totalTime:(unsigned int)tt
          totalDistance:(float)td
@@ -32,528 +39,290 @@ startTimeSecsSince1970:(time_t)sts
                trigger:(int)tm
 {
     self = [super init];
-    index = idx;
-    origStartTime = [NSDate dateWithTimeIntervalSince1970:sts];
-    startTimeDelta = 0.0;
-    totalTime = (tt/100);
-    distance = td/1609.344;     // meters to miles
-    maxSpeed = (ms*60.0*60.0)/1609.344;    // meters/sec to mph
-    beginLatitude = blat; beginLongitude = blon;
-    endLatitude = elat; endLongitude = elon;
-    calories = cals;
-    averageHeartRate = ahr;
-    maxHeartRate = mhr;
-    averageCadence = acd;
-    intensity = inten;
-    triggerMethod = tm;
-    statsCalculated = NO;
-    deviceTotalTime = 0;
+    if (self) {
+        _index = idx;
+        self.origStartTime = [NSDate dateWithTimeIntervalSince1970:sts];
+        _startTimeDelta = 0.0;
+        _totalTime = (tt / 100); // matches legacy units
+        _distance = td / 1609.344f; // meters -> miles
+        _maxSpeed = (ms * 60.0f * 60.0f) / 1609.344f; // m/s -> mph
+
+        _beginLatitude  = blat;
+        _beginLongitude = blon;
+        _endLatitude    = elat;
+        _endLongitude   = elon;
+
+        _calories          = (int)cals;
+        _averageHeartRate  = ahr;
+        _maxHeartRate      = mhr;
+        _averageCadence    = acd;
+        _intensity         = inten;
+        _triggerMethod     = tm;
+
+        _statsCalculated   = NO;
+        _deviceTotalTime   = 0.0;
+    }
     return self;
 }
 
 
-- (id) init
+- (id)init
 {
-   return [self initWithGPSData:0
-		 startTimeSecsSince1970:0
+    return [self initWithGPSData:0
+         startTimeSecsSince1970:0
                       totalTime:0
-                  totalDistance:0.0
-                       maxSpeed:0.0
-                       beginLat:180.0
-                       beginLon:180.0
-                         endLat:180.0
-                         endLon:180.0
+                  totalDistance:0.0f
+                       maxSpeed:0.0f
+                       beginLat:180.0f
+                       beginLon:180.0f
+                         endLat:180.0f
+                         endLon:180.0f
                        calories:0
                           avgHR:0
                           maxHR:0
                           avgCD:0
-                      intensity:0
-                        trigger:0];
+                       intensity:0
+                         trigger:0];
 }
 
 
 - (void)dealloc
 {
+    [_origStartTime release];
     [super dealloc];
 }
 
 
--(id)doCopy:(NSZone *)zone
+- (id)doCopy:(NSZone *)zone
 {
-	Lap* newLap = [[Lap allocWithZone:zone] init];
-	[newLap setIndex:index];
-	[newLap setOrigStartTime:[origStartTime copy]];
-	[newLap setStartingWallClockTimeDelta:startTimeDelta];
-	[newLap setTotalTime:totalTime];
-	[newLap setDistance:distance];
-	[newLap setMaxSpeed:maxSpeed];
-	[newLap setAvgSpeed:avgSpeed];
-	newLap->beginLatitude = beginLatitude;
-	newLap->endLatitude = endLatitude;
-	newLap->beginLongitude = beginLongitude;
-	newLap->endLongitude = endLongitude;
-    newLap->deviceTotalTime = deviceTotalTime;
-	[newLap setAvgHeartRate:averageHeartRate];
-	[newLap setMaxHeartRate:maxHeartRate];
-	[newLap setAverageCadence:averageCadence];
-	[newLap setMaxCadence:maxCadence];
-	[newLap setCalories:calories];
-	[newLap setIntensity:intensity];
-	[newLap setTriggerMethod:triggerMethod];
-	return newLap;
+    Lap *newLap = [[Lap allocWithZone:zone] init];
+
+    newLap.index             = _index;
+    newLap.origStartTime     = _origStartTime;     // property copies; MRC-safe
+    newLap.startTimeDelta    = _startTimeDelta;
+    newLap.totalTime         = _totalTime;
+    newLap.deviceTotalTime   = _deviceTotalTime;
+
+    newLap.distance          = _distance;
+    newLap.maxSpeed          = _maxSpeed;
+    newLap.avgSpeed          = _avgSpeed;
+
+    newLap.beginLatitude     = _beginLatitude;
+    newLap.beginLongitude    = _beginLongitude;
+    newLap.endLatitude       = _endLatitude;
+    newLap.endLongitude      = _endLongitude;
+
+    newLap.averageHeartRate  = _averageHeartRate;
+    newLap.maxHeartRate      = _maxHeartRate;
+    newLap.averageCadence    = _averageCadence;
+    newLap.maxCadence        = _maxCadence;
+
+    newLap.calories          = _calories;
+    newLap.intensity         = _intensity;
+    newLap.triggerMethod     = _triggerMethod;
+
+    newLap.statsCalculated   = _statsCalculated;
+    newLap.selected          = _selected;
+
+    return newLap;
 }
 
 
 - (id)copyWithZone:(NSZone *)zone
 {
-	return [self doCopy:zone];
+    return [self doCopy:zone];
 }
 
-	
+
 - (id)mutableCopyWithZone:(NSZone *)zone
 {
-	return [self doCopy:zone];
+    return [self doCopy:zone];
 }
 
 
-+ (void) resetStartTime:(NSDate*)startTime;			
++ (void)resetStartTime:(NSDate *)startTime
 {
-	sTrackStartTime = startTime;
+    // Matches legacy behavior (no retain/copy). Adjust if you prefer ownership.
+    sTrackStartTime = startTime;
 }
 
-#define DEBUG_DECODE	0
-#define CUR_VERSION		2
+
+#define DEBUG_DECODE 0
+#define CUR_VERSION  2
+
 - (id)initWithCoder:(NSCoder *)coder
 {
 #if DEBUG_DECODE
-	printf("decoding Lap\n");
+    printf("decoding Lap\n");
 #endif
-	self = [super init];
-	statsCalculated = NO;
-	int version;
-	float spareFloat;
-	int spareInt;
-	[coder decodeValueOfObjCType:@encode(int) at:&version];
-	if (version > CUR_VERSION)
-	{
-		NSException *e = [NSException exceptionWithName:ExFutureVersionName
-												 reason:ExFutureVersionReason
-											   userInfo:nil];			  
-		@throw e;
-	}
-	[self setOrigStartTime:[coder decodeObject]];
-	if (version < 2)
-	{
-		startTimeDelta = [origStartTime timeIntervalSinceDate:sTrackStartTime];
-	}
-	else
-	{
-		[coder decodeValueOfObjCType:@encode(double) at:&startTimeDelta];
-	}
-	[coder decodeValueOfObjCType:@encode(long long) at:&totalTime];
-	[coder decodeValueOfObjCType:@encode(float) at:&beginLatitude];
-	[coder decodeValueOfObjCType:@encode(float) at:&beginLongitude];
-	[coder decodeValueOfObjCType:@encode(float) at:&endLatitude];
-	[coder decodeValueOfObjCType:@encode(float) at:&endLongitude];
-	[coder decodeValueOfObjCType:@encode(float) at:&distance];
-	[coder decodeValueOfObjCType:@encode(float) at:&maxSpeed];
-	[coder decodeValueOfObjCType:@encode(float) at:&avgSpeed];
-	[coder decodeValueOfObjCType:@encode(float) at:&deviceTotalTime];   // 1.11.5 BETA 9
-	[coder decodeValueOfObjCType:@encode(float) at:&spareFloat];
-	[coder decodeValueOfObjCType:@encode(float) at:&spareFloat];
-	[coder decodeValueOfObjCType:@encode(int) at:&averageHeartRate];
-	[coder decodeValueOfObjCType:@encode(int) at:&maxHeartRate];
-	[coder decodeValueOfObjCType:@encode(int) at:&averageCadence];
-	[coder decodeValueOfObjCType:@encode(int) at:&intensity];
-	[coder decodeValueOfObjCType:@encode(int) at:&triggerMethod];
-	[coder decodeValueOfObjCType:@encode(int) at:&calories];
-	[coder decodeValueOfObjCType:@encode(int) at:&maxCadence];
-	[coder decodeValueOfObjCType:@encode(int) at:&spareInt];
-	[coder decodeValueOfObjCType:@encode(int) at:&spareInt];
-	[coder decodeValueOfObjCType:@encode(int) at:&spareInt];   
-	return self;
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+
+    _statsCalculated = NO;
+
+    int version = 0;
+    float spareFloat = 0.0f;
+    int spareInt = 0;
+
+    [coder decodeValueOfObjCType:@encode(int) at:&version];
+
+    if (version > CUR_VERSION) {
+        NSException *e = [NSException exceptionWithName:ExFutureVersionName
+                                                 reason:ExFutureVersionReason
+                                               userInfo:nil];
+        @throw e;
+    }
+
+    self.origStartTime = [coder decodeObject];
+
+    if (version < 2) {
+        _startTimeDelta = [_origStartTime timeIntervalSinceDate:sTrackStartTime];
+    } else {
+        [coder decodeValueOfObjCType:@encode(double) at:&_startTimeDelta];
+    }
+
+    [coder decodeValueOfObjCType:@encode(long long) at:&_totalTime];
+    [coder decodeValueOfObjCType:@encode(float) at:&_beginLatitude];
+    [coder decodeValueOfObjCType:@encode(float) at:&_beginLongitude];
+    [coder decodeValueOfObjCType:@encode(float) at:&_endLatitude];
+    [coder decodeValueOfObjCType:@encode(float) at:&_endLongitude];
+    [coder decodeValueOfObjCType:@encode(float) at:&_distance];
+    [coder decodeValueOfObjCType:@encode(float) at:&_maxSpeed];
+    [coder decodeValueOfObjCType:@encode(float) at:&_avgSpeed];
+    [coder decodeValueOfObjCType:@encode(float) at:&_deviceTotalTime];   // 1.11.5 BETA 9
+    [coder decodeValueOfObjCType:@encode(float) at:&spareFloat];
+    [coder decodeValueOfObjCType:@encode(float) at:&spareFloat];
+    [coder decodeValueOfObjCType:@encode(int)   at:&_averageHeartRate];
+    [coder decodeValueOfObjCType:@encode(int)   at:&_maxHeartRate];
+    [coder decodeValueOfObjCType:@encode(int)   at:&_averageCadence];
+    [coder decodeValueOfObjCType:@encode(int)   at:&_intensity];
+    [coder decodeValueOfObjCType:@encode(int)   at:&_triggerMethod];
+    [coder decodeValueOfObjCType:@encode(int)   at:&_calories];
+    [coder decodeValueOfObjCType:@encode(int)   at:&_maxCadence];
+    [coder decodeValueOfObjCType:@encode(int)   at:&spareInt];
+    [coder decodeValueOfObjCType:@encode(int)   at:&spareInt];
+    [coder decodeValueOfObjCType:@encode(int)   at:&spareInt];
+
+    return self;
 }
 
 
 - (void)encodeWithCoder:(NSCoder *)coder
 {
-	int version = CUR_VERSION;
-	float spareFloat = 0.0f;
-	int spareInt = 0;
-	[coder encodeValueOfObjCType:@encode(int) at:&version];
-	[coder encodeObject:origStartTime];
-	[coder encodeValueOfObjCType:@encode(double) at:&startTimeDelta];
-	[coder encodeValueOfObjCType:@encode(long long) at:&totalTime];
-	[coder encodeValueOfObjCType:@encode(float) at:&beginLatitude];
-	[coder encodeValueOfObjCType:@encode(float) at:&beginLongitude];
-	[coder encodeValueOfObjCType:@encode(float) at:&endLatitude];
-	[coder encodeValueOfObjCType:@encode(float) at:&endLongitude];
-	[coder encodeValueOfObjCType:@encode(float) at:&distance];
-	[coder encodeValueOfObjCType:@encode(float) at:&maxSpeed];
-	[coder encodeValueOfObjCType:@encode(float) at:&avgSpeed];
-	[coder encodeValueOfObjCType:@encode(float) at:&deviceTotalTime];    // 1.11.5 BETA 9
-	[coder encodeValueOfObjCType:@encode(float) at:&spareFloat];
-	[coder encodeValueOfObjCType:@encode(float) at:&spareFloat];
-	[coder encodeValueOfObjCType:@encode(int) at:&averageHeartRate];
-	[coder encodeValueOfObjCType:@encode(int) at:&maxHeartRate];
-	[coder encodeValueOfObjCType:@encode(int) at:&averageCadence];
-	[coder encodeValueOfObjCType:@encode(int) at:&intensity];
-	[coder encodeValueOfObjCType:@encode(int) at:&triggerMethod];
-	[coder encodeValueOfObjCType:@encode(int) at:&calories];
-	[coder encodeValueOfObjCType:@encode(int) at:&maxCadence];
-	[coder encodeValueOfObjCType:@encode(int) at:&spareInt];
-	[coder encodeValueOfObjCType:@encode(int) at:&spareInt];
-	[coder encodeValueOfObjCType:@encode(int) at:&spareInt];
-}
+    int version = CUR_VERSION;
+    float spareFloat = 0.0f;
+    int spareInt = 0;
 
-- (NSTimeInterval) startTimeDelta
-{
-    return startTimeDelta;
-}
-
-- (NSTimeInterval) startingWallClockTimeDelta
-{
-	return startTimeDelta;
+    [coder encodeValueOfObjCType:@encode(int) at:&version];
+    [coder encodeObject:_origStartTime];
+    [coder encodeValueOfObjCType:@encode(double)     at:&_startTimeDelta];
+    [coder encodeValueOfObjCType:@encode(long long)  at:&_totalTime];
+    [coder encodeValueOfObjCType:@encode(float)      at:&_beginLatitude];
+    [coder encodeValueOfObjCType:@encode(float)      at:&_beginLongitude];
+    [coder encodeValueOfObjCType:@encode(float)      at:&_endLatitude];
+    [coder encodeValueOfObjCType:@encode(float)      at:&_endLongitude];
+    [coder encodeValueOfObjCType:@encode(float)      at:&_distance];
+    [coder encodeValueOfObjCType:@encode(float)      at:&_maxSpeed];
+    [coder encodeValueOfObjCType:@encode(float)      at:&_avgSpeed];
+    [coder encodeValueOfObjCType:@encode(float)      at:&_deviceTotalTime];    // 1.11.5 BETA 9
+    [coder encodeValueOfObjCType:@encode(float)      at:&spareFloat];
+    [coder encodeValueOfObjCType:@encode(float)      at:&spareFloat];
+    [coder encodeValueOfObjCType:@encode(int)        at:&_averageHeartRate];
+    [coder encodeValueOfObjCType:@encode(int)        at:&_maxHeartRate];
+    [coder encodeValueOfObjCType:@encode(int)        at:&_averageCadence];
+    [coder encodeValueOfObjCType:@encode(int)        at:&_intensity];
+    [coder encodeValueOfObjCType:@encode(int)        at:&_triggerMethod];
+    [coder encodeValueOfObjCType:@encode(int)        at:&_calories];
+    [coder encodeValueOfObjCType:@encode(int)        at:&_maxCadence];
+    [coder encodeValueOfObjCType:@encode(int)        at:&spareInt];
+    [coder encodeValueOfObjCType:@encode(int)        at:&spareInt];
+    [coder encodeValueOfObjCType:@encode(int)        at:&spareInt];
 }
 
 
-- (void) setStartingWallClockTimeDelta:(NSTimeInterval)std
+- (NSTimeInterval)startingWallClockTimeDelta
 {
-	startTimeDelta = std;
+    return _startTimeDelta;
 }
 
 
-- (NSDate*) origStartTime
+- (void)setStartingWallClockTimeDelta:(NSTimeInterval)std
 {
-	return origStartTime;
+    _startTimeDelta = std;
 }
 
 
-- (void) setOrigStartTime:(NSDate*)ost
+- (NSString *)durationAsString
 {
-	if (ost != origStartTime)
-	{
-		origStartTime = ost;
-	}
-}
-
-- (NSComparisonResult) compareByOrigStartTime:(Lap*)anotherLap
-{
-	return [[self origStartTime] compare:[anotherLap origStartTime]];
-}
-
-- (NSComparisonResult) reverseCompareByOrigStartTime:(Lap*)anotherLap
-{
-	return [[anotherLap origStartTime] compare:[self origStartTime]];
+    NSTimeInterval dur = _totalTime;
+    int hours = (int)(dur / 3600.0);
+    int mins  = (int)(dur / 60.0) % 60;
+    int secs  = (int)dur % 60;
+    return [NSString stringWithFormat:@"%02d:%02d:%02d", hours, mins, secs];
 }
 
 
-- (BOOL)isOrigDateDuringLap:(NSDate*)d
+- (NSComparisonResult)compareByOrigStartTime:(Lap *)anotherLap
 {
-   NSDate* endDate = [[NSDate alloc] initWithTimeInterval:[self totalTime] sinceDate:origStartTime];
-   BOOL isLessThan = [d compare:origStartTime] == NSOrderedAscending;
-   BOOL isGreaterThan = [d compare:endDate] == NSOrderedDescending;
-   return ((isLessThan == NO) && (isGreaterThan == NO));
+    return [_origStartTime compare:anotherLap.origStartTime];
+}
+
+
+- (NSComparisonResult)reverseCompareByOrigStartTime:(Lap *)anotherLap
+{
+    return [anotherLap.origStartTime compare:_origStartTime];
+}
+
+
+- (BOOL)isOrigDateDuringLap:(NSDate *)d
+{
+    NSDate *endDate = [NSDate dateWithTimeInterval:_totalTime sinceDate:_origStartTime];
+
+    BOOL isLessThan = ([d compare:_origStartTime] == NSOrderedAscending);
+    BOOL isGreaterThan = ([d compare:endDate] == NSOrderedDescending);
+
+    return ((isLessThan == NO) && (isGreaterThan == NO));
 }
 
 
 - (BOOL)isDeltaTimeDuringLap:(NSTimeInterval)delta
 {
-	return IS_BETWEEN(startTimeDelta, delta, (startTimeDelta + totalTime));
+    return IS_BETWEEN(_startTimeDelta, delta, (_startTimeDelta + _totalTime));
 }
 
 
-
-- (NSTimeInterval) totalTime
-{ 
-   return totalTime;
-}
-
-
-- (void) setTotalTime:(NSTimeInterval)tt
+- (int)lapIndex
 {
-    totalTime = tt;
+    return _index;
 }
 
 
--(void)setDeviceTotalTime:(NSTimeInterval)dtt
+- (NSComparisonResult)compare:(id)lap2
 {
-    deviceTotalTime = dtt;
+    NSTimeInterval lap2Delta = [lap2 startingWallClockTimeDelta];
+
+    if (_startTimeDelta < lap2Delta) {
+        return NSOrderedAscending;
+    } else if (_startTimeDelta == lap2Delta) {
+        return NSOrderedSame;
+    }
+
+    return NSOrderedDescending;
 }
 
 
--(NSTimeInterval) deviceTotalTime
+- (struct tStatData *)getStat:(int)type
 {
-    return deviceTotalTime;
+    return &_statsArray[type];
 }
 
 
-
-- (NSString *)durationAsString
+- (struct tStatData *)getStatArray
 {
-   NSTimeInterval dur = [self totalTime];
-   int hours = (int)dur/3600;
-   int mins = (int)(dur/60.0) % 60;
-   int secs = (int)dur % 60;
-   return [NSString stringWithFormat:@"%02d:%02d:%02d",hours, mins, secs];
+    return _statsArray;
 }
-
-
-- (float) distance
-{
-   return distance;
-}
-
-
-- (void)setDistance:(float)d
-{
-   distance = d;
-}
-
-
-- (float) maxSpeed
-{ 
-   return maxSpeed;
-}
-
-
-- (void)setMaxSpeed:(float)ms
-{
-   maxSpeed = ms;
-}
-
-
-- (float) avgSpeed
-{ 
-	return avgSpeed;
-}
-
-
-- (void)setAvgSpeed:(float)as
-{
-	avgSpeed = as;
-}
-
-
-- (float) beginLatitude
-{
-   return beginLatitude;
-}
-
-
-- (void) setBeginLatitude:(float)val
-{
-	beginLatitude = val;
-}
-
-
-- (float) beginLongitude
-{
-   return beginLongitude;
-}
-
-
-- (void) setBeginLongitude:(float)val
-{
-	beginLongitude = val;
-}
-
-
-- (float) endLatitude
-{
-   return endLatitude;
-}
-
-
-- (void) setEndLatitude:(float)val
-{
-	endLatitude = val;
-}
-
-
-- (float) endLongitude
-{
-   return endLongitude;
-}
-
-
-- (void) setEndLongitude:(float)val
-{
-	endLongitude = val;
-}
-
-
-- (int) averageHeartRate
-{
-   return averageHeartRate;
-}
-
-
-- (void)setAvgHeartRate:(int)mhr
-{
-   averageHeartRate = mhr;
-}
-
-
-- (int) maxHeartRate
-{
-   return maxHeartRate;
-}
-
-
-- (void)setMaxHeartRate:(int)mhr
-{
-   maxHeartRate = mhr;
-}
-
-
-- (int) averageCadence
-{
-   return averageCadence;
-}
-
-
-- (void)setAverageCadence:(int)avc
-{
-   averageCadence = avc;
-}
-
-
-- (int) maxCadence
-{
-	return maxCadence;
-}
-
-
-- (void)setMaxCadence:(int)mc
-{
-	maxCadence = mc;
-}
-
-
-- (int)calories 
-{
-   return calories;
-}
-
-
-- (int)lapCalories
-{
-   return calories;
-}
-
-
-- (void)setCalories:(int)value 
-{
-   if (calories != value) 
-   {
-      calories = value;
-   }
-}
-
-
-- (int)intensity 
-{
-   return intensity;
-}
-
-
-- (void)setIntensity:(int)value 
-{
-   if (intensity != value) 
-   {
-      intensity = value;
-   }
-}
-
-
-- (int)triggerMethod 
-{
-   return triggerMethod;
-}
-
-
-- (void)setTriggerMethod:(int)value 
-{
-   if (triggerMethod != value) 
-   {
-      triggerMethod = value;
-   }
-}
-
-- (int) lapIndex
-{
-   return index;
-}
-
-
-- (int) index
-{
-   return index;
-}
-
-- (void)setIndex:(int)idx
-{
-	index = idx;
-}
-
-
-
-- (NSComparisonResult) compare:(id)lap2
-{
-	NSTimeInterval lap2Delta = [lap2 startingWallClockTimeDelta];
- 	if (startTimeDelta < lap2Delta)
-	{
-		return NSOrderedAscending;
-	}
-	else if (startTimeDelta == lap2Delta)
-	{
-		return NSOrderedSame;
-	}
-	return NSOrderedDescending;
-}
-
-
-- (BOOL)isEqual:(id)otherLap
-{
-   return startTimeDelta == [otherLap startingWallClockTimeDelta];
-}
-
-
-- (BOOL)selected {
-   return selected;
-}
-
-- (void)setSelected:(BOOL)value {
-   if (selected != value) {
-      selected = value;
-   }
-}
-
-
-- (struct tStatData*) getStat:(int)type
-{
-   return &statsArray[type];
-}
-
-
-- (struct tStatData*) getStatArray
-{
-   return statsArray;
-}
-
-
-- (void) setStatsCalculated:(BOOL)done
-{
-   statsCalculated = done;
-}
-
-
-- (BOOL) statsCalculated
-{
-   return statsCalculated;
-}
-
 
 
 @end

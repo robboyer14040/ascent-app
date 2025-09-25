@@ -659,7 +659,7 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
     dispatch_async(workQ, ^{
         @autoreleasepool {
             __block NSDictionary *detail = nil;
-            __block NSArray<NSDictionary *> *photosPayload = nil;
+            ///__block NSArray<NSDictionary *> *photosPayload = nil;
             __block NSError *firstError = nil;
             
             // Streams (sync on background queue)
@@ -726,6 +726,8 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
                 }
 
                 
+#if 0
+                // stored in localMediaItems
                 // Photos → Track.photoURLs
                 if (photosPayload) {
                     NSArray<NSURL *> *urls = ExtractPhotoURLs(photosPayload);
@@ -742,6 +744,7 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
                     [photosPayload release];
                     photosPayload = nil;
                 }
+#endif
                 
                 
                 

@@ -12,7 +12,7 @@
 #import "MaintenanceLog.h"
 #import "Track.h"
 #import "TrackBrowserDocument.h"
-#import "TBWindowController.h"
+#import "MainWindowController.h"
 #import "ProgressBarController.h"
 #import "Utils.h"
 
@@ -93,7 +93,7 @@
 {
 	TrackBrowserDocument* tbd = (TrackBrowserDocument*)
 		[[NSDocumentController sharedDocumentController] currentDocument];
-	TBWindowController* wc = [tbd windowController];
+	MainWindowController* wc = [tbd windowController];
 	[wc presentError:err];
 	return NO;
 }
@@ -936,7 +936,7 @@ struct EqTypeInfo
 											   entity:@"EquipmentItem"];
 		BOOL isfirst = !defaults || ([defaults count] == 0);
 		
-		TBWindowController* wc = [tbdoc windowController];
+		MainWindowController* wc = [tbdoc windowController];
 		
 		SharedProgressBar* pb = [SharedProgressBar sharedInstance];
 		NSRect fr = [[wc window] frame];
@@ -1109,7 +1109,7 @@ struct EqTypeInfo
 -(void)updateEquipmentAttributeForTracksContainingEquipmentItem:(NSString*)eid document:(TrackBrowserDocument*)tbd wc:(NSWindowController*)wc
 {
 	NSArray* trackArray = [tbd trackArray];
-	TBWindowController* tbwc = [tbd windowController];
+	MainWindowController* tbwc = [tbd windowController];
 	SharedProgressBar* pb = [SharedProgressBar sharedInstance];
 	NSRect pbfr = [[[pb controller] window] frame];    // must call window method for NIB to load, needs to be done before 'begin' is called
 	int d = 20;

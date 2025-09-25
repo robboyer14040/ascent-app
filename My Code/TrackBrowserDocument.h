@@ -10,7 +10,7 @@
 #import <Cocoa/Cocoa.h>
 
 @class ADWindowController;
-@class TBWindowController;
+@class MainWindowController;
 @class Lap;
 @class Track;
 @class TrackPoint;
@@ -39,7 +39,7 @@ NSString * const AscentUTIDatabase      = @"com.montebellosoftware.ascent.db";
 	Track*							currentlySelectedTrack;
 	Lap*							selectedLap;
 	ADWindowController*				adWindowController;
-	TBWindowController*				tbWindowController;
+	MainWindowController*				tbWindowController;
 	BackupDelegate*					backupDelegate;
     NSURL*                          databaseFileURL;
 }
@@ -60,7 +60,7 @@ NSString * const AscentUTIDatabase      = @"com.montebellosoftware.ascent.db";
 - (void)setCurrentlySelectedTrack:(Track*)t;
 - (void)selectionChanged;
 - (NSMutableArray*)trackArray;
-- (TBWindowController*) windowController;
+- (MainWindowController*) windowController;
 -(void) addTracks:(NSArray*)arr;
 -(NSArray*) addTracksAfterStravaSync:(NSArray*)arr;
 -(void) deleteTracks:(NSArray*)arr;

@@ -43,7 +43,7 @@
 {
 	if (track == [notification object])
 	{
-		trackHasDistance = [track hasDistance];
+		trackHasDistance = [track hasDistanceData];
 		[tableView reloadData];
 	}
 }
@@ -133,7 +133,7 @@
 	if (t != track)
 	{
 		track = t;
-		trackHasDistance = [track hasDistance];
+		trackHasDistance = [track hasDistanceData];
 		[track calculatePower];
 		[tableView reloadData];
 	}

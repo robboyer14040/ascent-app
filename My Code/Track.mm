@@ -20,6 +20,18 @@
 //------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------
 
+@interface LapInfo : NSObject
+
+@property(nonatomic, retain) Lap* lap;
+@property(nonatomic) int numPoints;
+@property(nonatomic) int startingPointIndex;
+@property(nonatomic) NSTimeInterval activeTimeDelta;
+
+- (id) initWithData:(Lap*)lap startIdx:(int)sp numPoints:(int)np;
+
+@end
+
+
 @implementation LapInfo
 
 - (id) initWithData:(Lap*)lp startIdx:(int)sp numPoints:(int)np
@@ -70,6 +82,7 @@
 - (float)realDurationOfLap:(Lap*)lap;
 - (void) checkPowerData;
 - (void)fixLapDurations;
+- (LapInfo*) getLapInfo:(Lap*)l;
 
 @end
 
@@ -2396,7 +2409,7 @@ static int sSpikeCount = 0;
 }
 
 
-- (void)setPoints:(NSMutableArray*)p
+- (void)setPoints:(NSMutableArray<TrackPoint*>*)p
 {
     if (p != _points)
     {
@@ -2409,7 +2422,7 @@ static int sSpikeCount = 0;
 }
 
 
-- (void)setLaps:(NSMutableArray*)l
+- (void)setLaps:(NSMutableArray<Lap*>*)l
 {
     if (l != _laps)
     {

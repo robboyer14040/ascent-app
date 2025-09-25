@@ -8,7 +8,7 @@
 
 #import "EquipmentListWindowController.h"
 #import "TrackBrowserDocument.h"
-#import "TBWindowController.h"
+#import "MainWindowController.h"
 #import "EquipmentLog.h"
 #import "EquipmentItem.h"
 #import "EquipmentLogInitialValuesWC.h"
@@ -243,7 +243,7 @@
 	{
 		[self presentError:error];
 	}
-	TBWindowController* wc = [tbDocument windowController];
+	MainWindowController* wc = [tbDocument windowController];
 	[wc dismissEquipmentList:self];
 }
 

@@ -19,6 +19,7 @@
 #import "ADView.h"
 #import "Utils.h"
 #import "Track.h"
+#import "TrackPoint.h"
 #import "AnimTimer.h"
 #import "Defs.h"
 #import <QuartzCore/QuartzCore.h>
@@ -121,12 +122,13 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	self.dotColorsArray = nil;
 	self.mainWindowController = nil;
 	[self doCleanup];
+    [super dealloc];
 }
 
 -(void)addTracksFromArrayOfTrackDates:(NSArray*)arr
 {
 	NSArray* allTracks = [self.mainWindowController trackArray];
-	int count = [allTracks count];
+    NSUInteger count = [allTracks count];
 	NSMutableArray* newTrackArray = [NSMutableArray arrayWithArray:trackArray];
 	for (NSNumber* num in arr)
 	{
@@ -143,7 +145,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 		}
 	}
 	self.trackArray = newTrackArray;
-	self.numViews = [trackArray count];
+	self.numViews = (int)[trackArray count];
 	[self updateTracks];
 }
 	
@@ -255,7 +257,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	
 	
 	// setup up profile views
-	int trackCount = [trackArray count];
+	int trackCount = (int)[trackArray count];
 	
 	self.profilesTransparentView = [[ProfilesTransparentView alloc] initWithFrame:profilesContainerView.frame];
 	
@@ -389,8 +391,8 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 
 -(IBAction)selectorSegmentedControlClicked:(id)sender
 {
-    int clickedSegment = [sender selectedSegment];
-    int clickedSegmentTag = [[sender cell] tagForSegment:clickedSegment];
+    int clickedSegment = (int)[sender selectedSegment];
+    int clickedSegmentTag = (int)[[sender cell] tagForSegment:clickedSegment];
 	if (clickedSegmentTag == 0)			// set start of compare region
 	{
 		[self.profilesTransparentView setCompareRegionStart];
@@ -505,7 +507,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 
 -(IBAction)setToLap:(id)sender
 {
-	int idx = [sender indexOfSelectedItem] - 1;		//NOTE: always returns >= 1 when selecting items in pull-down
+	int idx = (int)[sender indexOfSelectedItem] - 1;		//NOTE: always returns >= 1 when selecting items in pull-down
 	if (idx == 0)
 	{
 		[self setAllToRulerPosition];
@@ -632,7 +634,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 
 -(IBAction)zoom:(id)sender
 {
-	int tag = [sender tag];
+	int tag = (int)[sender tag];
 	[self doZoom:(tag == 1)];
 }
 
@@ -697,7 +699,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	[self.profilesTransparentView.layer setNeedsDisplay];
 	NSRect sfr = [mainSplitView frame];
 	NSRect cfr = [rightContentView frame];
-	int numTracks = [trackArray count];
+	int numTracks = (int)[trackArray count];
 	float containerH = fr.size.height - RULER_HEIGHT;
 	int minViewAreas = 2;
 	int nv = self.numViews >= minViewAreas ? self.numViews : minViewAreas;
@@ -753,7 +755,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 {
 	lastFocusedPVC = nil;
 	self.trackArray = [self.trackArray sortedArrayUsingSelector:@selector(compareByMovingDuration:)];
-	int numTracks = [trackArray count];
+    NSUInteger numTracks = [trackArray count];
 	if (numTracks > 0)
 	{
 		[profilesContainerView enablePlaceholderText:NO];
@@ -847,7 +849,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 		{
 			if (laps.count > maxLaps)
 			{
-				maxLaps = laps.count;
+				maxLaps = (int)laps.count;
 				maxLapPVC = pvc;
 			}
 		}
@@ -866,7 +868,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	Track* maxLapTrack = pvc ? pvc.track : nil;
 	if (maxLapTrack)
 	{
-		int maxLaps = maxLapTrack.laps.count;
+        NSUInteger maxLaps = maxLapTrack.laps.count;
 		[alignToPopUpButton addItemWithTitle:@"Current ruler position"];
 		[alignToPopUpButton addItemWithTitle:@"Activity start"];
 		for (int i=0; i<(maxLaps-1); i++)
@@ -880,7 +882,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 -(IBAction)setXAxisType:(id)sender
 {
 	xAxisIsTime = [sender indexOfSelectedItem] > 0 ? YES : NO;
-	NSLog(@"isTime: %d %@", [sender indexOfSelectedItem], xAxisIsTime ? @"YES" : @"NO");
+	NSLog(@"isTime: %d %@", (int)[sender indexOfSelectedItem], xAxisIsTime ? @"YES" : @"NO");
 	[Utils setBoolDefault:xAxisIsTime
 				   forKey:RCBDefaultCompareWindowXAxisType];
 	[self updateTracks];
@@ -921,7 +923,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 
 -(IBAction)setGuideFollows:(id)sender;
 {
-	int idx = [sender indexOfSelectedItem];
+	int idx = (int)[sender indexOfSelectedItem];
 	[Utils setIntDefault:idx
 				  forKey:RCBDefaultCompareWindowGuideFollows];
 	guideFollows = idx;
@@ -1070,7 +1072,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 -(void)resetTracks:(NSArray*)ta mainWC:(NSWindowController*)wc
 {
 	self.trackArray = ta;
-	self.numViews = [trackArray count];
+	self.numViews = (int)[trackArray count];
 	for (CompareProfileViewController* pvc in profileControllerArray)
 	{
 		pvc.track = nil;
@@ -1237,7 +1239,7 @@ enum
 	
 -(void)zoomProfiles:(id)sender
 {
-	int tag = [sender tag];
+	int tag = (int)[sender tag];
 	[self doZoom:(tag == kCM_ZoomInAll ? YES : NO)];
 }
 
@@ -1250,7 +1252,7 @@ enum
 
 -(void)alignToRulerPosition:(id)sender
 {
-	int tag = [sender tag];
+	int tag = (int)[sender tag];
 	if (tag == kCM_AlignAllToRulerPosition)
 	{
 		[self setAllToRulerPosition];
@@ -1264,7 +1266,7 @@ enum
 
 -(void)alignToNextLapMarker:(id)sender
 {
-	int tag = [sender tag];
+	int tag = (int)[sender tag];
 	if (tag == kCM_AlignTrackToPreviousLapMarker)
 	{
 		[self setSelectedActivityToNextOrPreviousLap:NO];
@@ -1419,7 +1421,7 @@ enum
 	CompareProfileViewController* fastPVC = nil;
 	float maxDist = -1.0;
 	int focusAID = 0;
-	int num = [profileControllerArray count];
+    NSUInteger num = [profileControllerArray count];
 	for (int i=0; i<num; i++)
 	{
 		CompareProfileViewController* pvc = [profileControllerArray objectAtIndex:i];
@@ -1445,7 +1447,7 @@ enum
 		int pos = 0;
 		if (t != nil)
 		{
-			int numPoints = [[t goodPoints] count];
+            int numPoints = (int)[[t goodPoints] count];
 			pos = [t animIndex];
 			if (pos >= numPoints) pos = numPoints-1;
 			TrackPoint* pt = [[t goodPoints] objectAtIndex:pos];

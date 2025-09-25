@@ -12,23 +12,22 @@
 @implementation PathMarker
 
 
-
 -(id) initWithData:(NSString*)n imagePath:(NSString*)ip distance:(float)d
 {
    self = [super init];
    [self setName:n];
    [self setImagePath:ip];
-   soundPath = @"";
-   distance = d;
-   flags = 0;
-   return self;
+   _soundPath = nil;
+   _distance = d;
+    return self;
 }
+
 
 -(id) init
 {
-   return [self initWithData:@""
-                   imagePath:@""
-                  distance:0.0];
+   return [self initWithData:nil
+                   imagePath:nil
+                    distance:0.0];
 }
 
 
@@ -76,12 +75,12 @@
 	float spareFloat = 0.0f;
 	int spareInt = 0;
 	[coder encodeValueOfObjCType:@encode(int) at:&version];
-	[coder encodeObject:name];
-	[coder encodeObject:imagePath];
-	[coder encodeObject:soundPath];
+	[coder encodeObject:_name];
+	[coder encodeObject:_imagePath];
+	[coder encodeObject:_soundPath];
 	[coder encodeObject:@""];     // spare string
 	[coder encodeObject:@""];     // spare string
-	[coder encodeValueOfObjCType:@encode(float) at:&distance];
+	[coder encodeValueOfObjCType:@encode(float) at:&_distance];
 
 	[coder encodeValueOfObjCType:@encode(float) at:&spareFloat];
 	[coder encodeValueOfObjCType:@encode(float) at:&spareFloat];
@@ -92,8 +91,9 @@
 
 - (void)dealloc
 {
-    [name release];
-    [imagePath release];
+    [_name release];
+    [_imagePath release];
+    [_soundPath release];
     [super dealloc];
 }
 
@@ -101,90 +101,28 @@
 - (id)mutableCopyWithZone:(NSZone *)zone
 {
 	PathMarker* newMarker = [[PathMarker allocWithZone:zone] init];
-	[newMarker setName:[name copy]];
-	[newMarker setDistance:distance];
-	[newMarker setImagePath:[imagePath copy]];
-	// @@FIXME@@ sound path?
+    newMarker.name = _name;
+	newMarker.distance = _distance;
+    newMarker.imagePath = _imagePath;
+    newMarker.soundPath = _soundPath;
 	return newMarker;
-}
-
-
--(NSString*) name
-{
-   return name;
-}
-
-
-
--(void) setName:(NSString*)n
-{
-   if (n != name)
-   {
-      name = [n retain];
-   }
-}
-
-
-
--(NSString*) soundPath
-{
-   return soundPath;
-}
-
-
-
--(void) setSoundPath:(NSString *)n
-{
-   if (n != soundPath)
-   {
-       soundPath = [n retain];
-   }
-}
-
-
-
--(NSString*) imagePath
-{
-   return imagePath;
-}
-
-
--(void) setImagePath:(NSString*)ip
-{
-   if (ip != imagePath)
-   {
-      imagePath = [ip retain];
-   }
-}
-
-
-
--(float) distance
-{
-   return distance;
-}
-
-
--(void) setDistance:(float)d
-{
-   distance = d;
 }
 
 
 - (BOOL)isEqual:(id)anObject
 {
-   BOOL eq = (distance == [anObject distance]) &&
-      ([name compare:[anObject name]] == NSOrderedSame) &&
-      ([imagePath compare:[anObject imagePath]] == NSOrderedSame);
+   BOOL eq = (_distance == [anObject distance]) &&
+      ([_name compare:[anObject name]] == NSOrderedSame) &&
+      ([_imagePath compare:[anObject imagePath]] == NSOrderedSame);
    
    return eq;
 }
 
+
 - (NSComparisonResult)compare:(PathMarker *)pm
 {
-   return (distance < [pm distance]) ? NSOrderedAscending : NSOrderedDescending;
+   return (_distance < [pm distance]) ? NSOrderedAscending : NSOrderedDescending;
 }
-
 
 
 @end

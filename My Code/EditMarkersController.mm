@@ -269,7 +269,7 @@
 {
    if (markers != nil)
    {
-      return [markers count];
+      return (int)[markers count];
    }
    else
    {

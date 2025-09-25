@@ -1,5 +1,5 @@
 //
-//  TBWindowController.h
+//  MainWindowController.h
 //  TLP
 //
 //  Created by Rob Boyer on 7/25/06.
@@ -7,6 +7,54 @@
 //
 
 #import <Cocoa/Cocoa.h>
+
+@class TrackBrowserDocument;
+@class Selection;
+
+@class NSSplitViewController;
+@class LeftSplitController;
+@class RightSplitController;
+@class TrackPaneController;
+@class AnalysisPaneController;
+@class InfoPaneController;
+
+@interface TBWindowController : NSWindowController
+{
+@private
+    Selection *_selection; // shared per document
+}
+
+// Top controls
+@property(nonatomic, assign) IBOutlet NSSegmentedControl *leftTopToggle;     // Outline/Calendar
+@property(nonatomic, assign) IBOutlet NSSegmentedControl *leftBottomToggle;  // Segments/Intervals
+@property(nonatomic, assign) IBOutlet NSSegmentedControl *rightBottomToggle; // Metrics/Summary
+
+// Split controllers
+@property(nonatomic, assign) IBOutlet NSSplitViewController *rootSplitController;
+@property(nonatomic, assign) IBOutlet LeftSplitController   *leftSplitController;
+@property(nonatomic, assign) IBOutlet TrackPaneController   *trackPaneController;
+@property(nonatomic, assign) IBOutlet AnalysisPaneController *analysisPaneController;
+
+@property(nonatomic, assign) IBOutlet RightSplitController  *rightSplitController;
+@property(nonatomic, assign) IBOutlet InfoPaneController    *infoPaneController;
+
+// Shared selection (retained here, injected into children)
+@property(nonatomic, retain) Selection *selection;
+
+// Actions
+- (IBAction)toggleLeftTop:(id)sender;
+- (IBAction)toggleLeftBottom:(id)sender;
+- (IBAction)toggleRightBottom:(id)sender;
+
+// Examples of “open window” buttons in the top bar (optional)
+- (IBAction)showPreferences:(id)sender;
+- (IBAction)showPhotoBrowser:(id)sender;
+
+@end
+
+#if 0
+
+
 #import "Defs.h"
 #import "AnimTimer.h"
 
@@ -36,6 +84,7 @@
 @class EquipmentBoxView;
 @class TextViewWithPlaceholder;
 @class EditNotesController;
+@class TrackListController;
 
 enum
 {
@@ -97,9 +146,10 @@ enum
 @end
 
 
-@interface TBWindowController : NSWindowController <AnimationTarget, NSToolbarDelegate, NSWindowDelegate>
-{	
+@interface MainWindowController : NSWindowController <AnimationTarget, NSToolbarDelegate, NSWindowDelegate>
+{
 	// "toolbar" area
+    NSMutableDictionary*            toolbarItems;
 	IBOutlet NSView*				calOrBrowView;
 	IBOutlet NSView*				leftOptionsView;
 	IBOutlet NSView*				splitOptionsView;
@@ -183,41 +233,22 @@ enum
 	DMWindowController*             dmWC;
     SGWindowController*             sgWC;
 	NSMutableArray*                 editWindowMenus;
-	NSMutableSet*					expandedItems;
-    NSMutableArray*                 expandedItemNames;
-	NSMutableSet*					selectedItemsAtExpand;
 	NSMutableArray*					splitArray;
-	NSArray*						topSortedKeys;
 	NSWindow*                       tbWindow;
-	NSMutableDictionary*            yearItems;
-	NSMutableDictionary*            searchItems;
-	NSMutableDictionary*			toolbarItems;
-	NSMutableDictionary*			flatBIDict;
 	NSFont*                         lineFont;
 	NSFont*                         boldLineLargeFont;
 	NSFont*                         boldLineMediumFont;
 	NSFont*                         boldLineSmallFont;
-	NSDictionary *                  weekAttrs;
-	NSDictionary *                  activityAttrs;
 	TrackBrowserDocument*           tbDocument;
 	NSTableColumn*                  sortColumn;
 	NSTimer*                        fadeTimer;
 	Track*                          currentlySelectedTrack;
 	Lap*                            currentlySelectedLap;
 	struct tControlToAttrMap        attrMap[kNumAttributes];
-	int                             viewType;
-	NSString*                       searchCriteria;
-	int                             searchOptions;
-	int								seqno;
-	BOOL                            isRestoringExpandedState;
-	BOOL                            reverseSort;
 	BOOL                            isRegistered;
-	SEL                             itemComparator;
-	SEL								reverseItemComparator;
 }
 
-
-@property(nonatomic, retain) NSArray* topSortedKeys;
+@property(nonatomic, assign) IBOutlet TrackListController *trackListController; // IB retains it via nib
 @property (weak) IBOutlet NSImageView *trackPicImageView;
 
 - (IBAction)setMapDataType:(id)sender;
@@ -238,10 +269,6 @@ enum
 - (IBAction)setColorPathType:(id)sender;
 - (IBAction)setSplitOptions:(id)sender;
 
-- (IBAction)delete:(id)sender;
-- (IBAction)copy:(id)sender;
-- (IBAction)cut:(id)sender;
-- (IBAction)paste:(id)sender;
 //- (IBAction) editNotes:(id)sender;
 - (IBAction) setFieldLabel:(int)lableID label:(NSString*)label;
 - (IBAction) toggleMainBrowser:(id)sender;
@@ -254,36 +281,24 @@ enum
 - (void)dismissEquipmentList:(id)wc;
 
 
-- (NSMutableDictionary *)yearItems;
-- (NSMutableDictionary *)searchItems;
-
 - (NSOutlineView*) trackTable;
 - (MapPathView*) mapPathView;
 - (id)initWithDocument:(TrackBrowserDocument*)doc;
-- (void)expandFirstItem;
-- (void)expandLastItem;
 - (void)stopAnimations;
 - (Track*) animationTrack;
 - (void)syncTrackToAttributesAndEditWindow:(Track*)track;
-- (NSMutableArray*) prepareArrayOfSelectedTracks;
-- (NSMutableArray*) prepareArrayOfSelectedBrowserItemsWithTracks;
 - (int)viewType;
-- (void)buildBrowser:(BOOL)expandLastItem;
-- (NSString*)searchCriteria;
-- (int)searchOptions;
--(void)resetSelectedTrack:(Track*)trk lap:(Lap*)lap;
--(void)selectBrowserRowsForTracks:(NSArray*)trks;
-- (void) storeExpandedState;
-- (void) restoreExpandedState;
 - (void) postNeedRegDialog:(NSString*)msg;
 - (void) doTCXImportWithProgress:(NSArray*)files;
 - (void) doTCXImportWithoutProgress:(NSArray*)files;
 
 - (void) simpleUpdateBrowserTrack:(Track*)track;
--(void)rebuildBrowserAndRestoreState:(Track*)track selectLap:(Lap*)lap;
 - (NSArray*)trackArray;
 - (void)addStravaActivities:(NSArray<NSDictionary*> *) arr;
 - (BOOL)applyStravaActivitiesCSVAtURL:(NSURL *)csvURL
                              toTracks:(NSArray<Track *> *)tracks;
 
 @end
+#endif
+
+

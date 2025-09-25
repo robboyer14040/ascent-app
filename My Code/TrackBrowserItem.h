@@ -38,7 +38,7 @@ enum tBrowserItemType
 @property (nonatomic) int sortedChildKeysSeqno;
 @property (nonatomic) BOOL expanded;
 
--(id) initWithData:(Track *)t lap:(Lap*)l name:(NSString*)n date:(NSDate*)d type:(tBrowserItemType)ty parent:(TrackBrowserItem*)parentItem;
+-(id) initWithData:(Track *)t lap:(Lap*)l name:(NSString*)n date:(NSDate*)d type:(int)ty parent:(TrackBrowserItem*)parentItem;
 -(BOOL) isRoot;
 -(NSComparisonResult) compare:(TrackBrowserItem*)item;
 -(NSComparisonResult) reverseCompare:(TrackBrowserItem*)item;

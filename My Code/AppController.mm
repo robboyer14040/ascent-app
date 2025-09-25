@@ -10,7 +10,7 @@
 #import "SGWindowController.h"
 #import "EquipmentListWindowController.h"
 #import "TrackBrowserDocument.h"
-#import "TBWindowController.h"
+#import "MainWindowController.h"
 #import "Track.h"
 #import "Defs.h"
 #import "SplashPanelController.h"
@@ -444,7 +444,7 @@ static void setColorDefault(NSMutableDictionary* dict,
     if (tbd) {
         NSArray* wcs = [tbd windowControllers];
         if (wcs.count > 0) {
-            TBWindowController* sc = [wcs objectAtIndex:0];
+            MainWindowController* sc = [wcs objectAtIndex:0];
             if (sc) [[sc window] makeKeyAndOrderFront:nil];
         }
     }
@@ -479,7 +479,7 @@ static void setColorDefault(NSMutableDictionary* dict,
 {
     TrackBrowserDocument* tbd = (TrackBrowserDocument*)
     [[NSDocumentController sharedDocumentController] currentDocument];
-    TBWindowController* sc = [tbd windowController];
+    MainWindowController* sc = [tbd windowController];
     [sc showMapDetail:sender];
 }
 
@@ -487,7 +487,7 @@ static void setColorDefault(NSMutableDictionary* dict,
 {
     TrackBrowserDocument* tbd = (TrackBrowserDocument*)
     [[NSDocumentController sharedDocumentController] currentDocument];
-    TBWindowController* sc = [tbd windowController];
+    MainWindowController* sc = [tbd windowController];
     [sc showSummaryGraph:sender];
 }
 
@@ -495,7 +495,7 @@ static void setColorDefault(NSMutableDictionary* dict,
 {
     TrackBrowserDocument* tbd = (TrackBrowserDocument*)
       [[NSDocumentController sharedDocumentController] currentDocument];
-    TBWindowController* sc = [tbd windowController];
+    MainWindowController* sc = [tbd windowController];
     [sc stopAnimations];
     Track* track = [tbd currentlySelectedTrack];
     if (track) {
@@ -513,7 +513,7 @@ static void setColorDefault(NSMutableDictionary* dict,
 {
     TrackBrowserDocument* tbd = (TrackBrowserDocument*)
         [[NSDocumentController sharedDocumentController] currentDocument];
-    TBWindowController* sc = [tbd windowController];
+    MainWindowController* sc = [tbd windowController];
     [sc stopAnimations];
     Track* track = [tbd currentlySelectedTrack];
     if (track) {
@@ -554,7 +554,7 @@ static void setColorDefault(NSMutableDictionary* dict,
         case 0: [self showActivityDetail:self]; break;
         case 1: {
             TrackBrowserDocument* tbd = (TrackBrowserDocument*)[[NSDocumentController sharedDocumentController] currentDocument];
-            TBWindowController* wc = [tbd windowController];
+            MainWindowController* wc = [tbd windowController];
             [wc showMapDetail:self];
         } break;
         case 2: [self showActivityDataList:self]; break;
@@ -570,7 +570,7 @@ static void setColorDefault(NSMutableDictionary* dict,
 {
     TrackBrowserDocument* tbd = [self currentTrackBrowserDocument];
     NSArray* wcs = [tbd windowControllers];
-    TBWindowController* sc = [wcs objectAtIndex:0];
+    MainWindowController* sc = [wcs objectAtIndex:0];
 
     NSPrintInfo* printInfo = [NSPrintInfo sharedPrintInfo];
     NSView* v = [sc mapPathView];

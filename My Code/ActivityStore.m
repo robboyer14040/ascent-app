@@ -1451,6 +1451,7 @@ static int LoggingPermissiveAuth(void *ud, int action,
             [out addObject:t];
             if ([t respondsToSelector:@selector(fixupTrack)]) {
                 [t fixupTrack];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackChanged" object:t];
             }
             [t release];
         }

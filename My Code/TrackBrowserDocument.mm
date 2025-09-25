@@ -7,7 +7,7 @@
 //
 #import "Defs.h"
 #import "TrackBrowserDocument.h"
-#import "TBWindowController.h"
+#import "MainWindowController.h"
 #import "ADWindowController.h"
 #import "TrackPoint.h"
 #import "Track.h"
@@ -1569,7 +1569,7 @@ deviceIsPluggedIn:YES];
 
 
 
-- (TBWindowController*) windowController
+- (MainWindowController*) windowController
 {
    return tbWindowController;
 }
@@ -2446,9 +2446,9 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 {
    if (tbWindowController == nil)
    {
-      tbWindowController = [[TBWindowController alloc] initWithDocument:self];     // does this go here?
-      [self addWindowController:tbWindowController];
-      [tbWindowController release];
+       MainWindowController *wc = [[MainWindowController alloc] initWithWindowNibName:@"MainWindowController"];
+       [self addWindowController:wc];   // <-- this sets wc.document = self
+       [wc release];
    }
 }
 

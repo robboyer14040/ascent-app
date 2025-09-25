@@ -41,7 +41,7 @@ struct tLatLonBounds
 @class Lap;
 @class TrackPoint;
 @class OverrideData;
-
+@class PathMarker;
 
 // flag definitions for Track 'flags' field
 enum
@@ -71,56 +71,29 @@ struct tPeakIntervalData
 };
 
 
-@interface LapInfo : NSObject
-
-@property(nonatomic, retain) Lap* lap;
-@property(nonatomic) int numPoints;
-@property(nonatomic) int startingPointIndex;
-@property(nonatomic) NSTimeInterval activeTimeDelta;
-
-- (id) initWithData:(Lap*)lap startIdx:(int)sp numPoints:(int)np;
-
-@end
-
-
-
 @interface Track : NSObject <NSCoding, NSMutableCopying>
 
+// properties that should be part of copy/paste, drag/drop, etc
 @property(nonatomic, retain) NSString* uuid;
 @property(nonatomic, retain) NSString* name;
 @property(nonatomic, retain) NSNumber* stravaActivityID;
 @property(nonatomic, retain) NSDate* creationTime;
-@property(nonatomic, retain) NSArray* equipmentUUIDs;
-@property(nonatomic, retain) NSString* mainEquipmentUUID;
-@property(nonatomic) float equipmentWeight;
+@property(nonatomic, retain) NSMutableArray<TrackPoint*>* points;
+@property(nonatomic, retain) NSMutableArray<NSString*>* attributes;
+@property(nonatomic, retain) NSMutableArray<PathMarker*>* markers;
+@property(nonatomic, retain) NSMutableArray<Lap*>* laps;
+
 @property(nonatomic) NSTimeInterval deviceTotalTime;
 @property(nonatomic) int firmwareVersion;
-@property(nonatomic) int animID;
 @property(nonatomic) float minGradientDistance;
-@property(nonatomic) NSTimeInterval animTimeBegin;
-@property(nonatomic) NSTimeInterval animTimeEnd;
-@property(nonatomic, retain) NSMutableArray* laps;
 @property(nonatomic) BOOL movingSpeedOnly;
-@property(nonatomic) BOOL hasDistanceData;
 @property(nonatomic, retain) NSDate* creationTimeOverride;
-@property(nonatomic, retain) NSMutableArray* points;
-@property(nonatomic, retain) NSMutableArray* attributes;
-@property(nonatomic, retain) NSMutableArray* markers;
-@property(nonatomic, assign) float distance;
 @property(nonatomic, assign) float weight;
 @property(nonatomic, assign) float altitudeSmoothingFactor;
 @property(nonatomic, assign) int secondsFromGMT;
-@property(nonatomic, retain) OverrideData* overrideData;
 @property(nonatomic, assign) int flags;
 @property(nonatomic, assign) int deviceID;
-@property(nonatomic, retain) NSMutableArray* lapInfoArray;
-@property(nonatomic, assign) NSTimeInterval animTime;
-@property(nonatomic, assign) int animIndex;
-@property(nonatomic, retain) NSArray<NSURL *> *photoURLs;  // array of file or web URLs
 @property(nonatomic, retain) NSArray<NSString*> *localMediaItems;  // array of filenames, stored somewhere locally
-@property(nonatomic, assign) BOOL pointsEverSaved;     // mirrors activities.points_saved
-@property(nonatomic, assign) int  pointsCount;         // number of points loaded
-@property(nonatomic, assign) uint32_t dirtyMask;       // meta bits, laps bits, etc.
 // items from track source - used if points not available, stored persistently
 @property(nonatomic) float srcDistance;
 @property(nonatomic) float srcMaxSpeed;
@@ -137,6 +110,25 @@ struct tPeakIntervalData
 @property(nonatomic) NSTimeInterval srcElapsedTime;
 @property(nonatomic) NSTimeInterval srcMovingTime;
 @property(nonatomic, retain) NSString* timeZoneName;
+
+// properties we don't care about during copy/paste, drag/drop, etc
+@property(nonatomic, retain) OverrideData* overrideData;    // maybe someday
+@property(nonatomic, assign) float distance;
+@property(nonatomic) BOOL hasDistanceData;
+@property(nonatomic, retain) NSArray* equipmentUUIDs;
+@property(nonatomic, retain) NSString* mainEquipmentUUID;
+@property(nonatomic, retain) NSArray<NSURL *> *photoURLs;  // vestigial?? FIXME
+@property(nonatomic, retain) NSMutableArray* lapInfoArray;
+@property(nonatomic, assign) BOOL pointsEverSaved;     // mirrors activities.points_saved
+@property(nonatomic, assign) int  pointsCount;         // number of points loaded
+@property(nonatomic, assign) uint32_t dirtyMask;       // meta bits, laps bits, etc.
+@property(nonatomic, assign) NSTimeInterval animTime;
+@property(nonatomic, assign) int animIndex;
+@property(nonatomic) int animID;
+@property(nonatomic) NSTimeInterval animTimeBegin;
+@property(nonatomic) NSTimeInterval animTimeEnd;
+@property(nonatomic) float equipmentWeight;
+
 
 - (NSComparisonResult) comparator:(Track*)track;
 -(void) doFixupAndCalcGradients;
@@ -175,10 +167,10 @@ struct tPeakIntervalData
 - (void) setAttribute:(int)attr usingString:(NSString*)s;
 - (NSString*) attribute:(int)attr;
 
-- (void)setPoints:(NSMutableArray*)p;
+- (void)setPoints:(NSMutableArray<TrackPoint*>*)p;
 - (void)setPointsAndAdjustTimeDistance:(NSMutableArray*)pts newStartTime:(NSDate*)nst distanceOffset:(float)distOffset;
 
-- (void)setLaps:(NSMutableArray*)l;
+- (void)setLaps:(NSMutableArray<Lap*> *)l;
 
 - (NSTimeInterval)duration;
 - (NSString *)durationAsString;
@@ -193,8 +185,6 @@ struct tPeakIntervalData
 
 - (Lap*)addLap:(NSTimeInterval)atActiveTimeDelta;
 - (BOOL)deleteLap:(Lap*)lap;
-
-- (LapInfo*) getLapInfo:(Lap*)l;
 
 // 'stat' returns calculated value from track points
 - (float)stat:(tStatType)stat index:(int)idx atActiveTimeDelta:(NSTimeInterval*)atd;		

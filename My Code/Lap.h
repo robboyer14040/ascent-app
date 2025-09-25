@@ -36,6 +36,7 @@
 @property (nonatomic, assign) int             intensity;
 @property (nonatomic, assign) int             triggerMethod;
 
+// don't care about during copy/paste, drag/drop, etc
 @property (nonatomic, assign, getter=isSelected) BOOL selected;
 @property (nonatomic, assign) BOOL            statsCalculated;     // computation complete flag
 

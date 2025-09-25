@@ -1721,7 +1721,7 @@ static BOOL sDragging = NO;
 {
 	NSDictionary* dict = [NSDictionary dictionaryWithObject:sender 
 													 forKey:@"infoObj"];
-	// the TBWindowController do the heavy lifting
+	// the MainWindowController do the heavy lifting
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"FilesDraggedIntoApp" 
 														object:self
 													  userInfo:dict];

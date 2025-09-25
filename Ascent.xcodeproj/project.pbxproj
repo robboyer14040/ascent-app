@@ -7,7 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D41001E72E849689002942DE /* TrackClipboardSerializer.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001E62E849689002942DE /* TrackClipboardSerializer.m */; };
+		D41001EA2E84A604002942DE /* AscentPasteboard.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001E92E84A604002942DE /* AscentPasteboard.m */; };
+		D41001EC2E84AE9C002942DE /* TrackListController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001EB2E84AE9C002942DE /* TrackListController.m */; };
+		D41001F12E8596A4002942DE /* RootSplitController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001F02E8596A4002942DE /* RootSplitController.m */; };
+		D41001F52E85970F002942DE /* LeftSplitController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001F32E85970F002942DE /* LeftSplitController.m */; };
+		D41001F62E85970F002942DE /* LeftSplitController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D41001F42E85970F002942DE /* LeftSplitController.xib */; };
+		D41001F92E859731002942DE /* TrackPaneController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001F82E859731002942DE /* TrackPaneController.m */; };
+		D41001FC2E859779002942DE /* TrackCalendarController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001FB2E859779002942DE /* TrackCalendarController.m */; };
+		D41002002E8597D4002942DE /* AnalysisPaneController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D41001FF2E8597D4002942DE /* AnalysisPaneController.xib */; };
+		D41002012E8597D4002942DE /* AnalysisPaneController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001FE2E8597D4002942DE /* AnalysisPaneController.m */; };
+		D41002052E859817002942DE /* InfoPaneController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D41002042E859817002942DE /* InfoPaneController.xib */; };
+		D41002062E859817002942DE /* InfoPaneController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41002032E859817002942DE /* InfoPaneController.m */; };
+		D410020A2E85987C002942DE /* IntervalsPaneController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41002082E85987C002942DE /* IntervalsPaneController.m */; };
+		D410020B2E85987C002942DE /* IntervalsPaneController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D41002092E85987C002942DE /* IntervalsPaneController.xib */; };
+		D410020F2E859890002942DE /* SegmentsController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D410020E2E859890002942DE /* SegmentsController.xib */; };
+		D41002102E859890002942DE /* SegmentsController.m in Sources */ = {isa = PBXBuildFile; fileRef = D410020D2E859890002942DE /* SegmentsController.m */; };
+		D41002132E8598DF002942DE /* RightSplitController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41002122E8598DF002942DE /* RightSplitController.m */; };
+		D41002172E859904002942DE /* MapController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D41002162E859904002942DE /* MapController.xib */; };
+		D41002182E859904002942DE /* MapController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41002152E859904002942DE /* MapController.m */; };
+		D410021C2E859916002942DE /* ProfileController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D410021B2E859916002942DE /* ProfileController.xib */; };
+		D410021D2E859916002942DE /* ProfileController.m in Sources */ = {isa = PBXBuildFile; fileRef = D410021A2E859916002942DE /* ProfileController.m */; };
+		D41002212E859941002942DE /* MetricsController.m in Sources */ = {isa = PBXBuildFile; fileRef = D410021F2E859941002942DE /* MetricsController.m */; };
+		D41002222E859941002942DE /* MetricsController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D41002202E859941002942DE /* MetricsController.xib */; };
+		D41002262E85997F002942DE /* GeneralInfoController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D41002252E85997F002942DE /* GeneralInfoController.xib */; };
+		D41002272E85997F002942DE /* GeneralInfoController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41002242E85997F002942DE /* GeneralInfoController.m */; };
+		D41002292E8599E5002942DE /* MainWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D41002282E8599E5002942DE /* MainWindowController.xib */; };
 		D437641D2E5FA01A008AE5E4 /* Ascent.icns in Resources */ = {isa = PBXBuildFile; fileRef = D437641C2E5FA01A008AE5E4 /* Ascent.icns */; };
+		D43C3EEC2E85C46A00D40D19 /* RootSplitController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D43C3EEB2E85C46A00D40D19 /* RootSplitController.xib */; };
 		D4450B3C2E5BCF1700AB39C3 /* HUDWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B392E5BCF1700AB39C3 /* HUDWindow.m */; };
 		D4450B3D2E5BCF1700AB39C3 /* interp.c in Sources */ = {isa = PBXBuildFile; fileRef = D4450B3B2E5BCF1700AB39C3 /* interp.c */; };
 		D4450B5B2E5BD33A00AB39C3 /* NDRunLoopMessenger.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B582E5BD33A00AB39C3 /* NDRunLoopMessenger.m */; };
@@ -209,7 +236,7 @@
 		D4F13CD92E4EAE4600462944 /* ActivityOutlineView.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F139F62E4EAE4600462944 /* ActivityOutlineView.mm */; };
 		D4F13CDA2E4EAE4600462944 /* EquipmentTrackInfo.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A872E4EAE4600462944 /* EquipmentTrackInfo.mm */; };
 		D4F13CDB2E4EAE4600462944 /* Utils.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F139ED2E4EAE4600462944 /* Utils.mm */; };
-		D4F13CDD2E4EAE4600462944 /* TBWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A1B2E4EAE4600462944 /* TBWindowController.mm */; };
+		D4F13CDD2E4EAE4600462944 /* MainWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A1B2E4EAE4600462944 /* MainWindowController.mm */; };
 		D4F13CDE2E4EAE4600462944 /* CompareWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13AE42E4EAE4600462944 /* CompareWindowController.mm */; };
 		D4F13CDF2E4EAE4600462944 /* PrefsHeartrate.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A552E4EAE4600462944 /* PrefsHeartrate.m */; };
 		D4F13CE02E4EAE4600462944 /* MaintenanceLog.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A892E4EAE4600462944 /* MaintenanceLog.mm */; };
@@ -290,6 +317,7 @@
 		D4F18D0C2E5248980032E51D /* PrefsZones.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F18D032E5248980032E51D /* PrefsZones.xib */; };
 		D4F18D0D2E5248980032E51D /* ProgressBar.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F18D042E5248980032E51D /* ProgressBar.xib */; };
 		D4F18D0E2E5248980032E51D /* PrefsSharing.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F18D012E5248980032E51D /* PrefsSharing.xib */; };
+		D4F4C7D62E85AAC500791D6E /* Selection.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F4C7D52E85AAC500791D6E /* Selection.m */; };
 		D4F779142E6FD00E0032D5EE /* NSImage+Tint.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F779132E6FD00E0032D5EE /* NSImage+Tint.m */; };
 		D4F779172E705C220032D5EE /* WeatherAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F779162E705C220032D5EE /* WeatherAPI.m */; };
 		D4F779192E706E820032D5EE /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4F779182E706E820032D5EE /* CoreLocation.framework */; };
@@ -351,7 +379,50 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D41001E52E849667002942DE /* TrackClipboardSerializer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TrackClipboardSerializer.h; path = "My Code/TrackClipboardSerializer.h"; sourceTree = "<group>"; };
+		D41001E62E849689002942DE /* TrackClipboardSerializer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = TrackClipboardSerializer.m; path = "My Code/TrackClipboardSerializer.m"; sourceTree = "<group>"; };
+		D41001E82E84A5EC002942DE /* AscentPasteboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AscentPasteboard.h; path = "My Code/AscentPasteboard.h"; sourceTree = "<group>"; };
+		D41001E92E84A604002942DE /* AscentPasteboard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = AscentPasteboard.m; path = "My Code/AscentPasteboard.m"; sourceTree = "<group>"; };
+		D41001EB2E84AE9C002942DE /* TrackListController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = TrackListController.m; path = "../My Code/TrackListController.m"; sourceTree = "<group>"; };
+		D41001ED2E84AEB7002942DE /* TrackListController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TrackListController.h; path = "../My Code/TrackListController.h"; sourceTree = "<group>"; };
+		D41001EF2E8596A4002942DE /* RootSplitController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RootSplitController.h; sourceTree = "<group>"; };
+		D41001F02E8596A4002942DE /* RootSplitController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RootSplitController.m; sourceTree = "<group>"; };
+		D41001F22E85970F002942DE /* LeftSplitController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LeftSplitController.h; sourceTree = "<group>"; };
+		D41001F32E85970F002942DE /* LeftSplitController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LeftSplitController.m; sourceTree = "<group>"; };
+		D41001F42E85970F002942DE /* LeftSplitController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LeftSplitController.xib; sourceTree = "<group>"; };
+		D41001F72E859731002942DE /* TrackPaneController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TrackPaneController.h; sourceTree = "<group>"; };
+		D41001F82E859731002942DE /* TrackPaneController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TrackPaneController.m; sourceTree = "<group>"; };
+		D41001FA2E859779002942DE /* TrackCalendarController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TrackCalendarController.h; sourceTree = "<group>"; };
+		D41001FB2E859779002942DE /* TrackCalendarController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TrackCalendarController.m; sourceTree = "<group>"; };
+		D41001FD2E8597D4002942DE /* AnalysisPaneController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AnalysisPaneController.h; sourceTree = "<group>"; };
+		D41001FE2E8597D4002942DE /* AnalysisPaneController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AnalysisPaneController.m; sourceTree = "<group>"; };
+		D41001FF2E8597D4002942DE /* AnalysisPaneController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AnalysisPaneController.xib; sourceTree = "<group>"; };
+		D41002022E859817002942DE /* InfoPaneController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoPaneController.h; sourceTree = "<group>"; };
+		D41002032E859817002942DE /* InfoPaneController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InfoPaneController.m; sourceTree = "<group>"; };
+		D41002042E859817002942DE /* InfoPaneController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = InfoPaneController.xib; sourceTree = "<group>"; };
+		D41002072E85987C002942DE /* IntervalsPaneController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IntervalsPaneController.h; sourceTree = "<group>"; };
+		D41002082E85987C002942DE /* IntervalsPaneController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IntervalsPaneController.m; sourceTree = "<group>"; };
+		D41002092E85987C002942DE /* IntervalsPaneController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = IntervalsPaneController.xib; sourceTree = "<group>"; };
+		D410020C2E859890002942DE /* SegmentsController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SegmentsController.h; sourceTree = "<group>"; };
+		D410020D2E859890002942DE /* SegmentsController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SegmentsController.m; sourceTree = "<group>"; };
+		D410020E2E859890002942DE /* SegmentsController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SegmentsController.xib; sourceTree = "<group>"; };
+		D41002112E8598DF002942DE /* RightSplitController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RightSplitController.h; sourceTree = "<group>"; };
+		D41002122E8598DF002942DE /* RightSplitController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RightSplitController.m; sourceTree = "<group>"; };
+		D41002142E859904002942DE /* MapController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MapController.h; sourceTree = "<group>"; };
+		D41002152E859904002942DE /* MapController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MapController.m; sourceTree = "<group>"; };
+		D41002162E859904002942DE /* MapController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MapController.xib; sourceTree = "<group>"; };
+		D41002192E859916002942DE /* ProfileController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProfileController.h; sourceTree = "<group>"; };
+		D410021A2E859916002942DE /* ProfileController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProfileController.m; sourceTree = "<group>"; };
+		D410021B2E859916002942DE /* ProfileController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ProfileController.xib; sourceTree = "<group>"; };
+		D410021E2E859941002942DE /* MetricsController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MetricsController.h; sourceTree = "<group>"; };
+		D410021F2E859941002942DE /* MetricsController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MetricsController.m; sourceTree = "<group>"; };
+		D41002202E859941002942DE /* MetricsController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MetricsController.xib; sourceTree = "<group>"; };
+		D41002232E85997F002942DE /* GeneralInfoController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneralInfoController.h; sourceTree = "<group>"; };
+		D41002242E85997F002942DE /* GeneralInfoController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GeneralInfoController.m; sourceTree = "<group>"; };
+		D41002252E85997F002942DE /* GeneralInfoController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GeneralInfoController.xib; sourceTree = "<group>"; };
+		D41002282E8599E5002942DE /* MainWindowController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainWindowController.xib; sourceTree = "<group>"; };
 		D437641C2E5FA01A008AE5E4 /* Ascent.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Ascent.icns; path = graphics/Ascent.icns; sourceTree = "<group>"; };
+		D43C3EEB2E85C46A00D40D19 /* RootSplitController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RootSplitController.xib; sourceTree = "<group>"; };
 		D4450B382E5BCF1700AB39C3 /* HUDWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HUDWindow.h; path = OtherCode/HUDWindow.h; sourceTree = SOURCE_ROOT; };
 		D4450B392E5BCF1700AB39C3 /* HUDWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = HUDWindow.m; path = OtherCode/HUDWindow.m; sourceTree = SOURCE_ROOT; };
 		D4450B3A2E5BCF1700AB39C3 /* interp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = interp.h; path = OtherCode/interp.h; sourceTree = SOURCE_ROOT; };
@@ -499,8 +570,8 @@
 		D4F13A172E4EAE4600462944 /* SplitsTableView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = SplitsTableView.mm; path = "My Code/SplitsTableView.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13A182E4EAE4600462944 /* SplitTableItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SplitTableItem.h; path = "My Code/SplitTableItem.h"; sourceTree = SOURCE_ROOT; };
 		D4F13A192E4EAE4600462944 /* SplitTableItem.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = SplitTableItem.mm; path = "My Code/SplitTableItem.mm"; sourceTree = SOURCE_ROOT; };
-		D4F13A1A2E4EAE4600462944 /* TBWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TBWindowController.h; path = "My Code/TBWindowController.h"; sourceTree = SOURCE_ROOT; };
-		D4F13A1B2E4EAE4600462944 /* TBWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = TBWindowController.mm; path = "My Code/TBWindowController.mm"; sourceTree = SOURCE_ROOT; };
+		D4F13A1A2E4EAE4600462944 /* MainWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MainWindowController.h; path = "My Code/MainWindowController.h"; sourceTree = SOURCE_ROOT; };
+		D4F13A1B2E4EAE4600462944 /* MainWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = MainWindowController.mm; path = "My Code/MainWindowController.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13A1C2E4EAE4600462944 /* TrackBrowserDocument.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TrackBrowserDocument.h; path = "My Code/TrackBrowserDocument.h"; sourceTree = SOURCE_ROOT; };
 		D4F13A1D2E4EAE4600462944 /* TrackBrowserDocument.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = TrackBrowserDocument.mm; path = "My Code/TrackBrowserDocument.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13A1E2E4EAE4600462944 /* TrackBrowserItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TrackBrowserItem.h; path = "My Code/TrackBrowserItem.h"; sourceTree = SOURCE_ROOT; };
@@ -839,6 +910,8 @@
 		D4F18D082E5248980032E51D /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/PrefsHeartrate.xib; sourceTree = "<group>"; };
 		D4F18D092E5248980032E51D /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/PrefsZones.xib; sourceTree = "<group>"; };
 		D4F18D182E525DB20032E51D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D4F4C7D42E85AAC500791D6E /* Selection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Selection.h; sourceTree = "<group>"; };
+		D4F4C7D52E85AAC500791D6E /* Selection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Selection.m; sourceTree = "<group>"; };
 		D4F779122E6FCFE30032D5EE /* NSImage+Tint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "NSImage+Tint.h"; path = "My Code/NSImage+Tint.h"; sourceTree = "<group>"; };
 		D4F779132E6FD00E0032D5EE /* NSImage+Tint.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "NSImage+Tint.m"; path = "My Code/NSImage+Tint.m"; sourceTree = "<group>"; };
 		D4F779152E705BF90032D5EE /* WeatherAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = WeatherAPI.h; path = "My Code/WeatherAPI.h"; sourceTree = "<group>"; };
@@ -892,6 +965,56 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D41001EE2E8592BB002942DE /* Main Window */ = {
+			isa = PBXGroup;
+			children = (
+				D41001FD2E8597D4002942DE /* AnalysisPaneController.h */,
+				D41001FE2E8597D4002942DE /* AnalysisPaneController.m */,
+				D41001FF2E8597D4002942DE /* AnalysisPaneController.xib */,
+				D41002232E85997F002942DE /* GeneralInfoController.h */,
+				D41002242E85997F002942DE /* GeneralInfoController.m */,
+				D41002252E85997F002942DE /* GeneralInfoController.xib */,
+				D41002022E859817002942DE /* InfoPaneController.h */,
+				D41002032E859817002942DE /* InfoPaneController.m */,
+				D41002042E859817002942DE /* InfoPaneController.xib */,
+				D41002072E85987C002942DE /* IntervalsPaneController.h */,
+				D41002082E85987C002942DE /* IntervalsPaneController.m */,
+				D41002092E85987C002942DE /* IntervalsPaneController.xib */,
+				D41001F22E85970F002942DE /* LeftSplitController.h */,
+				D41001F32E85970F002942DE /* LeftSplitController.m */,
+				D41001F42E85970F002942DE /* LeftSplitController.xib */,
+				D4F13A1A2E4EAE4600462944 /* MainWindowController.h */,
+				D4F13A1B2E4EAE4600462944 /* MainWindowController.mm */,
+				D41002282E8599E5002942DE /* MainWindowController.xib */,
+				D41002142E859904002942DE /* MapController.h */,
+				D41002152E859904002942DE /* MapController.m */,
+				D41002162E859904002942DE /* MapController.xib */,
+				D410021E2E859941002942DE /* MetricsController.h */,
+				D410021F2E859941002942DE /* MetricsController.m */,
+				D41002202E859941002942DE /* MetricsController.xib */,
+				D41002192E859916002942DE /* ProfileController.h */,
+				D410021A2E859916002942DE /* ProfileController.m */,
+				D410021B2E859916002942DE /* ProfileController.xib */,
+				D41002112E8598DF002942DE /* RightSplitController.h */,
+				D41002122E8598DF002942DE /* RightSplitController.m */,
+				D41001EF2E8596A4002942DE /* RootSplitController.h */,
+				D41001F02E8596A4002942DE /* RootSplitController.m */,
+				D410020C2E859890002942DE /* SegmentsController.h */,
+				D410020D2E859890002942DE /* SegmentsController.m */,
+				D410020E2E859890002942DE /* SegmentsController.xib */,
+				D41001FA2E859779002942DE /* TrackCalendarController.h */,
+				D41001FB2E859779002942DE /* TrackCalendarController.m */,
+				D41001ED2E84AEB7002942DE /* TrackListController.h */,
+				D41001EB2E84AE9C002942DE /* TrackListController.m */,
+				D41001F72E859731002942DE /* TrackPaneController.h */,
+				D41001F82E859731002942DE /* TrackPaneController.m */,
+				D4F4C7D42E85AAC500791D6E /* Selection.h */,
+				D4F4C7D52E85AAC500791D6E /* Selection.m */,
+				D43C3EEB2E85C46A00D40D19 /* RootSplitController.xib */,
+			);
+			path = "Main Window";
+			sourceTree = "<group>";
+		};
 		D457D2EC2E6488B400D1DF73 /* Strava */ = {
 			isa = PBXGroup;
 			children = (
@@ -1067,8 +1190,6 @@
 				D4F13A172E4EAE4600462944 /* SplitsTableView.mm */,
 				D4F13A182E4EAE4600462944 /* SplitTableItem.h */,
 				D4F13A192E4EAE4600462944 /* SplitTableItem.mm */,
-				D4F13A1A2E4EAE4600462944 /* TBWindowController.h */,
-				D4F13A1B2E4EAE4600462944 /* TBWindowController.mm */,
 				D4F13A1C2E4EAE4600462944 /* TrackBrowserDocument.h */,
 				D4F13A1D2E4EAE4600462944 /* TrackBrowserDocument.mm */,
 				D4F13A1E2E4EAE4600462944 /* TrackBrowserItem.h */,
@@ -1182,6 +1303,8 @@
 				D4F13A642E4EAE4600462944 /* TrackPoint.m */,
 				D4F13A652E4EAE4600462944 /* Track.h */,
 				D4F13A662E4EAE4600462944 /* Track.mm */,
+				D41001E52E849667002942DE /* TrackClipboardSerializer.h */,
+				D41001E62E849689002942DE /* TrackClipboardSerializer.m */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -1278,6 +1401,8 @@
 				D4F13A902E4EAE4600462944 /* TransportPanelView.h */,
 				D4F13A912E4EAE4600462944 /* TransportPanelView.mm */,
 				D49F29472E6A61CA00C5B87C /* NSDocumentController+AscentForceSubclass.m */,
+				D41001E82E84A5EC002942DE /* AscentPasteboard.h */,
+				D41001E92E84A604002942DE /* AscentPasteboard.m */,
 			);
 			name = Misc;
 			sourceTree = "<group>";
@@ -1400,6 +1525,7 @@
 		D4F13AF42E4EAE4600462944 /* Mainline Code */ = {
 			isa = PBXGroup;
 			children = (
+				D41001EE2E8592BB002942DE /* Main Window */,
 				D489E0EA2E6D10D60076E5DC /* Database */,
 				D457D2EC2E6488B400D1DF73 /* Strava */,
 				D4F139F42E4EAE4600462944 /* Utilities */,
@@ -1861,6 +1987,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D41002172E859904002942DE /* MapController.xib in Resources */,
 				D457D2B52E61FE4300D1DF73 /* Fonts in Resources */,
 				D4F13BF12E4EAE4600462944 /* Ascent_Doc.icns in Resources */,
 				D4F13BF22E4EAE4600462944 /* AppearancePreferences.tiff in Resources */,
@@ -1876,10 +2003,12 @@
 				D4F13C092E4EAE4600462944 /* LeftArrowPressed.png in Resources */,
 				D4F13C0A2E4EAE4600462944 /* GMTOffset.nib in Resources */,
 				D4F13C0B2E4EAE4600462944 /* Splits_Trans.png in Resources */,
+				D41002262E85997F002942DE /* GeneralInfoController.xib in Resources */,
 				D4F13C0D2E4EAE4600462944 /* browser1.png in Resources */,
 				D4F13C0F2E4EAE4600462944 /* RoundRTZ.png in Resources */,
 				D4F13C102E4EAE4600462944 /* send_activity.scpt in Resources */,
 				D4F13C112E4EAE4600462944 /* ZoomOutButton.png in Resources */,
+				D43C3EEC2E85C46A00D40D19 /* RootSplitController.xib in Resources */,
 				D4F13C122E4EAE4600462944 /* mountain bike.png in Resources */,
 				D4F13C162E4EAE4600462944 /* zones.icns in Resources */,
 				D4F13C182E4EAE4600462944 /* EquipmentSelector.xib in Resources */,
@@ -1901,11 +2030,14 @@
 				D4F13C2E2E4EAE4600462944 /* dt.jpg in Resources */,
 				D4F13C2F2E4EAE4600462944 /* RightArrowPressed.png in Resources */,
 				D4F13C302E4EAE4600462944 /* RoundFF.png in Resources */,
+				D41002222E859941002942DE /* MetricsController.xib in Resources */,
 				D4F13C312E4EAE4600462944 /* prototype.js in Resources */,
 				D4F13C332E4EAE4600462944 /* DV_DC_2005_013.jpg in Resources */,
 				D4F18D0A2E5248980032E51D /* PrefsUser.xib in Resources */,
 				D4F18D0B2E5248980032E51D /* PrefsHeartrate.xib in Resources */,
+				D41001F62E85970F002942DE /* LeftSplitController.xib in Resources */,
 				D4F18D0C2E5248980032E51D /* PrefsZones.xib in Resources */,
+				D410021C2E859916002942DE /* ProfileController.xib in Resources */,
 				D4F18D0D2E5248980032E51D /* ProgressBar.xib in Resources */,
 				D4F18D0E2E5248980032E51D /* PrefsSharing.xib in Resources */,
 				D4F13C342E4EAE4600462944 /* ListEditor.nib in Resources */,
@@ -1928,6 +2060,7 @@
 				D4F13C4D2E4EAE4600462944 /* canoe.png in Resources */,
 				D4F13C4F2E4EAE4600462944 /* LeftArrow.png in Resources */,
 				D4F13C512E4EAE4600462944 /* bike wheels.png in Resources */,
+				D410020F2E859890002942DE /* SegmentsController.xib in Resources */,
 				D4F13C532E4EAE4600462944 /* CompareButtonIcon.png in Resources */,
 				D4F13C562E4EAE4600462944 /* BlueDot.png in Resources */,
 				D4F13C572E4EAE4600462944 /* PrefsBackup.png in Resources */,
@@ -1938,6 +2071,7 @@
 				D4F13C5D2E4EAE4600462944 /* TransportPanel.nib in Resources */,
 				D4CCE92A2E5049B900B46DB2 /* MainMenu.nib in Resources */,
 				D4F13C5F2E4EAE4600462944 /* DetailedMapWindow.nib in Resources */,
+				D41002052E859817002942DE /* InfoPaneController.xib in Resources */,
 				D4F13C602E4EAE4600462944 /* line_solid.png in Resources */,
 				D4F13C662E4EAE4600462944 /* PrefsBackup.nib in Resources */,
 				D4F13C692E4EAE4600462944 /* bike chain.png in Resources */,
@@ -1978,9 +2112,12 @@
 				D4F13CA22E4EAE4600462944 /* RulerBG.png in Resources */,
 				D4F13CA32E4EAE4600462944 /* SelectRightButton.png in Resources */,
 				D4F13CA52E4EAE4600462944 /* line_solid_1.png in Resources */,
+				D41002002E8597D4002942DE /* AnalysisPaneController.xib in Resources */,
 				D4F13CA62E4EAE4600462944 /* SplitsButton.png in Resources */,
 				D4F13CA82E4EAE4600462944 /* PeakMarker.png in Resources */,
 				D4F13CA92E4EAE4600462944 /* PrefsSync.nib in Resources */,
+				D410020B2E85987C002942DE /* IntervalsPaneController.xib in Resources */,
+				D41002292E8599E5002942DE /* MainWindowController.xib in Resources */,
 				D4F13CAA2E4EAE4600462944 /* PrefsAdvanced.nib in Resources */,
 				D4F13CAB2E4EAE4600462944 /* ColorPreferences.tiff in Resources */,
 				D4F13CAC2E4EAE4600462944 /* play_on.png in Resources */,
@@ -2052,6 +2189,8 @@
 				D4F13CC82E4EAE4600462944 /* TCX.mm in Sources */,
 				D4F13CC92E4EAE4600462944 /* TransparentMapWindow.mm in Sources */,
 				D4F13CCA2E4EAE4600462944 /* SplitActivityController.mm in Sources */,
+				D41001EA2E84A604002942DE /* AscentPasteboard.m in Sources */,
+				D41002012E8597D4002942DE /* AnalysisPaneController.m in Sources */,
 				D4F13CCB2E4EAE4600462944 /* DrawingUtilities.mm in Sources */,
 				D4F13CCC2E4EAE4600462944 /* PrefsAppearance.mm in Sources */,
 				D4F13CCD2E4EAE4600462944 /* ListEditorController.mm in Sources */,
@@ -2061,14 +2200,16 @@
 				D4F13CD32E4EAE4600462944 /* PrefsSharing.mm in Sources */,
 				D4F13CD42E4EAE4600462944 /* NetUtilities.m in Sources */,
 				D49F29442E6A52C500C5B87C /* AscentDocumentController.m in Sources */,
+				D41002062E859817002942DE /* InfoPaneController.m in Sources */,
 				D4F13CD52E4EAE4600462944 /* ProfilesContainerView.mm in Sources */,
 				D4F13CD62E4EAE4600462944 /* CWSummaryPanelView.mm in Sources */,
 				D4F13CD72E4EAE4600462944 /* PrefsUser.m in Sources */,
 				D4F13CD82E4EAE4600462944 /* AscentTextField.mm in Sources */,
 				D4F13CD92E4EAE4600462944 /* ActivityOutlineView.mm in Sources */,
 				D4F13CDA2E4EAE4600462944 /* EquipmentTrackInfo.mm in Sources */,
+				D41001EC2E84AE9C002942DE /* TrackListController.m in Sources */,
 				D4F13CDB2E4EAE4600462944 /* Utils.mm in Sources */,
-				D4F13CDD2E4EAE4600462944 /* TBWindowController.mm in Sources */,
+				D4F13CDD2E4EAE4600462944 /* MainWindowController.mm in Sources */,
 				D4F13CDE2E4EAE4600462944 /* CompareWindowController.mm in Sources */,
 				D4F13CDF2E4EAE4600462944 /* PrefsHeartrate.m in Sources */,
 				D4F13CE02E4EAE4600462944 /* MaintenanceLog.mm in Sources */,
@@ -2084,8 +2225,11 @@
 				D4F13CEA2E4EAE4600462944 /* SplashPanel.m in Sources */,
 				D4F13CEB2E4EAE4600462944 /* VertTicView.mm in Sources */,
 				D4F13CEC2E4EAE4600462944 /* EditNotesController.mm in Sources */,
+				D41001E72E849689002942DE /* TrackClipboardSerializer.m in Sources */,
 				D4F13CED2E4EAE4600462944 /* BackupDelegate.mm in Sources */,
 				D4F13CEE2E4EAE4600462944 /* MiniProfileView.mm in Sources */,
+				D41001F92E859731002942DE /* TrackPaneController.m in Sources */,
+				D41002182E859904002942DE /* MapController.m in Sources */,
 				D4F13CEF2E4EAE4600462944 /* MapPathView.mm in Sources */,
 				D473BB172E692FB200B504DC /* FullImageBrowserWindowController.m in Sources */,
 				D4F13CF02E4EAE4600462944 /* TransparentMapView.mm in Sources */,
@@ -2108,6 +2252,7 @@
 				D4F13D002E4EAE4600462944 /* CustomSplitDistanceController.m in Sources */,
 				D4F13D012E4EAE4600462944 /* SGWindowController.m in Sources */,
 				D457D2EF2E64894F00D1DF73 /* StravaImporter.m in Sources */,
+				D410021D2E859916002942DE /* ProfileController.m in Sources */,
 				D4F779302E73071B0032D5EE /* LocationAPI.m in Sources */,
 				D4F13D022E4EAE4600462944 /* GarminFIT.mm in Sources */,
 				D4F13D032E4EAE4600462944 /* TCPConnection.m in Sources */,
@@ -2122,8 +2267,10 @@
 				D4450B5D2E5BD33A00AB39C3 /* LatLong-UTMconversion.cpp in Sources */,
 				D4F13D072E4EAE4600462944 /* ColorBoxView.m in Sources */,
 				D4F13D082E4EAE4600462944 /* KML.mm in Sources */,
+				D410020A2E85987C002942DE /* IntervalsPaneController.m in Sources */,
 				D489E0F02E6D12100076E5DC /* TrackPointStore.m in Sources */,
 				D4F13D092E4EAE4600462944 /* SplitsTableView.mm in Sources */,
+				D41002132E8598DF002942DE /* RightSplitController.m in Sources */,
 				D4F13D0A2E4EAE4600462944 /* Track.mm in Sources */,
 				D4F13D0B2E4EAE4600462944 /* ADWindowController.mm in Sources */,
 				D4F13D0C2E4EAE4600462944 /* TCPService.m in Sources */,
@@ -2140,15 +2287,20 @@
 				D4F13D152E4EAE4600462944 /* CWSummaryPanelController.mm in Sources */,
 				D4F13D162E4EAE4600462944 /* fit_convert.c in Sources */,
 				D4F13D172E4EAE4600462944 /* ADTransparentView.mm in Sources */,
+				D41001FC2E859779002942DE /* TrackCalendarController.m in Sources */,
 				D4F13D182E4EAE4600462944 /* SplashPanelController.m in Sources */,
+				D41001F12E8596A4002942DE /* RootSplitController.m in Sources */,
+				D4F4C7D62E85AAC500791D6E /* Selection.m in Sources */,
 				D4F13D192E4EAE4600462944 /* TrackPoint.m in Sources */,
 				D4F13D1A2E4EAE4600462944 /* MapPoint.m in Sources */,
 				D4F13D1B2E4EAE4600462944 /* AscentServer.mm in Sources */,
+				D41001F52E85970F002942DE /* LeftSplitController.m in Sources */,
 				D4F13D1C2E4EAE4600462944 /* SplitTableItem.mm in Sources */,
 				D4F13D1D2E4EAE4600462944 /* SGView.mm in Sources */,
 				D457D2ED2E6488B400D1DF73 /* StravaAPI.m in Sources */,
 				D4F13D1E2E4EAE4600462944 /* TransparentWindowController.mm in Sources */,
 				D4F13D1F2E4EAE4600462944 /* SelectAndApplyActionController.mm in Sources */,
+				D41002272E85997F002942DE /* GeneralInfoController.m in Sources */,
 				D4F13D202E4EAE4600462944 /* SplitsGraphView.mm in Sources */,
 				D4F13D212E4EAE4600462944 /* BackupNagController.mm in Sources */,
 				D4F13D222E4EAE4600462944 /* DataHUDView.mm in Sources */,
@@ -2160,7 +2312,9 @@
 				D4F13D252E4EAE4600462944 /* fit_crc.c in Sources */,
 				D4F13D262E4EAE4600462944 /* CompareProfileViewController.mm in Sources */,
 				D4F13D272E4EAE4600462944 /* TransportPanelView.mm in Sources */,
+				D41002102E859890002942DE /* SegmentsController.m in Sources */,
 				D4F13D282E4EAE4600462944 /* AnimTimer.mm in Sources */,
+				D41002212E859941002942DE /* MetricsController.m in Sources */,
 				D4F13D292E4EAE4600462944 /* PlotAttributes.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

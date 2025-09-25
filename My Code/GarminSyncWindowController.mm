@@ -8,7 +8,7 @@
 
 #import "GarminSyncWindowController.h"
 #import "TrackBrowserDocument.h"
-#import "TBWindowController.h"		// @@FiXME@@
+#import "MainWindowController.h"		// @@FiXME@@
 #import "Utils.h"
 #import "StringAdditions.h"
 

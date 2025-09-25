@@ -7,7 +7,7 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
-        <customObject id="-2" userLabel="File's Owner" customClass="TBWindowController">
+        <customObject id="-2" userLabel="File's Owner" customClass="MainWindowController">
             <connections>
                 <outlet property="activityDetailButton" destination="1947" id="1955"/>
                 <outlet property="activityDetailButtonView" destination="1946" id="1950"/>
@@ -59,6 +59,7 @@
                 <outlet property="statsInfoSplitSubView" destination="1256" id="1812"/>
                 <outlet property="summaryButton" destination="1909" id="2041"/>
                 <outlet property="summaryButtonView" destination="1905" id="1907"/>
+                <outlet property="trackListController" destination="v6f-cG-FnQ" id="pPX-XS-xgn"/>
                 <outlet property="trackPicImageView" destination="jxv-I6-1pm" id="SHV-sH-Lrn"/>
                 <outlet property="trackTableView" destination="1797" id="1915"/>
                 <outlet property="weatherPopup" destination="2476" id="2523"/>
@@ -72,7 +73,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="67" y="875" width="792" height="587"/>
-            <rect key="screenRect" x="-1005" y="982" width="1920" height="1055"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2240" height="1235"/>
             <value key="minSize" type="size" width="213" height="113"/>
             <view key="contentView" id="879">
                 <rect key="frame" x="0.0" y="0.0" width="792" height="587"/>
@@ -130,7 +131,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="219" y="1012" width="360" height="233"/>
-            <rect key="screenRect" x="-1005" y="982" width="1920" height="1055"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2240" height="1235"/>
             <value key="minSize" type="size" width="213" height="113"/>
             <view key="contentView" id="921">
                 <rect key="frame" x="0.0" y="0.0" width="360" height="233"/>
@@ -199,7 +200,7 @@ DQ
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" texturedBackground="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="96" y="575" width="849" height="768"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="944"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2240" height="1235"/>
             <value key="minSize" type="size" width="810" height="600"/>
             <view key="contentView" id="1246">
                 <rect key="frame" x="0.0" y="0.0" width="849" height="768"/>
@@ -425,14 +426,14 @@ DQ
                                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                 <subviews>
                                                                                     <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="14" headerView="2300" id="1630">
-                                                                                        <rect key="frame" x="0.0" y="0.0" width="416" height="202"/>
+                                                                                        <rect key="frame" x="0.0" y="0.0" width="414" height="202"/>
                                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                         <size key="intercellSpacing" width="3" height="2"/>
                                                                                         <color key="backgroundColor" name="controlHighlightColor" catalog="System" colorSpace="catalog"/>
                                                                                         <tableViewGridLines key="gridStyleMask" horizontal="YES"/>
                                                                                         <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                                                         <tableColumns>
-                                                                                            <tableColumn identifier="Metric" editable="NO" width="56" minWidth="8" maxWidth="1000" id="1632">
+                                                                                            <tableColumn identifier="Metric" editable="NO" width="55.5" minWidth="8" maxWidth="1000" id="1632">
                                                                                                 <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Metric">
                                                                                                     <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                     <color key="backgroundColor" white="0.33333299" alpha="1" colorSpace="calibratedWhite"/>
@@ -444,7 +445,7 @@ DQ
                                                                                                 </textFieldCell>
                                                                                                 <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                                             </tableColumn>
-                                                                                            <tableColumn identifier="Type" editable="NO" width="45" minWidth="10" maxWidth="1000" id="1633">
+                                                                                            <tableColumn identifier="Type" editable="NO" width="44.5" minWidth="10" maxWidth="1000" id="1633">
                                                                                                 <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Type">
                                                                                                     <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                     <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -456,7 +457,7 @@ DQ
                                                                                                 </textFieldCell>
                                                                                                 <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                                             </tableColumn>
-                                                                                            <tableColumn identifier="Value" editable="NO" width="63" minWidth="10" maxWidth="1000" id="1644">
+                                                                                            <tableColumn identifier="Value" editable="NO" width="62.5" minWidth="10" maxWidth="1000" id="1644">
                                                                                                 <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="right" title="Value">
                                                                                                     <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                     <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -468,7 +469,7 @@ DQ
                                                                                                 </textFieldCell>
                                                                                                 <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                                             </tableColumn>
-                                                                                            <tableColumn identifier="Units" editable="NO" width="70" minWidth="10" maxWidth="1000" id="1645">
+                                                                                            <tableColumn identifier="Units" editable="NO" width="69.5" minWidth="10" maxWidth="1000" id="1645">
                                                                                                 <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                                                                                     <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                                                     <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -509,7 +510,7 @@ DQ
                                                                                 <autoresizingMask key="autoresizingMask"/>
                                                                             </scroller>
                                                                             <tableHeaderView key="headerView" wantsLayer="YES" id="2300">
-                                                                                <rect key="frame" x="0.0" y="0.0" width="416" height="17"/>
+                                                                                <rect key="frame" x="0.0" y="0.0" width="414" height="17"/>
                                                                                 <autoresizingMask key="autoresizingMask"/>
                                                                             </tableHeaderView>
                                                                         </scrollView>
@@ -977,7 +978,7 @@ DQ
             <windowStyleMask key="styleMask" titled="YES" closable="YES" utility="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="471" y="380" width="260" height="129"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="944"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2240" height="1235"/>
             <value key="minSize" type="size" width="213" height="113"/>
             <view key="contentView" id="1921">
                 <rect key="frame" x="0.0" y="0.0" width="260" height="129"/>
@@ -1178,6 +1179,11 @@ DQ
             <point key="canvasLocation" x="-509" y="-213"/>
         </view>
         <userDefaultsController representsSharedInstance="YES" id="eRH-Da-xHV"/>
+        <viewController id="v6f-cG-FnQ" customClass="TrackListController">
+            <connections>
+                <outlet property="view" destination="1797" id="a9y-wx-8IO"/>
+            </connections>
+        </viewController>
     </objects>
     <resources>
         <image name="ABAction_Trans.png" width="128" height="128"/>
@@ -1187,7 +1193,7 @@ DQ
         <image name="CompareButtonIcon" width="32" height="23"/>
         <image name="Splits_Trans.png" width="128" height="128"/>
         <namedColor name="BackgroundPrimary">
-            <color red="0.99999994039535522" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>

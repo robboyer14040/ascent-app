@@ -2444,12 +2444,15 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 
 - (void)makeWindowControllers
 {
-   if (tbWindowController == nil)
-   {
-       MainWindowController *wc = [[MainWindowController alloc] initWithWindowNibName:@"MainWindowController"];
-       [self addWindowController:wc];   // <-- this sets wc.document = self
-       [wc release];
-   }
+    MainWindowController *wc = [[[MainWindowController alloc]
+                                 initWithWindowNibName:@"MainWindowController"] autorelease];
+    [self addWindowController:wc];
+    
+    // Push deps *before* showing window
+    wc.document = self;
+    // If you keep a Selection object per document, set wc.selection here too
+    
+    [wc showWindow:self];
 }
 
 

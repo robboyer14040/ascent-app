@@ -6,110 +6,61 @@
 //  Copyright © 2025 Montebello Software, LLC. All rights reserved.
 //
 //
-//  LeftSplitController.m
-//  Ascent  (NON-ARC / MRC)
-//
-
+// LeftSplitController.m  (MRC)
 #import "LeftSplitController.h"
-#import "TrackPaneController.h"
-#import "AnalysisPaneController.h"
+#import "TrackPaneController.h"     // top (outline/calendar)
+#import "AnalysisPaneController.h"      // bottom (segments/intervals)
 
-@implementation LeftSplitController
+@implementation LeftSplitController {
+    TrackPaneController *_trackPane;
+    AnalysisPaneController  *_analysis;
+}
+@synthesize document=_document, selection=_selection;
 
-@synthesize document = _document;
-@synthesize selection = _selection;
-@synthesize trackPaneController = _trackPaneController;
-@synthesize analysisPaneController = _analysisPaneController;
-
-- (void)dealloc
-{
-    if (_selection != nil) {
-        [_selection release];
-    }
-    if (_trackPaneController != nil) {
-        [_trackPaneController release];
-    }
-    if (_analysisPaneController != nil) {
-        [_analysisPaneController release];
-    }
+- (void)dealloc {
+    [_selection release];
+    [_trackPane release];
+    [_analysis release];
     [super dealloc];
 }
 
-- (void)loadView
-{
-    NSSplitView *sv = [[[NSSplitView alloc] initWithFrame:NSMakeRect(0, 0, 600, 800)] autorelease];
-    sv.vertical = NO;
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    NSSplitView *sv = self.splitView;      // created by super
+    sv.vertical     = NO;                  // top/bottom
     sv.dividerStyle = NSSplitViewDividerStyleThin;
     sv.autosaveName = @"LeftSplitView";
-    self.view = sv;
 
-    TrackPaneController *topVC = [[[TrackPaneController alloc] initWithNibName:@"TrackPaneController" bundle:nil] autorelease];
-    AnalysisPaneController *botVC = [[[AnalysisPaneController alloc] initWithNibName:@"AnalysisPaneController" bundle:nil] autorelease];
+    // Create children (XIB-backed)
+    if (!_trackPane) _trackPane = [[TrackPaneController alloc] initWithNibName:@"TrackPaneController" bundle:nil];
+    if (!_analysis)  _analysis  = [[AnalysisPaneController  alloc] initWithNibName:@"AnalysisPaneController"  bundle:nil];
 
-    self.trackPaneController = topVC;
-    self.analysisPaneController = botVC;
+    // TEMP: if you still want color proof, uncomment:
+    _trackPane.view.wantsLayer = YES; _trackPane.view.layer.backgroundColor = [NSColor systemGreenColor].CGColor;
+    _analysis.view.wantsLayer  = YES; _analysis.view.layer.backgroundColor  = [NSColor systemBlueColor].CGColor;
 
-    [self injectDependencies];
+    NSSplitViewItem *top = [NSSplitViewItem splitViewItemWithViewController:_trackPane];
+    top.minimumThickness = 220.0; top.holdingPriority = 260;
 
-    NSSplitViewItem *top = [NSSplitViewItem splitViewItemWithViewController:topVC];
-    NSSplitViewItem *bot = [NSSplitViewItem splitViewItemWithViewController:botVC];
-
-    top.holdingPriority = 260;
-    bot.holdingPriority = 250;
-    top.minimumThickness = 220.0;
-    bot.minimumThickness = 220.0;
+    NSSplitViewItem *bot = [NSSplitViewItem splitViewItemWithViewController:_analysis];
+    bot.minimumThickness = 220.0; bot.holdingPriority = 250;
 
     [self addSplitViewItem:top];
     [self addSplitViewItem:bot];
+
+    [self injectDependencies];
 }
 
-- (void)setDocument:(TrackBrowserDocument *)document
-{
-    _document = document;
-    if (self.isViewLoaded) {
-        [self injectDependencies];
+- (void)setDocument:(TrackBrowserDocument *)doc { _document = doc; if (self.isViewLoaded) [self injectDependencies]; }
+- (void)setSelection:(Selection *)sel { if (sel==_selection) return; [_selection release]; _selection=[sel retain]; if (self.isViewLoaded) [self injectDependencies]; }
+
+- (void)injectDependencies {
+    for (NSViewController *vc in @[(id)_trackPane ?: (id)NSNull.null, (id)_analysis ?: (id)NSNull.null]) {
+        if ((id)vc == (id)NSNull.null) continue;
+        @try { [vc setValue:_document  forKey:@"document"]; } @catch(...) {}
+        @try { [vc setValue:_selection forKey:@"selection"]; } @catch(...) {}
+        if ([vc respondsToSelector:@selector(injectDependencies)]) [vc performSelector:@selector(injectDependencies)];
     }
 }
-
-- (void)setSelection:(Selection *)selection
-{
-    if (selection == _selection) {
-        return;
-    }
-    if (_selection != nil) {
-        [_selection release];
-    }
-    _selection = [selection retain];
-    if (self.isViewLoaded) {
-        [self injectDependencies];
-    }
-}
-
-- (void)injectDependencies
-{
-    NSViewController *vc = nil;
-
-    vc = _trackPaneController;
-    if (vc != nil) {
-        @try { [vc setValue:_document forKey:@"document"]; }
-        @catch (__unused NSException *ex) {}
-        @try { [vc setValue:_selection forKey:@"selection"]; }
-        @catch (__unused NSException *ex) {}
-        if ([vc respondsToSelector:@selector(injectDependencies)]) {
-            [vc performSelector:@selector(injectDependencies)];
-        }
-    }
-
-    vc = _analysisPaneController;
-    if (vc != nil) {
-        @try { [vc setValue:_document forKey:@"document"]; }
-        @catch (__unused NSException *ex) {}
-        @try { [vc setValue:_selection forKey:@"selection"]; }
-        @catch (__unused NSException *ex) {}
-        if ([vc respondsToSelector:@selector(injectDependencies)]) {
-            [vc performSelector:@selector(injectDependencies)];
-        }
-    }
-}
-
 @end

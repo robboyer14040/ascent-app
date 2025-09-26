@@ -5,17 +5,17 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
-        <customObject id="-2" userLabel="File's Owner" customClass="LeftSplitController">
+        <customObject id="-2" userLabel="File's Owner" customClass="TrackCalendarController">
             <connections>
-                <outlet property="view" destination="Hz6-mo-xeY" id="0bl-1N-x8E"/>
+                <outlet property="view" destination="lEk-0p-iZL" id="BQ4-OJ-Cmp"/>
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <customView id="Hz6-mo-xeY">
-            <rect key="frame" x="0.0" y="0.0" width="480" height="272"/>
+        <customView id="lEk-0p-iZL">
+            <rect key="frame" x="0.0" y="0.0" width="677" height="547"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-            <point key="canvasLocation" x="132" y="-128"/>
+            <point key="canvasLocation" x="-78.5" y="-48.5"/>
         </customView>
     </objects>
 </document>

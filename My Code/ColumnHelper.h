@@ -9,10 +9,14 @@
 #import <Cocoa/Cocoa.h>
 
 @class StaticColumnInfo;
+@class TrackBrowserDocument;
 
-@interface ColumnHelper : NSObject 
+@interface ColumnHelper : NSObject
 
-- (id)initWithTableView:(NSTableView*)view staticColInfo:(StaticColumnInfo*)sci
+@property(nonatomic, assign) TrackBrowserDocument *document;
+
+- (id)initWithTableView:(NSTableView*)view
+          staticColInfo:(StaticColumnInfo*)sci
            dictSelector:(SEL)dictSel
         setDictSelector:(SEL)setDictSel;
 - (void)rebuild;

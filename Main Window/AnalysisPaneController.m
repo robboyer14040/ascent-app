@@ -22,6 +22,8 @@
 {
     if (_selection != nil) {
         [_selection release];
+        [_segmentsVC release];
+        [_intervalsPaneVC release];
     }
     [super dealloc];
 }
@@ -36,10 +38,10 @@
         _controlsBar.state = NSVisualEffectStateFollowsWindowActiveState;
     }
 
-    SegmentsController *segments = [[[SegmentsController alloc] initWithNibName:@"SegmentsController" bundle:nil] autorelease];
+    SegmentsController *segments = [[SegmentsController alloc] initWithNibName:@"SegmentsController" bundle:nil];
     _segmentsVC = segments;
 
-    IntervalsPaneController *intervals = [[[IntervalsPaneController alloc] init] autorelease];
+    IntervalsPaneController *intervals =[[IntervalsPaneController alloc] init];
     _intervalsPaneVC = intervals;
 
     [self injectDependencies];

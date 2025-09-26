@@ -22,13 +22,13 @@
 - (MyTableHeaderView*) initWithHelper:(ColumnHelper*)h;
 - (NSMenu *)menuOfColumns;
 - (void)setMenuOfColumns:(NSMenu *)value;
+- (IBAction)doit:(id)sender;
 @end
 
 
 @interface ColumnHelper ()
 {
     NSTableView*            tableView;
-    TrackBrowserDocument*   tbDocument;
     SEL                     dictSelector;
     SEL                     setDictSelector;
     StaticColumnInfo*       staticColumnInfo;
@@ -49,8 +49,7 @@
 		staticColumnInfo = [sci retain];
 		dictSelector = dictSel;
 		setDictSelector = setDictSel;
-		NSWindow* w = [tableView window];
-		tbDocument = [[[NSDocumentController sharedDocumentController] documentForWindow:w] retain];
+        _document = nil;
 	}
 	return self;
 }
@@ -63,12 +62,6 @@
 }
 
 
-- (TrackBrowserDocument*) document
-{
-	return (TrackBrowserDocument*) [[NSDocumentController sharedDocumentController] documentForWindow:[tableView window]];
-}
-
-
 - (void) docChanged
 {
 	[[self document] updateChangeCount:NSChangeDone];
@@ -77,25 +70,20 @@
 
 - (void) buildColumnDict
 {
-	if (!tbDocument)
+	if (_document)
 	{
-		tbDocument = [self document];
-	}
-	
-	if (tbDocument)
-	{	
 		int num = [staticColumnInfo numPossibleColumns];
 		int i;
 		int next = 0;
 		//NSMutableDictionary* ciDict = [tbDocument tableInfoDict];
-		NSMutableDictionary* ciDict = [tbDocument performSelector:dictSelector];
+		NSMutableDictionary* ciDict = [_document performSelector:dictSelector];
 		if (ciDict == nil)
 		{
 			//NSDictionary* protoDict = [[BrowserInfo sharedInstance] colInfoDict];
 			NSDictionary* protoDict = [[BrowserInfo sharedInstance] performSelector:dictSelector];
 			ciDict = [[NSMutableDictionary alloc] initWithDictionary:protoDict copyItems:YES] ;      // COPY it
 			//[tbDocument setTableInfoDict:ciDict];
-			[tbDocument  performSelector:setDictSelector
+			[_document  performSelector:setDictSelector
 							  withObject:ciDict];
 		}
 		
@@ -170,7 +158,6 @@
         
 		if ((flags & kCantRemove) == 0)
 		{
-#if 1
             id raw = (ci && [ci respondsToSelector:@selector(menuLabel)]) ? [ci menuLabel] : nil;
             NSString *title = nil;
 
@@ -195,10 +182,9 @@
             NSMenuItem *mi = [[NSMenuItem alloc] initWithTitle:title
                                                         action:@selector(doit:)
                                                  keyEquivalent:@""];
-#else
-			NSMenuItem* mi = [[NSMenuItem alloc] initWithTitle:[ci menuLabel] action:@selector(doit:) keyEquivalent:@""];
-#endif
-            NSCellStateValue state = ([ci order] == kNotInBrowser) ? NSControlStateValueOff : NSControlStateValueOn;
+            mi.target = tableView.headerView;
+            
+            NSControlStateValue state = ([ci order] == kNotInBrowser) ? NSControlStateValueOff : NSControlStateValueOn;
 			[mi setState:state];
 			[mi setTag:[ci colTag]];
 			[menu  addItem:mi];
@@ -321,7 +307,8 @@
 	
 	while ((value = [enumerator nextObject])) 
 	{
-		if ([value tag] == tag) return value;
+		if ([value colTag] == tag)
+            return value;
 	}
 	return nil;
 }
@@ -444,7 +431,7 @@
 		}
 		[self docChanged];
 		//[[tableView document] setTableInfoDict:ciDict];
-		[tbDocument  performSelector:setDictSelector
+		[_document  performSelector:setDictSelector
 						  withObject:ciDict];
 		//[self adjustLastColumn];
 	}

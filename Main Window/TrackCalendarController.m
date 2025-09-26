@@ -8,15 +8,21 @@
 
 #import "TrackCalendarController.h"
 
-@interface TrackCalendarController ()
-
-@end
-
 @implementation TrackCalendarController
+@synthesize document=_document, selection=_selection;
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do view setup here.
+- (void)dealloc {
+    [_selection release];
+    [super dealloc];
+}
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // set up calendar UI, data sources, etc.
+}
+
+- (void)injectDependencies {
+    // use _document / _selection as needed
 }
 
 @end

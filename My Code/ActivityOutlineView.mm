@@ -70,7 +70,6 @@ NSString* ActivityDragType = @"ActivityDragType";
 											  dictSelector:@selector(colInfoDict)
 										   setDictSelector:@selector(setColInfoDict:)];
 	[self setAutoresizesOutlineColumn:NO];
-	[self rebuild];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(columnMoved:)
 												 name:NSOutlineViewColumnDidMoveNotification
@@ -111,10 +110,13 @@ NSString* ActivityDragType = @"ActivityDragType";
    return YES;
 }
 
-
-- ( TrackBrowserDocument*) document
-{
-   return (TrackBrowserDocument*) [[NSDocumentController sharedDocumentController] documentForWindow:[self window]];
+- (void)setDocument:(TrackBrowserDocument *)doc {
+    _document = doc; // assign on purpose
+    if (_document)
+    {
+        [columnHelper setDocument:doc];
+        [columnHelper rebuild];
+    }
 }
 
 

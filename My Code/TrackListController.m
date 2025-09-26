@@ -41,7 +41,6 @@ enum
     NSMutableDictionary*            flatBIDict;
     NSDictionary *                  weekAttrs;
     NSDictionary *                  activityAttrs;
-    TrackBrowserDocument*           tbDocument;
     NSMutableSet*                   expandedItems;
     NSMutableArray*                 expandedItemNames;
     NSMutableSet*                   selectedItemsAtExpand;
@@ -75,10 +74,6 @@ enum
 - (void)selectBrowserRowsForTracks:(NSArray*)trks;
 - (void)doSetSearchOptions:(int)opts;
 - (void)doSetSearchCriteria:(NSString*)s;
-- (NSString*)searchCriteria;
-- (int)searchOptions;
-- (IBAction)setSearchOptions:(id)sender;
-- (IBAction)setSearchCriteria:(id)sender;
 int searchTagToMask(int searchTag);
 - (void)expandFirstItem;
 -(void) doSelChange;
@@ -131,7 +126,9 @@ int searchTagToMask(int searchTag);
     [_outlineView registerForDraggedTypes:[NSArray arrayWithObject:@"com.montebellosoftware.ascent.tracks"]];
     [_outlineView setDraggingSourceOperationMask:NSDragOperationCopy forLocal:YES];
     [_outlineView setDraggingSourceOperationMask:NSDragOperationCopy forLocal:NO];
-
+    if (_document)
+        [_outlineView setDocument:_document];
+    
     // Make sure actions reach us
     self.view.nextResponder = self;
     reverseSort = [Utils boolFromDefaults:RCBDefaultBrowserSortInReverse];
@@ -191,7 +188,7 @@ int searchTagToMask(int searchTag);
     // Seed with an empty model snapshot.
     ///[self loadItemsFromDocument];
     [self reloadData];
-
+    [self buildBrowser:YES];
 }
 
 
@@ -213,8 +210,11 @@ int searchTagToMask(int searchTag);
 - (void)setDocument:(TrackBrowserDocument *)document
 {
     _document = document;
-    ///[self loadItemsFromDocument];
-    [self reloadData];
+    if (document) {
+        [_outlineView setDocument:_document];
+        [self buildBrowser:YES];
+        [self reloadData];
+    }
 }
 
 - (void)injectDependencies
@@ -225,17 +225,22 @@ int searchTagToMask(int searchTag);
 
 - (void)reloadData
 {
+    NSLog(@"... RELOAD DATA ...");
+    
     if (_outlineView == nil) {
         return;
     }
     [_outlineView reloadData];
-
     // Restore an expanded baseline if you like.
     // [_outlineView expandItem:nil expandChildren:YES];
 }
 
 - (void)buildBrowser:(BOOL)expandLastItem
 {
+    if (!_document)
+        return;
+    
+    NSLog(@"... BUILD BROWSER ...");
     BOOL searchUnderway = [self isSearchUnderway];
     NSMutableDictionary *topDict = searchUnderway ? searchItems : yearItems;
 
@@ -245,7 +250,7 @@ int searchTagToMask(int searchTag);
     // Calendar we’ll use for date math; we’ll set its timeZone per-track
     NSCalendar *baseCal = [[[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian] autorelease];
 
-    NSMutableArray *trackArray = [tbDocument trackArray];
+    NSMutableArray *trackArray = [_document trackArray];
     NSUInteger numTracks = [trackArray count];
 
     int timeFormat = [Utils intFromDefaults:RCBDefaultTimeFormat];
@@ -452,7 +457,7 @@ int searchTagToMask(int searchTag);
 
 -(NSMutableDictionary*) outlineDict
 {
-    if ([[self searchCriteria] isEqualToString:@""] && ([searchItems count] == 0))
+    if ([searchCriteria isEqualToString:@""] && ([searchItems count] == 0))
     {
         return yearItems;
     }
@@ -711,7 +716,7 @@ int searchTagToMask(int searchTag);
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
 {
     NSMutableArray* arr = [NSMutableArray arrayWithCapacity:4];
-    NSArray* trackArray = [tbDocument trackArray];
+    NSArray* trackArray = [_document trackArray];
     for (TrackBrowserItem* bi in items)
     {
         if ([bi type] == kTypeActivity)
@@ -967,9 +972,9 @@ NSString*      gCompareString = nil;         // @@FIXME@@
     if ([arr count] > 0)
     {
         [_outlineView deselectAll:self];
-        [tbDocument deleteTracks:arr];
+        [_document deleteTracks:arr];
         [[_outlineView window] setDocumentEdited:YES];      /// ????
-        [tbDocument updateChangeCount:NSChangeDone];
+        [_document updateChangeCount:NSChangeDone];
     }
 }
 
@@ -1167,12 +1172,6 @@ provideDataForType:(NSPasteboardType)type
 }
 
 
-- (NSString*)searchCriteria
-{
-   return searchCriteria;
-}
-
-
 - (int)searchOptions
 {
    return searchOptions;
@@ -1181,10 +1180,10 @@ provideDataForType:(NSPasteboardType)type
 
 -(void)doSetSearchCriteriaToString:(NSString*)s
 {
-    if (nil != tbDocument)
+    if (nil != _document)
     {
         [self storeExpandedState];
-        NSString* prevSC = [self searchCriteria];
+        NSString* prevSC = searchCriteria;
         if (prevSC != nil)
         {
             [prevSC retain];
@@ -1243,7 +1242,7 @@ int searchTagToMask(int searchTag)
    NSMenuItem* item = sender;
    [item setState:[item state] == NSControlStateValueOn ? NSControlStateValueOff : NSControlStateValueOn];
    int theTag = (int)[item tag];
-   int flags = [self searchOptions];
+   int flags = searchOptions;
    BOOL state = [item state];
    int mask = searchTagToMask(theTag);
    if (state == YES)
@@ -1468,7 +1467,7 @@ int searchTagToMask(int searchTag)
     self.topSortedKeys = nil;
     [_outlineView reloadData];
 //    [metricsEventTable reloadData];
-//    //[totalActvitiesField setStringValue:[NSString stringWithFormat:@"%d activities", [[tbDocument trackArray] count]]];
+//    //[totalActvitiesField setStringValue:[NSString stringWithFormat:@"%d activities", [[_document trackArray] count]]];
 //    //[totalActvitiesField display];
 //    if ([self calendarViewActive])
 //    {
@@ -1484,8 +1483,8 @@ int searchTagToMask(int searchTag)
     _selection.selectedTrack = trk;
     _selection.selectedLap = lap;
     [[AnimTimer defaultInstance] setAnimTime:0];
-    [tbDocument setCurrentlySelectedTrack:trk];
-    [tbDocument setSelectedLap:lap];
+    [_document setCurrentlySelectedTrack:trk];
+    [_document setSelectedLap:lap];
     ///[self buildInfoPopupMenus];
 
         if (_selection.selectedTrack != nil)
@@ -1522,7 +1521,7 @@ int searchTagToMask(int searchTag)
 //            [miniProfileView setSelectedLap:nil];
 //            [self clearAttributes];
 //        }
-        //[tbDocument selectionChanged];
+        //[_document selectionChanged];
 //        [[AnimTimer defaultInstance] updateTimerDuration];
 //        [mapPathView setDefaults];
 //        [miniProfileView setNeedsDisplay:YES];

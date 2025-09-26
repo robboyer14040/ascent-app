@@ -11,12 +11,60 @@
                 <outlet property="controlsBar" destination="lFF-BD-QU6" id="2x5-tk-GHH"/>
                 <outlet property="outlineOptionsMenu" destination="Ocs-zh-Jcj" id="Bqb-JE-X91"/>
                 <outlet property="searchField" destination="vXB-jx-KOT" id="IVs-47-DS9"/>
+                <outlet property="view" destination="5iD-PW-0U4" id="V13-sh-HlR"/>
                 <outlet property="viewModeControl" destination="1Sv-lI-wjo" id="xQr-M4-zDc"/>
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <customView id="5iD-PW-0U4">
+        <menu title="Menu" id="V5d-Rc-CSN" userLabel="Template2">
+            <items>
+                <menuItem title="Item" tag="1001" id="uBa-bb-ImE"/>
+                <menuItem title="Clear recent searches" tag="1002" id="sKe-q7-feG"/>
+                <menuItem title="no recent searches" tag="1003" id="t0p-pd-vLz"/>
+                <menuItem isSeparatorItem="YES" id="4w2-WR-f34">
+                    <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                </menuItem>
+                <menuItem title="Search" id="uh2-wb-Qj3">
+                    <menu key="submenu" title="Search" id="jDN-ew-5TW">
+                        <items>
+                            <menuItem title="Titles" tag="10" id="TDH-EJ-s10">
+                                <connections>
+                                    <action selector="setSearchOptions:" target="-2" id="GRz-p6-b7t"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Notes" tag="11" id="Eky-HX-dZP">
+                                <connections>
+                                    <action selector="setSearchOptions:" target="-2" id="uKi-8D-OcT"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Custom Fields" tag="12" id="AuV-lQ-BOX">
+                                <connections>
+                                    <action selector="setSearchOptions:" target="-2" id="B6h-Jt-GsZ"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Activity Type" tag="13" id="0qf-xi-Yk8">
+                                <connections>
+                                    <action selector="setSearchOptions:" target="-2" id="Dk0-fx-lrI"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Event Type" tag="15" id="Bqv-DJ-qyc">
+                                <connections>
+                                    <action selector="setSearchOptions:" target="-2" id="ZNh-k7-L3G"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Equipment" tag="14" id="z0U-vi-aAe">
+                                <connections>
+                                    <action selector="setSearchOptions:" target="-2" id="kH4-ga-9JQ"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+            </items>
+            <point key="canvasLocation" x="-93" y="-341"/>
+        </menu>
+        <customView id="5iD-PW-0U4" userLabel="Main View">
             <rect key="frame" x="0.0" y="0.0" width="800" height="500"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
@@ -39,13 +87,20 @@
                                 <font key="font" metaFont="system"/>
                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                <connections>
+                                    <action selector="setSearchCriteria:" target="-2" id="ple-1f-xkr"/>
+                                </connections>
                             </searchFieldCell>
+                            <connections>
+                                <outlet property="delegate" destination="-2" id="xN6-n0-cNX"/>
+                                <outlet property="searchMenuTemplate" destination="V5d-Rc-CSN" id="bdk-ib-WUb"/>
+                            </connections>
                         </searchField>
                         <popUpButton wantsLayer="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ocs-zh-Jcj">
                             <rect key="frame" x="691" y="9" width="97" height="25"/>
                             <popUpButtonCell key="cell" type="push" title="Normal" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="wjy-9j-itP" id="1Mn-0Y-GOO">
                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                <font key="font" metaFont="menu"/>
+                                <font key="font" metaFont="message"/>
                                 <menu key="menu" id="c0u-iA-70L">
                                     <items>
                                         <menuItem title="Normal" state="on" id="wjy-9j-itP"/>
@@ -70,7 +125,7 @@
                         <constraint firstItem="vXB-jx-KOT" firstAttribute="top" secondItem="lFF-BD-QU6" secondAttribute="top" constant="11" id="ys1-65-Xib"/>
                     </constraints>
                 </visualEffectView>
-                <customView translatesAutoresizingMaskIntoConstraints="NO" id="mr7-Ax-sbt">
+                <customView translatesAutoresizingMaskIntoConstraints="NO" id="mr7-Ax-sbt" userLabel="Content View">
                     <rect key="frame" x="0.0" y="0.0" width="800" height="456"/>
                 </customView>
             </subviews>

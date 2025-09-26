@@ -21,16 +21,17 @@
     RootSplitController *_root;
 }
 
+
 // Refine type only; keep attributes compatible with NSWindowController
 @property(assign) TrackBrowserDocument *document;
 
 @property(nonatomic, retain) Selection *selection;
 
 // IB outlets
-@property(assign) IBOutlet NSVisualEffectView *reservedTopArea;
-@property(assign) IBOutlet NSView *contentContainer;
+@property(nonatomic, assign) IBOutlet NSVisualEffectView *reservedTopArea;
+@property(nonatomic, assign) IBOutlet NSView *contentContainer;
 
 // Access to embedded root split
-@property(readonly, retain) RootSplitController *rootSplitController;
+@property(nonatomic, retain) RootSplitController *rootSplitController;
 
 @end

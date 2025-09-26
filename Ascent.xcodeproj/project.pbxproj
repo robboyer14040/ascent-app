@@ -36,6 +36,7 @@
 		D420632B2E85F5820041603B /* TrackPaneController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D420632A2E85F5820041603B /* TrackPaneController.xib */; };
 		D420632D2E8619830041603B /* TrackListController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D420632C2E8619830041603B /* TrackListController.xib */; };
 		D437641D2E5FA01A008AE5E4 /* Ascent.icns in Resources */ = {isa = PBXBuildFile; fileRef = D437641C2E5FA01A008AE5E4 /* Ascent.icns */; };
+		D43C3EFD2E86CAD200D40D19 /* TrackCalendarController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D43C3EFC2E86CAD200D40D19 /* TrackCalendarController.xib */; };
 		D4450B3C2E5BCF1700AB39C3 /* HUDWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B392E5BCF1700AB39C3 /* HUDWindow.m */; };
 		D4450B3D2E5BCF1700AB39C3 /* interp.c in Sources */ = {isa = PBXBuildFile; fileRef = D4450B3B2E5BCF1700AB39C3 /* interp.c */; };
 		D4450B5B2E5BD33A00AB39C3 /* NDRunLoopMessenger.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B582E5BD33A00AB39C3 /* NDRunLoopMessenger.m */; };
@@ -53,7 +54,6 @@
 		D489E0F32E6D13C60076E5DC /* IdentifierStore.m in Sources */ = {isa = PBXBuildFile; fileRef = D489E0F22E6D13C60076E5DC /* IdentifierStore.m */; };
 		D489E0F62E6D13D20076E5DC /* LibraryController.m in Sources */ = {isa = PBXBuildFile; fileRef = D489E0F52E6D13D20076E5DC /* LibraryController.m */; };
 		D489E0FB2E6E03570076E5DC /* sqlite3.c in Sources */ = {isa = PBXBuildFile; fileRef = D489E0F92E6E03570076E5DC /* sqlite3.c */; };
-		D490A52E2E4F8E48005BAD01 /* TrackBrowserDocument.xib in Resources */ = {isa = PBXBuildFile; fileRef = D490A52C2E4F8E48005BAD01 /* TrackBrowserDocument.xib */; };
 		D49F293F2E69FAB100C5B87C /* AscentApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = D49F293E2E69FAB100C5B87C /* AscentApplication.m */; };
 		D49F29442E6A52C500C5B87C /* AscentDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = D49F29432E6A52C500C5B87C /* AscentDocumentController.m */; };
 		D49F29482E6A61CA00C5B87C /* NSDocumentController+AscentForceSubclass.m in Sources */ = {isa = PBXBuildFile; fileRef = D49F29472E6A61CA00C5B87C /* NSDocumentController+AscentForceSubclass.m */; };
@@ -380,8 +380,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		D41001E52E849667002942DE /* TrackClipboardSerializer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TrackClipboardSerializer.h; path = "My Code/TrackClipboardSerializer.h"; sourceTree = "<group>"; };
-		D41001E62E849689002942DE /* TrackClipboardSerializer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = TrackClipboardSerializer.m; path = "My Code/TrackClipboardSerializer.m"; sourceTree = "<group>"; };
+		D41001E52E849667002942DE /* TrackClipboardSerializer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TrackClipboardSerializer.h; path = "../My Code/TrackClipboardSerializer.h"; sourceTree = "<group>"; };
+		D41001E62E849689002942DE /* TrackClipboardSerializer.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = TrackClipboardSerializer.m; path = "../My Code/TrackClipboardSerializer.m"; sourceTree = "<group>"; };
 		D41001E82E84A5EC002942DE /* AscentPasteboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AscentPasteboard.h; path = "My Code/AscentPasteboard.h"; sourceTree = "<group>"; };
 		D41001E92E84A604002942DE /* AscentPasteboard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = AscentPasteboard.m; path = "My Code/AscentPasteboard.m"; sourceTree = "<group>"; };
 		D41001EB2E84AE9C002942DE /* TrackListController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = TrackListController.m; path = "../My Code/TrackListController.m"; sourceTree = "<group>"; };
@@ -408,7 +408,7 @@
 		D410020D2E859890002942DE /* SegmentsController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SegmentsController.m; sourceTree = "<group>"; };
 		D410020E2E859890002942DE /* SegmentsController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SegmentsController.xib; sourceTree = "<group>"; };
 		D41002112E8598DF002942DE /* RightSplitController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RightSplitController.h; sourceTree = "<group>"; };
-		D41002122E8598DF002942DE /* RightSplitController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RightSplitController.m; sourceTree = "<group>"; };
+		D41002122E8598DF002942DE /* RightSplitController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = RightSplitController.m; sourceTree = "<group>"; };
 		D41002142E859904002942DE /* MapController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MapController.h; sourceTree = "<group>"; };
 		D41002152E859904002942DE /* MapController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MapController.m; sourceTree = "<group>"; };
 		D41002162E859904002942DE /* MapController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MapController.xib; sourceTree = "<group>"; };
@@ -425,6 +425,7 @@
 		D420632A2E85F5820041603B /* TrackPaneController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TrackPaneController.xib; sourceTree = "<group>"; };
 		D420632C2E8619830041603B /* TrackListController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TrackListController.xib; sourceTree = "<group>"; };
 		D437641C2E5FA01A008AE5E4 /* Ascent.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Ascent.icns; path = graphics/Ascent.icns; sourceTree = "<group>"; };
+		D43C3EFC2E86CAD200D40D19 /* TrackCalendarController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TrackCalendarController.xib; sourceTree = "<group>"; };
 		D4450B382E5BCF1700AB39C3 /* HUDWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HUDWindow.h; path = OtherCode/HUDWindow.h; sourceTree = SOURCE_ROOT; };
 		D4450B392E5BCF1700AB39C3 /* HUDWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = HUDWindow.m; path = OtherCode/HUDWindow.m; sourceTree = SOURCE_ROOT; };
 		D4450B3A2E5BCF1700AB39C3 /* interp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = interp.h; path = OtherCode/interp.h; sourceTree = SOURCE_ROOT; };
@@ -604,7 +605,7 @@
 		D4F13A392E4EAE4600462944 /* SGView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SGView.h; path = "My Code/SGView.h"; sourceTree = SOURCE_ROOT; };
 		D4F13A3A2E4EAE4600462944 /* SGView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = SGView.mm; path = "My Code/SGView.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13A3B2E4EAE4600462944 /* SGWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SGWindowController.h; path = "My Code/SGWindowController.h"; sourceTree = SOURCE_ROOT; };
-		D4F13A3C2E4EAE4600462944 /* SGWindowController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SGWindowController.m; path = "My Code/SGWindowController.m"; sourceTree = SOURCE_ROOT; };
+		D4F13A3C2E4EAE4600462944 /* SGWindowController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = SGWindowController.m; path = "My Code/SGWindowController.m"; sourceTree = SOURCE_ROOT; };
 		D4F13A3D2E4EAE4600462944 /* TypeInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TypeInfo.h; path = "My Code/TypeInfo.h"; sourceTree = SOURCE_ROOT; };
 		D4F13A3E2E4EAE4600462944 /* TypeInfo.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = TypeInfo.mm; path = "My Code/TypeInfo.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13A3F2E4EAE4600462944 /* VertTicView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = VertTicView.h; path = "My Code/VertTicView.h"; sourceTree = SOURCE_ROOT; };
@@ -913,7 +914,7 @@
 		D4F18D092E5248980032E51D /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/PrefsZones.xib; sourceTree = "<group>"; };
 		D4F18D182E525DB20032E51D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D4F4C7D42E85AAC500791D6E /* Selection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Selection.h; sourceTree = "<group>"; };
-		D4F4C7D52E85AAC500791D6E /* Selection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Selection.m; sourceTree = "<group>"; };
+		D4F4C7D52E85AAC500791D6E /* Selection.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = Selection.m; sourceTree = "<group>"; };
 		D4F779122E6FCFE30032D5EE /* NSImage+Tint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "NSImage+Tint.h"; path = "My Code/NSImage+Tint.h"; sourceTree = "<group>"; };
 		D4F779132E6FD00E0032D5EE /* NSImage+Tint.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "NSImage+Tint.m"; path = "My Code/NSImage+Tint.m"; sourceTree = "<group>"; };
 		D4F779152E705BF90032D5EE /* WeatherAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = WeatherAPI.h; path = "My Code/WeatherAPI.h"; sourceTree = "<group>"; };
@@ -1004,16 +1005,19 @@
 				D410020C2E859890002942DE /* SegmentsController.h */,
 				D410020D2E859890002942DE /* SegmentsController.m */,
 				D410020E2E859890002942DE /* SegmentsController.xib */,
+				D4F4C7D42E85AAC500791D6E /* Selection.h */,
+				D4F4C7D52E85AAC500791D6E /* Selection.m */,
 				D41001FA2E859779002942DE /* TrackCalendarController.h */,
 				D41001FB2E859779002942DE /* TrackCalendarController.m */,
+				D43C3EFC2E86CAD200D40D19 /* TrackCalendarController.xib */,
+				D41001E52E849667002942DE /* TrackClipboardSerializer.h */,
+				D41001E62E849689002942DE /* TrackClipboardSerializer.m */,
 				D41001ED2E84AEB7002942DE /* TrackListController.h */,
 				D41001EB2E84AE9C002942DE /* TrackListController.m */,
+				D420632C2E8619830041603B /* TrackListController.xib */,
 				D41001F72E859731002942DE /* TrackPaneController.h */,
 				D41001F82E859731002942DE /* TrackPaneController.m */,
 				D420632A2E85F5820041603B /* TrackPaneController.xib */,
-				D4F4C7D42E85AAC500791D6E /* Selection.h */,
-				D4F4C7D52E85AAC500791D6E /* Selection.m */,
-				D420632C2E8619830041603B /* TrackListController.xib */,
 			);
 			path = "Main Window";
 			sourceTree = "<group>";
@@ -1306,8 +1310,6 @@
 				D4F13A642E4EAE4600462944 /* TrackPoint.m */,
 				D4F13A652E4EAE4600462944 /* Track.h */,
 				D4F13A662E4EAE4600462944 /* Track.mm */,
-				D41001E52E849667002942DE /* TrackClipboardSerializer.h */,
-				D41001E62E849689002942DE /* TrackClipboardSerializer.m */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -1994,6 +1996,7 @@
 				D457D2B52E61FE4300D1DF73 /* Fonts in Resources */,
 				D4F13BF12E4EAE4600462944 /* Ascent_Doc.icns in Resources */,
 				D4F13BF22E4EAE4600462944 /* AppearancePreferences.tiff in Resources */,
+				D43C3EFD2E86CAD200D40D19 /* TrackCalendarController.xib in Resources */,
 				D4F13BF32E4EAE4600462944 /* bike shoes.png in Resources */,
 				D4F13BF52E4EAE4600462944 /* Albert Einstein.icns in Resources */,
 				D4F13BF72E4EAE4600462944 /* Desert.png in Resources */,
@@ -2090,7 +2093,6 @@
 				D4F13C782E4EAE4600462944 /* reverse_on.png in Resources */,
 				D4F13C792E4EAE4600462944 /* ZoomInButton.png in Resources */,
 				D4F13C7A2E4EAE4600462944 /* Calendar_Trans.png in Resources */,
-				D490A52E2E4F8E48005BAD01 /* TrackBrowserDocument.xib in Resources */,
 				D4F13C7C2E4EAE4600462944 /* Reg.nib in Resources */,
 				D4F13C7E2E4EAE4600462944 /* stop_off.png in Resources */,
 				D4F13C7F2E4EAE4600462944 /* InfoPlist.strings in Resources */,

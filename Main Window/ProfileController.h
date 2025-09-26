@@ -8,15 +8,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class TrackBrowserDocument;
-@class Selection;
-
-NS_ASSUME_NONNULL_BEGIN
+@class TrackBrowserDocument, Selection;
 
 @interface ProfileController : NSViewController
 @property(nonatomic, assign) TrackBrowserDocument *document;
 @property(nonatomic, retain) Selection *selection;
+
+- (void)injectDependencies;
 @end
-
-
-NS_ASSUME_NONNULL_END

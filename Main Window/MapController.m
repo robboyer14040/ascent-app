@@ -6,17 +6,24 @@
 //  Copyright © 2025 Montebello Software, LLC. All rights reserved.
 //
 
+// MapController.m  (NON-ARC)
 #import "MapController.h"
 
-@interface MapController ()
-
-@end
-
 @implementation MapController
+@synthesize document=_document, selection=_selection;
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do view setup here.
+- (void)dealloc {
+    [_selection release];
+    [super dealloc];
+}
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Set up map layers, renderer hooks, etc.
+}
+
+- (void)injectDependencies {
+    // Use _document / _selection as needed.
 }
 
 @end

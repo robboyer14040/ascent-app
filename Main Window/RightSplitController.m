@@ -34,6 +34,7 @@
     [super dealloc];
 }
 
+#if 0
 - (void)loadView
 {
     // Horizontal split with THREE stacked sections: top (Map), middle (Profile), bottom (InfoPane)
@@ -67,6 +68,29 @@
     [self addSplitViewItem:i1];
     [self addSplitViewItem:i2];
     [self addSplitViewItem:i3];
+}
+#endif
+
+- (void)loadView {
+    NSSplitView *sv = [[[NSSplitView alloc] initWithFrame:NSMakeRect(0,0,600,800)] autorelease];
+    sv.vertical = NO;
+    sv.dividerStyle = NSSplitViewDividerStyleThin;
+    sv.autosaveName = @"RightSplitView";
+    self.view = sv;
+
+    NSArray<NSColor *> *colors = @[
+        [NSColor systemRedColor],
+        [NSColor systemPurpleColor],
+        [NSColor systemTealColor]   // or systemGrayColor if not available
+    ];
+
+    for (NSColor *c in colors) {
+        NSViewController *vc = [[[NSViewController alloc] initWithNibName:nil bundle:nil] autorelease];
+        NSView *v = [[[NSView alloc] initWithFrame:NSMakeRect(0,0,100,100)] autorelease];
+        v.wantsLayer = YES; v.layer.backgroundColor = c.CGColor;
+        vc.view = v;
+        [self addSplitViewItem:[NSSplitViewItem splitViewItemWithViewController:vc]];
+    }
 }
 
 #pragma mark - Dependency propagation

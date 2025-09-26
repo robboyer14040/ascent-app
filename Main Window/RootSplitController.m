@@ -6,111 +6,107 @@
 //  Copyright © 2025 Montebello Software, LLC. All rights reserved.
 //
 
-// RootSplitController.m (NON-ARC / MRC)
+// RootSplitController.m  (MRC)
 #import "RootSplitController.h"
 #import "LeftSplitController.h"
 #import "RightSplitController.h"
 #import "TrackBrowserDocument.h"
 #import "Selection.h"
 
-@implementation RootSplitController
+@implementation RootSplitController {
+    LeftSplitController  *_leftSplitController;
+    RightSplitController *_rightSplitController;
+}
 
 @synthesize document = _document;
 @synthesize selection = _selection;
-@synthesize leftSplitController = _leftSplitController;
+@synthesize leftSplitController  = _leftSplitController;
 @synthesize rightSplitController = _rightSplitController;
 
-- (void)dealloc
-{
+- (void)dealloc {
     [_selection release];
+    [_leftSplitController release];
+    [_rightSplitController release];
     [super dealloc];
 }
 
-- (void)awakeFromNib
-{
-    [super awakeFromNib];
+#pragma mark - Lifecycle
 
-    // Make divider remember positions automatically
-    // (Set this even if you don’t expose splitView as an outlet; you can also do
-    //  self.splitView.autosaveName in 10.13+.)
-    if (self.splitView != nil) {
-        [self.splitView setAutosaveName:@"RootSplit"];
-        [self.splitView setDividerStyle:NSSplitViewDividerStyleThin];
-    }
+// ❗️Do NOT override -loadView. Let super create the NSSplitView.
+// If you had a -loadView before, delete it entirely.
 
-    // If injectDependencies was called before nib finished, push now
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    // Configure the split that super created
+    NSSplitView *sv = self.splitView;
+    sv.vertical     = YES; // left/right
+    sv.dividerStyle = NSSplitViewDividerStyleThin;
+    sv.autosaveName = @"RootSplitView";
+
+    // Create children (code-only controllers), retain in MRC
+    if (!_leftSplitController)  _leftSplitController  = [[LeftSplitController alloc] init];
+    if (!_rightSplitController) _rightSplitController = [[RightSplitController alloc] init];
+
+    // TEMP colors to prove visibility (comment out once you see it)
+     _leftSplitController.view.wantsLayer = YES;
+    _leftSplitController.view.layer.backgroundColor = [NSColor systemYellowColor].CGColor;
+    _rightSplitController.view.wantsLayer = YES;
+    _rightSplitController.view.layer.backgroundColor = [NSColor systemOrangeColor].CGColor;
+
+    // Add items
+    NSSplitViewItem *li = [NSSplitViewItem splitViewItemWithViewController:_leftSplitController];
+    li.holdingPriority = 260; li.minimumThickness = 320.0;
+
+    NSSplitViewItem *ri = [NSSplitViewItem splitViewItemWithViewController:_rightSplitController];
+    ri.holdingPriority = 250; ri.minimumThickness = 480.0;
+
+    [self addSplitViewItem:li];
+    [self addSplitViewItem:ri];
+
+    // Push deps now that children exist
     [self injectDependencies];
+
+    // Debug: confirm arranged subviews exist and have frames
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSLog(@"RootSplit items=%lu arrangedSubviews=%lu",
+              (unsigned long)self.splitViewItems.count,
+              (unsigned long)sv.arrangedSubviews.count);
+        for (NSView *sub in sv.arrangedSubviews) {
+            NSLog(@"  sub=%@ frame=%@", sub, NSStringFromRect(sub.frame));
+        }
+    });
 }
 
 #pragma mark - Dependency injection
 
-- (void)setSelection:(Selection *)sel
-{
-    if (_selection == sel) {
-        return;
-    }
+- (void)setDocument:(TrackBrowserDocument *)doc {
+    _document = doc; // assign on purpose
+    if (self.isViewLoaded) [self injectDependencies];
+}
+
+- (void)setSelection:(Selection *)sel {
+    if (_selection == sel) return;
     [_selection release];
     _selection = [sel retain];
-    // If nib is loaded, cascade now
-    if ([self isViewLoaded]) {
-        [self injectDependencies];
-    }
+    if (self.isViewLoaded) [self injectDependencies];
 }
 
-- (void)injectDependencies
-{
-    if (![self isViewLoaded]) {
-        return;
+- (void)injectDependencies {
+    if (_leftSplitController) {
+        @try { [_leftSplitController setValue:_document  forKey:@"document"]; } @catch(__unused NSException *_) {}
+        @try { [_leftSplitController setValue:_selection forKey:@"selection"]; } @catch(__unused NSException *_) {}
+        if ([_leftSplitController respondsToSelector:@selector(injectDependencies)]) {
+            [_leftSplitController performSelector:@selector(injectDependencies)];
+        }
     }
-    // Left branch
-    if ([self.leftSplitController respondsToSelector:@selector(setDocument:)]) {
-        [(id)self.leftSplitController setDocument:self.document];
-    }
-    if ([self.leftSplitController respondsToSelector:@selector(setSelection:)]) {
-        [(id)self.leftSplitController setSelection:self.selection];
-    }
-
-    // Right branch
-    if ([self.rightSplitController respondsToSelector:@selector(setDocument:)]) {
-        [(id)self.rightSplitController setDocument:self.document];
-    }
-    if ([self.rightSplitController respondsToSelector:@selector(setSelection:)]) {
-        [(id)self.rightSplitController setSelection:self.selection];
+    if (_rightSplitController) {
+        @try { [_rightSplitController setValue:_document  forKey:@"document"]; } @catch(__unused NSException *_) {}
+        @try { [_rightSplitController setValue:_selection forKey:@"selection"]; } @catch(__unused NSException *_) {}
+        if ([_rightSplitController respondsToSelector:@selector(injectDependencies)]) {
+            [_rightSplitController performSelector:@selector(injectDependencies)];
+        }
     }
 }
-
-
-- (void)loadView
-{
-    // Build the Split View for this controller
-    NSSplitView *sv = [[[NSSplitView alloc] initWithFrame:NSMakeRect(0, 0, 900, 600)] autorelease];
-    sv.vertical = YES; // left/right
-    sv.dividerStyle = NSSplitViewDividerStyleThin;
-    sv.autosaveName = @"RootSplitView";
-    self.view = sv;
-
-    // Ensure child controllers exist
-    LeftSplitController *left  = self.leftSplitController ?: [[[LeftSplitController alloc] initWithNibName:@"LeftSplitController" bundle:nil] autorelease];
-    RightSplitController *right = self.rightSplitController ?: [[[RightSplitController alloc] initWithNibName:@"RightSplitController"  bundle:nil] autorelease];
-
-    // If we created fallbacks, assign them so injectDependencies can see them
-    if (!self.leftSplitController)  self.leftSplitController  = left;
-    if (!self.rightSplitController) self.rightSplitController = right;
-
-    // Create split items and add
-    NSSplitViewItem *leftItem  = [NSSplitViewItem splitViewItemWithViewController:left];
-    NSSplitViewItem *rightItem = [NSSplitViewItem splitViewItemWithViewController:right];
-
-    // Slight bias so left can be narrower
-    leftItem.holdingPriority  = 260;
-    rightItem.holdingPriority = 250;
-
-    [self addSplitViewItem:leftItem];
-    [self addSplitViewItem:rightItem];
-}
-
-
-#pragma mark - Actions
-
 
 @end

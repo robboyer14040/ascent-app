@@ -22,13 +22,14 @@
 @synthesize contentContainer = _contentContainer;
 @synthesize calendarMode = _calendarMode;
 
-- (void)dealloc
-{
-    if (_selection != nil) {
-        [_selection release];
-    }
+
+- (void)dealloc {
+    [_outlineVC release];
+    [_calendarVC release];
+    [_selection release];
     [super dealloc];
 }
+
 
 - (void)awakeFromNib
 {
@@ -40,10 +41,10 @@
         _controlsBar.state = NSVisualEffectStateFollowsWindowActiveState;
     }
 
-    TrackListController *outline = [[[TrackListController alloc] initWithNibName:@"TrackListController" bundle:nil] autorelease];
+    TrackListController *outline = [[TrackListController alloc] initWithNibName:@"TrackListController" bundle:nil];
     _outlineVC = outline;
 
-    TrackCalendarController *calendar = [[[TrackCalendarController alloc] initWithNibName:@"TrackCalendarController" bundle:nil] autorelease];
+    TrackCalendarController *calendar = [[TrackCalendarController alloc] initWithNibName:@"TrackCalendarController" bundle:nil];
     _calendarVC = calendar;
 
     [self injectDependencies];
@@ -67,13 +68,20 @@
 
 - (void)setCalendarMode:(BOOL)calendarMode
 {
+    if (!_document)
+        return;
+    
     _calendarMode = calendarMode;
 
     NSViewController *target = nil;
     if (_calendarMode) {
         target = _calendarVC;
+        _searchField.enabled = NO;
+        _outlineOptionsMenu.enabled = NO;
     } else {
         target = _outlineVC;
+        _searchField.enabled = YES;
+        _outlineOptionsMenu.enabled = YES;
     }
 
     if (_current == target) {
@@ -103,6 +111,10 @@
         [v.topAnchor constraintEqualToAnchor:_contentContainer.topAnchor],
         [v.bottomAnchor constraintEqualToAnchor:_contentContainer.bottomAnchor]
     ]];
+    
+    if (!calendarMode) {
+        [_outlineVC buildBrowser:YES];
+    }
 }
 
 - (void)setDocument:(TrackBrowserDocument *)document
@@ -147,6 +159,24 @@
         if ([vc respondsToSelector:@selector(injectDependencies)]) {
             [vc performSelector:@selector(injectDependencies)];
         }
+    }
+}
+
+
+- (IBAction)setSearchOptions:(id)sender
+{
+    if (_current == _outlineVC)
+    {
+        [_outlineVC setSearchOptions:sender];
+    }
+}
+
+
+- (IBAction)setSearchCriteria:(id)sender
+{
+    if (_current == _outlineVC)
+    {
+        [_outlineVC setSearchCriteria:sender];
     }
 }
 

@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 @class TrackBrowserDocument, Selection;
+@class TrackListController, TrackCalendarController;
 
 @interface TrackPaneController : NSViewController
 {
@@ -16,8 +17,8 @@
     TrackBrowserDocument *_document; // assign
     Selection *_selection;           // retained
     BOOL _calendarMode;
-    NSViewController *_outlineVC;
-    NSViewController *_calendarVC;
+    TrackListController *_outlineVC;
+    TrackCalendarController *_calendarVC;
     NSViewController *_current;
 }
 
@@ -36,6 +37,8 @@
 @property(nonatomic, assign) BOOL calendarMode;
 
 - (IBAction)toggleViewMode:(id)sender;
+- (IBAction)setSearchOptions:(id)sender;
+- (IBAction)setSearchCriteria:(id)sender;
 
 - (void)injectDependencies;
 

@@ -9,7 +9,6 @@
             <connections>
                 <outlet property="contentContainer" destination="JjL-DU-5RS" id="cUg-He-3VM"/>
                 <outlet property="reservedTopArea" destination="cdn-qI-UNJ" id="Jw6-aG-9QF"/>
-                <outlet property="rootSplitController" destination="G8q-eT-5fn" id="SgP-32-Ac7"/>
                 <outlet property="window" destination="fMe-9M-Iya" id="TVE-uC-1LK"/>
             </connections>
         </customObject>
@@ -19,23 +18,32 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="240" y="256" width="800" height="600"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="944"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2240" height="1235"/>
             <view key="contentView" id="v38-fw-04a">
                 <rect key="frame" x="0.0" y="0.0" width="800" height="600"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <visualEffectView fixedFrame="YES" blendingMode="behindWindow" material="appearanceBased" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="cdn-qI-UNJ">
-                        <rect key="frame" x="0.0" y="569" width="800" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                    <visualEffectView blendingMode="behindWindow" material="appearanceBased" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="cdn-qI-UNJ">
+                        <rect key="frame" x="0.0" y="567" width="800" height="32"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="32" id="mqV-oN-7Rg"/>
+                        </constraints>
                     </visualEffectView>
-                    <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JjL-DU-5RS">
-                        <rect key="frame" x="0.0" y="0.0" width="800" height="571"/>
-                        <autoresizingMask key="autoresizingMask"/>
+                    <customView translatesAutoresizingMaskIntoConstraints="NO" id="JjL-DU-5RS">
+                        <rect key="frame" x="0.0" y="0.0" width="800" height="553"/>
                     </customView>
                 </subviews>
+                <constraints>
+                    <constraint firstItem="cdn-qI-UNJ" firstAttribute="top" secondItem="v38-fw-04a" secondAttribute="top" constant="1" id="Ley-aG-pR3"/>
+                    <constraint firstItem="JjL-DU-5RS" firstAttribute="top" secondItem="cdn-qI-UNJ" secondAttribute="bottom" constant="14" id="Rxw-hW-bkc"/>
+                    <constraint firstAttribute="trailing" secondItem="cdn-qI-UNJ" secondAttribute="trailing" id="UaQ-YI-JAw"/>
+                    <constraint firstAttribute="bottom" secondItem="JjL-DU-5RS" secondAttribute="bottom" id="aK6-59-61L"/>
+                    <constraint firstItem="cdn-qI-UNJ" firstAttribute="leading" secondItem="v38-fw-04a" secondAttribute="leading" id="i4o-jk-itd"/>
+                    <constraint firstItem="JjL-DU-5RS" firstAttribute="leading" secondItem="v38-fw-04a" secondAttribute="leading" id="y1z-JM-mAd"/>
+                    <constraint firstAttribute="trailing" secondItem="JjL-DU-5RS" secondAttribute="trailing" id="yP7-MU-v2t"/>
+                </constraints>
             </view>
             <point key="canvasLocation" x="-205" y="164"/>
         </window>
-        <viewController id="G8q-eT-5fn" customClass="RootSplitController"/>
     </objects>
 </document>

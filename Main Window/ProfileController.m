@@ -8,15 +8,21 @@
 
 #import "ProfileController.h"
 
-@interface ProfileController ()
-
-@end
-
 @implementation ProfileController
+@synthesize document=_document, selection=_selection;
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do view setup here.
+- (void)dealloc {
+    [_selection release];
+    [super dealloc];
+}
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Wire up plot view, axes, data sources here.
+}
+
+- (void)injectDependencies {
+    // Pull data from _document / _selection and refresh plot if view is loaded.
 }
 
 @end

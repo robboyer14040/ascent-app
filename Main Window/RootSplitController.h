@@ -16,8 +16,6 @@
 @private
     TrackBrowserDocument *_document; // assign semantics
     Selection *_selection;           // retained
-    LeftSplitController *_leftSplitController;
-    RightSplitController *_rightSplitController;
 }
 
 /// Dependencies

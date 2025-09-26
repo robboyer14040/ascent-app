@@ -27,6 +27,8 @@
 /// IB outlets
 @property(nonatomic, assign) IBOutlet ActivityOutlineView *outlineView;
 @property(nonatomic, assign) IBOutlet NSScrollView  *outlineScrollView; // optional, but handy
+- (IBAction)setSearchOptions:(id)sender;
+- (IBAction)setSearchCriteria:(id)sender;
 
 
 @property(nonatomic, assign) TrackBrowserDocument *document;
@@ -44,8 +46,6 @@
 - (NSMutableArray*) prepareArrayOfSelectedTracks;
 - (NSMutableArray*) prepareArrayOfSelectedBrowserItemsWithTracks;
 - (void)buildBrowser:(BOOL)expandLastItem;
-- (NSString*)searchCriteria;
-- (int)searchOptions;
 - (void)resetSelectedTrack:(Track*)trk lap:(Lap*)lap;
 - (void)selectBrowserRowsForTracks:(NSArray*)trks;
 - (void) storeExpandedState;

@@ -10,7 +10,7 @@
 
 @class MyTableHeaderView;
 @class ColumnHelper;
-
+@class TrackBrowserDocument;
 
 
 @interface ActivityOutlineView : NSOutlineView 
@@ -21,6 +21,7 @@
 }
 
 @property(nonatomic, retain) NSImage* trackDragImage;
+@property(nonatomic, assign) TrackBrowserDocument *document;
 
 - (void) rebuild;
 - (BOOL) columnUsesStringCompare:(NSString*)colIdent;

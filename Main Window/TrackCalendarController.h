@@ -7,11 +7,10 @@
 //
 
 #import <Cocoa/Cocoa.h>
-
-NS_ASSUME_NONNULL_BEGIN
+@class TrackBrowserDocument, Selection;
 
 @interface TrackCalendarController : NSViewController
-
+@property(nonatomic, assign) TrackBrowserDocument *document; // assign on purpose (document owns controller)
+@property(nonatomic, retain) Selection *selection;
+- (void)injectDependencies; // optional hook
 @end
-
-NS_ASSUME_NONNULL_END

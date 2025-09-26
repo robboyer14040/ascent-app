@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="23727" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23727"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="TrackPaneController">
+            <connections>
+                <outlet property="contentContainer" destination="mr7-Ax-sbt" id="2JY-5G-8RW"/>
+                <outlet property="controlsBar" destination="lFF-BD-QU6" id="2x5-tk-GHH"/>
+                <outlet property="outlineOptionsMenu" destination="Ocs-zh-Jcj" id="Bqb-JE-X91"/>
+                <outlet property="searchField" destination="vXB-jx-KOT" id="IVs-47-DS9"/>
+                <outlet property="viewModeControl" destination="1Sv-lI-wjo" id="xQr-M4-zDc"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <customView id="5iD-PW-0U4">
+            <rect key="frame" x="0.0" y="0.0" width="800" height="500"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+            <subviews>
+                <visualEffectView blendingMode="withinWindow" material="appearanceBased" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="lFF-BD-QU6">
+                    <rect key="frame" x="0.0" y="456" width="800" height="44"/>
+                    <subviews>
+                        <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1Sv-lI-wjo">
+                            <rect key="frame" x="14" y="10" width="142" height="24"/>
+                            <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="6YQ-qz-LLI">
+                                <font key="font" metaFont="system"/>
+                                <segments>
+                                    <segment label="Outline" width="67"/>
+                                    <segment label="Calendar" width="66" selected="YES" tag="1"/>
+                                </segments>
+                            </segmentedCell>
+                        </segmentedControl>
+                        <searchField wantsLayer="YES" focusRingType="none" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vXB-jx-KOT">
+                            <rect key="frame" x="245" y="11" width="310" height="22"/>
+                            <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="339-oP-bgE">
+                                <font key="font" metaFont="system"/>
+                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            </searchFieldCell>
+                        </searchField>
+                        <popUpButton wantsLayer="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ocs-zh-Jcj">
+                            <rect key="frame" x="691" y="9" width="97" height="25"/>
+                            <popUpButtonCell key="cell" type="push" title="Normal" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="wjy-9j-itP" id="1Mn-0Y-GOO">
+                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                <font key="font" metaFont="menu"/>
+                                <menu key="menu" id="c0u-iA-70L">
+                                    <items>
+                                        <menuItem title="Normal" state="on" id="wjy-9j-itP"/>
+                                        <menuItem title="Flat" id="Pym-ZG-uvF"/>
+                                        <menuItem title="Item 3" id="8Dv-ow-3sB"/>
+                                    </items>
+                                </menu>
+                            </popUpButtonCell>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="90" id="99g-Wn-uq5"/>
+                            </constraints>
+                        </popUpButton>
+                    </subviews>
+                    <constraints>
+                        <constraint firstAttribute="trailing" secondItem="Ocs-zh-Jcj" secondAttribute="trailing" constant="16" id="6qS-dc-Zb8"/>
+                        <constraint firstAttribute="trailing" secondItem="vXB-jx-KOT" secondAttribute="trailing" constant="245" id="8x3-Q6-bSk"/>
+                        <constraint firstItem="vXB-jx-KOT" firstAttribute="leading" secondItem="lFF-BD-QU6" secondAttribute="leading" constant="245" id="F9O-zV-hmz"/>
+                        <constraint firstItem="Ocs-zh-Jcj" firstAttribute="top" secondItem="lFF-BD-QU6" secondAttribute="top" constant="11" id="IOV-c3-PX4"/>
+                        <constraint firstItem="1Sv-lI-wjo" firstAttribute="top" secondItem="lFF-BD-QU6" secondAttribute="top" constant="11" id="e51-Xc-ybU"/>
+                        <constraint firstAttribute="height" constant="44" id="g6f-0m-NZ5"/>
+                        <constraint firstItem="1Sv-lI-wjo" firstAttribute="leading" secondItem="lFF-BD-QU6" secondAttribute="leading" constant="16" id="imp-WH-ItM"/>
+                        <constraint firstItem="vXB-jx-KOT" firstAttribute="top" secondItem="lFF-BD-QU6" secondAttribute="top" constant="11" id="ys1-65-Xib"/>
+                    </constraints>
+                </visualEffectView>
+                <customView translatesAutoresizingMaskIntoConstraints="NO" id="mr7-Ax-sbt">
+                    <rect key="frame" x="0.0" y="0.0" width="800" height="456"/>
+                </customView>
+            </subviews>
+            <constraints>
+                <constraint firstItem="mr7-Ax-sbt" firstAttribute="top" secondItem="lFF-BD-QU6" secondAttribute="bottom" id="78m-QO-E5P"/>
+                <constraint firstItem="lFF-BD-QU6" firstAttribute="leading" secondItem="5iD-PW-0U4" secondAttribute="leading" id="RQ1-nP-MNZ"/>
+                <constraint firstItem="lFF-BD-QU6" firstAttribute="top" secondItem="5iD-PW-0U4" secondAttribute="top" id="bpD-Uz-Xdp"/>
+                <constraint firstItem="mr7-Ax-sbt" firstAttribute="leading" secondItem="5iD-PW-0U4" secondAttribute="leading" id="eOX-b5-jVF"/>
+                <constraint firstAttribute="trailing" secondItem="lFF-BD-QU6" secondAttribute="trailing" id="kqq-BP-Vxk"/>
+                <constraint firstAttribute="trailing" secondItem="mr7-Ax-sbt" secondAttribute="trailing" id="pWU-lG-2rW"/>
+                <constraint firstAttribute="bottom" secondItem="mr7-Ax-sbt" secondAttribute="bottom" id="xrn-Gt-ynv"/>
+            </constraints>
+            <point key="canvasLocation" x="-253" y="-162"/>
+        </customView>
+    </objects>
+</document>

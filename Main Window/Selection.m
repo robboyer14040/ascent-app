@@ -8,15 +8,19 @@
 
 #import "Selection.h"
 #import "Track.h"
+#import "Lap.h"
+
 
 @implementation Selection
 
 @synthesize selectedTrack = _selectedTrack;
+@synthesize selectedLap = _selectedLap;
 @synthesize selectedTracks = _selectedTracks;
 
 - (void)dealloc
 {
     [_selectedTrack release];
+    [_selectedLap release];
     [_selectedTracks release];
     [super dealloc];
 }
@@ -29,6 +33,7 @@
     NSArray *arr = (track != nil) ? [NSArray arrayWithObject:track] : [NSArray array];
     [self setSelectedTracks:arr];
     [self setSelectedTrack:track];
+    [self setSelectedLap:nil];
 }
 
 - (void)setMultipleSelection:(NSArray *)tracks
@@ -58,6 +63,19 @@
     _selectedTrack = [t retain];
     [self didChangeValueForKey:@"selectedTrack"];
 }
+
+
+- (void)setSelectedLap:(Lap *)l
+{
+    if (_selectedLap == l) {
+        return;
+    }
+    [self willChangeValueForKey:@"selecteLap"];
+    [_selectedLap release];
+    _selectedLap = [l retain];
+    [self didChangeValueForKey:@"selecteLap"];
+}
+
 
 - (void)setSelectedTracks:(NSArray *)arr
 {

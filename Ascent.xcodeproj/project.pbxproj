@@ -33,8 +33,9 @@
 		D41002262E85997F002942DE /* GeneralInfoController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D41002252E85997F002942DE /* GeneralInfoController.xib */; };
 		D41002272E85997F002942DE /* GeneralInfoController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41002242E85997F002942DE /* GeneralInfoController.m */; };
 		D41002292E8599E5002942DE /* MainWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D41002282E8599E5002942DE /* MainWindowController.xib */; };
+		D420632B2E85F5820041603B /* TrackPaneController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D420632A2E85F5820041603B /* TrackPaneController.xib */; };
+		D420632D2E8619830041603B /* TrackListController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D420632C2E8619830041603B /* TrackListController.xib */; };
 		D437641D2E5FA01A008AE5E4 /* Ascent.icns in Resources */ = {isa = PBXBuildFile; fileRef = D437641C2E5FA01A008AE5E4 /* Ascent.icns */; };
-		D43C3EEC2E85C46A00D40D19 /* RootSplitController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D43C3EEB2E85C46A00D40D19 /* RootSplitController.xib */; };
 		D4450B3C2E5BCF1700AB39C3 /* HUDWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B392E5BCF1700AB39C3 /* HUDWindow.m */; };
 		D4450B3D2E5BCF1700AB39C3 /* interp.c in Sources */ = {isa = PBXBuildFile; fileRef = D4450B3B2E5BCF1700AB39C3 /* interp.c */; };
 		D4450B5B2E5BD33A00AB39C3 /* NDRunLoopMessenger.m in Sources */ = {isa = PBXBuildFile; fileRef = D4450B582E5BD33A00AB39C3 /* NDRunLoopMessenger.m */; };
@@ -421,8 +422,9 @@
 		D41002242E85997F002942DE /* GeneralInfoController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GeneralInfoController.m; sourceTree = "<group>"; };
 		D41002252E85997F002942DE /* GeneralInfoController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GeneralInfoController.xib; sourceTree = "<group>"; };
 		D41002282E8599E5002942DE /* MainWindowController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainWindowController.xib; sourceTree = "<group>"; };
+		D420632A2E85F5820041603B /* TrackPaneController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TrackPaneController.xib; sourceTree = "<group>"; };
+		D420632C2E8619830041603B /* TrackListController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TrackListController.xib; sourceTree = "<group>"; };
 		D437641C2E5FA01A008AE5E4 /* Ascent.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Ascent.icns; path = graphics/Ascent.icns; sourceTree = "<group>"; };
-		D43C3EEB2E85C46A00D40D19 /* RootSplitController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RootSplitController.xib; sourceTree = "<group>"; };
 		D4450B382E5BCF1700AB39C3 /* HUDWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HUDWindow.h; path = OtherCode/HUDWindow.h; sourceTree = SOURCE_ROOT; };
 		D4450B392E5BCF1700AB39C3 /* HUDWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = HUDWindow.m; path = OtherCode/HUDWindow.m; sourceTree = SOURCE_ROOT; };
 		D4450B3A2E5BCF1700AB39C3 /* interp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = interp.h; path = OtherCode/interp.h; sourceTree = SOURCE_ROOT; };
@@ -1008,9 +1010,10 @@
 				D41001EB2E84AE9C002942DE /* TrackListController.m */,
 				D41001F72E859731002942DE /* TrackPaneController.h */,
 				D41001F82E859731002942DE /* TrackPaneController.m */,
+				D420632A2E85F5820041603B /* TrackPaneController.xib */,
 				D4F4C7D42E85AAC500791D6E /* Selection.h */,
 				D4F4C7D52E85AAC500791D6E /* Selection.m */,
-				D43C3EEB2E85C46A00D40D19 /* RootSplitController.xib */,
+				D420632C2E8619830041603B /* TrackListController.xib */,
 			);
 			path = "Main Window";
 			sourceTree = "<group>";
@@ -1996,6 +1999,7 @@
 				D4F13BF72E4EAE4600462944 /* Desert.png in Resources */,
 				D4F13BF82E4EAE4600462944 /* DataGraph.png in Resources */,
 				D4F13BFF2E4EAE4600462944 /* HAL-9000.icns in Resources */,
+				D420632D2E8619830041603B /* TrackListController.xib in Resources */,
 				D4F13C002E4EAE4600462944 /* SplitActivity.nib in Resources */,
 				D4F13C012E4EAE4600462944 /* SelectAndApplyAction.nib in Resources */,
 				D4F13C042E4EAE4600462944 /* DistanceMethod.nib in Resources */,
@@ -2008,7 +2012,6 @@
 				D4F13C0F2E4EAE4600462944 /* RoundRTZ.png in Resources */,
 				D4F13C102E4EAE4600462944 /* send_activity.scpt in Resources */,
 				D4F13C112E4EAE4600462944 /* ZoomOutButton.png in Resources */,
-				D43C3EEC2E85C46A00D40D19 /* RootSplitController.xib in Resources */,
 				D4F13C122E4EAE4600462944 /* mountain bike.png in Resources */,
 				D4F13C162E4EAE4600462944 /* zones.icns in Resources */,
 				D4F13C182E4EAE4600462944 /* EquipmentSelector.xib in Resources */,
@@ -2062,6 +2065,7 @@
 				D4F13C512E4EAE4600462944 /* bike wheels.png in Resources */,
 				D410020F2E859890002942DE /* SegmentsController.xib in Resources */,
 				D4F13C532E4EAE4600462944 /* CompareButtonIcon.png in Resources */,
+				D420632B2E85F5820041603B /* TrackPaneController.xib in Resources */,
 				D4F13C562E4EAE4600462944 /* BlueDot.png in Resources */,
 				D4F13C572E4EAE4600462944 /* PrefsBackup.png in Resources */,
 				D4F13C582E4EAE4600462944 /* AGButton_Trans.png in Resources */,

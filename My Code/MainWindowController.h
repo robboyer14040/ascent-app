@@ -5,30 +5,32 @@
 //  Created by Rob Boyer on 7/25/06.
 //  Copyright 2006 rcb Construction. All rights reserved.
 //
+//
+//  MainWindowController.h
+//  Ascent  (NON-ARC)
+//
 
 #import <Cocoa/Cocoa.h>
 
-@class TrackBrowserDocument;
-@class Selection;
-
-@class NSSplitViewController;
-@class LeftSplitController;
-@class RightSplitController;
-@class TrackPaneController;
-@class AnalysisPaneController;
-@class InfoPaneController;
+@class TrackBrowserDocument, Selection, RootSplitController;
 
 @interface MainWindowController : NSWindowController
 {
 @private
-    Selection *_selection; // shared per document
+    Selection *_selection;     // yours
+    RootSplitController *_root;
 }
 
-// Split controllers
-@property(nonatomic, assign) IBOutlet NSSplitViewController *rootSplitController;
+// Refine type only; keep attributes compatible with NSWindowController
+@property(assign) TrackBrowserDocument *document;
 
-// Shared selection (retained here, injected into children)
 @property(nonatomic, retain) Selection *selection;
 
-@end
+// IB outlets
+@property(assign) IBOutlet NSVisualEffectView *reservedTopArea;
+@property(assign) IBOutlet NSView *contentContainer;
 
+// Access to embedded root split
+@property(readonly, retain) RootSplitController *rootSplitController;
+
+@end

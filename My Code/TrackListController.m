@@ -14,6 +14,24 @@
 #import "Track.h"
 #import "Lap.h"
 #import "Utils.h"
+#import "Selection.h"
+#import "AnimTimer.h"
+
+
+enum
+{
+    kTagSearchTitles        = 10,
+    kTagSearchNotes         = 11,
+    kTagSearchKeywords      = 12,
+    kTagSearchActivityType  = 13,
+    kTagSearchEquipment     = 14,
+    kTagSearchEventType     = 15,
+};
+
+@interface NSTableView(SortImages)
++ (NSImage *) _defaultTableHeaderSortImage;
++ (NSImage *) _defaultTableHeaderReverseSortImage;
+@end
 
 
 @interface TrackListController()
@@ -34,7 +52,14 @@
     SEL                             itemComparator;
     SEL                             reverseItemComparator;
     BOOL                            isRestoringExpandedState;
+    NSFont*                         lineFont;
+    NSFont*                         boldLineLargeFont;
+    NSFont*                         boldLineMediumFont;
+    NSFont*                         boldLineSmallFont;
+    NSTableColumn*                  sortColumn;
+    int                             currentTrackPos, numPos;
 }
+- (void)reloadData;
 - (NSMutableDictionary*)outlineDict;
 - (TrackBrowserItem*)findStartingTrackItem:(Track*)track dict:(NSDictionary*)dict;
 - (NSMutableSet *)selectedItemsAtExpand;
@@ -45,19 +70,44 @@
 - (BOOL) isBrowserEmpty;
 - (void) reloadTable;
 - (void) handleDoubleClickInOutlineView:(SEL) sel;
-- (NSMutableDictionary *)yearItems;
-- (NSMutableDictionary *)searchItems;
 - (void)resetBrowserTrackRow:(Track*)trk extend:(BOOL)ext;
 - (void) resetBrowserSelection;
 - (void)selectBrowserRowsForTracks:(NSArray*)trks;
-
+- (void)doSetSearchOptions:(int)opts;
+- (void)doSetSearchCriteria:(NSString*)s;
+- (NSString*)searchCriteria;
+- (int)searchOptions;
+- (IBAction)setSearchOptions:(id)sender;
+- (IBAction)setSearchCriteria:(id)sender;
+int searchTagToMask(int searchTag);
+- (void)expandFirstItem;
+-(void) doSelChange;
+- (void)stopAnimations;
+- (void)expandLastItem;
+-(void) restoreSelectedRowsAfterExpand;
+- (void) restoreExpandedState;
+-(NSMutableArray*) prepareArrayOfSelectedTracks;
+-(NSMutableArray*) prepareArrayOfSelectedBrowserItemsWithTracks;
+-(void) addTracksInItem:(TrackBrowserItem*)bi toArray:(NSMutableArray*)arr;
+-(void) addBrowserItemsWithTracks:(TrackBrowserItem*)bi toArray:(NSMutableArray*)arr;
+-(void)rebuildBrowserAndRestoreState:(Track*)track selectLap:(Lap*)lap;
+-(void)resetSelectedTrack:(Track*)trk lap:(Lap*)lap;
 @end
 
 
 @implementation TrackListController
 
+@synthesize document = _document;
+@synthesize selection = _selection;
+@synthesize outlineView = _outlineView;
+@synthesize outlineScrollView = _outlineScrollView;
+
+
 - (void)dealloc
 {
+    if (_selection != nil) {
+        [_selection release];
+    }
     [_dragRows release];
     [_tracks release];
     [searchCriteria release];
@@ -87,10 +137,8 @@
     reverseSort = [Utils boolFromDefaults:RCBDefaultBrowserSortInReverse];
     itemComparator          = @selector(compare:);
     reverseItemComparator   = @selector(reverseCompare:);
-    yearItems = [NSMutableDictionary dictionary];
-    [yearItems retain];
-    searchItems = [NSMutableDictionary dictionary];
-    [searchItems retain];
+    yearItems = [[NSMutableDictionary dictionary] retain];
+    searchItems = [[NSMutableDictionary dictionary] retain];
     flatBIDict = [[NSMutableDictionary dictionaryWithCapacity:128] retain];
     searchCriteria = [[NSString alloc] initWithString:@""];
     searchOptions = kSearchTitles;
@@ -112,13 +160,84 @@
                      NSFontAttributeName, txtColor, NSForegroundColorAttributeName,  nil];
     [weekAttrs retain];
     [activityAttrs retain];
+    lineFont = [NSFont fontWithName:@"Lucida Grande" size:11.0];
+    [lineFont retain];
+    boldLineLargeFont = [NSFont fontWithName:@"Lucida Grande Bold" size:12.0];
+    [boldLineLargeFont retain];
+    boldLineMediumFont = [NSFont fontWithName:@"Lucida Grande Bold" size:11.0];
+    [boldLineMediumFont retain];
+    boldLineSmallFont = [NSFont fontWithName:@"Lucida Grande Bold" size:10.0];
+    [boldLineSmallFont retain];
+    
+    // Outline basic setup
+    if (_outlineView != nil) {
+        _outlineView.dataSource = self;
+        _outlineView.delegate = self;
+        _outlineView.usesAlternatingRowBackgroundColors = YES;
+        _outlineView.autosaveName = @"TrackListOutline";
+        _outlineView.floatsGroupRows = YES;
+        _outlineView.rowHeight = 20.0;
+
+        // If first column exists, allow it to autosize.
+        NSTableColumn *first = nil;
+        if (_outlineView.tableColumns.count > 0) {
+            first = _outlineView.tableColumns.firstObject;
+        }
+        if (first != nil) {
+            first.resizingMask = NSTableColumnAutoresizingMask;
+        }
+    }
+
+    // Seed with an empty model snapshot.
+    ///[self loadItemsFromDocument];
+    [self reloadData];
+
 }
 
+
+#pragma mark - Dependencies
+
+- (void)setSelection:(Selection *)selection
+{
+    if (selection == _selection) {
+        return;
+    }
+    if (_selection != nil) {
+        [_selection release];
+    }
+    _selection = [selection retain];
+
+    // You can react to selection changes here if needed.
+}
+
+- (void)setDocument:(TrackBrowserDocument *)document
+{
+    _document = document;
+    ///[self loadItemsFromDocument];
+    [self reloadData];
+}
+
+- (void)injectDependencies
+{
+    // No-op for now. Keep for parity with the rest of the controllers.
+}
+
+
+- (void)reloadData
+{
+    if (_outlineView == nil) {
+        return;
+    }
+    [_outlineView reloadData];
+
+    // Restore an expanded baseline if you like.
+    // [_outlineView expandItem:nil expandChildren:YES];
+}
 
 - (void)buildBrowser:(BOOL)expandLastItem
 {
     BOOL searchUnderway = [self isSearchUnderway];
-    NSMutableDictionary *topDict = searchUnderway ? [self searchItems] : [self yearItems];
+    NSMutableDictionary *topDict = searchUnderway ? searchItems : yearItems;
 
     [expandedItems removeAllObjects];
     [topDict removeAllObjects];
@@ -322,7 +441,7 @@
     }
 
     [self reloadTable];
-    [self resetInfoLabels];
+   /// [self resetInfoLabels];
     if (expandLastItem) {
         if (reverseSort) [self expandFirstItem];
         else             [self expandLastItem];
@@ -351,11 +470,11 @@
     NSDictionary* dict;
     if ([self isSearchUnderway])
     {
-        dict = [self searchItems];
+        dict = searchItems;
     }
     else
     {
-        dict = [self yearItems];
+        dict = yearItems;
     }
     return [dict count] == 0;
 }
@@ -588,31 +707,6 @@
 }
 
 
-//- (NSDragOperation)outlineView:(NSOutlineView *)outlineView
-//                  validateDrop:(id<NSDraggingInfo>)info
-//                  proposedItem:(id)item
-//            proposedChildIndex:(NSInteger)index
-//{
-//    NSPasteboard *pboard = [info draggingPasteboard];
-//    
-//    // Accept any file URLs
-//    NSDictionary *opts = @{
-//        NSPasteboardURLReadingFileURLsOnlyKey: @YES
-//    };
-//    
-//    if ([pboard canReadObjectForClasses:@[ [NSURL class] ] options:opts]) {
-//        return NSDragOperationCopy;
-//    }
-//    return NSDragOperationNone;
-//}
-
-
-//- (BOOL)outlineView:(NSOutlineView *)outlineView acceptDrop:(id < NSDraggingInfo >)info item:(id)item childIndex:(int)index
-//{
-//    [self processFileDrag:info];
-//    return YES;
-//}
-//
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
 {
@@ -806,7 +900,7 @@ NSString*      gCompareString = nil;         // @@FIXME@@
     [self storeExpandedState];
     [self delete:sender];
     [self restoreExpandedState];
-    [trackTableView deselectAll:sender];
+    [_outlineView deselectAll:sender];
 }
 
 
@@ -1045,7 +1139,7 @@ provideDataForType:(NSPasteboardType)type
 
 - (void) resetBrowserSelection
 {
-    [self resetBrowserTrackRow:currentlySelectedTrack
+    [self resetBrowserTrackRow:_selection.selectedTrack
                         extend:NO];
 }
 
@@ -1058,6 +1152,422 @@ provideDataForType:(NSPasteboardType)type
         [self resetBrowserTrackRow:[trks objectAtIndex:i]
                             extend:(i!=0)];
     }
+}
+
+
+
+- (void)doSetSearchCriteria:(NSString*)s
+{
+   if (s != searchCriteria)
+   {
+      [searchCriteria release];
+      searchCriteria = s;
+      [searchCriteria retain];
+   }
+}
+
+
+- (NSString*)searchCriteria
+{
+   return searchCriteria;
+}
+
+
+- (int)searchOptions
+{
+   return searchOptions;
+}
+
+
+-(void)doSetSearchCriteriaToString:(NSString*)s
+{
+    if (nil != tbDocument)
+    {
+        [self storeExpandedState];
+        NSString* prevSC = [self searchCriteria];
+        if (prevSC != nil)
+        {
+            [prevSC retain];
+            [self doSetSearchCriteria:s];
+            if (![prevSC isEqualToString:@""] && [s isEqualToString:@""])
+            {
+                [searchItems removeAllObjects];
+            }
+            [self buildBrowser:NO];
+            [prevSC release];
+        }
+        [self restoreExpandedState];
+    }
+}
+
+
+- (IBAction)setSearchCriteria:(id)sender
+{
+//    if ([self calendarViewActive])
+//    {
+//        [self doToggleCalendarAndBrowser:1];
+//    }
+    [self doSetSearchCriteriaToString:[sender stringValue]];
+}
+
+
+
+int searchTagToMask(int searchTag)
+{
+   switch (searchTag)
+   {
+      case kTagSearchTitles:
+         return kSearchTitles;
+         
+      case kTagSearchNotes:
+         return kSearchNotes;
+         
+      case kTagSearchKeywords:
+         return kSearchKeywords;
+      
+      case kTagSearchActivityType:
+         return kSearchActivityType;
+
+      case kTagSearchEquipment:
+         return kSearchEquipment;
+     
+      case kTagSearchEventType:
+          return kSearchEventType;
+   }
+   return 0;
+}
+         
+
+- (IBAction)setSearchOptions:(id)sender
+{
+   NSMenuItem* item = sender;
+   [item setState:[item state] == NSControlStateValueOn ? NSControlStateValueOff : NSControlStateValueOn];
+   int theTag = (int)[item tag];
+   int flags = [self searchOptions];
+   BOOL state = [item state];
+   int mask = searchTagToMask(theTag);
+   if (state == YES)
+   {
+      SET_FLAG(flags, mask);
+   }
+   else
+   {
+      CLEAR_FLAG(flags, mask);
+   }
+   [self doSetSearchOptions:flags];
+   [self buildBrowser:NO];
+}
+
+
+- (void)doSetSearchOptions:(int)opts
+{
+    [Utils setIntDefault:opts forKey:RCBDefaultSearchOptions];
+    searchOptions = opts;
+}
+
+
+- (void)expandFirstItem
+{
+   int rows = (int)[_outlineView numberOfRows];
+   if (rows > 0)
+   {
+      id item = [_outlineView  itemAtRow:0];
+      [_outlineView  expandItem:item];
+      int row = 1;
+      while (([[item children] count]) != 0)
+      {
+         item = [_outlineView itemAtRow:row++];
+         [_outlineView expandItem:item];
+      }
+   }
+}
+
+
+- (void)stopAnimations
+{
+   [[AnimTimer defaultInstance] stop:self];
+}
+
+
+- (void)expandLastItem
+{
+   int rows = (int)[_outlineView numberOfRows];
+   if (rows > 0)
+   {
+      id item = [_outlineView  itemAtRow:(rows-1)];
+      [_outlineView  expandItem:item];
+      int row = (int)[_outlineView numberOfRows]-1;
+      while (([[item children] count]) != 0)
+      {
+         item = [_outlineView itemAtRow:row];
+         [_outlineView expandItem:item];
+         row = (int)[_outlineView numberOfRows]-1;
+      }
+   }
+}
+
+
+-(void) doSelChange
+{
+    [self stopAnimations];
+    int row = (int)[_outlineView  selectedRow];
+    if (row != -1)
+    {
+        TrackBrowserItem* bi = [_outlineView  itemAtRow:row];
+        [self resetSelectedTrack:[bi track] lap:[bi lap]];
+    }
+    else
+    {
+        [self resetSelectedTrack:nil
+                             lap:nil];
+    }
+}
+
+
+-(void) restoreSelectedRowsAfterExpand
+{
+    NSMutableIndexSet* is = [NSMutableIndexSet indexSet];
+    NSSet* localSet = [NSSet setWithSet:selectedItemsAtExpand];
+    for (id item in localSet)
+    {
+        int idx = (int)[_outlineView rowForItem:item];
+        if (idx != -1)
+        {
+            [is addIndex:idx];
+        }
+    }
+    [_outlineView selectRowIndexes:is
+                byExtendingSelection:NO];
+    
+}
+
+
+- (void) storeExpandedState
+{
+#if 0
+    [expandedItems removeAllObjects];
+    int count = [trackTableView numberOfRows];
+    [selectedItemsAtExpand removeAllObjects];
+    for (int i=0; i<count; i++)
+    {
+        id item = [trackTableView itemAtRow:i];
+        if ([trackTableView isRowSelected:i])
+        {
+            [selectedItemsAtExpand addObject:item];
+        }
+        if ([trackTableView isItemExpanded:item])
+        {
+            [expandedItems addObject:item];
+        }
+    }
+#endif
+}
+
+
+- (void) restoreExpandedState
+{
+    int num = (int)[expandedItems count];
+    if (num == 0) return;
+    NSSet* localSet = [NSSet setWithSet:expandedItems];
+    for (id item in localSet)
+    {
+        [_outlineView expandItem:item];
+    }
+    [self restoreSelectedRowsAfterExpand];
+}
+
+
+
+// fixme move this to TrackPaneController
+-(NSMutableArray*) prepareArrayOfSelectedTracks
+{
+    NSMutableArray* arr = nil;
+//    if ([self calendarViewActive])
+//    {
+//        if ([calendarView selectedTrack] != nil)
+//        {
+//            arr = [NSMutableArray arrayWithArray:[calendarView selectedTrackArray]];
+//        }
+//    }
+//    else
+    {
+            
+        NSIndexSet* selSet = [_outlineView selectedRowIndexes];
+        arr = [NSMutableArray arrayWithCapacity:[selSet count]];
+        NSInteger idx = [selSet firstIndex];
+        while (idx != NSNotFound)
+        {
+            TrackBrowserItem* bi = [_outlineView itemAtRow:idx];
+            if (bi != nil)
+            {
+                [self addTracksInItem:bi
+                           toArray:arr];
+                
+            }
+            idx = [selSet indexGreaterThanIndex:idx];
+        }
+    }
+    return arr;
+}
+
+
+-(void) addBrowserItemsWithTracks:(TrackBrowserItem*)bi toArray:(NSMutableArray*)arr
+{
+   NSMutableDictionary* childDict = [bi children];
+   if (childDict != nil)
+   {
+      NSEnumerator *enumerator = [childDict objectEnumerator];
+      id bic;
+      while ((bic = [enumerator nextObject]) != nil)
+      {
+         [self addBrowserItemsWithTracks:bic
+                                 toArray:arr];
+      }
+   }
+   Track* track = [bi track];
+   if ((track != nil) && ([bi lap] == nil) && ([arr indexOfObjectIdenticalTo:track] == NSNotFound))
+   {
+      [arr addObject:bi];
+   }
+}
+
+
+
+-(NSMutableArray*) prepareArrayOfSelectedBrowserItemsWithTracks
+{
+   NSIndexSet* selSet = [_outlineView selectedRowIndexes];
+   NSMutableArray* arr = [NSMutableArray arrayWithCapacity:[selSet count]];
+   NSInteger idx = [selSet firstIndex];
+   while (idx != NSNotFound)
+   {
+      TrackBrowserItem* bi = [_outlineView itemAtRow:idx];
+      if (bi != nil)
+      {
+         [self addBrowserItemsWithTracks:bi
+                                 toArray:arr];
+      }
+      idx = [selSet indexGreaterThanIndex:idx];
+   }
+   return arr;
+}
+
+
+-(void)rebuildBrowserAndRestoreState:(Track*)track selectLap:(Lap*)lap;
+{
+    [self storeExpandedState];
+    [self buildBrowser:NO];
+    [self restoreExpandedState];
+    [self resetSelectedTrack:track
+                         lap:lap];
+    [self resetBrowserSelection];
+}
+
+
+-(void) reloadTable
+{
+    self.topSortedKeys = nil;
+    [_outlineView reloadData];
+//    [metricsEventTable reloadData];
+//    //[totalActvitiesField setStringValue:[NSString stringWithFormat:@"%d activities", [[tbDocument trackArray] count]]];
+//    //[totalActvitiesField display];
+//    if ([self calendarViewActive])
+//    {
+//        [calendarView invalidateCache];
+//        [calendarView setNeedsDisplay:YES];
+//    }
+}
+
+
+-(void)resetSelectedTrack:(Track*)trk lap:(Lap*)lap
+{
+
+    _selection.selectedTrack = trk;
+    _selection.selectedLap = lap;
+    [[AnimTimer defaultInstance] setAnimTime:0];
+    [tbDocument setCurrentlySelectedTrack:trk];
+    [tbDocument setSelectedLap:lap];
+    ///[self buildInfoPopupMenus];
+
+        if (_selection.selectedTrack != nil)
+        {
+            ///[activityDetailButton setEnabled:YES];
+            ///[detailedMapButton setEnabled:YES];
+            ///[compareActivitiesButton setEnabled:YES];
+            ///[self enableControlsRequiringASelectedTrack:YES];
+            BOOL hasPoints = [[trk goodPoints] count] > 1;
+            ///[transparentMapAnimView setHidden:!hasPoints];
+            ///[transparentMiniProfileAnimView setHidden:!hasPoints];
+            ///[mapPathView setSelectedLap:currentlySelectedLap];
+            ///[miniProfileView setSelectedLap:currentlySelectedLap];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"LapSelectionChanged" object:_selection.selectedLap];
+            ///[miniProfileView setCurrentTrack:currentlySelectedTrack];
+            ///[mapPathView setCurrentTrack:currentlySelectedTrack];
+           /// [self syncTrackToAttributesAndEditWindow:_selection.selectedTrack];
+            ///[equipmentBox setTrack:trk];
+            currentTrackPos = 0;
+            _selection.selectedTrack.animTimeBegin = 0.0;
+            _selection.selectedTrack.animTimeEnd =  _selection.selectedTrack.movingDuration;
+        }
+//        else
+//        {
+            ///[activityDetailButton setEnabled:NO];
+            ///[detailedMapButton setEnabled:NO];
+//            [compareActivitiesButton setEnabled:NO];
+//            [transparentMapAnimView setHidden:YES];
+//            [transparentMiniProfileAnimView setHidden:YES];
+//            [self enableControlsRequiringASelectedTrack:NO];
+//            [miniProfileView setCurrentTrack:nil];
+//            [mapPathView setCurrentTrack:nil];
+//            [mapPathView setSelectedLap:nil];
+//            [miniProfileView setSelectedLap:nil];
+//            [self clearAttributes];
+//        }
+        //[tbDocument selectionChanged];
+//        [[AnimTimer defaultInstance] updateTimerDuration];
+//        [mapPathView setDefaults];
+//        [miniProfileView setNeedsDisplay:YES];
+//        [metricsEventTable reloadData];
+//        [self rebuildSplitTable];
+//        [splitsGraphView setSplitArray:splitArray
+//                           splitsTable:splitsTableView];
+//        [miniProfileView setSplitArray:splitArray];
+//        [mapPathView setSplitArray:splitArray];
+        if (_selection.selectedLap)
+        {
+            float start = [_selection.selectedTrack lapActiveTimeDelta:_selection.selectedLap];
+            float end = start + [_selection.selectedTrack movingDurationOfLap:_selection.selectedLap] - 1.0;    // end 1 second before next starts
+            //printf("SELECT LAP, lap start:%0.1f end:%01.f\n", start, end);
+//            [splitsGraphView setSelectedLapTimes:start
+//                                             end:end];
+        }
+//        else
+//        {
+////            [splitsGraphView setSelectedLapTimes:-42.0
+//                                             end:-43.0];
+//        }
+//        [splitsGraphView setGraphItem:[Utils intFromDefaults:RCBDefaultSplitGraphItem]];
+//        [splitsTableView reloadData];
+//    }
+}
+
+-(void) addTracksInItem:(TrackBrowserItem*)bi toArray:(NSMutableArray*)arr
+{
+   NSMutableDictionary* childDict = [bi children];
+   if (childDict != nil)
+   {
+      NSEnumerator *enumerator = [childDict objectEnumerator];
+      id bic;
+      while ((bic = [enumerator nextObject]) != nil)
+      {
+         [self addTracksInItem:bic
+                       toArray:arr];
+      }
+   }
+   Track* track = [bi track];
+   if ((track != nil) && ([bi lap] == nil) && ([arr indexOfObjectIdenticalTo:track] == NSNotFound))
+   {
+      [arr addObject:track];
+   }
 }
 
 

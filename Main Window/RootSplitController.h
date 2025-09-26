@@ -9,24 +9,26 @@
 #import <Cocoa/Cocoa.h>
 
 @class TrackBrowserDocument, Selection;
-@class LeftSplitController;
-@class RightSplitController;
+@class LeftSplitController, RightSplitController;
 
 @interface RootSplitController : NSSplitViewController
 {
 @private
-    Selection *_selection;
+    TrackBrowserDocument *_document; // assign semantics
+    Selection *_selection;           // retained
+    LeftSplitController *_leftSplitController;
+    RightSplitController *_rightSplitController;
 }
 
-// Dependencies
+/// Dependencies
 @property(nonatomic, assign) TrackBrowserDocument *document;
 @property(nonatomic, retain) Selection *selection;
 
-// IB wiring
-@property(nonatomic, assign) IBOutlet LeftSplitController *leftSplitController;
-@property(nonatomic, assign) IBOutlet RightSplitController *rightSplitController;
+/// Children
+@property(nonatomic, retain) LeftSplitController  *leftSplitController;
+@property(nonatomic, retain) RightSplitController *rightSplitController;
 
-// Helper to push deps into children
+/// Push current dependencies into the subtree (idempotent/safe)
 - (void)injectDependencies;
 
 @end

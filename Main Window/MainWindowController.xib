@@ -7,6 +7,8 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="MainWindowController">
             <connections>
+                <outlet property="contentContainer" destination="JjL-DU-5RS" id="cUg-He-3VM"/>
+                <outlet property="reservedTopArea" destination="cdn-qI-UNJ" id="Jw6-aG-9QF"/>
                 <outlet property="rootSplitController" destination="G8q-eT-5fn" id="SgP-32-Ac7"/>
                 <outlet property="window" destination="fMe-9M-Iya" id="TVE-uC-1LK"/>
             </connections>
@@ -16,13 +18,23 @@
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="" animationBehavior="default" id="fMe-9M-Iya">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="240" y="256" width="1024" height="768"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2240" height="1235"/>
+            <rect key="contentRect" x="240" y="256" width="800" height="600"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="944"/>
             <view key="contentView" id="v38-fw-04a">
-                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                <rect key="frame" x="0.0" y="0.0" width="800" height="600"/>
                 <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <visualEffectView fixedFrame="YES" blendingMode="behindWindow" material="appearanceBased" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="cdn-qI-UNJ">
+                        <rect key="frame" x="0.0" y="569" width="800" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                    </visualEffectView>
+                    <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JjL-DU-5RS">
+                        <rect key="frame" x="0.0" y="0.0" width="800" height="571"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </customView>
+                </subviews>
             </view>
-            <point key="canvasLocation" x="-74.5" y="121.5"/>
+            <point key="canvasLocation" x="-205" y="164"/>
         </window>
         <viewController id="G8q-eT-5fn" customClass="RootSplitController"/>
     </objects>

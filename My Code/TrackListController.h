@@ -12,20 +12,29 @@
 @class Track;
 @class Lap;
 @class ActivityOutlineView;
-
+@class Selection;
 
 @interface TrackListController : NSViewController
 <NSTableViewDataSource, NSTableViewDelegate, NSOutlineViewDataSource, NSOutlineViewDelegate, NSPasteboardItemDataProvider>
 {
     NSIndexSet *_dragRows;
     BOOL        reverseSort;
+@private
+    TrackBrowserDocument *_document;   // assign semantics
+    Selection *_selection;             // retained
 }
 
-@property(nonatomic, assign) IBOutlet ActivityOutlineView *outlineView;   // ActivityOutlineView
-@property(nonatomic, assign) TrackBrowserDocument         *document;  // set by WindowController
+/// IB outlets
+@property(nonatomic, assign) IBOutlet ActivityOutlineView *outlineView;
+@property(nonatomic, assign) IBOutlet NSScrollView  *outlineScrollView; // optional, but handy
+
+
+@property(nonatomic, assign) TrackBrowserDocument *document;
+@property(nonatomic, retain) Selection *selection;
 @property(nonatomic, retain) NSArray                      *tracks;    // your current list
 @property(nonatomic, retain) NSArray                      *topSortedKeys;
 
+- (void)injectDependencies;
 - (IBAction)cut:(id)sender;
 - (IBAction)copy:(id)sender;
 - (IBAction)paste:(id)sender;

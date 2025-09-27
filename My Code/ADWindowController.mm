@@ -1742,7 +1742,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 	}
 	[t calculatePower];
 	
-	if (![t hasDistance])
+	if (![t hasDistanceData])
 	{
 		[graphView setXAxisIsTime:YES];
 		[xAxisTypePopup selectItemAtIndex:1];

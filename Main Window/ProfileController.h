@@ -9,10 +9,12 @@
 #import <Cocoa/Cocoa.h>
 
 @class TrackBrowserDocument, Selection;
+@class MiniProfileView;
 
 @interface ProfileController : NSViewController
 @property(nonatomic, assign) TrackBrowserDocument *document;
 @property(nonatomic, retain) Selection *selection;
+@property(nonatomic, assign) IBOutlet MiniProfileView *profileView;
 
 - (void)injectDependencies;
 @end

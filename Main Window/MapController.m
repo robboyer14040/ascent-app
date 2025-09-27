@@ -12,6 +12,7 @@
 #import "TransparentMapWindow.h"
 #import "Selection.h"
 #import "Utils.h"
+#import "DMWindowController.h"
 
 static void *kSelectionCtx = &kSelectionCtx;
 
@@ -19,8 +20,10 @@ static void *kSelectionCtx = &kSelectionCtx;
 {
     TransparentMapView*         transparentMapAnimView;
     TransparentMapWindow*       transparentMapWindow;
+    DMWindowController*         dmWC;
 }
-
+- (void)_didDoubleClick:(NSClickGestureRecognizer *)g;
+- (void)showMapDetail;
 @end
 
 @implementation MapController
@@ -59,6 +62,55 @@ static void *kSelectionCtx = &kSelectionCtx;
 
 - (void)injectDependencies {
     // Use _document / _selection as needed.
+}
+
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    NSClickGestureRecognizer *doubleClick = [[[NSClickGestureRecognizer alloc] initWithTarget:self action:@selector(_didDoubleClick:)] autorelease];
+    doubleClick.numberOfClicksRequired = 2;
+    doubleClick.buttonMask = 0x1;
+    // Make single wait on double to avoid firing both
+    ///[single requireGestureRecognizerToFail:doubleClick];
+    [self.mapPathView addGestureRecognizer:doubleClick];
+
+}
+
+
+- (void)_didDoubleClick:(NSClickGestureRecognizer *)g
+{
+    if (g.state == NSGestureRecognizerStateEnded) {
+//        NSPoint p = [g locationInView:self.mapPathView];
+//        [self _handleDoubleClickAt:p];
+        [self showMapDetail];
+        
+    }
+}
+
+
+- (void)showMapDetail
+{
+    if ((dmWC  == nil) && _document)
+    {
+        Track* track = _selection.selectedTrack;
+        if (nil != track)
+        {
+            int curDataType = [[self mapPathView] dataType];
+            dmWC   = [[[DMWindowController alloc] initWithDocument:_document
+                                                   initialDataType:curDataType
+                                                            mainWC:self.view.window.windowController] retain];
+            [_document addWindowController:dmWC];
+            [dmWC showWindow:self];
+            [dmWC setTrack:track];
+            if (_selection.selectedLap)
+                [dmWC setSelectedLap:_selection.selectedLap];
+            
+        }
+    }
+    else
+    {
+        [[dmWC window] makeKeyAndOrderFront:self];
+    }
 }
 
 
@@ -145,7 +197,6 @@ static void *kSelectionCtx = &kSelectionCtx;
 
 - (void)_displayTrackOnMap:(Track *)track {
     [_mapPathView setCurrentTrack:track];
-    [_mapPathView refreshMaps];
     [_mapPathView setNeedsDisplay:YES];
 }
 

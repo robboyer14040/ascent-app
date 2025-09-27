@@ -16,26 +16,34 @@
 
 @implementation MiniProfileView
 
-- (id)initWithFrame:(NSRect)frameRect
+- (void)commonInit
 {
-	if ((self = [super initWithFrame:frameRect]) != nil) {
-		// Add initialization code here
-		currentTrack = lastTrack = nil;
-        selectedLap = nil;
-		dpath = [[NSBezierPath alloc] init];
-		lpath = [[NSBezierPath alloc] init];
-		plottedPoints = [[NSMutableArray alloc] init];
-		NSFont* font = [NSFont systemFontOfSize:6];
-		tickFontAttrs = [[NSMutableDictionary alloc] init];
-		[tickFontAttrs setObject:font forKey:NSFontAttributeName];
-		splitsArray = nil;
-		font = [NSFont systemFontOfSize:18];
-		textFontAttrs = [[NSMutableDictionary alloc] init];
-		[textFontAttrs setObject:font forKey:NSFontAttributeName];
-		[textFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"]
-                          forKey:NSForegroundColorAttributeName];
-	}
-	return self;
+    currentTrack = lastTrack = nil;
+    selectedLap = nil;
+    dpath = [[NSBezierPath alloc] init];
+    lpath = [[NSBezierPath alloc] init];
+    plottedPoints = [[NSMutableArray alloc] init];
+    NSFont* font = [NSFont systemFontOfSize:6];
+    tickFontAttrs = [[NSMutableDictionary alloc] init];
+    [tickFontAttrs setObject:font forKey:NSFontAttributeName];
+    splitsArray = nil;
+    font = [NSFont systemFontOfSize:18];
+    textFontAttrs = [[NSMutableDictionary alloc] init];
+    [textFontAttrs setObject:font forKey:NSFontAttributeName];
+    [textFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"]
+                      forKey:NSForegroundColorAttributeName];
+}
+
+- (instancetype)initWithFrame:(NSRect)r {
+    if ((self = [super initWithFrame:r]))
+        [self commonInit];
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)c {
+    if ((self = [super initWithCoder:c]))
+        [self commonInit];
+    return self;
 }
 
 
@@ -54,8 +62,9 @@
 
 -(void) awakeFromNib
 {
-   lastAnimPoint = NSZeroPoint;
-   currentTrackPos = 0;
+    [super awakeFromNib];
+    lastAnimPoint = NSZeroPoint;
+    currentTrackPos = 0;
 }
 
 

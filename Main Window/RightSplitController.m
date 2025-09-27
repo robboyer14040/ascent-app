@@ -34,63 +34,44 @@
     [super dealloc];
 }
 
-#if 0
-- (void)loadView
-{
+- (void)viewDidLoad {
+    [super viewDidLoad];
     // Horizontal split with THREE stacked sections: top (Map), middle (Profile), bottom (InfoPane)
-    NSSplitView *sv = [[[NSSplitView alloc] initWithFrame:NSMakeRect(0, 0, 600, 800)] autorelease];
+    NSSplitView *sv = self.splitView;      // created by super
     sv.vertical = NO; // top/bottom stack
     sv.dividerStyle = NSSplitViewDividerStyleThin;
-    sv.autosaveName = @"RightSplitView";
     self.view = sv;
-
+    
     // Child controllers are XIB-backed
     MapController      *map   = [[[MapController      alloc] initWithNibName:@"MapController"      bundle:nil] autorelease];
     ProfileController  *prof  = [[[ProfileController  alloc] initWithNibName:@"ProfileController"  bundle:nil] autorelease];
     InfoPaneController *info  = [[[InfoPaneController alloc] initWithNibName:@"InfoPaneController" bundle:nil] autorelease];
+    // TEMP: if you still want color proof, uncomment:
+   /// map.view.wantsLayer = YES; map.view.layer.backgroundColor = [NSColor systemRedColor].CGColor;
+    prof.view.wantsLayer  = YES; prof.view.layer.backgroundColor  = [NSColor systemBrownColor].CGColor;
+    info.view.wantsLayer  = YES; info.view.layer.backgroundColor  = [NSColor systemPinkColor].CGColor;
 
     self.mapController      = map;
     self.profileController  = prof;
     self.infoPaneController = info;
-
+    
     // Push deps before attaching items
     [self injectDependencies];
-
+    
     // Assemble three split items with priorities/thickness tuned for your layout
     NSSplitViewItem *i1 = [NSSplitViewItem splitViewItemWithViewController:map];   // Map (top)
     NSSplitViewItem *i2 = [NSSplitViewItem splitViewItemWithViewController:prof];  // Profile (middle)
     NSSplitViewItem *i3 = [NSSplitViewItem splitViewItemWithViewController:info];  // Info (bottom)
-
+    
     i1.holdingPriority  = 260;  i1.minimumThickness = 180.0;
     i2.holdingPriority  = 255;  i2.minimumThickness = 160.0;
     i3.holdingPriority  = 250;  i3.minimumThickness = 180.0;
-
+    
     [self addSplitViewItem:i1];
     [self addSplitViewItem:i2];
     [self addSplitViewItem:i3];
-}
-#endif
-
-- (void)loadView {
-    NSSplitView *sv = [[[NSSplitView alloc] initWithFrame:NSMakeRect(0,0,600,800)] autorelease];
-    sv.vertical = NO;
-    sv.dividerStyle = NSSplitViewDividerStyleThin;
+    
     sv.autosaveName = @"RightSplitView";
-    self.view = sv;
-
-    NSArray<NSColor *> *colors = @[
-        [NSColor systemRedColor],
-        [NSColor systemPurpleColor],
-        [NSColor systemTealColor]   // or systemGrayColor if not available
-    ];
-
-    for (NSColor *c in colors) {
-        NSViewController *vc = [[[NSViewController alloc] initWithNibName:nil bundle:nil] autorelease];
-        NSView *v = [[[NSView alloc] initWithFrame:NSMakeRect(0,0,100,100)] autorelease];
-        v.wantsLayer = YES; v.layer.backgroundColor = c.CGColor;
-        vc.view = v;
-        [self addSplitViewItem:[NSSplitViewItem splitViewItemWithViewController:vc]];
-    }
 }
 
 #pragma mark - Dependency propagation
@@ -128,5 +109,7 @@
         }
     }
 }
+
+
 
 @end

@@ -12,11 +12,21 @@
 #import "TrackBrowserDocument.h"
 #import "TrackBrowserItem.h"
 #import "Track.h"
+#import "TrackPoint.h"
 #import "Lap.h"
 #import "Utils.h"
 #import "Selection.h"
 #import "AnimTimer.h"
-
+#import "DatabaseManager.h"
+#import "StravaAPI.h"
+#import "StravaImporter.h"
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#import "FullImageBrowserWindowController.h"
+#import "NSImage+Tint.h"
+#import "WeatherAPI.h"
+#import "LocationAPI.h"
+#import "TrackPointStore.h"
+#import "ProgressBarController.h"
 
 enum
 {
@@ -27,6 +37,11 @@ enum
     kTagSearchEquipment     = 14,
     kTagSearchEventType     = 15,
 };
+
+// Where you saved the bookmark the first time
+static NSString * const kStravaRootBookmarkKey = @"StravaRootBookmarkData";
+
+
 
 @interface NSTableView(SortImages)
 + (NSImage *) _defaultTableHeaderSortImage;
@@ -87,6 +102,14 @@ int searchTagToMask(int searchTag);
 -(void) addBrowserItemsWithTracks:(TrackBrowserItem*)bi toArray:(NSMutableArray*)arr;
 -(void)rebuildBrowserAndRestoreState:(Track*)track selectLap:(Lap*)lap;
 -(void)resetSelectedTrack:(Track*)trk lap:(Lap*)lap;
+- (BOOL)_fetchMissingItemsForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter;
+- (void)_fetchWeatherAndGEOInfoForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter;
+- (NSURL*) getRootMediaURL;
+///- (BOOL)chooseStravaRootFolderAndSaveBookmarkFromWindow:(NSWindow *)win;
+- (void) startProgressIndicator:(NSString*)text;
+- (void) updateProgressIndicator:(NSString*)msg;
+- (void) endProgressIndicator;
+- (void)simpleUpdateBrowserTrack:(Track*)track;
 @end
 
 
@@ -210,7 +233,7 @@ int searchTagToMask(int searchTag);
 - (void)setDocument:(TrackBrowserDocument *)document
 {
     _document = document;
-    if (document) {
+    if (_document) {
         [_outlineView setDocument:_document];
         [self buildBrowser:YES];
         [self reloadData];
@@ -1116,13 +1139,13 @@ provideDataForType:(NSPasteboardType)type
 - (void)_importTracks:(NSArray *)tracks
 {
     // Tracks here are deserialized (fresh). Re-key is typically done inside the document’s import.
-    NSError *err = nil;
-    BOOL ok = [self.document importTracksFromClipboard:tracks error:&err];
-    if (!ok) {
-        NSBeep();
-        return;
-    }
-
+//    NSError *err = nil;
+//    BOOL ok = [self.document importTracksFromClipboard:tracks error:&err];
+//    if (!ok) {
+//        NSBeep();
+//        return;
+//    }
+//
     // Refresh data after import (adapt to your fetch path)
     // self.tracks = [self.document fetchTracks];
     // [self.outline reloadData];
@@ -1479,6 +1502,11 @@ int searchTagToMask(int searchTag)
 
 -(void)resetSelectedTrack:(Track*)trk lap:(Lap*)lap
 {
+    if (trk && ([[trk points] count] == 0) && !(ShiftKeyIsDown()))
+    {
+        if (![self _fetchMissingItemsForTrack:trk selectTrackAfter:YES])
+            return;
+    }
 
     _selection.selectedTrack = trk;
     _selection.selectedLap = lap;
@@ -1549,6 +1577,439 @@ int searchTagToMask(int searchTag)
 //    }
 }
 
+
+// use to fetch points, description, photos
+// returns YES if everything is ready to go, NO if things are still updating async
+- (BOOL)_fetchMissingItemsForTrack:(Track*)track  selectTrackAfter:(BOOL)selectAfter
+{
+    if (track.points.count == 0 /*&& track.pointsEverSaved */)
+    {
+        NSURL* url = _document.fileURL;
+        if (url)
+        {
+            DatabaseManager* dbm = [[[DatabaseManager alloc] initWithURL:url
+                                                                readOnly:YES] autorelease];
+            TrackPointStore* tpStore = [[[TrackPointStore alloc] initWithDatabaseManager:dbm] autorelease];
+            NSError* err = nil;
+            NSArray* pts = [[tpStore loadPointsForTrackUUID:track.uuid error:&err] autorelease];
+            if (pts) {
+                NSLog(@"loaded %d points for %s", (int)pts.count, [track.name UTF8String]);
+                track.points = [[pts mutableCopy] autorelease];
+                track.pointsCount    = (int)pts.count;
+                track.pointsEverSaved = YES;
+                [track fixupTrack];
+             }
+        }
+    }
+    
+
+    BOOL stravaFirst = ShiftKeyIsDown() || ([track.points count] == 0);
+    if (stravaFirst)
+    {
+        [self startProgressIndicator:@"fetching detailed Strava info..."];
+        [[StravaImporter shared] enrichTrack:track
+                             withSummaryDict:nil
+                                rootMediaURL:[self getRootMediaURL]
+                                  completion:^(NSError * _Nullable error) {
+            if (error)
+            {
+                NSAlert *a = [[[NSAlert alloc] init] autorelease];
+                a.alertStyle = NSAlertStyleWarning;
+                a.messageText = @"Couldn't fetch detailed info from Strava";
+                a.informativeText = [error description];
+                [a runModal];
+                
+            }
+            [self simpleUpdateBrowserTrack:track];
+            if (selectAfter)
+                [self resetSelectedTrack:track lap:nil];
+            [_document updateChangeCount:NSChangeDone];
+            [self _fetchWeatherAndGEOInfoForTrack:track
+                                 selectTrackAfter:NO];
+            [self endProgressIndicator];
+            
+        }];
+        [self _fetchWeatherAndGEOInfoForTrack:track
+                             selectTrackAfter:NO];
+        return NO;
+    }
+    return YES;
+ }
+
+
+- (void)_fetchWeatherAndGEOInfoForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter
+{
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+        NSError* err = nil;
+        NSArray* weather = [WeatherAPI fetchWeatherTimelineForTrack:track
+                                                              error:&err];
+        if (!err) {
+            NSMutableArray* foundArray = [NSMutableArray array];
+            NSMutableString* weatherString = [NSMutableString string];
+            for (NSDictionary<NSString *, NSNumber*> * dict in weather) {
+                NSNumber* wcode = dict[kWXCode];
+                if (wcode)
+                {
+                    if (![foundArray containsObject:wcode]) {
+                        [foundArray addObject:wcode];
+                        if ([weatherString length] != 0) {
+                            [weatherString appendString:@", "];
+                        }
+                        [weatherString appendString:[WeatherAPI stringForWeatherCode:[wcode integerValue]]];
+                    }
+                }
+            }
+            // update UI on main after
+           dispatch_async(dispatch_get_main_queue(), ^{
+                [track setAttribute:kWeather
+                        usingString:weatherString];
+           });
+        }
+        
+        NSDictionary *locs = [LocationAPI startEndCityCountryForTrack:track error:&err];
+        if (!err) {
+            // update UI on main after
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (locs && ([locs count] >= 2)) {
+                    NSDictionary *start = [locs objectForKey:kGeoStart];
+                    NSDictionary *end   = [locs objectForKey:kGeoEnd];
+                    if (start && end)
+                    {
+                        NSLog(@"Start: %@, %@  End: %@, %@",
+                              [start objectForKey:kGeoCity], [start objectForKey:kGeoCountry],
+                              [end objectForKey:kGeoCity],   [end objectForKey:kGeoCountry]);
+                        NSString* startEndCity = start[@"city"];
+                        startEndCity = [startEndCity stringByAppendingString:@" → "];
+                        startEndCity = [startEndCity stringByAppendingString:end[@"city"]];
+                        [track setAttribute:kLocation
+                                usingString:startEndCity];
+                        
+                    }
+                } else {
+                }
+                [self simpleUpdateBrowserTrack:track];
+                if (selectAfter)
+                    [self resetSelectedTrack:track lap:nil];
+                [_document updateChangeCount:NSChangeDone];
+            });
+        }
+        else {
+            NSLog(@"Geo failed: %@", [err localizedDescription]);
+        }
+    });
+
+ }
+
+
+- (IBAction)enrichSelectedTracks:(id)sender
+{
+    [self stopAnimations];
+    
+    NSMutableArray *arr = [self prepareArrayOfSelectedTracks];
+
+    NSUInteger num = [arr count];
+    NSUInteger i = 0;
+    for (;i<num; i++)
+    {
+        Track* t = arr[i];
+        if (t)
+        {
+            [self _fetchMissingItemsForTrack:t
+                            selectTrackAfter:i==0];
+        }
+    }
+    [self reloadTable];
+    
+}
+
+
+- (BOOL)applyStravaActivitiesCSVAtURL:(NSURL *)csvURL
+                             toTracks:(NSArray<Track *> *)tracks
+{
+    NSError *readErr = nil;
+    NSString *csv = [NSString stringWithContentsOfURL:csvURL
+                                             encoding:NSUTF8StringEncoding
+                                                error:&readErr];
+    if (!csv) {
+        NSLog(@"Strava CSV: read failed: %@", readErr.localizedDescription);
+        return NO;
+    }
+
+    // --- Minimal CSV parser that supports quoted fields and newlines inside quotes ---
+    NSArray<NSArray<NSString *> *> *rows = ASCParseCSV(csv);
+    if (rows.count == 0) return YES; // empty file: not an error
+
+    // --- Header map ---
+    NSDictionary<NSString *, NSNumber *> *col = ASCMapHeader(rows.firstObject);
+    NSInteger idxID   = ASCCol(col, @"Activity ID");
+    NSInteger idxDate = ASCCol(col, @"Activity Date");
+    NSInteger idxName = ASCCol(col, @"Activity Name");
+    NSInteger idxDesc = ASCCol(col, @"Activity Description");
+    NSInteger idxMedia= ASCCol(col, @"Media");
+
+    if (idxID < 0 || idxDate < 0 || idxName < 0 || idxDesc < 0) {
+        NSLog(@"Strava CSV: required headers missing");
+        return NO;
+    }
+
+    // --- Date formatter (exactly matches Strava CSV "Activity Date") ---
+    NSDateFormatter *fmt = [NSDateFormatter new];
+    fmt.locale   = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+    fmt.dateFormat = @"MMM d, yyyy, h:mm:ss a"; // e.g. "Jun 29, 2012, 4:01:24 PM"
+
+    // --- Build a fast lookup: Activity Date string -> candidate tracks ---
+    // We render each track's creationTime into the *same* string using the track's time zone.
+    NSMutableDictionary<NSString *, NSMutableArray<Track *> *> *byDate = [NSMutableDictionary dictionaryWithCapacity:tracks.count];
+
+    for (Track *t in tracks) {
+        NSDate *ct = t.creationTime;
+        if (!ct) continue;
+
+        NSTimeZone *tz = nil;
+#if 0
+        if ([t respondsToSelector:@selector(timeZoneName)] && t.timeZoneName.length) {
+            tz = [NSTimeZone timeZoneWithName:t.timeZoneName];
+        }
+        if (!tz) {
+            tz = [NSTimeZone timeZoneForSecondsFromGMT:t.secondsFromGMT];
+        }
+        if (!tz) {
+            tz = NSTimeZone.localTimeZone;
+        }
+#endif
+        NSTimeInterval offset = 0;
+        if ([t.points count] > 0)
+        {
+            TrackPoint* tp = [t.points firstObject];
+            offset = tp.wallClockDelta;
+        }
+        ct = [ct dateByAddingTimeInterval:offset];
+        tz = [NSTimeZone timeZoneForSecondsFromGMT:0];
+        
+        fmt.timeZone = tz;
+        NSString *key = [fmt stringFromDate:ct];
+        if (!key) continue;
+
+        NSMutableArray<Track *> *bucket = byDate[key];
+        if (!bucket) {
+            bucket = [NSMutableArray arrayWithObject:t];
+            byDate[key] = bucket;
+        } else {
+            [bucket addObject:t];
+        }
+    }
+
+    BOOL hadError = NO;
+
+    // --- Walk data rows ---
+    for (NSUInteger r = 1; r < rows.count; r++) {
+        NSArray<NSString *> *fields = rows[r];
+        if (fields.count == 0) continue;
+
+        // Guard for short/blank lines
+        NSString *dateStr = (idxDate < (NSInteger)fields.count) ? fields[idxDate] : nil;
+        if (dateStr.length == 0) continue;
+
+        NSArray<Track *> *candidates = byDate[dateStr];
+        if (candidates.count == 0) {
+            // not a match: not an error
+            continue;
+        }
+
+        // Pick the first candidate without a Strava ID (nil or 0)
+        Track *track = nil;
+        for (Track *t in candidates) {
+            NSNumber *sid = t.stravaActivityID;
+            if (!(sid && sid.longLongValue != 0)) { track = t; break; }
+        }
+        if (!track) {
+            // all candidates already linked: skip (not an error)
+            continue;
+        }
+
+        // --- Activity ID -> NSNumber ---
+        NSString *idStr = (idxID < (NSInteger)fields.count) ? fields[idxID] : @"";
+        long long actID = idStr.longLongValue; // handles quoted numeric strings too
+        if (actID <= 0) {
+            // malformed row (treat as non-fatal, but mark error and continue)
+            hadError = YES;
+            continue;
+        }
+        track.stravaActivityID = @(actID);
+
+        // --- Name ---
+        NSString *name = (idxName < (NSInteger)fields.count) ? fields[idxName] : @"";
+        if (name.length) {
+            [track setName:name];
+            [track setAttribute:kName
+                    usingString:name];
+        }
+
+        // --- Notes (kNotes) ---
+        NSString *desc = (idxDesc < (NSInteger)fields.count) ? fields[idxDesc] : @"";
+        if (desc) {
+            [track setAttribute:kNotes usingString:desc];
+        }
+
+        // --- Media (optional, pipe-separated, strip "media/" prefix) ---
+        if (idxMedia >= 0 && idxMedia < (NSInteger)fields.count) {
+            NSString *media = fields[idxMedia];
+            if (media.length) {
+                NSArray<NSString *> *raw = [media componentsSeparatedByString:@"|"];
+                NSMutableArray<NSString *> *clean = [NSMutableArray arrayWithCapacity:raw.count];
+                for (NSString *m in raw) {
+                    if (m.length == 0) continue;
+                    NSString *f = [m hasPrefix:@"media/"] ? [m substringFromIndex:6] : m;
+                    if (f.length) [clean addObject:f];
+                }
+                if (clean.count &&
+                    [track respondsToSelector:@selector(setLocalMediaItems:)]) {
+                    // Silence ARC warning about performSelector leaks not needed; direct call is fine if method exists.
+                    [(id)track performSelector:@selector(setLocalMediaItems:) withObject:clean];
+                }
+            }
+        }
+    }
+
+    return !hadError;
+}
+
+#pragma mark - Small CSV helpers
+
+// Map header -> column index
+static NSDictionary<NSString *, NSNumber *> *ASCMapHeader(NSArray<NSString *> *header)
+{
+    NSMutableDictionary *m = [NSMutableDictionary dictionary];
+    for (NSInteger i = 0; i < (NSInteger)header.count; i++) {
+        NSString *key = header[i] ?: @"";
+        // Normalize common whitespace/quotes
+        key = [key stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        if (key.length) m[key] = @(i);
+    }
+    return m;
+}
+
+static NSInteger ASCCol(NSDictionary<NSString *, NSNumber *> *map, NSString *name)
+{
+    NSNumber *n = map[name];
+    return n ? n.integerValue : -1;
+}
+
+// CSV parser: handles quotes, commas/newlines inside quotes, and "" escapes.
+static NSArray<NSArray<NSString *> *> *ASCParseCSV(NSString *text)
+{
+    NSMutableArray<NSArray<NSString *> *> *rows = [NSMutableArray array];
+    NSMutableArray<NSString *> *fields = [NSMutableArray array];
+    NSMutableString *buf = [NSMutableString string];
+
+    BOOL inQuotes = NO;
+    NSUInteger len = text.length;
+
+    // Strip BOM if present
+    if (len && [text characterAtIndex:0] == 0xFEFF) {
+        text = [text substringFromIndex:1];
+        len = text.length;
+    }
+
+    for (NSUInteger i = 0; i < len; i++) {
+        unichar c = [text characterAtIndex:i];
+
+        if (inQuotes) {
+            if (c == '"') {
+                BOOL hasNext = (i + 1 < len);
+                unichar n = hasNext ? [text characterAtIndex:i + 1] : 0;
+                if (hasNext && n == '"') {
+                    [buf appendString:@"\""]; // escaped quote
+                    i++;
+                } else {
+                    inQuotes = NO; // closing quote
+                }
+            } else {
+                [buf appendFormat:@"%C", c];
+            }
+        } else {
+            if (c == '"') {
+                inQuotes = YES;
+            } else if (c == ',') {
+                [fields addObject:[buf copy]];
+                [buf setString:@""];
+            } else if (c == '\n') {
+                [fields addObject:[buf copy]];
+                [buf setString:@""];
+                [rows addObject:[fields copy]];
+                [fields removeAllObjects];
+            } else if (c == '\r') {
+                // Handle CR or CRLF
+                BOOL hasNext = (i + 1 < len);
+                if (hasNext && [text characterAtIndex:i + 1] == '\n') {
+                    // consume CR, loop will hit LF next
+                } else {
+                    [fields addObject:[buf copy]];
+                    [buf setString:@""];
+                    [rows addObject:[fields copy]];
+                    [fields removeAllObjects];
+                }
+            } else {
+                [buf appendFormat:@"%C", c];
+            }
+        }
+    }
+
+    // finalize last field/row
+    if (buf.length || fields.count) {
+        [fields addObject:[buf copy]];
+        [rows addObject:[fields copy]];
+    }
+
+    return rows;
+}
+
+
+- (IBAction)linkStravaActivitiesFromCSV:(id)sender
+{
+    NSOpenPanel *panel = [NSOpenPanel openPanel];
+    panel.canChooseFiles = YES;
+    panel.canChooseDirectories = NO;
+    panel.allowsMultipleSelection = NO;
+    panel.prompt  = @"Choose";
+    panel.message = @"Select your Strava ‘activities.csv’ file.";
+    panel.directoryURL = [NSURL fileURLWithPath:NSHomeDirectory() isDirectory:YES];
+
+    // Limit to CSV via UTType (no allowedFileTypes)
+    UTType *csvType = [UTType typeWithIdentifier:@"public.comma-separated-values-text"];
+    if (!csvType) csvType = [UTType typeWithFilenameExtension:@"csv"];
+    if (csvType) panel.allowedContentTypes = @[csvType];
+
+    void (^handleURL)(NSURL *) = ^(NSURL *url) {
+        if (!url) return;
+
+        NSArray<Track *> *tracks = [_document trackArray];
+        BOOL ok = [self applyStravaActivitiesCSVAtURL:url toTracks:tracks];
+
+        if (!ok) {
+            NSAlert *a = [[[NSAlert alloc] init] autorelease];
+            a.alertStyle = NSAlertStyleWarning;
+            a.messageText = @"Couldn’t finish linking Strava activities";
+            a.informativeText = @"There was a problem reading or parsing the CSV. Some rows may still have been applied.";
+            [a runModal];
+        } else if ([_document respondsToSelector:@selector(updateChangeCount:)]) {
+            [_document updateChangeCount:NSChangeDone];
+        }
+    };
+
+    if (self.view.window) {
+        [panel beginSheetModalForWindow:self.view.window
+                      completionHandler:^(NSModalResponse result) {
+            if (result == NSModalResponseOK) handleURL(panel.URL);
+        }];
+    } else {
+        if ([panel runModal] == NSModalResponseOK) handleURL(panel.URL);
+    }
+}
+
+
+
+
 -(void) addTracksInItem:(TrackBrowserItem*)bi toArray:(NSMutableArray*)arr
 {
    NSMutableDictionary* childDict = [bi children];
@@ -1569,6 +2030,209 @@ int searchTagToMask(int searchTag)
    }
 }
 
+-(void) startProgressIndicator:(NSString*)text
+{
+    SharedProgressBar* pb = [SharedProgressBar sharedInstance];
+    NSRect fr = [self.view.window frame];
+    NSRect pbfr = [[[pb controller] window] frame];    // must call window method for NIB to load, needs to be done before 'begin' is called
+    NSPoint origin;
+    origin.x = fr.origin.x + fr.size.width/2.0 - pbfr.size.width/2.0;
+    origin.y = fr.origin.y + fr.size.height/2.0 - pbfr.size.height/2.0;
+    [[[pb controller] window] setFrameOrigin:origin];
+    [[pb controller] showWindow:self];
+    [[pb controller] begin:@""
+                 divisions:0];
+    [[pb controller] updateMessage:text];
+}
+
+- (void) updateProgressIndicator:(NSString*)msg
+{
+    SharedProgressBar* pb = [SharedProgressBar sharedInstance];
+    [[pb controller] updateMessage:msg];
+}
+
+- (void) endProgressIndicator
+{
+    SharedProgressBar* pb = [SharedProgressBar sharedInstance];
+    [[pb controller] end];
+    [[[pb controller] window] orderOut:self.view.window];
+}
+
+- (NSURL*) getRootMediaURL
+{
+    NSArray<NSString *> *filenames = _selection.selectedTrack.localMediaItems ?: @[];
+    NSError *error = nil;
+    
+    NSData *bm = [[NSUserDefaults standardUserDefaults] objectForKey:kStravaRootBookmarkKey];
+    if (!bm) { if (error) error = [NSError errorWithDomain:NSCocoaErrorDomain code:1 userInfo:@{NSLocalizedDescriptionKey:@"No saved folder permission"}]; return nil; }
+
+    BOOL stale = NO;
+    NSError *err = nil;
+    NSURL *root = [NSURL URLByResolvingBookmarkData:bm
+                                            options:NSURLBookmarkResolutionWithSecurityScope
+                                      relativeToURL:nil
+                                bookmarkDataIsStale:&stale
+                                              error:&err];
+    if (!root) { if (error) error = err; return nil; }
+    if (stale) {
+        NSData *nbm = [root bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope
+                       includingResourceValuesForKeys:nil
+                                        relativeToURL:nil
+                                                error:&err];
+        if (nbm) [[NSUserDefaults standardUserDefaults] setObject:nbm forKey:kStravaRootBookmarkKey];
+    }
+    return root;
+}
+
+
+- (BOOL)chooseStravaRootFolderAndSaveBookmarkFromWindow:(NSWindow *)win {
+    NSOpenPanel *p = [NSOpenPanel openPanel];
+    p.title = @"Choose location for storing Strava media";
+    p.message = @"Strava photos and (maybe, in the future)videos will be downloaded and stored in the folder you specify";
+    p.prompt = @"Choose";
+    p.canChooseFiles = NO;
+    p.canChooseDirectories = YES;
+    p.allowsMultipleSelection = NO;
+    p.directoryURL = [NSURL fileURLWithPath:NSHomeDirectory()];
+    p.canChooseFiles = NO;
+    p.canChooseDirectories = YES;
+    // allow creating new folders right in the panel
+    p.canCreateDirectories = YES;
+    if ([p runModal] != NSModalResponseOK) return NO;
+
+    NSURL *folder = p.URL;
+    NSError *err = nil;
+    NSData *bm = [folder bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope
+                 includingResourceValuesForKeys:nil
+                                  relativeToURL:nil
+                                          error:&err];
+    if (!bm) { NSLog(@"bookmark error: %@", err); return NO; }
+
+    [[NSUserDefaults standardUserDefaults] setObject:bm forKey:kStravaRootBookmarkKey];
+    return YES;
+}
+
+// 2) Later: resolve bookmark, access children (no new UI):
+- (NSImage *)imageUnderStravaRootForRelativePath:(NSString *)relPath error:(NSError **)error {
+    
+    NSURL* root = [self getRootMediaURL];
+    
+    BOOL ok = [root startAccessingSecurityScopedResource];
+    NSURL *child = [root URLByAppendingPathComponent:relPath];
+    NSImage *img = [[NSImage alloc] initWithContentsOfURL:child];
+    if (ok) [root stopAccessingSecurityScopedResource];
+    return img;
+}
+
+
+
+#pragma mark - Resolve / check bookmark
+- (NSURL * _Nullable)resolvedStravaRootURLAllowingPrompt:(BOOL)allowPrompt
+                                                  window:(NSWindow * _Nullable)win
+                                                   error:(NSError * _Nullable __autoreleasing *)outError
+{
+    NSData *bmData = [[NSUserDefaults standardUserDefaults] dataForKey:kStravaRootBookmarkKey];
+    if (!bmData) {
+        if (allowPrompt && win) {
+            [self chooseStravaRootFolderAndSaveBookmarkFromWindow:win];
+            bmData = [[NSUserDefaults standardUserDefaults] dataForKey:kStravaRootBookmarkKey];
+        }
+        if (!bmData) return nil;
+    }
+
+    BOOL stale = NO;
+    NSError *err = nil;
+    NSURL *url = [NSURL URLByResolvingBookmarkData:bmData
+                                           options:NSURLBookmarkResolutionWithSecurityScope
+                                     relativeToURL:nil
+                               bookmarkDataIsStale:&stale
+                                             error:&err];
+    if (!url) {
+        if (allowPrompt && win) {
+            [self chooseStravaRootFolderAndSaveBookmarkFromWindow:win];
+            return [self resolvedStravaRootURLAllowingPrompt:NO window:nil error:outError];
+        }
+        if (outError) *outError = err;
+        return nil;
+    }
+
+    // If stale, refresh the stored bookmark (best effort)
+    if (stale) {
+        NSData *fresh = [url bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope
+                       includingResourceValuesForKeys:nil
+                                        relativeToURL:nil
+                                                error:NULL];
+        if (fresh) {
+            [[NSUserDefaults standardUserDefaults] setObject:fresh forKey:kStravaRootBookmarkKey];
+        }
+    }
+
+    // Verify we truly have access (TCC “Files & Folders” can still deny)
+    if (![url startAccessingSecurityScopedResource]) {
+        if (allowPrompt && win) {
+            [self chooseStravaRootFolderAndSaveBookmarkFromWindow:win];
+            return [self resolvedStravaRootURLAllowingPrompt:NO window:nil error:outError];
+        }
+        return nil;
+    }
+
+    // Lightweight reachability test (actually touches the folder)
+    BOOL reachable = [url checkResourceIsReachableAndReturnError:&err];
+    if (!reachable) {
+        // Some denials show up only when enumerating; try that too
+        NSFileManager *fm = NSFileManager.defaultManager;
+        NSDirectoryEnumerator *en = [fm enumeratorAtURL:url
+                             includingPropertiesForKeys:nil
+                                                options:0
+                                           errorHandler:^BOOL(NSURL *badURL, NSError *error) {
+            return NO;
+        }];
+        (void)[en nextObject]; // forces one access
+        // If still not reachable, fall back to prompting
+        if (allowPrompt && win) {
+            [url stopAccessingSecurityScopedResource];
+            [self chooseStravaRootFolderAndSaveBookmarkFromWindow:win];
+            return [self resolvedStravaRootURLAllowingPrompt:NO window:nil error:outError];
+        }
+    }
+
+    [url stopAccessingSecurityScopedResource];
+    if (outError) *outError = nil;
+    return url;
+}
+
+#pragma mark - Quick “has it been set?” helper
+
+- (BOOL)hasValidStravaRootBookmark
+{
+    NSError *err = nil;
+    NSURL *url = [self resolvedStravaRootURLAllowingPrompt:NO window:nil error:&err];
+    return (url != nil);
+}
+
+// update the lines in the gui showing the track, but don't invalidate stat caches
+// useful for things like 'equipment items' that don't use caching.
+- (void)simpleUpdateBrowserTrack:(Track*)track
+{
+    NSInteger numRows = [_outlineView numberOfRows];
+    for (int i=0; i<numRows; i++)
+    {
+        TrackBrowserItem* tbi = [_outlineView itemAtRow:i];
+        if ([tbi track] == track)
+        {
+            [_outlineView setNeedsDisplayInRect:[_outlineView rectOfRow:i]];
+            ///printf("updating row %d\n", i);
+            while (TrackBrowserItem* parentItem = [tbi parentItem])
+            {
+                [parentItem invalidateCache:NO];
+                NSInteger sr = [_outlineView rowForItem:parentItem];
+                [_outlineView setNeedsDisplayInRect:[_outlineView rectOfRow:sr]];
+                ///printf("updating (parent) row %d\n", sr);
+                tbi = parentItem;
+            }
+        }
+    }
+}
 
 
 @end

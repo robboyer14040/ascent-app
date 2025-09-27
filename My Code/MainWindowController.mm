@@ -5,6 +5,8 @@
 
 #import "MainWindowController.h"
 #import "RootSplitController.h"
+#import "Selection.h"
+
 
 @implementation MainWindowController
 
@@ -25,43 +27,6 @@
     return _root;
 }
 
-#if 0
-- (void)windowDidLoad
-{
-    [super windowDidLoad];
-
-    // Optional: configure the visual effect header
-    if (self.reservedTopArea) {
-        self.reservedTopArea.material = NSVisualEffectMaterialHeaderView;
-        self.reservedTopArea.blendingMode = NSVisualEffectBlendingModeWithinWindow;
-        self.reservedTopArea.state = NSVisualEffectStateFollowsWindowActiveState;
-    }
-
-    NSView *container = _contentContainer ?: self.window.contentView;
-    NSAssert(container != nil, @"MainWindowController: content container is nil.");
-
-    // Create and retain the root split controller (code-only)
-    _root = [[RootSplitController alloc] init];
-
-    // Push current deps before embedding
-    _root.document  = (TrackBrowserDocument *)self.document;
-    _root.selection = _selection;
-    if ([_root respondsToSelector:@selector(injectDependencies)]) {
-        [_root injectDependencies];
-    }
-
-    // Embed RootSplitController.view
-    NSView *childView = _root.view;
-    childView.translatesAutoresizingMaskIntoConstraints = NO;
-    [container addSubview:childView];
-    [NSLayoutConstraint activateConstraints:@[
-        [childView.leadingAnchor constraintEqualToAnchor:container.leadingAnchor],
-        [childView.trailingAnchor constraintEqualToAnchor:container.trailingAnchor],
-        [childView.topAnchor constraintEqualToAnchor:container.topAnchor],
-        [childView.bottomAnchor constraintEqualToAnchor:container.bottomAnchor],
-    ]];
-}
-#endif
 
 - (void)windowDidLoad {
     NSLog(@"MainWindowController windowDidLoad %@", self);
@@ -91,6 +56,8 @@
     // Create and embed the root split controller (no xib)
     _root = [[RootSplitController alloc] init];
     _root.document  = (TrackBrowserDocument *)self.document;
+    
+    _selection = [[Selection alloc] init];
     _root.selection = _selection;
 
     NSView *childView = _root.view;          // this triggers RootSplitController -loadView
@@ -98,11 +65,6 @@
     childView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
     [self.contentContainer addSubview:childView];
 
-    // Sanity logs
-    NSLog(@"contentView=%@ %@", contentView, NSStringFromRect(contentView.frame));
-    NSLog(@"topArea=%@ %@", self.reservedTopArea, NSStringFromRect(self.reservedTopArea.frame));
-    NSLog(@"container=%@ %@", self.contentContainer, NSStringFromRect(self.contentContainer.frame));
-    NSLog(@"root.view=%@ %@", childView, NSStringFromRect(childView.frame));
 }
 
 #pragma mark - Document override & dependency propagation

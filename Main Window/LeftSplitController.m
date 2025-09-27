@@ -30,8 +30,7 @@
     NSSplitView *sv = self.splitView;      // created by super
     sv.vertical     = NO;                  // top/bottom
     sv.dividerStyle = NSSplitViewDividerStyleThin;
-    sv.autosaveName = @"LeftSplitView";
-
+ 
     // Create children (XIB-backed)
     if (!_trackPane) _trackPane = [[TrackPaneController alloc] initWithNibName:@"TrackPaneController" bundle:nil];
     if (!_analysis)  _analysis  = [[AnalysisPaneController  alloc] initWithNibName:@"AnalysisPaneController"  bundle:nil];
@@ -48,6 +47,8 @@
 
     [self addSplitViewItem:top];
     [self addSplitViewItem:bot];
+
+    sv.autosaveName = @"LeftSplitView";
 
     [self injectDependencies];
 }

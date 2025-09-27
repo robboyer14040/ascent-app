@@ -76,8 +76,8 @@
                             <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="6YQ-qz-LLI">
                                 <font key="font" metaFont="system"/>
                                 <segments>
-                                    <segment label="Outline" width="67"/>
-                                    <segment label="Calendar" width="66" selected="YES" tag="1"/>
+                                    <segment label="Outline" width="67" selected="YES"/>
+                                    <segment label="Calendar" width="66" tag="1"/>
                                 </segments>
                             </segmentedCell>
                         </segmentedControl>

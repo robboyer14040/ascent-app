@@ -12,7 +12,6 @@
 		D41001EC2E84AE9C002942DE /* TrackListController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001EB2E84AE9C002942DE /* TrackListController.m */; };
 		D41001F12E8596A4002942DE /* RootSplitController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001F02E8596A4002942DE /* RootSplitController.m */; };
 		D41001F52E85970F002942DE /* LeftSplitController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001F32E85970F002942DE /* LeftSplitController.m */; };
-		D41001F62E85970F002942DE /* LeftSplitController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D41001F42E85970F002942DE /* LeftSplitController.xib */; };
 		D41001F92E859731002942DE /* TrackPaneController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001F82E859731002942DE /* TrackPaneController.m */; };
 		D41001FC2E859779002942DE /* TrackCalendarController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001FB2E859779002942DE /* TrackCalendarController.m */; };
 		D41002002E8597D4002942DE /* AnalysisPaneController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D41001FF2E8597D4002942DE /* AnalysisPaneController.xib */; };
@@ -390,7 +389,6 @@
 		D41001F02E8596A4002942DE /* RootSplitController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RootSplitController.m; sourceTree = "<group>"; };
 		D41001F22E85970F002942DE /* LeftSplitController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LeftSplitController.h; sourceTree = "<group>"; };
 		D41001F32E85970F002942DE /* LeftSplitController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LeftSplitController.m; sourceTree = "<group>"; };
-		D41001F42E85970F002942DE /* LeftSplitController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LeftSplitController.xib; sourceTree = "<group>"; };
 		D41001F72E859731002942DE /* TrackPaneController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TrackPaneController.h; sourceTree = "<group>"; };
 		D41001F82E859731002942DE /* TrackPaneController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TrackPaneController.m; sourceTree = "<group>"; };
 		D41001FA2E859779002942DE /* TrackCalendarController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TrackCalendarController.h; sourceTree = "<group>"; };
@@ -985,7 +983,6 @@
 				D41002092E85987C002942DE /* IntervalsPaneController.xib */,
 				D41001F22E85970F002942DE /* LeftSplitController.h */,
 				D41001F32E85970F002942DE /* LeftSplitController.m */,
-				D41001F42E85970F002942DE /* LeftSplitController.xib */,
 				D4F13A1A2E4EAE4600462944 /* MainWindowController.h */,
 				D4F13A1B2E4EAE4600462944 /* MainWindowController.mm */,
 				D41002282E8599E5002942DE /* MainWindowController.xib */,
@@ -2041,7 +2038,6 @@
 				D4F13C332E4EAE4600462944 /* DV_DC_2005_013.jpg in Resources */,
 				D4F18D0A2E5248980032E51D /* PrefsUser.xib in Resources */,
 				D4F18D0B2E5248980032E51D /* PrefsHeartrate.xib in Resources */,
-				D41001F62E85970F002942DE /* LeftSplitController.xib in Resources */,
 				D4F18D0C2E5248980032E51D /* PrefsZones.xib in Resources */,
 				D410021C2E859916002942DE /* ProfileController.xib in Resources */,
 				D4F18D0D2E5248980032E51D /* ProgressBar.xib in Resources */,

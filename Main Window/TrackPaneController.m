@@ -68,9 +68,6 @@
 
 - (void)setCalendarMode:(BOOL)calendarMode
 {
-    if (!_document)
-        return;
-    
     _calendarMode = calendarMode;
 
     NSViewController *target = nil;
@@ -111,16 +108,14 @@
         [v.topAnchor constraintEqualToAnchor:_contentContainer.topAnchor],
         [v.bottomAnchor constraintEqualToAnchor:_contentContainer.bottomAnchor]
     ]];
-    
-    if (!calendarMode) {
-        [_outlineVC buildBrowser:YES];
-    }
 }
 
 - (void)setDocument:(TrackBrowserDocument *)document
 {
     _document = document;
-    [self injectDependencies];
+    if (_document) {
+        [self injectDependencies];
+    }
 }
 
 - (void)setSelection:(Selection *)selection

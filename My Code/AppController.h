@@ -35,7 +35,7 @@
 - (IBAction)showPreferences:(id)sender;
 //- (IBAction)saveADocument:(id)sender;
 
-- (BOOL) validateMenuItem:(NSMenuItem*) mi;
+///- (BOOL) validateMenuItem:(NSMenuItem*) mi;
 - (TrackBrowserDocument*) currentTrackBrowserDocument;
 
 @end

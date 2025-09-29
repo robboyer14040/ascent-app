@@ -163,28 +163,28 @@ static void setColorDefault(NSMutableDictionary* dict,
 + (void)initialize
 {
     if (self != [AppController class]) return;
-
+    
     NSMutableDictionary* defaultValues = [NSMutableDictionary dictionary];
-
+    
     NSString* value = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
     if (value) value = [@"Version " stringByAppendingString:value];
     if (value) printf("Ascent %s\n", [value UTF8String]);
-
+    
     [[NSUserDefaults standardUserDefaults] registerDefaults:defaultValues];
     [Utils setBackupDefaults];
-
+    
     // Register pasteboard types once
     NSPasteboard* pb = [NSPasteboard generalPasteboard];
     NSArray *types = [NSArray arrayWithObjects:TrackPBoardType, NSTabularTextPboardType, NSStringPboardType, nil];
     [pb declareTypes:types owner:self];
-
+    
     // Register bundled fonts
     NSString *fontsFolder = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Fonts"];
     if (fontsFolder) {
         NSURL *fontsURL = [NSURL fileURLWithPath:fontsFolder];
         if (fontsURL) (void)RegisterFontsInFolder(fontsURL);
     }
-
+    
     // Value transformer
     WeightValueTransformer *tf = [[[WeightValueTransformer alloc] init] autorelease];
     [NSValueTransformer setValueTransformer:tf forName:@"WeightValueTransformer"];
@@ -217,7 +217,7 @@ static void setColorDefault(NSMutableDictionary* dict,
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     NSError* error = nil;
     [[[EquipmentLog sharedInstance] managedObjectContext] save:&error];
-
+    
     NSDocumentController *dc = [NSDocumentController sharedDocumentController];
     [dc closeAllDocumentsWithDelegate:self
                   didCloseAllSelector:@selector(didCloseAllFunc:didCloseAll:contextInfo:)
@@ -247,20 +247,20 @@ static void setColorDefault(NSMutableDictionary* dict,
 
 - (BOOL)application:(NSApplication *)app openFile:(NSString *)filename
 {
-//    if (!self.pendingOpenURLs) self.pendingOpenURLs = [[NSMutableArray alloc] init];
-//    NSURL *u = [NSURL fileURLWithPath:filename];
-//    if (u) [self.pendingOpenURLs addObject:u];
+    //    if (!self.pendingOpenURLs) self.pendingOpenURLs = [[NSMutableArray alloc] init];
+    //    NSURL *u = [NSURL fileURLWithPath:filename];
+    //    if (u) [self.pendingOpenURLs addObject:u];
     // Do NOT open it yet; we’ll open after splash
     return YES; // tell AppKit we handled it
 }
 
 - (void)application:(NSApplication *)app openFiles:(NSArray<NSString *> *)filenames
 {
-//    if (!self.pendingOpenURLs) self.pendingOpenURLs = [[NSMutableArray alloc] init];
-//    for (NSString *p in filenames) {
-//        NSURL *u = [NSURL fileURLWithPath:p];
-//        if (u) [self.pendingOpenURLs addObject:u];
-//    }
+    //    if (!self.pendingOpenURLs) self.pendingOpenURLs = [[NSMutableArray alloc] init];
+    //    for (NSString *p in filenames) {
+    //        NSURL *u = [NSURL fileURLWithPath:p];
+    //        if (u) [self.pendingOpenURLs addObject:u];
+    //    }
     // Do NOT open now
     [app replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
 }
@@ -289,12 +289,12 @@ static void setColorDefault(NSMutableDictionary* dict,
 - (IBAction)openTheDocument:(id)sender
 {
     NSDocumentController *dc = [NSDocumentController sharedDocumentController];
-
+    
     NSOpenPanel *panel = [NSOpenPanel openPanel];
     panel.canChooseFiles = YES;
     panel.canChooseDirectories = NO;
     panel.allowsMultipleSelection = NO;
-
+    
 #if HAVE_UTTYPE
     NSMutableArray<UTType *> *contentTypes = [NSMutableArray array];
     NSArray *docTypes = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDocumentTypes"];
@@ -321,18 +321,18 @@ static void setColorDefault(NSMutableDictionary* dict,
     }
     if (contentTypes.count > 0) panel.allowedContentTypes = contentTypes;
 #endif
-
+    
     NSWindow *host = NSApp.mainWindow ?: NSApp.keyWindow;
     void (^openURL)(NSURL *) = ^(NSURL *url) {
         [dc openDocumentWithContentsOfURL:url
                                   display:YES
                         completionHandler:^(NSDocument *doc, BOOL alreadyOpen, NSError *error)
-        {
+         {
             if (error) { [NSApp presentError:error]; return; }
             if (doc.fileURL) [dc noteNewRecentDocumentURL:doc.fileURL];
         }];
     };
-
+    
     if (host) {
         [panel beginSheetModalForWindow:host completionHandler:^(NSModalResponse result) {
             if (result == NSModalResponseOK && panel.URL) openURL(panel.URL);
@@ -349,10 +349,10 @@ static void setColorDefault(NSMutableDictionary* dict,
 {
     // Ensure nib is loaded very early
     (void)[SplashPanelController sharedInstance].window;
-
+    
     self.deferringOpens = YES;
     [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
-
+    
 }
 
 
@@ -360,13 +360,13 @@ static void setColorDefault(NSMutableDictionary* dict,
 {
     SplashPanelController *sp = [SplashPanelController sharedInstance];
     [sp showPanelCenteredOnMainScreenWithHighLevel:YES];
-
+    
     // Ensure app is active and the splash is actually ordered in
     [NSApp activateIgnoringOtherApps:YES];
     [sp.window makeKeyAndOrderFront:nil];     // now allowed (SplashKeyWindow)
     [sp.window orderFrontRegardless];
     [sp.window displayIfNeeded];              // draw immediately
-
+    
     [CATransaction flush];
     [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
                              beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.0]];
@@ -375,15 +375,15 @@ static void setColorDefault(NSMutableDictionary* dict,
     dispatch_async(dispatch_get_main_queue(), ^{
         // Turn 2: now kick off deferred opens
         AscentDocumentController *dc =
-           (AscentDocumentController *)[NSDocumentController sharedDocumentController];
-
+        (AscentDocumentController *)[NSDocumentController sharedDocumentController];
+        
         [dc drainDeferredOpensWithCompletion:^{
             self.deferringOpens = NO;        // <-- IMPORTANT
             // fade/close splash when your docs are up
             [sp startFade:nil];
             [self afterSplashPanelDone:nil];
             [self _startLaunchWork];
-       }];
+        }];
     });
 }
 
@@ -392,9 +392,9 @@ static void setColorDefault(NSMutableDictionary* dict,
 {
     // All AppKit calls here are on main
     [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
-
+    
     (void)[NSDocumentController sharedDocumentController];
-
+    
     // Notifications you need during/after launch
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     [nc addObserver:self selector:@selector(afterSplashPanelDone:) name:@"AfterSplashPanelDone" object:nil];
@@ -403,19 +403,19 @@ static void setColorDefault(NSMutableDictionary* dict,
     [nc addObserver:self selector:@selector(showActivityDataList:) name:@"OpenDataDetail" object:nil];
     [nc addObserver:self selector:@selector(showSummaryGraph:) name:@"OpenSummaryGraph" object:nil];
     ///[nc addObserver:self selector:@selector(transportPanelClosed:) name:@"TransportPanelClosed" object:nil];
-
+    
     initialDocument = nil;
-
+    
     NSString* title = [NSString stringWithFormat:@"Move \"%@\" values to \"%@\" field",
                        [Utils stringFromDefaults:RCBDefaultKeyword1Label],
                        [Utils stringFromDefaults:RCBDefaultCustomFieldLabel]];
     [copyKeyword1MenuItem setTitle:title];
-
+    
     title = [NSString stringWithFormat:@"Move \"%@\" values to \"%@\" field",
              [Utils stringFromDefaults:RCBDefaultKeyword2Label],
              [Utils stringFromDefaults:RCBDefaultCustomFieldLabel]];
     [copyKeyword2MenuItem setTitle:title];
-
+    
     [Utils createPowerActivityArrayIfDoesntExist];
 }
 
@@ -426,7 +426,7 @@ static void setColorDefault(NSMutableDictionary* dict,
 - (void)afterSplashPanelDone:(NSNotification *)notification
 {
     BOOL ok = YES; // (registration check omitted)
-
+    
     if (!ok) {
         RegController* rc = [[RegController alloc] init];
         [[rc window] center];
@@ -435,11 +435,11 @@ static void setColorDefault(NSMutableDictionary* dict,
         [[rc window] orderOut:self];
         [rc release];
     }
-
+    
     if ([Utils boolFromDefaults:RCBDefaultShowTransportPanel]) {
         [self showTransportPanel:self];
     }
-
+    
     TrackBrowserDocument* tbd = [self currentTrackBrowserDocument];
     if (tbd) {
         NSArray* wcs = [tbd windowControllers];
@@ -448,12 +448,12 @@ static void setColorDefault(NSMutableDictionary* dict,
             if (sc) [[sc window] makeKeyAndOrderFront:nil];
         }
     }
-
+    
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(selectionDoubleClickedInOutlineView:)
                                                  name:@"TBSelectionDoubleClicked"
                                                object:nil];
-
+    
     // Birthday / age update (legacy AddressBook)
     NSDate* birthDate = [Utils objectFromDefaults:RCBDefaultBirthday];
     if (!birthDate) {
@@ -469,7 +469,7 @@ static void setColorDefault(NSMutableDictionary* dict,
     }
     int age = [Utils calculateAge:birthDate];
     [Utils setIntDefault:age forKey:RCBDefaultAge];
-
+    
     // (Updater / backup nag omitted)
 }
 
@@ -494,7 +494,7 @@ static void setColorDefault(NSMutableDictionary* dict,
 - (IBAction) showActivityDetail:(id) sender
 {
     TrackBrowserDocument* tbd = (TrackBrowserDocument*)
-      [[NSDocumentController sharedDocumentController] currentDocument];
+    [[NSDocumentController sharedDocumentController] currentDocument];
     MainWindowController* sc = [tbd windowController];
     [sc stopAnimations];
     Track* track = [tbd currentlySelectedTrack];
@@ -512,7 +512,7 @@ static void setColorDefault(NSMutableDictionary* dict,
 - (IBAction) showActivityDataList:(id) sender
 {
     TrackBrowserDocument* tbd = (TrackBrowserDocument*)
-        [[NSDocumentController sharedDocumentController] currentDocument];
+    [[NSDocumentController sharedDocumentController] currentDocument];
     MainWindowController* sc = [tbd windowController];
     [sc stopAnimations];
     Track* track = [tbd currentlySelectedTrack];
@@ -521,17 +521,17 @@ static void setColorDefault(NSMutableDictionary* dict,
         [tbd addWindowController:al];
         [al autorelease];
         NSWindow* wind = [al window]; (void)wind;
-
+        
         [al setTrack:track];
-
+        
         NSDate* ct = [track creationTime];
         NSString* name = [track attribute:kName] ?: @"";
         NSString* title = @"Activity Data - ";
         title = [title stringByAppendingString:name];
-
+        
         NSString* format = @"%A, %B %d  %I:%M%p";
         if (name.length != 0) format = @"  (%A, %B %d  %I:%M%p)";
-
+        
         NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -571,7 +571,7 @@ static void setColorDefault(NSMutableDictionary* dict,
     TrackBrowserDocument* tbd = [self currentTrackBrowserDocument];
     NSArray* wcs = [tbd windowControllers];
     MainWindowController* sc = [wcs objectAtIndex:0];
-
+    
     NSPrintInfo* printInfo = [NSPrintInfo sharedPrintInfo];
     NSView* v = [sc mapPathView];
     NSPrintOperation* op = [NSPrintOperation printOperationWithView:v printInfo:printInfo];
@@ -603,6 +603,7 @@ static void setColorDefault(NSMutableDictionary* dict,
     [Utils setBoolDefault:shown forKey:RCBDefaultShowTransportPanel];
 }
 
+#if 0
 - (BOOL) validateMenuItem:(NSMenuItem*) mi
 {
     if ([mi action] == @selector(showTransportPanel:)) {
@@ -615,13 +616,15 @@ static void setColorDefault(NSMutableDictionary* dict,
     }
     return YES;
 }
+#endif
+
 
 // MARK: FS operations logging (optional)
 
 - (BOOL)fileManager:(NSFileManager *)fm
 shouldProceedAfterError:(NSError *)error
- copyingItemAtURL:(NSURL *)srcURL
-             toURL:(NSURL *)dstURL
+   copyingItemAtURL:(NSURL *)srcURL
+              toURL:(NSURL *)dstURL
 {
     NSLog(@"Copy error %@ → %@: %@", srcURL, dstURL, error);
     return YES;
@@ -629,8 +632,8 @@ shouldProceedAfterError:(NSError *)error
 
 - (BOOL)fileManager:(NSFileManager *)fm
 shouldProceedAfterError:(NSError *)error
-  movingItemAtURL:(NSURL *)srcURL
-            toURL:(NSURL *)dstURL
+    movingItemAtURL:(NSURL *)srcURL
+              toURL:(NSURL *)dstURL
 {
     NSLog(@"Move error %@ → %@: %@", srcURL, dstURL, error);
     return YES;
@@ -638,7 +641,7 @@ shouldProceedAfterError:(NSError *)error
 
 - (BOOL)fileManager:(NSFileManager *)fm
 shouldProceedAfterError:(NSError *)error
- removingItemAtURL:(NSURL *)url
+  removingItemAtURL:(NSURL *)url
 {
     NSLog(@"Remove error %@: %@", url, error);
     return YES;
@@ -646,8 +649,8 @@ shouldProceedAfterError:(NSError *)error
 
 - (BOOL)fileManager:(NSFileManager *)fm
 shouldProceedAfterError:(NSError *)error
-  linkingItemAtURL:(NSURL *)srcURL
-             toURL:(NSURL *)dstURL
+   linkingItemAtURL:(NSURL *)srcURL
+              toURL:(NSURL *)dstURL
 {
     NSLog(@"Link error %@ → %@: %@", srcURL, dstURL, error);
     return YES;
@@ -663,7 +666,7 @@ shouldProceedAfterError:(NSError *)error
     [alert setMessageText:@"Clearing the map cache will delete all saved maps, resulting in slower performance until the same maps are retrieved again (a connection to the internet will also be required to re-fetch the maps)"];
     [alert setInformativeText:@"Continue clearing the map cache?"];
     [alert setAlertStyle:NSAlertStyleInformational];
-
+    
     if ([alert runModal] == NSAlertFirstButtonReturn)
     {
         NSString* cacheFilePath = [Utils getMapTilesPath];
@@ -745,9 +748,9 @@ shouldProceedAfterError:(NSError *)error
     if (!url) return;
     NSError *err = nil;
     NSData *bm = [url bookmarkDataWithOptions:0
-             includingResourceValuesForKeys:nil
-                              relativeToURL:nil
-                                      error:&err];
+               includingResourceValuesForKeys:nil
+                                relativeToURL:nil
+                                        error:&err];
     if (bm) {
         [[NSUserDefaults standardUserDefaults] setObject:bm forKey:kLastDocBookmarkKey];
         [[NSUserDefaults standardUserDefaults] synchronize];
@@ -757,7 +760,7 @@ shouldProceedAfterError:(NSError *)error
 - (NSURL *)restoreLastOpenedDocumentURL {
     NSData *bm = [[NSUserDefaults standardUserDefaults] objectForKey:kLastDocBookmarkKey];
     if (!bm) return nil;
-
+    
     BOOL stale = NO;
     NSError *err = nil;
     NSURL *url = [NSURL URLByResolvingBookmarkData:bm
@@ -766,7 +769,7 @@ shouldProceedAfterError:(NSError *)error
                                bookmarkDataIsStale:&stale
                                              error:&err];
     if (!url) { [self forgetLastOpenedDocumentURL]; return nil; }
-
+    
     if (![url checkResourceIsReachableAndReturnError:&err] || stale) {
         [self forgetLastOpenedDocumentURL];
         return nil;
@@ -779,7 +782,22 @@ shouldProceedAfterError:(NSError *)error
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
+
+- (void)menuWillOpen:(NSMenu *)menu {
+    for (NSMenuItem *it in menu.itemArray) {
+        SEL a = it.action;
+        if (!a) continue;
+        id target = [NSApp targetForAction:a to:nil from:nil];
+        NSLog(@"Menu '%@' item '%@' -> action %@ -> target %@",
+              menu.title, it.title, NSStringFromSelector(a), target);
+    }
+}
+
 @end
+
+
+
+
 
 @implementation AboutBoxWC
 - (void)windowWillClose:(NSNotification *)aNotification

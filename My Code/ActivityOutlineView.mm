@@ -94,8 +94,11 @@ NSString* ActivityDragType = @"ActivityDragType";
 }
 
 
+#if 0
 - (BOOL) validateMenuItem:(NSMenuItem*)menuItem
 {
+    NSLog(@"AOL validateMenuItem...");
+    
    if (([menuItem action] == @selector(copy:)) ||
        ([menuItem action] == @selector(cut:)) ||
        ([menuItem action] == @selector(deleteActivity:)))
@@ -109,6 +112,8 @@ NSString* ActivityDragType = @"ActivityDragType";
  
    return YES;
 }
+#endif
+
 
 - (void)setDocument:(TrackBrowserDocument *)doc {
     _document = doc; // assign on purpose

@@ -7,6 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "TrackListHandling.h"
 
 @class TrackBrowserDocument;
 @class Track;
@@ -15,7 +16,12 @@
 @class Selection;
 
 @interface TrackListController : NSViewController
-<NSTableViewDataSource, NSTableViewDelegate, NSOutlineViewDataSource, NSOutlineViewDelegate, NSPasteboardItemDataProvider>
+<TrackListHandling,
+ NSTableViewDataSource,
+ NSTableViewDelegate,
+ NSOutlineViewDataSource,
+ NSOutlineViewDelegate,
+ NSPasteboardItemDataProvider>
 {
     NSIndexSet *_dragRows;
     BOOL        reverseSort;
@@ -25,22 +31,16 @@
 }
 
 /// IB outlets
-@property(nonatomic, assign) IBOutlet ActivityOutlineView *outlineView;
-@property(nonatomic, assign) IBOutlet NSScrollView  *outlineScrollView; // optional, but handy
-- (IBAction)setSearchOptions:(id)sender;
-- (IBAction)setSearchCriteria:(id)sender;
+@property(nonatomic, assign) IBOutlet ActivityOutlineView   *outlineView;
+@property(nonatomic, assign) IBOutlet NSScrollView          *outlineScrollView; // optional, but handy
 
 
-@property(nonatomic, assign) TrackBrowserDocument *document;
-@property(nonatomic, retain) Selection *selection;
-@property(nonatomic, retain) NSArray                      *tracks;    // your current list
-@property(nonatomic, retain) NSArray                      *topSortedKeys;
+@property(nonatomic, assign) TrackBrowserDocument   *document;
+@property(nonatomic, retain) Selection              *selection;
+@property(nonatomic, retain) NSArray                *tracks;
+@property(nonatomic, retain) NSArray                *topSortedKeys;
 
 - (void)injectDependencies;
-- (IBAction)cut:(id)sender;
-- (IBAction)copy:(id)sender;
-- (IBAction)paste:(id)sender;
-- (IBAction)delete:(id)sender;
 - (void)expandFirstItem;
 - (void)expandLastItem;
 - (NSMutableArray*) prepareArrayOfSelectedTracks;
@@ -51,5 +51,14 @@
 - (void) storeExpandedState;
 - (void) restoreExpandedState;
 - (void)rebuildBrowserAndRestoreState:(Track*)track selectLap:(Lap*)lap;
+- (void)setSearchOptions:(id)sender;
+- (void)setSearchCriteria:(id)sender;
+- (void) selectLastImportedTrack:(Track *)lastImportedTrack;
+- (void) updateAfterImport;
+- (NSString*) buildSummaryTextOutput:(char)sep;
+- (void) processCut:(id)sender;
+- (void) processCopy:(id)sender;
+- (void) processPaste:(id)sender;
+- (void) processDelete:(id)sender;
 
 @end

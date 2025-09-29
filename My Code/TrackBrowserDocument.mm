@@ -24,7 +24,6 @@
 #import "HRM.h"
 #import "GarminFIT.h"
 #import <stdio.h>
-#import "ProgressBarController.h"
 #import "StringAdditions.h"
 #import "EquipmentLog.h"
 #import "ActivityStore.h"
@@ -37,7 +36,7 @@
 #import "AscentImporter.h"
 #import "AscentExporter.h"
 #import "LibraryController.h"
-
+#import "ProgressBarHelper.h"
 #include <unistd.h>        // for sleep()
 
 
@@ -92,6 +91,7 @@ NSString* getTracksPath()
     TrackBrowserData *_stagedBrowserData;   // parsed off-main, consumed by readFromURL:
     LibraryController *_libraryController;
     AscentLibrary *_library;
+    ProgressBarHelper *_pbHelper;
 }
 @property (nonatomic, strong) NSURL *stagedExportURL; // temp file we built
 @property(nonatomic, assign) BOOL hasSecurityScope;
@@ -181,12 +181,12 @@ int kSearchEventType		= 0x0020;
                                                                   inDomains:NSUserDomainMask] firstObject];
         stateDir = [stateDir URLByAppendingPathComponent:@"Ascent" isDirectory:YES];
         _libraryController = [[LibraryController alloc] initWithStateDirectoryURL:stateDir];
+        _pbHelper = [ProgressBarHelper ProgressHelper];
 		equipmentTotalsNeedUpdate = YES;
 		currentlySelectedTrack = nil;
 		selectedLap = nil;
         self.docMetaData = [[[TrackBrowserData alloc] init] autorelease];
 		backupDelegate = [[BackupDelegate alloc] initWithDocument:self];
-		tbWindowController = nil;
         databaseFileURL = nil;
 		///FIXME equipmentLog = [EquipmentLog sharedInstance];
 		///FIXME equipmentLogDataDict = [[NSMutableDictionary alloc] initWithCapacity:16];
@@ -606,7 +606,7 @@ bool readLapDataLine(char *ptr, NSMutableArray* laps, char** optr)
 - (int)loadGPSData:(Track**)lastTrackLoaded
 {   
 	NSMutableArray* tracksNeedingFixup = [NSMutableArray arrayWithCapacity:16];
-	[tbWindowController stopAnimations];
+	///[tbWindowController stopAnimations];
 	NSFileManager* fm;
 	fm = [NSFileManager defaultManager];
 	Track* track;
@@ -666,10 +666,8 @@ bool readLapDataLine(char *ptr, NSMutableArray* laps, char** optr)
 			contains = [[self.docMetaData userDeletedTrackTimes] containsObject:[track creationTime]];
 			if (contains == NO)
 			{
-                NSUInteger numTracks = [trackArray count];
+                ///NSUInteger numTracks = [trackArray count];
 				//if ([[docMetaData lastSyncTime] compare:[track creationTime]] == NSOrderedAscending) &&
-				if ((numTracks <= kNumUnregisteredTracks) || [RegController CHECK_REGISTRATION])
-				{
 					[tracksNeedingFixup addObject:track];
 					//[trackArray addObject:track];
 					[self addTracksToDB:[NSArray arrayWithObject:track]
@@ -678,13 +676,6 @@ bool readLapDataLine(char *ptr, NSMutableArray* laps, char** optr)
 					if (lastTrackLoaded) *lastTrackLoaded = track;
 					lastSyncedTrackDate = [track creationTime];
 					++tracksAdded;
-				}
-				else
-				{
-					[tbWindowController postNeedRegDialog:@"The unregistered version of Ascent is limited to 10 activites per document."  
-														  @"Not all activities could be loaded."];
-					goto getOut;
-				}
 			}
 		}
 	}
@@ -706,17 +697,6 @@ getOut:
 	}
 	if (lastSyncedTrackDate != nil) [lastSyncedTrackDate release];
 	return tracksAdded;
-}
-
-
-- (void)selectionChanged
-{
-    NSInteger row = [[tbWindowController trackTable]  selectedRow];
-   TrackBrowserItem* bi = [[tbWindowController trackTable]  itemAtRow:row];
-   if (bi != nil)
-   {
-      [self setCurrentlySelectedTrack:[bi track]];
-   }
 }
 
 
@@ -1260,9 +1240,7 @@ getOut:
 						}
 						else
 						{
-							[tbWindowController postNeedRegDialog:@"The unregistered version of Ascent is limited to 10 activites per document."  
-							 @"Not all activities could be loaded"];
-							break;
+ 							break;
 						}
 					}
 				}
@@ -1312,7 +1290,6 @@ getOut:
 	if (numLoaded > 0) 
 	{
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
-		[tbWindowController buildBrowser:YES];
 		[self updateChangeCount:NSChangeDone];
 		if (lastLoadedTrack) 
 		{
@@ -1569,46 +1546,6 @@ deviceIsPluggedIn:YES];
 
 
 
-- (MainWindowController*) windowController
-{
-   return tbWindowController;
-}
-
--(void) startProgressIndicator:(NSString*)text
-{
-	NSRect fr = [[NSScreen mainScreen] frame];
-	if (tbWindowController)
-	{
-		NSWindow* w = [tbWindowController window];
-		fr = [w frame];
-	}
-	SharedProgressBar* pb = [SharedProgressBar sharedInstance];
-	NSRect pbfr = [[[pb controller] window] frame];    // must call window method for NIB to load, needs to be done before 'begin' is called
-	NSPoint origin;
-	origin.x = fr.origin.x + fr.size.width/2.0 - pbfr.size.width/2.0;
-	origin.y = fr.origin.y + fr.size.height/2.0 - pbfr.size.height/2.0;  
-	[[[pb controller] window] setFrameOrigin:origin];
-	[[pb controller] showWindow:self];
-	[[pb controller] begin:@"" 
-				 divisions:0];
-	[[pb controller] updateMessage:text];
-}
-
-
-- (void) updateProgressIndicator:(NSString*)msg
-{
-	SharedProgressBar* pb = [SharedProgressBar sharedInstance];
-	[[pb controller] updateMessage:msg];
-}
-
-- (void) endProgressIndicator
-{
-	SharedProgressBar* pb = [SharedProgressBar sharedInstance];
-	[[pb controller] end];
-	[[[pb controller] window] orderOut:nil];
-}
-
-
 - (void)setDatabaseFileURL:(NSURL*)url
 {
     [databaseFileURL release];
@@ -1639,24 +1576,15 @@ deviceIsPluggedIn:YES];
   completionHandler:(void (^)(NSError * _Nullable error))handler
 {
     // --- Present progress on MAIN ---
-    ProgressBarController *pbc = [[SharedProgressBar sharedInstance] controller];
+    ///ProgressBarController *pbc = [[SharedProgressBar sharedInstance] controller];
     dispatch_async(dispatch_get_main_queue(), ^{
         NSWindow *docWin = self.windowForSheet ?: self.windowControllers.firstObject.window;
-        NSWindow *pbWin  = pbc.window; // loads nib
 
         // Start indeterminate; you can restart as determinate later if you learn a total
-        [pbc begin:[NSString stringWithFormat:@"Opening activity document “%@”…",
-                    self.displayName ?: url.lastPathComponent]
-           divisions:0];
+        [_pbHelper beginWithTitle:[NSString stringWithFormat:@"Opening activity document “%@”…", self.displayName ?: url.lastPathComponent]
+                        divisions:0
+                 centerOverWindow:docWin];
 
-        if (docWin) {
-            NSRect fr = docWin.frame, pfr = pbWin.frame;
-            NSPoint origin = NSMakePoint(NSMidX(fr) - pfr.size.width/2.0,
-                                         NSMidY(fr) - pfr.size.height/2.0);
-            [pbWin setFrameOrigin:origin];
-        }
-        [pbc showWindow:self];
-        [pbWin displayIfNeeded];
     });
 
     // --- Heavy work on BACKGROUND queue ---
@@ -1678,14 +1606,13 @@ deviceIsPluggedIn:YES];
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if (!madeDeterminate && total > 0) {
                             madeDeterminate = YES;
-                            [[ [SharedProgressBar sharedInstance] controller]
-                                begin:@"Opening activity document…"
-                                divisions:(int)total];
+                            [_pbHelper beginWithTitle:@"Opening activity document…"
+                                            divisions:(int)total];
                         }
-                        [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                        [_pbHelper incrementDiv];
                         if (done >= total)
                         {
-                            [[[SharedProgressBar sharedInstance] controller] updateMessage:@"building browser..."];
+                            [_pbHelper updateProgressIndicator:@"building browser..."];
                       }
                     });
                 }];
@@ -1712,8 +1639,8 @@ deviceIsPluggedIn:YES];
                     }
                     // A couple of UI ticks so the user sees motion
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [[[SharedProgressBar sharedInstance] controller] incrementDiv];
-                        [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                        [_pbHelper incrementDiv];
+                        [_pbHelper incrementDiv];
                     });
                 }
 
@@ -1738,9 +1665,7 @@ deviceIsPluggedIn:YES];
             // assign it to `docMetaData` ivar here as needed.
 
             // Hide progress
-            ProgressBarController *pbcm = [[SharedProgressBar sharedInstance] controller];
-            [[pbcm window] orderOut:self];
-            [pbcm end];
+            [_pbHelper endProgressIndicator];
 
             if (handler) handler(err);
         });
@@ -1783,17 +1708,10 @@ deviceIsPluggedIn:YES];
             [NSApp runModalSession:splashSession];
         }
     } else {
-        ProgressBarController *pbc = [[[SharedProgressBar sharedInstance] controller] retain];
-        NSWindow *pbWin = [pbc window];
-        pbWin.collectionBehavior |= (NSWindowCollectionBehaviorCanJoinAllSpaces |
-                                     NSWindowCollectionBehaviorFullScreenAuxiliary);
-        pbWin.level = NSStatusWindowLevel;
-        [pbc showWindow:self];
-        [pbc begin:[NSString stringWithFormat:@"opening “%@”…", displayName] divisions:0];
-        [pbWin orderFrontRegardless];
-        [pbWin displayIfNeeded];
-        [pbc release]; // controller is retained by its singleton
-    }
+        [_pbHelper beginWithTitle:@"opening “%@”…"
+                        divisions:0
+                 centerOverWindow:nil];
+     }
 
     CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.01, false);
 
@@ -1821,11 +1739,10 @@ deviceIsPluggedIn:YES];
                             } else {
                                 if (!madeDeterminate && total > 0) {
                                     madeDeterminate = YES;
-                                    [[[SharedProgressBar sharedInstance] controller]
-                                        begin:[NSString stringWithFormat:@"opening “%@”…", displayName]
-                                        divisions:(int)total];
+                                    [_pbHelper beginWithTitle:[NSString stringWithFormat:@"opening “%@”…", displayName]
+                                                    divisions:(int)total];
                                 }
-                                [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                                [_pbHelper incrementDiv];
                             }
                         });
                     }];
@@ -1915,8 +1832,8 @@ deviceIsPluggedIn:YES];
                             if (splashWanted) {
                                 [sp updateMessage:@"Opening…"];
                             } else {
-                                [[[SharedProgressBar sharedInstance] controller] incrementDiv];
-                                [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                                [_pbHelper incrementDiv];
+                                [_pbHelper incrementDiv];
                             }
                         });
                     } else {
@@ -1961,10 +1878,8 @@ deviceIsPluggedIn:YES];
         [sp canDismiss:YES];
         [sp startFade:nil];
     } else {
-        ProgressBarController *pbc = [[SharedProgressBar sharedInstance] controller];
-        [pbc updateMessage:@"building browser..."];
-        [[pbc window] orderOut:self];
-        [pbc end];
+        [_pbHelper updateProgressIndicator:@"building browser..."];
+        [_pbHelper endProgressIndicator];
     }
     if (splashSession) {
         [NSApp endModalSession:splashSession];
@@ -1995,20 +1910,17 @@ deviceIsPluggedIn:YES];
     return NO;
 }
 
+
 - (void)_presentProgress:(ProgressBarController *)pbc total:(int)total  message:(NSString*)msg
 {
     NSWindow *docWin = self.windowForSheet ?: self.windowControllers.firstObject.window;
-    NSWindow *pbWin  = pbc.window;
-    [pbc begin:msg divisions:total];
-    NSRect fr = docWin.frame, pfr = pbWin.frame;
-    [pbWin setFrameOrigin:NSMakePoint(NSMidX(fr)-pfr.size.width/2.0, NSMidY(fr)-pfr.size.height/2.0)];
-    [pbc showWindow:self];
-    [pbWin displayIfNeeded];
+    [_pbHelper beginWithTitle:msg divisions:total centerOverWindow:docWin];
 }
+
+
+
 - (void)_dismissProgress {
-    ProgressBarController *pbc = [[SharedProgressBar sharedInstance] controller];
-    [[pbc window] orderOut:self];
-    [pbc end];
+    [_pbHelper endProgressIndicator];
 }
 
 
@@ -2046,9 +1958,13 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
         displayName = (base ?: @"document");
     }
     
-    if (op != NSAutosaveInPlaceOperation)
-        [self startProgressIndicator:[NSString stringWithFormat:@"saving “%@”…", displayName]];
-
+    if (op != NSAutosaveInPlaceOperation) {
+        NSWindow *docWin = self.windowForSheet ?: self.windowControllers.firstObject.window;
+        [_pbHelper startProgressIndicator:docWin
+                                    title:[NSString stringWithFormat:@"saving “%@”…", displayName]];
+    }
+    
+    
     // Decide incremental vs full.
     BOOL preferIncremental = [self shouldPreferIncrementalForOperation:op destination:url];
 
@@ -2214,7 +2130,7 @@ completionHandler:(void (^)(NSError * _Nullable error))handler
             AscentExporter *exporter = [[[AscentExporter alloc] init] autorelease];
             NSURL *tmp = [exporter exportDocumentToTemporaryURLWithProgress:^(NSInteger done, NSInteger total) {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [[[SharedProgressBar sharedInstance] controller] incrementDiv];
+                    [_pbHelper incrementDiv];
                 });
             } metaData:self.docMetaData
                  error:&exportErr];
@@ -2613,7 +2529,6 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 -(void) replaceTracks:(NSArray*)tracksToRemove withTracks:(NSArray*)tracksToAdd actionName:(NSString*)an
 {
 	NSMutableArray* trackArray = [self.docMetaData trackArray];
-	[tbWindowController storeExpandedState];
 	NSUndoManager* undo = [self undoManager];
 	[[undo prepareWithInvocationTarget:self] replaceTracks:tracksToAdd 
 												withTracks:tracksToRemove
@@ -2627,14 +2542,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 	alsoAddToTrackArray:YES];
 	
 	[self trackArrayChanged:YES];
-	[tbWindowController buildBrowser:YES];
-	[tbWindowController restoreExpandedState];
-	if ([tracksToAdd count] > 0)
-	{
-		[tbWindowController selectBrowserRowsForTracks:tracksToAdd];
-		[tbWindowController resetSelectedTrack:[tracksToAdd objectAtIndex:0]
-										   lap:nil];
-	}
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
 }
 
 
@@ -2683,7 +2591,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 				NSArray* copyPoints = [self adjustPoints:[tr points] 
 											  byDistance:lastDist
 												 andTime:lastDeltaTime
-											 hasDistance:[tr hasDistance]];
+											 hasDistance:[tr hasDistanceData]];
 				[combinedPoints addObjectsFromArray:copyPoints];
 				[newLaps addObjectsFromArray:[self copyLapsAndApplyDelta:tr
 															   wallDelta:lastDeltaTime]];
@@ -2966,9 +2874,6 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
       }
 	  [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
       [trackArray sortUsingSelector:@selector(compareByDate:)];
-	  [tbWindowController storeExpandedState];
-      [tbWindowController buildBrowser:NO];
-	  [tbWindowController restoreExpandedState];
       if ([undo isUndoing] || [undo isRedoing])
       {
          [[NSNotificationCenter defaultCenter] postNotificationName:@"UndoRedoCompleted" object:self];
@@ -3034,9 +2939,6 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
         }
         [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
         [trackArray sortUsingSelector:@selector(compareByDate:)];
-        [tbWindowController storeExpandedState];
-        [tbWindowController buildBrowser:YES];
-        [tbWindowController restoreExpandedState];
         if ([undo isUndoing] || [undo isRedoing])
         {
             [[NSNotificationCenter defaultCenter] postNotificationName:@"UndoRedoCompleted" object:self];
@@ -3119,10 +3021,10 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 -(void)trackArrayChanged:(BOOL)expandLastItem
 {
 	///NSMutableArray* trackArray = [docMetaData trackArray];
-	///[trackArray sortUsingSelector:@selector(compareByDate:)];
-	[tbWindowController storeExpandedState];
-	[tbWindowController buildBrowser:expandLastItem];
-	[tbWindowController restoreExpandedState];
+	///[trackArray sortUsingSelector:@selector(compareByDate:)];\
+//	[tbWindowController storeExpandedState];
+//	[tbWindowController buildBrowser:expandLastItem];
+//	[tbWindowController restoreExpandedState];
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
 	NSUndoManager* undo = [self undoManager];
 	if ([undo isUndoing] || [undo isRedoing])
@@ -3133,19 +3035,19 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 
 -(void) replaceTrack:(Track*)oldTrack with:(Track*)newTrack
 {
-	[tbWindowController storeExpandedState];
-	NSUndoManager* undo = [self undoManager];
-	if (![undo isUndoing])
-	{
-		[undo setActionName:@"Edit activity"];
-	}
-	[[undo prepareWithInvocationTarget:self] replaceTrack:newTrack with:oldTrack];
-	NSMutableArray* trackArray = [self.docMetaData trackArray];
-	[trackArray removeObjectIdenticalTo:oldTrack];
-	[self addTracksToDB:[NSArray arrayWithObject:newTrack]
-	alsoAddToTrackArray:YES];
-	[self trackArrayChanged:NO];
-	[tbWindowController restoreExpandedState];
+    ///[tbWindowController storeExpandedState];
+    NSUndoManager* undo = [self undoManager];
+    if (![undo isUndoing])
+    {
+        [undo setActionName:@"Edit activity"];
+    }
+    [[undo prepareWithInvocationTarget:self] replaceTrack:newTrack with:oldTrack];
+    NSMutableArray* trackArray = [self.docMetaData trackArray];
+    [trackArray removeObjectIdenticalTo:oldTrack];
+    [self addTracksToDB:[NSArray arrayWithObject:newTrack]
+    alsoAddToTrackArray:YES];
+    [self trackArrayChanged:NO];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
 }
 
 
@@ -3158,14 +3060,12 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 	}
 	[[undo prepareWithInvocationTarget:self] deleteLap:lap fromTrack:track];
 	[track addLapInFront:lap];
-	[tbWindowController storeExpandedState];
-	[tbWindowController buildBrowser:NO];
-	[tbWindowController restoreExpandedState];
 	if ([undo isUndoing] || [undo isRedoing])
 	{
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"UndoRedoCompleted" object:self];
 	}
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackEdited" object:track];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
 	return YES;
 }
 
@@ -3178,13 +3078,12 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 	[track setLaps:laps];
 	NSUndoManager* undo = [self undoManager];
 	[[undo prepareWithInvocationTarget:self] restoreLaps:prevLaps toTrack:track deletedLap:nil];
-    [tbWindowController rebuildBrowserAndRestoreState:track
-                                            selectLap:lap];
-	if ([undo isUndoing] || [undo isRedoing])
+ 	if ([undo isUndoing] || [undo isRedoing])
 	{
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"UndoRedoCompleted" object:self];
 	}
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackEdited" object:track];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
 }
 
 
@@ -3205,6 +3104,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 		{
 			[[NSNotificationCenter defaultCenter] postNotificationName:@"UndoRedoCompleted" object:self];
 		}
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackEdited" object:track];
 		ret = YES;
 	}
@@ -3225,13 +3125,11 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 	if (lap)
 	{
 		[[undo prepareWithInvocationTarget:self] deleteLap:lap fromTrack:track];
-		[tbWindowController storeExpandedState];
-		[tbWindowController buildBrowser:NO];
-		[tbWindowController restoreExpandedState];
 		if ([undo isUndoing] || [undo isRedoing])
 		{
 			[[NSNotificationCenter defaultCenter] postNotificationName:@"UndoRedoCompleted" object:self];
 		}
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackEdited" object:track];
 		ret = YES;
 	}
@@ -3318,7 +3216,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 	Track* lastTrack = nil;
 	//NSLog(@"import GPX: %@\n", fileName);
 	GPX* gpxie = [[[GPX alloc] initGPXWithFileURL:[NSURL fileURLWithPath:fileName]
-							   windowController:tbWindowController] autorelease];
+							   windowController:[[self windowControllers] objectAtIndex:0]] autorelease];
 	NSMutableArray* importedTrackArray = [[[NSMutableArray alloc] init] autorelease];
 	NSMutableArray* importedLapArray = [[[NSMutableArray alloc] init] autorelease];
 	BOOL sts = [gpxie import:importedTrackArray laps:importedLapArray];
@@ -3431,11 +3329,11 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 }
 
 
-
 -(void) exportGPXFile:(Track*)track fileName:(NSString*)fileName
 {
     NSLog(@"export GPX: %@\n", fileName);
-    GPX* gpxie = [[[GPX alloc] initGPXWithFileURL:[NSURL fileURLWithPath:fileName] windowController:tbWindowController] autorelease];
+    GPX* gpxie = [[[GPX alloc] initGPXWithFileURL:[NSURL fileURLWithPath:fileName]
+                                 windowController:[[self windowControllers] objectAtIndex:0]] autorelease];
     [gpxie release];
 }
 

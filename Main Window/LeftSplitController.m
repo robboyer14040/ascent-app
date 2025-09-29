@@ -11,16 +11,15 @@
 #import "TrackPaneController.h"     // top (outline/calendar)
 #import "AnalysisPaneController.h"      // bottom (segments/intervals)
 
-@implementation LeftSplitController {
-    TrackPaneController *_trackPane;
-    AnalysisPaneController  *_analysis;
+@implementation LeftSplitController
+{
 }
 @synthesize document=_document, selection=_selection;
 
 - (void)dealloc {
     [_selection release];
-    [_trackPane release];
-    [_analysis release];
+    [_trackPaneController release];
+    [_analysisPaneController release];
     [super dealloc];
 }
 
@@ -32,17 +31,19 @@
     sv.dividerStyle = NSSplitViewDividerStyleThin;
  
     // Create children (XIB-backed)
-    if (!_trackPane) _trackPane = [[TrackPaneController alloc] initWithNibName:@"TrackPaneController" bundle:nil];
-    if (!_analysis)  _analysis  = [[AnalysisPaneController  alloc] initWithNibName:@"AnalysisPaneController"  bundle:nil];
+    if (!_trackPaneController)
+        _trackPaneController = [[TrackPaneController alloc] initWithNibName:@"TrackPaneController" bundle:nil];
+    if (!_analysisPaneController)
+        _analysisPaneController  = [[AnalysisPaneController  alloc] initWithNibName:@"AnalysisPaneController"  bundle:nil];
 
     // TEMP: if you still want color proof, uncomment:
-    _trackPane.view.wantsLayer = YES; _trackPane.view.layer.backgroundColor = [NSColor systemGreenColor].CGColor;
-    _analysis.view.wantsLayer  = YES; _analysis.view.layer.backgroundColor  = [NSColor systemBlueColor].CGColor;
+    _trackPaneController.view.wantsLayer = YES; _trackPaneController.view.layer.backgroundColor = [NSColor systemGreenColor].CGColor;
+    _analysisPaneController.view.wantsLayer  = YES; _analysisPaneController.view.layer.backgroundColor  = [NSColor systemBlueColor].CGColor;
 
-    NSSplitViewItem *top = [NSSplitViewItem splitViewItemWithViewController:_trackPane];
+    NSSplitViewItem *top = [NSSplitViewItem splitViewItemWithViewController:_trackPaneController];
     top.minimumThickness = 220.0; top.holdingPriority = 260;
 
-    NSSplitViewItem *bot = [NSSplitViewItem splitViewItemWithViewController:_analysis];
+    NSSplitViewItem *bot = [NSSplitViewItem splitViewItemWithViewController:_analysisPaneController];
     bot.minimumThickness = 220.0; bot.holdingPriority = 250;
 
     [self addSplitViewItem:top];
@@ -57,7 +58,7 @@
 - (void)setSelection:(Selection *)sel { if (sel==_selection) return; [_selection release]; _selection=[sel retain]; if (self.isViewLoaded) [self injectDependencies]; }
 
 - (void)injectDependencies {
-    for (NSViewController *vc in @[(id)_trackPane ?: (id)NSNull.null, (id)_analysis ?: (id)NSNull.null]) {
+    for (NSViewController *vc in @[(id)_trackPaneController ?: (id)NSNull.null, (id)_analysisPaneController ?: (id)NSNull.null]) {
         if ((id)vc == (id)NSNull.null) continue;
         @try { [vc setValue:_document  forKey:@"document"]; } @catch(...) {}
         @try { [vc setValue:_selection forKey:@"selection"]; } @catch(...) {}

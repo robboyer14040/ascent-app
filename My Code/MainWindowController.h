@@ -14,7 +14,7 @@
 
 @class TrackBrowserDocument, Selection, RootSplitController;
 
-@interface MainWindowController : NSWindowController
+@interface MainWindowController : NSWindowController<NSUserInterfaceValidations>
 {
 @private
     Selection *_selection;     // yours

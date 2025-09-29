@@ -5,6 +5,7 @@
 
 #import "MainWindowController.h"
 #import "RootSplitController.h"
+#import "LeftSplitController.h"
 #import "Selection.h"
 
 
@@ -65,7 +66,47 @@
     childView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
     [self.contentContainer addSubview:childView];
 
+    TrackPaneController *tpc = _root.leftSplitController.trackPaneController;
+
+    NSMenu *fileMenu = [[NSApp mainMenu] itemWithTitle:@"File"].submenu;
+    NSMenu *viewMenu = [[NSApp mainMenu] itemWithTitle:@"View"].submenu;
+
+    NSSet<NSString *> *belongsToTPC = [NSSet setWithObjects:
+        @"exportGPX:", @"exportKML:", @"exportTCX:",
+        @"exportTXT:", @"exportCSV:",
+        @"exportSummaryTXT:", @"exportSummaryCSV:",
+        @"exportLatLonText:",
+        @"googleEarthFlyBy:",
+        @"centerOnPath:", @"centerAtStart:", @"centerAtEnd:",
+        @"zoomIn:", @"zoomOut:", @"syncStravaActivities:",
+        nil];
+
+    __block void (^retarget)(NSMenu *menu, NSSet<NSString *> *sels);
+    retarget = ^(NSMenu *menu, NSSet<NSString *> *sels) {
+        for (NSMenuItem *it in menu.itemArray) {
+            SEL a = it.action;
+            if (a && [sels containsObject:NSStringFromSelector(a)]) {
+                it.target = tpc;
+            }
+            ///if (it.submenu)
+            ///    retarget(it.submenu, sels); // recursion OK because of __block
+            
+        }
+        for (NSString *name in sels) {
+            SEL a = NSSelectorFromString(name);
+            if (![tpc respondsToSelector:a]) {
+                NSLog(@"TPC does NOT implement %@", name); // <-- these will be disabled
+            }
+        }
+   };
+
+    retarget(fileMenu, belongsToTPC);
+    ///retarget(viewMenu, belongsToTPC);
+    
+
+    
 }
+
 
 #pragma mark - Document override & dependency propagation
 
@@ -93,6 +134,36 @@
             [_root injectDependencies];
         }
     }
+}
+
+
+// List the TrackPane-specific actions here
+static BOOL ActionIsTrackPaneAction(SEL a) {
+    return YES;
+//    return (a == @selector(doThing:) ||
+//            a == @selector(prevTrack:) ||
+//            a == @selector(nextTrack:) ||
+//            a == @selector(exportSelected:) );
+}
+
+- (id)targetForAction:(SEL)action to:(id)target from:(id)sender {
+    if (ActionIsTrackPaneAction(action)) {
+        TrackPaneController *tpc = _root.leftSplitController.trackPaneController;
+        if (tpc && [tpc respondsToSelector:action]) {
+            return tpc;
+        }
+    }
+    return nil;
+}
+
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+    NSLog(@"MWC - validating %@", item);
+    
+    id tgt = [self targetForAction:item.action to:nil from:self];
+    if ([tgt respondsToSelector:_cmd]) {
+        return [tgt validateUserInterfaceItem:item];
+    }
+    return YES;
 }
 
 @end

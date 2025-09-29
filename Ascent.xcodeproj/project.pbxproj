@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		D41001E72E849689002942DE /* TrackClipboardSerializer.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001E62E849689002942DE /* TrackClipboardSerializer.m */; };
 		D41001EA2E84A604002942DE /* AscentPasteboard.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001E92E84A604002942DE /* AscentPasteboard.m */; };
-		D41001EC2E84AE9C002942DE /* TrackListController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001EB2E84AE9C002942DE /* TrackListController.m */; };
 		D41001F12E8596A4002942DE /* RootSplitController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001F02E8596A4002942DE /* RootSplitController.m */; };
 		D41001F52E85970F002942DE /* LeftSplitController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001F32E85970F002942DE /* LeftSplitController.m */; };
 		D41001F92E859731002942DE /* TrackPaneController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001F82E859731002942DE /* TrackPaneController.m */; };
@@ -79,6 +78,8 @@
 		D4D51B0F2E4E50A80003E47F /* OmniNetworking.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D451E8A22E4D89FA0060BA74 /* OmniNetworking.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D4D51B102E4E50A90003E47F /* OmniQuartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D451E8A32E4D89FA0060BA74 /* OmniQuartz.framework */; };
 		D4D51B112E4E50A90003E47F /* OmniQuartz.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D451E8A32E4D89FA0060BA74 /* OmniQuartz.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D4EB189D2E89944700B879FD /* TrackListController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4EB189C2E89944700B879FD /* TrackListController.m */; };
+		D4EB18A02E89981900B879FD /* ProgressBarHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = D4EB189F2E89981900B879FD /* ProgressBarHelper.m */; };
 		D4EFE9F616B5D0BC00A5305B /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4EFE9F516B5D0BC00A5305B /* SenTestingKit.framework */; };
 		D4EFE9F716B5D0BC00A5305B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4EFE9D116B5D0BC00A5305B /* Cocoa.framework */; };
 		D4F13BF12E4EAE4600462944 /* Ascent_Doc.icns in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB12E4EAE4600462944 /* Ascent_Doc.icns */; };
@@ -383,16 +384,14 @@
 		D41001E62E849689002942DE /* TrackClipboardSerializer.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = TrackClipboardSerializer.m; path = "../My Code/TrackClipboardSerializer.m"; sourceTree = "<group>"; };
 		D41001E82E84A5EC002942DE /* AscentPasteboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AscentPasteboard.h; path = "My Code/AscentPasteboard.h"; sourceTree = "<group>"; };
 		D41001E92E84A604002942DE /* AscentPasteboard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = AscentPasteboard.m; path = "My Code/AscentPasteboard.m"; sourceTree = "<group>"; };
-		D41001EB2E84AE9C002942DE /* TrackListController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = TrackListController.m; path = "../My Code/TrackListController.m"; sourceTree = "<group>"; };
-		D41001ED2E84AEB7002942DE /* TrackListController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TrackListController.h; path = "../My Code/TrackListController.h"; sourceTree = "<group>"; };
 		D41001EF2E8596A4002942DE /* RootSplitController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RootSplitController.h; sourceTree = "<group>"; };
 		D41001F02E8596A4002942DE /* RootSplitController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RootSplitController.m; sourceTree = "<group>"; };
 		D41001F22E85970F002942DE /* LeftSplitController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LeftSplitController.h; sourceTree = "<group>"; };
-		D41001F32E85970F002942DE /* LeftSplitController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LeftSplitController.m; sourceTree = "<group>"; };
+		D41001F32E85970F002942DE /* LeftSplitController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = LeftSplitController.m; sourceTree = "<group>"; };
 		D41001F72E859731002942DE /* TrackPaneController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TrackPaneController.h; sourceTree = "<group>"; };
-		D41001F82E859731002942DE /* TrackPaneController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TrackPaneController.m; sourceTree = "<group>"; };
+		D41001F82E859731002942DE /* TrackPaneController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = TrackPaneController.m; sourceTree = "<group>"; };
 		D41001FA2E859779002942DE /* TrackCalendarController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TrackCalendarController.h; sourceTree = "<group>"; };
-		D41001FB2E859779002942DE /* TrackCalendarController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TrackCalendarController.m; sourceTree = "<group>"; };
+		D41001FB2E859779002942DE /* TrackCalendarController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = TrackCalendarController.m; sourceTree = "<group>"; };
 		D41001FD2E8597D4002942DE /* AnalysisPaneController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AnalysisPaneController.h; sourceTree = "<group>"; };
 		D41001FE2E8597D4002942DE /* AnalysisPaneController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AnalysisPaneController.m; sourceTree = "<group>"; };
 		D41001FF2E8597D4002942DE /* AnalysisPaneController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AnalysisPaneController.xib; sourceTree = "<group>"; };
@@ -516,6 +515,11 @@
 		D4D51A422E4E35220003E47F /* Ascent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ascent.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D4D51AF82E4E48600003E47F /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		D4D51AFA2E4E490C0003E47F /* libcurl.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcurl.tbd; path = usr/lib/libcurl.tbd; sourceTree = SDKROOT; };
+		D4EB189A2E8992AD00B879FD /* TrackListHandling.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TrackListHandling.h; sourceTree = "<group>"; };
+		D4EB189B2E89944700B879FD /* TrackListController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TrackListController.h; sourceTree = "<group>"; };
+		D4EB189C2E89944700B879FD /* TrackListController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = TrackListController.m; sourceTree = "<group>"; };
+		D4EB189E2E8997F200B879FD /* ProgressBarHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ProgressBarHelper.h; path = "My Code/ProgressBarHelper.h"; sourceTree = "<group>"; };
+		D4EB189F2E89981900B879FD /* ProgressBarHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = ProgressBarHelper.m; path = "My Code/ProgressBarHelper.m"; sourceTree = "<group>"; };
 		D4EFE9D116B5D0BC00A5305B /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		D4EFE9D416B5D0BC00A5305B /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		D4EFE9D516B5D0BC00A5305B /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
@@ -1009,12 +1013,13 @@
 				D43C3EFC2E86CAD200D40D19 /* TrackCalendarController.xib */,
 				D41001E52E849667002942DE /* TrackClipboardSerializer.h */,
 				D41001E62E849689002942DE /* TrackClipboardSerializer.m */,
-				D41001ED2E84AEB7002942DE /* TrackListController.h */,
-				D41001EB2E84AE9C002942DE /* TrackListController.m */,
+				D4EB189B2E89944700B879FD /* TrackListController.h */,
+				D4EB189C2E89944700B879FD /* TrackListController.m */,
 				D420632C2E8619830041603B /* TrackListController.xib */,
 				D41001F72E859731002942DE /* TrackPaneController.h */,
 				D41001F82E859731002942DE /* TrackPaneController.m */,
 				D420632A2E85F5820041603B /* TrackPaneController.xib */,
+				D4EB189A2E8992AD00B879FD /* TrackListHandling.h */,
 			);
 			path = "Main Window";
 			sourceTree = "<group>";
@@ -1405,6 +1410,8 @@
 				D49F29472E6A61CA00C5B87C /* NSDocumentController+AscentForceSubclass.m */,
 				D41001E82E84A5EC002942DE /* AscentPasteboard.h */,
 				D41001E92E84A604002942DE /* AscentPasteboard.m */,
+				D4EB189E2E8997F200B879FD /* ProgressBarHelper.h */,
+				D4EB189F2E89981900B879FD /* ProgressBarHelper.m */,
 			);
 			name = Misc;
 			sourceTree = "<group>";
@@ -2209,7 +2216,6 @@
 				D4F13CD82E4EAE4600462944 /* AscentTextField.mm in Sources */,
 				D4F13CD92E4EAE4600462944 /* ActivityOutlineView.mm in Sources */,
 				D4F13CDA2E4EAE4600462944 /* EquipmentTrackInfo.mm in Sources */,
-				D41001EC2E84AE9C002942DE /* TrackListController.m in Sources */,
 				D4F13CDB2E4EAE4600462944 /* Utils.mm in Sources */,
 				D4F13CDD2E4EAE4600462944 /* MainWindowController.mm in Sources */,
 				D4F13CDE2E4EAE4600462944 /* CompareWindowController.mm in Sources */,
@@ -2229,6 +2235,7 @@
 				D4F13CEC2E4EAE4600462944 /* EditNotesController.mm in Sources */,
 				D41001E72E849689002942DE /* TrackClipboardSerializer.m in Sources */,
 				D4F13CED2E4EAE4600462944 /* BackupDelegate.mm in Sources */,
+				D4EB189D2E89944700B879FD /* TrackListController.m in Sources */,
 				D4F13CEE2E4EAE4600462944 /* MiniProfileView.mm in Sources */,
 				D41001F92E859731002942DE /* TrackPaneController.m in Sources */,
 				D41002182E859904002942DE /* MapController.m in Sources */,
@@ -2311,6 +2318,7 @@
 				D4450B3D2E5BCF1700AB39C3 /* interp.c in Sources */,
 				D4F13D232E4EAE4600462944 /* PrefsBackup.mm in Sources */,
 				D4F13D242E4EAE4600462944 /* EquipmentBoxView.mm in Sources */,
+				D4EB18A02E89981900B879FD /* ProgressBarHelper.m in Sources */,
 				D4F13D252E4EAE4600462944 /* fit_crc.c in Sources */,
 				D4F13D262E4EAE4600462944 /* CompareProfileViewController.mm in Sources */,
 				D4F13D272E4EAE4600462944 /* TransportPanelView.mm in Sources */,

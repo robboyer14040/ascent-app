@@ -186,7 +186,7 @@
                             <menuItem title="Sync Strava Activities" id="465">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="syncStravaActivities:" target="-1" id="d9S-Kt-VjX"/>
+                                    <action selector="syncStravaActivities:" target="-1" id="08A-X6-nOj"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Link Strava Activity Data" id="i8d-N6-NuB">

@@ -18,7 +18,6 @@
 #import "Selection.h"
 #import "AnimTimer.h"
 #import "DatabaseManager.h"
-#import "StravaAPI.h"
 #import "StravaImporter.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import "FullImageBrowserWindowController.h"
@@ -40,6 +39,13 @@ enum
 
 // Where you saved the bookmark the first time
 static NSString * const kStravaRootBookmarkKey = @"StravaRootBookmarkData";
+static NSString * const ASActivityPboardType = @"com.montebello.ascent.activity";
+
+static  BOOL ShiftKeyIsDown(void) {
+    NSEventModifierFlags flags = [NSEvent modifierFlags];
+    return (flags & NSEventModifierFlagShift) != 0;   // (use NSShiftKeyMask on very old SDKs)
+}
+
 
 
 
@@ -110,6 +116,7 @@ int searchTagToMask(int searchTag);
 - (void) updateProgressIndicator:(NSString*)msg;
 - (void) endProgressIndicator;
 - (void)simpleUpdateBrowserTrack:(Track*)track;
+-(void) trackArrayChanged:(NSNotification *)notification;
 @end
 
 
@@ -212,6 +219,10 @@ int searchTagToMask(int searchTag);
     ///[self loadItemsFromDocument];
     [self reloadData];
     [self buildBrowser:YES];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(trackArrayChanged:)
+                                                 name:@"TrackArrayChanged"
+                                               object:nil];
 }
 
 
@@ -736,26 +747,19 @@ int searchTagToMask(int searchTag);
 
 
 
-- (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
+#pragma mark - Drag source (modern)
+
+// Allow copy/move depending on context (optional but useful)
+- (NSDragOperation)outlineView:(NSOutlineView *)ov
+                 draggingSession:(NSDraggingSession *)session
+sourceOperationMaskForDraggingContext:(NSDraggingContext)ctx
 {
-    NSMutableArray* arr = [NSMutableArray arrayWithCapacity:4];
-    NSArray* trackArray = [_document trackArray];
-    for (TrackBrowserItem* bi in items)
-    {
-        if ([bi type] == kTypeActivity)
-        {
-            NSUInteger idx = [trackArray indexOfObjectIdenticalTo:[bi track]];
-            if (idx != NSNotFound)
-            {
-                [arr addObject:[NSNumber numberWithInt:(int)idx]];
-            }
-        }
-    }
-    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:arr];
-    [pboard declareTypes:[NSArray arrayWithObject:ActivityDragType] owner:self];
-    [pboard setData:data forType:ActivityDragType];
-    return YES;
+    return (ctx == NSDraggingContextWithinApplication)
+    ? (NSDragOperationMove | NSDragOperationCopy)
+    : NSDragOperationCopy;
+    
 }
+
 
 
 
@@ -907,19 +911,94 @@ NSString*      gCompareString = nil;         // @@FIXME@@
 
 
 
+//- (BOOL) validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)anItem
+//{
+//    BOOL ret = YES;
+//    SEL action = [anItem action];
+//    if (action == @selector(copy:)) {
+//        return [[self _selectedTracks] count] > 0;
+//    }
+//    if (action == @selector(paste:)) {
+//        NSPasteboard *pb = [NSPasteboard generalPasteboard];
+//        return [pb canReadItemWithDataConformingToTypes:[NSArray arrayWithObject:@"com.montebellosoftware.ascent.tracks"]];
+//    }
+//
+//    NSUInteger numSelectedTracks = [[self prepareArrayOfSelectedTracks] count];
+//    if ((action == @selector(exportGPX:)) ||
+//        (action == @selector(exportTCX:)))
+//    {
+//        return numSelectedTracks > 0;
+//    }
+//    else if ((action == @selector(exportKML:)) ||
+//             (action == @selector(exportCSV:)) ||
+//             (action == @selector(exportTXT:)) ||
+//             (action == @selector(splitActivity:)) ||
+//             (action == @selector(showMapDetail:)) ||
+//             (action == @selector(showDataDetail:)) ||
+//             (action == @selector(showActivityDetail:)) ||
+//             (action == @selector(googleEarthFlyBy:)) ||
+//             (action == @selector(editActivity:)))
+//    {
+//        return numSelectedTracks == 1;
+//    }
+//    else if ((action == @selector(copy:)) ||
+//             (action == @selector(cut:)) ||
+//             (action == @selector(delete:)) ||
+//             (action == @selector(getGMTOffset:)) ||
+//             (action == @selector(getDistanceMethod:)) ||
+//             (action == @selector(mailActivity:)) ||
+//             (action == @selector(saveSelectedTracks:)) ||
+//             (action == @selector(getAltitudeSmoothing:)))
+//    {
+//        if ([self calendarViewActive])
+//        {
+//            ret = [calendarView selectedTrack] != nil;
+//        }
+//        else
+//        {
+//            ret = ([trackTableView numberOfSelectedRows] > 0);
+//        }
+//    }
+//    else if  (action == @selector(paste:))
+//    {
+//        return ([[NSPasteboard generalPasteboard] dataForType:TrackPBoardType] != nil);
+//    }
+//    else if (action == @selector(combineActivities:))
+//    {
+//        if ([self calendarViewActive])
+//        {
+//            ret = NO;
+//        }
+//        else
+//        {
+//            ret = ([trackTableView numberOfSelectedRows] > 1);
+//        }
+//    }
+//    else if ((action == @selector(deleteLap:))  ||
+//             (action == @selector(insertLapMarker:)))
+//    {
+//        if ([self calendarViewActive])
+//        {
+//            ret = NO;
+//        }
+//        else
+//        {
+//            ret = (currentlySelectedLap != nil);
+//        }
+//    }
+//    else if ((action == @selector(zoomIn:)) ||
+//             (action == @selector(zoomOut:)))
+//    {
+//        ret = NO;
+//    }
+//    else if (action == @selector(selectAll:))
+//    {
+//        ret = ![self calendarViewActive];
+//    }
+//    //NSLog(@"validate ui item: %@ : %s", [(NSMenuItem*)anItem title], ret ? "YES" : "NO");
+//    return ret;
+//}
 
-- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
-{
-    SEL a = [item action];
-    if (a == @selector(copy:)) {
-        return [[self _selectedTracks] count] > 0;
-    }
-    if (a == @selector(paste:)) {
-        NSPasteboard *pb = [NSPasteboard generalPasteboard];
-        return [pb canReadItemWithDataConformingToTypes:[NSArray arrayWithObject:@"com.montebellosoftware.ascent.tracks"]];
-    }
-    return YES;
-}
 
 
 - (IBAction)cut:(id)sender
@@ -1223,7 +1302,7 @@ provideDataForType:(NSPasteboardType)type
 }
 
 
-- (IBAction)setSearchCriteria:(id)sender
+- (void)setSearchCriteria:(id)sender
 {
 //    if ([self calendarViewActive])
 //    {
@@ -1260,7 +1339,7 @@ int searchTagToMask(int searchTag)
 }
          
 
-- (IBAction)setSearchOptions:(id)sender
+- (void)setSearchOptions:(id)sender
 {
    NSMenuItem* item = sender;
    [item setState:[item state] == NSControlStateValueOn ? NSControlStateValueOff : NSControlStateValueOn];
@@ -1521,7 +1600,7 @@ int searchTagToMask(int searchTag)
             ///[detailedMapButton setEnabled:YES];
             ///[compareActivitiesButton setEnabled:YES];
             ///[self enableControlsRequiringASelectedTrack:YES];
-            BOOL hasPoints = [[trk goodPoints] count] > 1;
+            ///BOOL hasPoints = [[trk goodPoints] count] > 1;
             ///[transparentMapAnimView setHidden:!hasPoints];
             ///[transparentMiniProfileAnimView setHidden:!hasPoints];
             ///[mapPathView setSelectedLap:currentlySelectedLap];
@@ -1534,6 +1613,12 @@ int searchTagToMask(int searchTag)
             currentTrackPos = 0;
             _selection.selectedTrack.animTimeBegin = 0.0;
             _selection.selectedTrack.animTimeEnd =  _selection.selectedTrack.movingDuration;
+        }
+        NSInteger row = [_outlineView  selectedRow];
+        TrackBrowserItem* bi = [_outlineView  itemAtRow:row];
+        if (bi != nil)
+        {
+            [_document setCurrentlySelectedTrack:[bi track]];
         }
 //        else
 //        {
@@ -1549,7 +1634,10 @@ int searchTagToMask(int searchTag)
 //            [miniProfileView setSelectedLap:nil];
 //            [self clearAttributes];
 //        }
-        //[_document selectionChanged];
+    
+
+    
+    
 //        [[AnimTimer defaultInstance] updateTimerDuration];
 //        [mapPathView setDefaults];
 //        [miniProfileView setNeedsDisplay:YES];
@@ -1561,8 +1649,8 @@ int searchTagToMask(int searchTag)
 //        [mapPathView setSplitArray:splitArray];
         if (_selection.selectedLap)
         {
-            float start = [_selection.selectedTrack lapActiveTimeDelta:_selection.selectedLap];
-            float end = start + [_selection.selectedTrack movingDurationOfLap:_selection.selectedLap] - 1.0;    // end 1 second before next starts
+           ///float start = [_selection.selectedTrack lapActiveTimeDelta:_selection.selectedLap];
+            ///float end = start + [_selection.selectedTrack movingDurationOfLap:_selection.selectedLap] - 1.0;    // end 1 second before next starts
             //printf("SELECT LAP, lap start:%0.1f end:%01.f\n", start, end);
 //            [splitsGraphView setSelectedLapTimes:start
 //                                             end:end];
@@ -2060,7 +2148,7 @@ static NSArray<NSArray<NSString *> *> *ASCParseCSV(NSString *text)
 
 - (NSURL*) getRootMediaURL
 {
-    NSArray<NSString *> *filenames = _selection.selectedTrack.localMediaItems ?: @[];
+    ///NSArray<NSString *> *filenames = _selection.selectedTrack.localMediaItems ?: @[];
     NSError *error = nil;
     
     NSData *bm = [[NSUserDefaults standardUserDefaults] objectForKey:kStravaRootBookmarkKey];
@@ -2232,6 +2320,171 @@ static NSArray<NSArray<NSString *> *> *ASCParseCSV(NSString *text)
             }
         }
     }
+}
+
+
+
+// outputs the current state of the browser to a csv or tab-seperated file
+-(NSString*) buildSummaryTextOutput:(char)sep
+{
+    NSMutableString* lineString = [NSMutableString stringWithCapacity:4000];
+    NSArray* colArray = [_outlineView tableColumns];
+    NSUInteger numColumns = [colArray count];
+    for (int col=0; col<numColumns; col++)
+    {
+        NSTableColumn* column = [colArray objectAtIndex:col];
+        NSTableHeaderCell* cell = [column headerCell];
+        NSString* s = [cell stringValue];
+        if (col == (numColumns-1))
+            [lineString appendString:[NSString stringWithFormat:@"%@", s]];
+        else
+            [lineString appendString:[NSString stringWithFormat:@"%@%c", s, sep]];
+    }
+    [lineString appendString:@"\n"];
+    
+    int numRows = (int)[_outlineView numberOfRows];
+    for (int r=0; r<numRows; r++)
+    {
+        TrackBrowserItem* bi = [_outlineView itemAtRow:r];
+        if (bi)
+        {
+            for (int col=0; col<numColumns; col++)
+            {
+                NSTableColumn* column = [colArray objectAtIndex:col];
+                id val = [self outlineView:_outlineView
+                 objectValueForTableColumn:[colArray objectAtIndex:col]
+                                    byItem:bi];
+                NSCell* cell = [column dataCell];    // pick up the formatting from the cell, etc
+                [cell setObjectValue:val];
+                NSMutableString* s = [NSMutableString stringWithString:[cell stringValue]];
+                // get rid of characters that will screw up import into Excel or Numbers...
+                [s replaceOccurrencesOfString:@","
+                                   withString:@" "
+                                      options:0
+                                        range:NSMakeRange(0, [s length])];
+                [s replaceOccurrencesOfString:@"\n"
+                                   withString:@" "
+                                      options:0
+                                        range:NSMakeRange(0, [s length])];
+                [s replaceOccurrencesOfString:@"\t"
+                                   withString:@" "
+                                      options:0
+                                        range:NSMakeRange(0, [s length])];
+                if (col == (numColumns-1))
+                    [lineString appendString:[NSString stringWithFormat:@"%@", s]];
+                else
+                    [lineString appendString:[NSString stringWithFormat:@"%@%c", s, sep]];
+            }
+            [lineString appendString:@"\n"];
+        }
+    }
+    return lineString;
+}
+
+
+
+// TrackListHandling methods
+
+- (void) updateAfterImport
+{
+    [self buildBrowser:YES];
+}
+
+
+- (void)processCut:(id)sender
+{
+    [self copy:sender];
+    [self storeExpandedState];
+    [self delete:sender];
+    [self restoreExpandedState];
+    [_outlineView deselectAll:sender];
+}
+
+- (IBAction)processCopy:(id)sender
+{
+    NSMutableArray *arr = [self prepareArrayOfSelectedTracks];
+    if (arr.count == 0) return;
+
+    // Archive securely
+    NSError *archErr = nil;
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:arr
+                                       requiringSecureCoding:NO
+                                                       error:&archErr];
+    if (!data) {
+        NSLog(@"Copy: archive failed: %@", archErr.localizedDescription);
+        return;
+    }
+
+    NSString *txt = [self buildSummaryTextOutput:'\t'];
+
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    [pb clearContents];
+
+    // Our custom type payload
+    [pb setData:data forType:TrackPBoardType];
+
+    // Human-readable text
+    [pb setString:txt forType:NSPasteboardTypeString];
+
+    // Optional: add a tab-separated UTI flavor for apps that recognize it
+    if (@available(macOS 11.0, *)) {
+        UTType *tsv = [UTType typeWithIdentifier:@"public.utf8-tab-separated-values"] ?:
+                      [UTType typeWithIdentifier:@"public.tab-separated-values-text"] ?:
+                      nil;
+        if (tsv) {
+            [pb setString:txt forType:tsv.identifier];
+        }
+    }
+}
+
+- (IBAction)processPaste:(id)sender
+{
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    NSData *data = [pb dataForType:TrackPBoardType];
+    if (!data)
+        return;
+
+    NSError *unarchErr = nil;
+    NSKeyedUnarchiver *ua = [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:&unarchErr];
+    if (!ua) {
+        NSLog(@"Paste: %@", unarchErr);
+        return;
+    }
+    ua.requiresSecureCoding = NO; // <-- matches your copy path
+
+    id root = [ua decodeObjectForKey:NSKeyedArchiveRootObjectKey];
+    [ua finishDecoding];
+
+    NSArray<Track *> *arr = ([root isKindOfClass:NSArray.class] ? root : nil);
+    if (!arr) {
+        NSLog(@"Paste: root is not NSArray");
+        return;
+    }
+
+    [self storeExpandedState];
+    [_document addTracks:arr];
+    [self.view.window setDocumentEdited:YES];
+    [_document updateChangeCount:NSChangeDone];
+    [self restoreExpandedState];
+    [_outlineView deselectAll:sender];
+}
+
+
+- (void)processDelete:(id)sender
+{
+}
+
+
+-(void) trackArrayChanged:(NSNotification *)notification
+{
+    [self rebuildBrowserAndRestoreState:_selection.selectedTrack
+                              selectLap:_selection.selectedLap];
+}
+
+
+- (void) selectLastImportedTrack:(Track *)lastImportedTrack
+{
+    /// FIX???
 }
 
 

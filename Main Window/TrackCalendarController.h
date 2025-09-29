@@ -10,10 +10,16 @@
 #import "TrackListHandling.h"
 
 @class TrackBrowserDocument, Selection;
+@class CalenderView;
 
 @interface TrackCalendarController : NSViewController<TrackListHandling>
-@property(nonatomic, assign) TrackBrowserDocument *document; // assign on purpose (document owns controller)
-@property(nonatomic, retain) Selection *selection;
+
+@property(nonatomic, assign) TrackBrowserDocument   *document; // assign on purpose (document owns controller)
+@property(nonatomic, retain) Selection              *selection;
+
+@property(nonatomic, assign) IBOutlet CalenderView  *calendarView;
+
+
 - (void)injectDependencies; // optional hook
 - (NSMutableArray*) prepareArrayOfSelectedTracks;
 - (void) selectLastImportedTrack:(Track *)lastImportedTrack;

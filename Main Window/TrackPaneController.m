@@ -19,6 +19,40 @@
 #import "ProgressBarHelper.h"
 #import "StravaAPI.h"
 #import "StravaImporter.h"
+#import "DMWindowController.h"
+
+
+enum
+{
+    kCMEmailSelected,
+    kCMSaveSelected,
+    kCMGoogleFlyBy,
+    kCMExportTCX,
+    kCMExportGPX,
+    kCMExportKML,
+    kCMExportCSV,
+    kCMExportTXT,
+    kCMOpenActivityDetail,
+    kCMOpenMapDetail,
+    kCMOpenSummary,
+    kCMOpenDataDetail,
+    kCMCut,
+    kCMCopy,
+    kCMPaste,
+    kCMAdjustGMTOffset,
+    kCMAddActivity,
+    kCMEditActivity,
+    kCMExportSummaryCSV,
+    kCMExportSummaryTXT,
+    kCMAltitudeSmoothing,
+    kCMPublish,
+    kCMSplitActivity,
+    kCMCombineActivities,
+    kCMCompareActivities,
+    kCMRefreshMap,
+    kCMUploadToMobile,
+    kCMEnrichTracks,
+};
 
 
 @interface TrackPaneController ()
@@ -33,6 +67,7 @@
 - (void) _doFITImportWithProgress:(NSArray *)files;
 - (void) _doGPXImportWithProgress:(NSArray*)files;
 - (NSArray<NSString*>*) _postImportPanel:(NSArray<NSString*>*) extensions;
+-(void) _buildContextualMenu;
 @end
 
 @implementation TrackPaneController
@@ -40,9 +75,9 @@
 @synthesize document = _document;
 @synthesize selection = _selection;
 @synthesize controlsBar = _controlsBar;
+@synthesize outlineOptionsMenu = _outlineOptionsMenu;
 @synthesize viewModeControl = _viewModeControl;
 @synthesize searchField = _searchField;
-@synthesize outlineOptionsMenu = _outlineOptionsMenu;
 @synthesize contentContainer = _contentContainer;
 @synthesize calendarMode = _calendarMode;
 
@@ -81,7 +116,24 @@
     }
     
     _pbHelper = [ProgressBarHelper ProgressHelper]; // singleton
+    
+    int vt = [Utils intFromDefaults:RCBDefaultBrowserViewType];
+    [_outlineVC setViewType:vt];
+    [_outlineOptionsMenu selectItemWithTag:vt];
+    
+    [self _buildContextualMenu];
 }
+
+
+- (void) viewDidLoad {
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(selectionDoubleClicked:)
+                                                 name:TrackSelectionDoubleClicked
+                                               object:nil];
+    
+    [super viewDidLoad];
+}
+
 
 - (IBAction)toggleViewMode:(id)sender
 {
@@ -92,10 +144,21 @@
     [self setCalendarMode:wantCalendar];
 }
 
+
+
+- (IBAction)setBrowserViewMode:(id)sender
+{
+    NSInteger viewType = [sender tag];
+    [Utils setIntDefault:(int)viewType
+                  forKey:RCBDefaultBrowserViewType];
+    [_outlineVC setViewType:viewType];
+}
+
+
 - (void)setCalendarMode:(BOOL)calendarMode
 {
-    NSResponder *r = self.view.window.firstResponder;
-    while (r) { NSLog(@"-> %@", r); r = r.nextResponder; }
+//    NSResponder *r = self.view.window.firstResponder;
+//    while (r) { NSLog(@"-> %@", r); r = r.nextResponder; }
     
     _calendarMode = calendarMode;
 
@@ -130,7 +193,8 @@
     NSView *v = _current.view;
     v.translatesAutoresizingMaskIntoConstraints = NO;
     [_contentContainer addSubview:v];
-
+    [v setNeedsDisplay:YES];
+    
     [NSLayoutConstraint activateConstraints:@[
         [v.leadingAnchor constraintEqualToAnchor:_contentContainer.leadingAnchor],
         [v.trailingAnchor constraintEqualToAnchor:_contentContainer.trailingAnchor],
@@ -211,7 +275,7 @@
     
     BOOL ret = YES;
     SEL action = [anItem action];
-    NSLog(@"TPC validating %@ ...", anItem);
+///    NSLog(@"TPC validating %@ ...", anItem);
     NSUInteger numMultiplySelected = _selection.selectedTracks.count;
     if (action == @selector(copy:)) {
         return numMultiplySelected > 0 || _selection.selectedTrack != nil;
@@ -851,7 +915,7 @@
         [_current updateAfterImport];
         [_document updateChangeCount:NSChangeDone];
         [self.view.window setDocumentEdited:YES];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:_document];
+        [[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:_document];
         [[NSNotificationCenter defaultCenter] postNotificationName:@"InvalidateBrowserCache" object:nil];
         [_current  selectLastImportedTrack:lastTrack];
     }
@@ -887,7 +951,7 @@
         [_current updateAfterImport];
         [_document updateChangeCount:NSChangeDone];
         [self.view.window setDocumentEdited:YES];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:_document];
+        [[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:_document];
         [[NSNotificationCenter defaultCenter] postNotificationName:@"InvalidateBrowserCache" object:nil];
         [_current  selectLastImportedTrack:lastTrack];
     }
@@ -911,7 +975,7 @@
         [_current updateAfterImport];
         [_document updateChangeCount:NSChangeDone];
         [self.view.window setDocumentEdited:YES];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:_document];
+        [[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:_document];
         [[NSNotificationCenter defaultCenter] postNotificationName:@"InvalidateBrowserCache" object:nil];
         [_current selectLastImportedTrack:lastTrack];
     }
@@ -964,7 +1028,7 @@
                 [_current updateAfterImport];
                 [_document updateChangeCount:NSChangeDone];
                 [self.view.window setDocumentEdited:YES];
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:_document];
+                [[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:_document];
                 [[NSNotificationCenter defaultCenter] postNotificationName:@"InvalidateBrowserCache" object:nil];
                 [_current selectLastImportedTrack:lastTrack];
             }
@@ -1157,6 +1221,211 @@
             startImportWithToken(bearer);
         });
     }];
+}
+
+
+#if 0
+-(IBAction)showSummaryGraph:(id)sender
+{
+    TrackBrowserDocument* tbd = (TrackBrowserDocument*)
+    [[NSDocumentController sharedDocumentController] currentDocument];
+    MainWindowController* sc = [tbd windowController];
+    [sc showSummaryGraph:sender];
+}
+
+- (IBAction) showActivityDetail:(id) sender
+{
+    TrackBrowserDocument* tbd = (TrackBrowserDocument*)
+    [[NSDocumentController sharedDocumentController] currentDocument];
+    MainWindowController* sc = [tbd windowController];
+    [sc stopAnimations];
+    Track* track = [tbd currentlySelectedTrack];
+    if (track) {
+        Lap* lap = [tbd selectedLap];
+        ADWindowController* ad = [[ADWindowController alloc] initWithDocument:tbd];
+        [tbd addWindowController:ad];
+        [ad autorelease];
+        [ad showWindow:self];
+        [ad setTrack:track];
+        [ad setLap:lap];
+    }
+}
+
+- (IBAction) showActivityDataList:(id) sender
+{
+    TrackBrowserDocument* tbd = (TrackBrowserDocument*)
+    [[NSDocumentController sharedDocumentController] currentDocument];
+    MainWindowController* sc = [tbd windowController];
+    [sc stopAnimations];
+    Track* track = [tbd currentlySelectedTrack];
+    if (track) {
+        ALWindowController* al = [[ALWindowController alloc] initWithDocument:tbd];
+        [tbd addWindowController:al];
+        [al autorelease];
+        NSWindow* wind = [al window]; (void)wind;
+        
+        [al setTrack:track];
+        
+        NSDate* ct = [track creationTime];
+        NSString* name = [track attribute:kName] ?: @"";
+        NSString* title = @"Activity Data - ";
+        title = [title stringByAppendingString:name];
+        
+        NSString* format = @"%A, %B %d  %I:%M%p";
+        if (name.length != 0) format = @"  (%A, %B %d  %I:%M%p)";
+        
+        NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        title = [title stringByAppendingString:
+                 [ct descriptionWithCalendarFormat:format
+                                          timeZone:tz
+                                            locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]]];
+#pragma clang diagnostic pop
+        [[al window] setTitle:title];
+        [al showWindow:self];
+    }
+}
+#endif
+
+
+
+-(void) _buildContextualMenu
+{
+    NSMenu* cm = [[[NSMenu alloc] init] autorelease];
+    
+    //[cm setShowsStateColumn:YES];
+    
+    [[cm addItemWithTitle:@"Email..."
+                   action:@selector(mailActivity:)
+            keyEquivalent:@""] setTag:kCMEmailSelected];
+    
+    [[cm addItemWithTitle:@"Save..."
+                   action:@selector(saveSelectedTracks:)
+            keyEquivalent:@""] setTag:kCMSaveSelected];
+    
+    [[cm addItemWithTitle:@"Google Earth Fly-By..."
+                   action:@selector(googleEarthFlyBy:)
+            keyEquivalent:@""] setTag:kCMGoogleFlyBy];
+    
+    [cm addItem:[NSMenuItem separatorItem]];
+    
+    [[cm addItemWithTitle:@"Export as gpx..."
+                   action:@selector(exportGPX:)
+            keyEquivalent:@""] setTag:kCMExportGPX];
+    
+    [[cm addItemWithTitle:@"Export as kml..."
+                   action:@selector(exportKML:)
+            keyEquivalent:@""] setTag:kCMExportKML];
+    
+    [[cm addItemWithTitle:@"Export as tcx..."
+                   action:@selector(exportTCX:)
+            keyEquivalent:@""] setTag:kCMExportTCX];
+    
+    [[cm addItemWithTitle:@"Export activity as tab-separated values (tsv)..."
+                   action:@selector(exportTXT:)
+            keyEquivalent:@""] setTag:kCMExportTXT];
+    
+    [[cm addItemWithTitle:@"Export activity as comma-separated values (csv)..."
+                   action:@selector(exportCSV:)
+            keyEquivalent:@""] setTag:kCMExportCSV];
+    
+    [[cm addItemWithTitle:@"Export summary data as tab-separated values (tsv)..."
+                   action:@selector(exportSummaryTXT:)
+            keyEquivalent:@""] setTag:kCMExportSummaryTXT];
+    
+    [[cm addItemWithTitle:@"Export summary data as comma-separated values (csv)..."
+                   action:@selector(exportSummaryCSV:)
+            keyEquivalent:@""] setTag:kCMExportSummaryCSV];
+    
+    [cm addItem:[NSMenuItem separatorItem]];
+  
+    [[cm addItemWithTitle:@"Update Detailed Track Info"
+                   action:@selector(enrichSelectedTracks:)
+            keyEquivalent:@""] setTag:kCMEnrichTracks];
+
+    [cm addItem:[NSMenuItem separatorItem]];
+    
+    NSMenuItem* mi;
+    mi = [cm addItemWithTitle:@"Add Activity..."
+                       action:@selector(addActivity:)
+                keyEquivalent:@"A"];
+    [mi setTag:kCMAddActivity];
+    [mi setKeyEquivalentModifierMask:NSEventModifierFlagControl];
+    
+//    mi = [cm addItemWithTitle:@"Edit Activity..."
+//                       action:@selector(editActivity:)
+//                keyEquivalent:@"E"];
+//    [mi setTag:kCMEditActivity];
+    [mi setKeyEquivalentModifierMask:NSEventModifierFlagControl];
+    
+    [[cm addItemWithTitle:@"Split Activity..."
+                   action:@selector(splitActivity:)
+            keyEquivalent:@""] setTag:kCMSplitActivity];
+    
+    [[cm addItemWithTitle:@"Compare Activities"
+                   action:@selector(compareActivities:)
+            keyEquivalent:@"y"] setTag:kCMCompareActivities];
+    
+    [[cm addItemWithTitle:@"Combine Activities"
+                   action:@selector(combineActivities:)
+            keyEquivalent:@""] setTag:kCMCombineActivities];
+    
+//    [[cm addItemWithTitle:@"Adjust GMT Offset..."
+//                   action:@selector(getGMTOffset:)
+//            keyEquivalent:@""] setTag:kCMAdjustGMTOffset];
+//    
+//    [[cm addItemWithTitle:@"Altitude Smoothing..."
+//                   action:@selector(getAltitudeSmoothing:)
+//            keyEquivalent:@""] setTag:kCMAltitudeSmoothing];
+    
+    
+    [cm addItem:[NSMenuItem separatorItem]];
+    
+    mi = [cm addItemWithTitle:@"Open Activity Detail View"
+                       action:@selector(showActivityDetail:)
+                keyEquivalent:@"g"];
+    [mi setTag:kCMOpenActivityDetail];
+    
+    mi = [cm addItemWithTitle:@"Open Map Detail View"
+                       action:@selector(showMapDetail:)
+                keyEquivalent:@"m"];
+    [mi setTag:kCMOpenMapDetail];
+    
+    mi = [cm addItemWithTitle:@"Open Data Detail View"
+                       action:@selector(showDataDetail:)
+                keyEquivalent:@"D"];
+    [mi setTag:kCMOpenDataDetail];
+    
+    [cm addItem:[NSMenuItem separatorItem]];
+    
+    [[cm addItemWithTitle:@"Refresh Map"
+                   action:@selector(refreshMap:)
+            keyEquivalent:@""] setTag:kCMRefreshMap];
+    
+    [_outlineVC setContextualMenu:cm];
+    [_calendarVC setContextualMenu:cm];
+}
+
+
+- (void)selectionDoubleClicked:(NSNotification *)notification
+{
+    int defaultAction = [Utils intFromDefaults:RCBDefaultDoubleClickAction];
+    switch (defaultAction)
+    {
+        default:
+        case 0:
+            [[NSNotificationCenter defaultCenter] postNotificationName:OpenActivityDetailNotification
+                                                                object:_document];
+            break;
+        case 1:
+            [[NSNotificationCenter defaultCenter] postNotificationName:OpenMapDetailNotification
+                                                                object:_document];
+            break;
+        case 2:
+            ///[self showActivityDataList:self];
+            break;
+    }
 }
 
 @end

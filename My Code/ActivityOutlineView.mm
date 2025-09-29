@@ -167,11 +167,11 @@ NSString* ActivityDragType = @"ActivityDragType";
 #if 1
 	else if ((kc == 0)  && optionKeyDown )          // opt-A
     {
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"ToggleBrowserView" object:[NSNumber numberWithInt:kViewTypeActvities]];
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"ToggleBrowserView" object:[NSNumber numberWithInt:kViewTypeFlat]];
     }
 	else if ((kc == 45) &&optionKeyDown )           // opt-N
     {
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"ToggleBrowserView" object:[NSNumber numberWithInt:kViewTypeCurrent]];
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"ToggleBrowserView" object:[NSNumber numberWithInt:kViewTypeNormal]];
     }
 	else if ((kc == 13) &&optionKeyDown )           // opt-W
     {
@@ -278,7 +278,15 @@ NSString* ActivityDragType = @"ActivityDragType";
 	return anImage;
 }
 
-
+- (void)rightMouseDown:(NSEvent *)event {
+    NSPoint p = [self convertPoint:event.locationInWindow fromView:nil];
+    NSInteger row = [self rowAtPoint:p];
+    if (row >= 0 && ![self isRowSelected:row]) {
+        [self selectRowIndexes:[NSIndexSet indexSetWithIndex:row]
+          byExtendingSelection:NO];
+    }
+    [super rightMouseDown:event]; // IMPORTANT: this shows the menu
+}
 @end
 
 

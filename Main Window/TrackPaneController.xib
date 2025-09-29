@@ -9,7 +9,7 @@
             <connections>
                 <outlet property="contentContainer" destination="mr7-Ax-sbt" id="2JY-5G-8RW"/>
                 <outlet property="controlsBar" destination="lFF-BD-QU6" id="2x5-tk-GHH"/>
-                <outlet property="outlineOptionsMenu" destination="Ocs-zh-Jcj" id="Bqb-JE-X91"/>
+                <outlet property="outlineOptionsMenu" destination="Ocs-zh-Jcj" id="4Ys-ef-S3S"/>
                 <outlet property="searchField" destination="vXB-jx-KOT" id="IVs-47-DS9"/>
                 <outlet property="view" destination="5iD-PW-0U4" id="V13-sh-HlR"/>
                 <outlet property="viewModeControl" destination="1Sv-lI-wjo" id="xQr-M4-zDc"/>
@@ -103,9 +103,31 @@
                                 <font key="font" metaFont="message"/>
                                 <menu key="menu" id="c0u-iA-70L">
                                     <items>
-                                        <menuItem title="Normal" state="on" id="wjy-9j-itP"/>
-                                        <menuItem title="Flat" id="Pym-ZG-uvF"/>
-                                        <menuItem title="Item 3" id="8Dv-ow-3sB"/>
+                                        <menuItem title="Normal" state="on" identifier="normal" id="wjy-9j-itP">
+                                            <connections>
+                                                <action selector="setBrowserViewMode:" target="-2" id="sj9-I9-YDG"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Flat" tag="1" identifier="flat" id="Pym-ZG-uvF">
+                                            <connections>
+                                                <action selector="setBrowserViewMode:" target="-2" id="PWI-EQ-EPg"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Weeks" tag="2" identifier="weeks" id="8Dv-ow-3sB" userLabel="Weeks">
+                                            <connections>
+                                                <action selector="setBrowserViewMode:" target="-2" id="V4F-gH-ue6"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Months" tag="3" identifier="months" id="J8L-b2-YHE" userLabel="Months">
+                                            <connections>
+                                                <action selector="setBrowserViewMode:" target="-2" id="JbB-kS-1gg"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Years" tag="4" identifier="years" id="9cf-78-X4j" userLabel="Years">
+                                            <connections>
+                                                <action selector="setBrowserViewMode:" target="-2" id="XiC-S4-qc8"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                 </menu>
                             </popUpButtonCell>

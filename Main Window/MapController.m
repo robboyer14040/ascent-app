@@ -18,23 +18,24 @@ static void *kSelectionCtx = &kSelectionCtx;
 
 @interface MapController ()
 {
-    TransparentMapView*         transparentMapAnimView;
-    TransparentMapWindow*       transparentMapWindow;
-    DMWindowController*         dmWC;
+    TransparentMapView*         _transparentMapAnimView;
+    TransparentMapWindow*       _transparentMapWindow;
+    DMWindowController*         _detailedMapWC;
 }
 - (void)_didDoubleClick:(NSClickGestureRecognizer *)g;
-- (void)showMapDetail;
+- (void)_showMapDetail;
 @end
 
 @implementation MapController
 @synthesize document=_document, selection=_selection;
 
 - (void)dealloc {
+    [_detailedMapWC release];
     [_selection release];
     [_mapPathView prepareToDie];
     [_mapPathView killAnimThread];
-    // [transparentMapWindow release]; don't need because setReleasedWhenClosed is set to "YES"
-    [transparentMapAnimView release];
+    // [_transparentMapWindow release]; don't need because setReleasedWhenClosed is set to "YES"
+    [_transparentMapAnimView release];
     [super dealloc];
 }
 
@@ -73,7 +74,16 @@ static void *kSelectionCtx = &kSelectionCtx;
     // Make single wait on double to avoid firing both
     ///[single requireGestureRecognizerToFail:doubleClick];
     [self.mapPathView addGestureRecognizer:doubleClick];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(showMapDetail)
+                                                 name:OpenMapDetailNotification
+                                               object:nil];
+}
 
+- (void)viewDidLayout {
+    [super viewDidLayout];
+    [self.mapPathView setCurrentTrack:_selection.selectedTrack];
+    [self.mapPathView setNeedsDisplay:YES];
 }
 
 
@@ -90,26 +100,24 @@ static void *kSelectionCtx = &kSelectionCtx;
 
 - (void)showMapDetail
 {
-    if ((dmWC  == nil) && _document)
+    Track* track = _selection.selectedTrack;
+    if (!_document || !track)
+        return;
+    
+    if (!_detailedMapWC)
     {
-        Track* track = _selection.selectedTrack;
-        if (nil != track)
-        {
-            int curDataType = [[self mapPathView] dataType];
-            dmWC   = [[[DMWindowController alloc] initWithDocument:_document
-                                                   initialDataType:curDataType
-                                                            mainWC:self.view.window.windowController] retain];
-            [_document addWindowController:dmWC];
-            [dmWC showWindow:self];
-            [dmWC setTrack:track];
-            if (_selection.selectedLap)
-                [dmWC setSelectedLap:_selection.selectedLap];
-            
-        }
-    }
-    else
-    {
-        [[dmWC window] makeKeyAndOrderFront:self];
+        int curDataType = [[self mapPathView] dataType];
+        _detailedMapWC   = [[[DMWindowController alloc] initWithDocument:_document
+                                                         initialDataType:curDataType
+                                                                  mainWC:self.view.window.windowController] retain];
+        [_document addWindowController:_detailedMapWC];
+      }
+    
+    if (_detailedMapWC) {
+        [_detailedMapWC setTrack:track];
+        [_detailedMapWC setSelectedLap:_selection.selectedLap];
+        [_detailedMapWC showWindow:self];
+        [[_detailedMapWC window] makeKeyAndOrderFront:self];
     }
 }
 
@@ -191,7 +199,9 @@ static void *kSelectionCtx = &kSelectionCtx;
     // Called when Selection object swapped, or if you want a full refresh.
     // Pull whatever you need off _selection and redraw.
     Track *t = nil;
-    @try { t = [_selection valueForKey:@"selectedTrack"]; } @catch(...) {}
+    @try {
+        t = [_selection valueForKey:@"selectedTrack"];
+    } @catch(...) {}
     [self _displayTrackOnMap:t];
 }
 

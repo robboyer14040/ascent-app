@@ -292,7 +292,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 {
 }
 
-- (id)initWithFrame:(NSRect)frameRect;
+- (void)commonInit
 {
 	useTime24 = [Utils intFromDefaults:RCBDefaultTimeFormat];
 	useStatuteUnits = [Utils boolFromDefaults:RCBDefaultUnitsAreEnglishKey];    
@@ -317,8 +317,6 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     
     
 	self.selectedTrackInfoArray = [NSMutableArray arrayWithCapacity:4];
-    if ([super initWithFrame:frameRect] == nil)
-        return nil;
     
     selectedDays = [[NSMutableArray alloc] init];
     activityDict = [[NSMutableDictionary alloc] init];
@@ -361,7 +359,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 	
     buttons = [[NSMutableArray alloc] initWithCapacity:2];
 	
-    monthAndYearView = [[[NSView alloc] initWithFrame:NSMakeRect(0.0, 0.0, frameRect.size.width, OACalendarViewButtonHeight)] autorelease];
+    monthAndYearView = [[[NSView alloc] initWithFrame:NSMakeRect(0.0, 0.0, self.frame.size.width, OACalendarViewButtonHeight)] autorelease];
     [monthAndYearView setAutoresizingMask:NSViewWidthSizable];
 	
     // Add left/right buttons
@@ -376,7 +374,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     [button setAutoresizingMask:NSViewMaxXMargin];
     [monthAndYearView addSubview:button];
 	
-    buttonFrame = NSMakeRect(frameRect.size.width - OACalendarViewButtonWidth, 0.0, OACalendarViewButtonWidth, OACalendarViewButtonHeight);
+    buttonFrame = NSMakeRect(self.frame.size.width - OACalendarViewButtonWidth, 0.0, OACalendarViewButtonWidth, OACalendarViewButtonHeight);
     button = [self _createButtonWithFrame:buttonFrame];
     [button setImage:[NSImage imageNamed:@"RightArrow" inBundle:thisBundle]];
     [button setAlternateImage:[NSImage imageNamed:@"RightArrowPressed" inBundle:thisBundle]];
@@ -413,12 +411,20 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 	NSString* path = [[NSBundle mainBundle] pathForResource:@"TrackDragImage" ofType:@"png"];
 	self.trackDragImage = [[[NSImage alloc] initWithContentsOfFile:path] autorelease];
 	[self registerForDraggedTypes:[NSArray arrayWithObjects: NSFilenamesPboardType, ActivityDragType, nil]];
-	
-	
-	
-	return self;
 }
 
+
+- (instancetype)initWithFrame:(NSRect)r {
+    if ((self = [super initWithFrame:r]))
+        [self commonInit];
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)c {
+    if ((self = [super initWithCoder:c]))
+        [self commonInit];
+    return self;
+}
 
 
 - (void)dealloc;
@@ -497,7 +503,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 
 - (void)setEnabled:(BOOL)flag;
 {
-    unsigned int buttonIndex;
+    NSUInteger buttonIndex;
 	
     [super setEnabled:flag];
     
@@ -635,7 +641,7 @@ static BOOL sDragging = NO;
 			NSUInteger idx = [tracks indexOfObjectIdenticalTo:sti.track];
 			if (idx != NSNotFound)
 			{
-				[arr addObject:[NSNumber numberWithInt:idx]];
+				[arr addObject:[NSNumber numberWithInt:(int)idx]];
 				[self.trackDragImage drawAtPoint:p
 										fromRect:NSZeroRect
 									   operation:NSCompositingOperationSourceOver
@@ -662,12 +668,12 @@ static BOOL sDragging = NO;
 {
 	if (!sDragging)
 	{
-		unsigned int modflags = [mouseEvent modifierFlags];
+        NSUInteger modflags = [mouseEvent modifierFlags];
 		BOOL shiftMask = (0 != (modflags & NSEventModifierFlagShift));
 		if (!shiftMask) 
 		{
 			Track* lastSelected = selectedTrack;
-			int count = selectedTrackInfoArray.count;
+            NSUInteger count = selectedTrackInfoArray.count;
 			if (selectedTrack && count > 0)
 			{
 				SelectedTrackInfo* searchSTI = [[[SelectedTrackInfo alloc] initWithTrack:selectedTrack
@@ -721,11 +727,14 @@ static BOOL sDragging = NO;
 
 - (void)mouseDown:(NSEvent *)mouseEvent;
 {
-    if ([self isEnabled]) 
+    ///if ([self isEnabled])
 	{
+        NSLog(@"me clicks: %d", (int)[mouseEvent clickCount]);
+        
 		if ([mouseEvent clickCount] >= 2)
 		{
-			[[NSNotificationCenter defaultCenter] postNotificationName:@"TBSelectionDoubleClicked" object:self];
+			[[NSNotificationCenter defaultCenter] postNotificationName:TrackSelectionDoubleClicked
+                                                                object:self];
 		}
 		else
 		{

@@ -7,6 +7,21 @@
 #import "RootSplitController.h"
 #import "LeftSplitController.h"
 #import "Selection.h"
+#import "TrackBrowserDocument.h"
+#import "DMWindowController.h"
+#import "Utils.h"
+
+
+NSString* OpenMapDetailNotification         = @"OpenMapDetail";
+NSString* OpenActivityDetailNotification    = @"OpenActivityDetail";
+NSString* TrackArrayChangedNotification     = @"TrackArrayChanged";
+NSString* TrackSelectionDoubleClicked       = @"SelectionDoubleClicked";
+
+@interface MainWindowController ()
+{
+}
+@property(nonatomic, retain) DMWindowController* detailedMapWC;
+@end
 
 
 @implementation MainWindowController
@@ -30,7 +45,6 @@
 
 
 - (void)windowDidLoad {
-    NSLog(@"MainWindowController windowDidLoad %@", self);
     [super windowDidLoad];
 
     NSView *contentView = self.window.contentView;
@@ -103,8 +117,7 @@
     retarget(fileMenu, belongsToTPC);
     ///retarget(viewMenu, belongsToTPC);
     
-
-    
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
 }
 
 
@@ -157,13 +170,25 @@ static BOOL ActionIsTrackPaneAction(SEL a) {
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
-    NSLog(@"MWC - validating %@", item);
+    ///NSLog(@"MWC - validating %@", item);
     
     id tgt = [self targetForAction:item.action to:nil from:self];
     if ([tgt respondsToSelector:_cmd]) {
         return [tgt validateUserInterfaceItem:item];
     }
     return YES;
+}
+
+
+-(IBAction)showMapDetail:(id)sender
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:OpenMapDetailNotification object:self];
+}
+
+- (IBAction) showActivityDetail:(id) sender
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:OpenActivityDetailNotification object:self];
+
 }
 
 @end

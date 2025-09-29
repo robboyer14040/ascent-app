@@ -1289,7 +1289,7 @@ getOut:
 	}
 	if (numLoaded > 0) 
 	{
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
+		[[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:self];
 		[self updateChangeCount:NSChangeDone];
 		if (lastLoadedTrack) 
 		{
@@ -1429,7 +1429,7 @@ deviceIsPluggedIn:YES];
 	//NSLog(@"loaded gps data...\n");
 	if (numLoaded > 0) 
 	{
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
+		[[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:self];
 		[tbWindowController buildBrowser:YES];
 		[self updateChangeCount:NSChangeDone];
 		if (lastLoadedTrack) 
@@ -2542,7 +2542,6 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 	alsoAddToTrackArray:YES];
 	
 	[self trackArrayChanged:YES];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
 }
 
 
@@ -2872,7 +2871,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
             [alert runModal];
           }
       }
-	  [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
+	  [[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:self];
       [trackArray sortUsingSelector:@selector(compareByDate:)];
       if ([undo isUndoing] || [undo isRedoing])
       {
@@ -2937,7 +2936,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
                 NSLog(@"skipping Strava imported track %s, already there", [[t name] UTF8String]);
             }
         }
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
+        [[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:self];
         [trackArray sortUsingSelector:@selector(compareByDate:)];
         if ([undo isUndoing] || [undo isRedoing])
         {
@@ -3005,7 +3004,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 		[self trackArrayChanged:NO];
         
 #if 0
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
+		[[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:self];
 		[tbWindowController storeExpandedState];
 		[tbWindowController buildBrowser:NO];
 		[tbWindowController restoreExpandedState];
@@ -3025,7 +3024,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 //	[tbWindowController storeExpandedState];
 //	[tbWindowController buildBrowser:expandLastItem];
 //	[tbWindowController restoreExpandedState];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
+	[[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:self];
 	NSUndoManager* undo = [self undoManager];
 	if ([undo isUndoing] || [undo isRedoing])
 	{
@@ -3047,7 +3046,6 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
     [self addTracksToDB:[NSArray arrayWithObject:newTrack]
     alsoAddToTrackArray:YES];
     [self trackArrayChanged:NO];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
 }
 
 
@@ -3065,7 +3063,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"UndoRedoCompleted" object:self];
 	}
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackEdited" object:track];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:self];
 	return YES;
 }
 
@@ -3083,7 +3081,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"UndoRedoCompleted" object:self];
 	}
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackEdited" object:track];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:self];
 }
 
 
@@ -3104,7 +3102,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 		{
 			[[NSNotificationCenter defaultCenter] postNotificationName:@"UndoRedoCompleted" object:self];
 		}
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
+        [[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:self];
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackEdited" object:track];
 		ret = YES;
 	}
@@ -3129,7 +3127,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 		{
 			[[NSNotificationCenter defaultCenter] postNotificationName:@"UndoRedoCompleted" object:self];
 		}
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
+        [[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:self];
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackEdited" object:track];
 		ret = YES;
 	}
@@ -3206,7 +3204,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 		//[[tbWindowController window] setDocumentEdited:YES];   
 		//[self updateChangeCount:NSChangeDone];
 	}
-	//[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
+	//[[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:self];
 	return lastTrack;
 }
 
@@ -3242,7 +3240,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 		//[[tbWindowController window] setDocumentEdited:YES];   
 		//[self updateChangeCount:NSChangeDone];
 	}
-	//[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
+	//[[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:self];
 	return lastTrack;
 }
 
@@ -3290,7 +3288,7 @@ originalContentsURL:(NSURL *)absoluteOriginalContentsURL
 		//[[tbWindowController window] setDocumentEdited:YES];   
 		//[self updateChangeCount:NSChangeDone];
 	}
-	//[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackArrayChanged" object:self];
+	//[[NSNotificationCenter defaultCenter] postNotificationName:TrackArrayChangedNotification object:self];
 	return lastTrack;
 }
 

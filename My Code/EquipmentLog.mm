@@ -984,7 +984,7 @@ struct EqTypeInfo
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(trackArrayChanged:)
-												 name:@"TrackArrayChanged"
+												 name:TrackArrayChangedNotification
 											   object:nil];
 	
 }

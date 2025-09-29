@@ -2003,13 +2003,6 @@ struct tStringInfo
 	///printf("[%x] *** dr ***\n", self);
 	NSRect dbounds = [self drawBounds];
 	NSRect rbounds = [self bounds];
-#if 0
-	//[[NSColor clearColor] set];
-	//NSRectFill([self bounds]);
-	[[NSColor redColor] set];
-	[NSBezierPath setDefaultLineWidth:1.0];
-	[NSBezierPath strokeRect:[self bounds]];
-#endif
 	if (currentTrack  && [currentTrack hasLocationData] &&  ([[currentTrack goodPoints] count] > 0))
 	{
 		if ((NSEqualRects(rbounds, rect) == YES))
@@ -2022,10 +2015,8 @@ struct tStringInfo
 		}
 		prevPathPoint = nil;
 		lastBounds = rbounds;
-		BOOL newTrack = NO;
 		if (lastTrack != currentTrack)
 		{
-			newTrack = YES;
 			lastTrack = currentTrack;
 		}
 
@@ -2107,6 +2098,10 @@ struct tStringInfo
    {
       dataType = dt;
    }
+    int idx = [Utils dataTypeToIndex:dt];
+    NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+    [defaults setInteger:idx forKey:RCBDefaultMapType];
+
    [self setNeedsDisplay:YES];
 }
 
@@ -2400,7 +2395,8 @@ static NSPoint dragPoint;
     NSInteger i = [ev clickCount];
 	if((!isDetailedMap) &&(2==i))
 	{
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"OpenMapDetail" object:self];
+		[[NSNotificationCenter defaultCenter] postNotificationName:OpenMapDetailNotification
+                                                            object:self];
 	}
 	else
 	{

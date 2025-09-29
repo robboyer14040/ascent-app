@@ -605,7 +605,8 @@ static float calcY(float ymin, float ymax, float h, float v)
     NSInteger i = [event clickCount];
 	if(2==i)
 	{
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"OpenActivityDetail" object:self];
+		[[NSNotificationCenter defaultCenter] postNotificationName:OpenActivityDetailNotification
+                                                            object:self];
 	}
 }
 

@@ -18,6 +18,7 @@
 - (void) processCopy:(id)sender;
 - (void) processPaste:(id)sender;
 - (void) processDelete:(id)sender;
+- (void) setContextualMenu:(NSMenu*)menu;
 
 @optional
 @end

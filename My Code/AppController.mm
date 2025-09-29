@@ -398,9 +398,7 @@ static void setColorDefault(NSMutableDictionary* dict,
     // Notifications you need during/after launch
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
     [nc addObserver:self selector:@selector(afterSplashPanelDone:) name:@"AfterSplashPanelDone" object:nil];
-    [nc addObserver:self selector:@selector(showActivityDetail:) name:@"OpenActivityDetail" object:nil];
-    [nc addObserver:self selector:@selector(showDetailedMap:) name:@"OpenMapDetail" object:nil];
-    [nc addObserver:self selector:@selector(showActivityDataList:) name:@"OpenDataDetail" object:nil];
+     [nc addObserver:self selector:@selector(showActivityDataList:) name:@"OpenDataDetail" object:nil];
     [nc addObserver:self selector:@selector(showSummaryGraph:) name:@"OpenSummaryGraph" object:nil];
     ///[nc addObserver:self selector:@selector(transportPanelClosed:) name:@"TransportPanelClosed" object:nil];
     
@@ -449,12 +447,7 @@ static void setColorDefault(NSMutableDictionary* dict,
         }
     }
     
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(selectionDoubleClickedInOutlineView:)
-                                                 name:@"TBSelectionDoubleClicked"
-                                               object:nil];
-    
-    // Birthday / age update (legacy AddressBook)
+     // Birthday / age update (legacy AddressBook)
     NSDate* birthDate = [Utils objectFromDefaults:RCBDefaultBirthday];
     if (!birthDate) {
         ABPerson* curPerson = [[ABAddressBook sharedAddressBook] me];
@@ -475,13 +468,12 @@ static void setColorDefault(NSMutableDictionary* dict,
 
 // MARK: Misc UI commands
 
--(IBAction)showDetailedMap:(id)sender
-{
-    TrackBrowserDocument* tbd = (TrackBrowserDocument*)
-    [[NSDocumentController sharedDocumentController] currentDocument];
-    MainWindowController* sc = [tbd windowController];
-    [sc showMapDetail:sender];
-}
+//-(IBAction)showDetailedMap:(id)sender
+//{
+//    [[NSDocumentController sharedDocumentController] currentDocument];
+//    MainWindowController* sc = [tbd windowController];
+//    [sc showMapDetail:sender];
+//}
 
 -(IBAction)showSummaryGraph:(id)sender
 {
@@ -491,23 +483,23 @@ static void setColorDefault(NSMutableDictionary* dict,
     [sc showSummaryGraph:sender];
 }
 
-- (IBAction) showActivityDetail:(id) sender
-{
-    TrackBrowserDocument* tbd = (TrackBrowserDocument*)
-    [[NSDocumentController sharedDocumentController] currentDocument];
-    MainWindowController* sc = [tbd windowController];
-    [sc stopAnimations];
-    Track* track = [tbd currentlySelectedTrack];
-    if (track) {
-        Lap* lap = [tbd selectedLap];
-        ADWindowController* ad = [[ADWindowController alloc] initWithDocument:tbd];
-        [tbd addWindowController:ad];
-        [ad autorelease];
-        [ad showWindow:self];
-        [ad setTrack:track];
-        [ad setLap:lap];
-    }
-}
+//- (IBAction) showActivityDetail:(id) sender
+//{
+//    TrackBrowserDocument* tbd = (TrackBrowserDocument*)
+//    [[NSDocumentController sharedDocumentController] currentDocument];
+//    MainWindowController* sc = [tbd windowController];
+//    [sc stopAnimations];
+//    Track* track = [tbd currentlySelectedTrack];
+//    if (track) {
+//        Lap* lap = [tbd selectedLap];
+//        ADWindowController* ad = [[ADWindowController alloc] initWithDocument:tbd];
+//        [tbd addWindowController:ad];
+//        [ad autorelease];
+//        [ad showWindow:self];
+//        [ad setTrack:track];
+//        [ad setLap:lap];
+//    }
+//}
 
 - (IBAction) showActivityDataList:(id) sender
 {
@@ -545,21 +537,6 @@ static void setColorDefault(NSMutableDictionary* dict,
     }
 }
 
-- (void)selectionDoubleClickedInOutlineView:(NSNotification *)notification
-{
-    int defaultAction = [Utils intFromDefaults:RCBDefaultDoubleClickAction];
-    switch (defaultAction)
-    {
-        default:
-        case 0: [self showActivityDetail:self]; break;
-        case 1: {
-            TrackBrowserDocument* tbd = (TrackBrowserDocument*)[[NSDocumentController sharedDocumentController] currentDocument];
-            MainWindowController* wc = [tbd windowController];
-            [wc showMapDetail:self];
-        } break;
-        case 2: [self showActivityDataList:self]; break;
-    }
-}
 
 - (TrackBrowserDocument*) currentTrackBrowserDocument
 {

@@ -1372,7 +1372,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 											   object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(trackArrayChanged:)
-												 name:@"TrackArrayChanged"
+												 name:TrackArrayChangedNotification
 											   object:nil];
 	[[AnimTimer defaultInstance] registerForTimerUpdates:self];
 

@@ -27,6 +27,10 @@
 
 @property(nonatomic, retain) Selection *selection;
 
+-(IBAction)showMapDetail:(id)sender;
+-(IBAction)showActivityDetail:(id)sender;
+
+
 // IB outlets
 @property(nonatomic, assign) IBOutlet NSVisualEffectView *reservedTopArea;
 @property(nonatomic, assign) IBOutlet NSView *contentContainer;

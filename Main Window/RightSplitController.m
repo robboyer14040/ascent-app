@@ -48,8 +48,8 @@
     InfoPaneController *info  = [[[InfoPaneController alloc] initWithNibName:@"InfoPaneController" bundle:nil] autorelease];
     // TEMP: if you still want color proof, uncomment:
    /// map.view.wantsLayer = YES; map.view.layer.backgroundColor = [NSColor systemRedColor].CGColor;
-    prof.view.wantsLayer  = YES; prof.view.layer.backgroundColor  = [NSColor systemBrownColor].CGColor;
-    info.view.wantsLayer  = YES; info.view.layer.backgroundColor  = [NSColor systemPinkColor].CGColor;
+//    prof.view.wantsLayer  = YES; prof.view.layer.backgroundColor  = [NSColor systemBrownColor].CGColor;
+//    info.view.wantsLayer  = YES; info.view.layer.backgroundColor  = [NSColor systemPinkColor].CGColor;
 
     self.mapController      = map;
     self.profileController  = prof;

@@ -283,8 +283,8 @@ typedef enum
 enum 
 {
     kViewTypeBad = -1,
-    kViewTypeCurrent = 0,
-    kViewTypeActvities,
+    kViewTypeNormal = 0,
+    kViewTypeFlat,
     kViewTypeWeeks,
     kViewTypeMonths,
     kViewTypeYears,
@@ -577,7 +577,11 @@ extern NSString* RCBDefaultCompareWindowXAxisType;
 extern NSString* RCBDefaultCompareWindowPlotType;
 extern NSString* RCBDefaultCompareWindowDontShowHelp;
 
-
+// Notifications
+extern NSString* OpenMapDetailNotification;
+extern NSString* OpenActivityDetailNotification;
+extern NSString* TrackArrayChangedNotification;
+extern NSString* TrackSelectionDoubleClicked;
 
 
 // other global strings

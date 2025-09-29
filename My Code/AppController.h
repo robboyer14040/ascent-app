@@ -23,7 +23,7 @@
 @property(nonatomic, assign) BOOL deferringOpens;
 @property(nonatomic, retain) NSMutableArray<NSURL *> *pendingOpenURLs;
 
-- (IBAction)showActivityDetail:(id)sender;
+//- (IBAction)showActivityDetail:(id)sender;
 - (IBAction)showActivityDataList:(id) sender;
 - (IBAction)showTransportPanel:(id)sender;
 - (IBAction)print:(id)sender;

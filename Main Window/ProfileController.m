@@ -52,8 +52,14 @@ static void *kSelectionCtx = &kSelectionCtx;
     // Make single wait on double to avoid firing both
     ///[single requireGestureRecognizerToFail:doubleClick];
     [self.profileView addGestureRecognizer:doubleClick];    // fixme - transparent view
+    [[NSNotificationCenter defaultCenter]  addObserver:self
+                                              selector:@selector(showActivityDetail)
+                                                  name:OpenActivityDetailNotification
+                                                object:nil];
 
 }
+
+
 
 
 - (void)_didSingleClick:(NSClickGestureRecognizer *)g
@@ -69,20 +75,16 @@ static void *kSelectionCtx = &kSelectionCtx;
 - (void)_didDoubleClick:(NSClickGestureRecognizer *)g
 {
     if (g.state == NSGestureRecognizerStateEnded) {
-//        NSPoint p = [g locationInView:self.mapPathView];
-//        [self _handleDoubleClickAt:p];
         [self showActivityDetail];
-        
     }
 }
+
 
 - (void) showActivityDetail
 {
     if (!_document)
         return;
     
-//     MainWindowController* sc = [tbd windowController];
-//    [sc stopAnimations];
     Track* track = _selection.selectedTrack;
     if (track) {
         Lap* lap = _selection.selectedLap;

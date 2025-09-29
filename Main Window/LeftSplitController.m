@@ -37,8 +37,8 @@
         _analysisPaneController  = [[AnalysisPaneController  alloc] initWithNibName:@"AnalysisPaneController"  bundle:nil];
 
     // TEMP: if you still want color proof, uncomment:
-    _trackPaneController.view.wantsLayer = YES; _trackPaneController.view.layer.backgroundColor = [NSColor systemGreenColor].CGColor;
-    _analysisPaneController.view.wantsLayer  = YES; _analysisPaneController.view.layer.backgroundColor  = [NSColor systemBlueColor].CGColor;
+    ///_trackPaneController.view.wantsLayer = YES; _trackPaneController.view.layer.backgroundColor = [NSColor systemGreenColor].CGColor;
+    ///_analysisPaneController.view.wantsLayer  = YES; _analysisPaneController.view.layer.backgroundColor  = [NSColor systemBlueColor].CGColor;
 
     NSSplitViewItem *top = [NSSplitViewItem splitViewItemWithViewController:_trackPaneController];
     top.minimumThickness = 220.0; top.holdingPriority = 260;

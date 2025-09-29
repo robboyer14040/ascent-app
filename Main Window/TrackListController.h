@@ -39,6 +39,7 @@
 @property(nonatomic, retain) Selection              *selection;
 @property(nonatomic, retain) NSArray                *tracks;
 @property(nonatomic, retain) NSArray                *topSortedKeys;
+@property(nonatomic) NSInteger                      viewType;
 
 - (void)injectDependencies;
 - (void)expandFirstItem;

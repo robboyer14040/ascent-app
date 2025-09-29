@@ -104,7 +104,7 @@ enum
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(trackArrayChanged:)
-                                                 name:@"TrackArrayChanged"
+                                                 name:TrackArrayChangedNotification
                                                object:nil];
     NSRect dummy;   
     dummy.size.width = 10;

@@ -44,6 +44,8 @@
 		D457D2B52E61FE4300D1DF73 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = D457D2B42E61FE4300D1DF73 /* Fonts */; };
 		D457D2ED2E6488B400D1DF73 /* StravaAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = D457D2EB2E6488B400D1DF73 /* StravaAPI.m */; };
 		D457D2EF2E64894F00D1DF73 /* StravaImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = D457D2EE2E64894F00D1DF73 /* StravaImporter.m */; };
+		D45F6B612E8C2336001531C3 /* InfoController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D45F6B602E8C2336001531C3 /* InfoController.xib */; };
+		D45F6B622E8C2336001531C3 /* InfoController.m in Sources */ = {isa = PBXBuildFile; fileRef = D45F6B5F2E8C2336001531C3 /* InfoController.m */; };
 		D473BB172E692FB200B504DC /* FullImageBrowserWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = D473BB162E692FB200B504DC /* FullImageBrowserWindowController.m */; };
 		D489E0E62E6B32BF0076E5DC /* SplashPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = D489E0E42E6B32BF0076E5DC /* SplashPanel.xib */; };
 		D489E0E72E6B32BF0076E5DC /* SplashPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = D489E0E42E6B32BF0076E5DC /* SplashPanel.xib */; };
@@ -396,7 +398,7 @@
 		D41001FE2E8597D4002942DE /* AnalysisPaneController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AnalysisPaneController.m; sourceTree = "<group>"; };
 		D41001FF2E8597D4002942DE /* AnalysisPaneController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AnalysisPaneController.xib; sourceTree = "<group>"; };
 		D41002022E859817002942DE /* InfoPaneController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoPaneController.h; sourceTree = "<group>"; };
-		D41002032E859817002942DE /* InfoPaneController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InfoPaneController.m; sourceTree = "<group>"; };
+		D41002032E859817002942DE /* InfoPaneController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = InfoPaneController.m; sourceTree = "<group>"; };
 		D41002042E859817002942DE /* InfoPaneController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = InfoPaneController.xib; sourceTree = "<group>"; };
 		D41002072E85987C002942DE /* IntervalsPaneController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IntervalsPaneController.h; sourceTree = "<group>"; };
 		D41002082E85987C002942DE /* IntervalsPaneController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IntervalsPaneController.m; sourceTree = "<group>"; };
@@ -413,7 +415,7 @@
 		D410021A2E859916002942DE /* ProfileController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProfileController.m; sourceTree = "<group>"; };
 		D410021B2E859916002942DE /* ProfileController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ProfileController.xib; sourceTree = "<group>"; };
 		D410021E2E859941002942DE /* MetricsController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MetricsController.h; sourceTree = "<group>"; };
-		D410021F2E859941002942DE /* MetricsController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MetricsController.m; sourceTree = "<group>"; };
+		D410021F2E859941002942DE /* MetricsController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = MetricsController.m; sourceTree = "<group>"; };
 		D41002202E859941002942DE /* MetricsController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MetricsController.xib; sourceTree = "<group>"; };
 		D41002232E85997F002942DE /* GeneralInfoController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneralInfoController.h; sourceTree = "<group>"; };
 		D41002242E85997F002942DE /* GeneralInfoController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GeneralInfoController.m; sourceTree = "<group>"; };
@@ -454,6 +456,9 @@
 		D457D2EB2E6488B400D1DF73 /* StravaAPI.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = StravaAPI.m; sourceTree = "<group>"; };
 		D457D2EE2E64894F00D1DF73 /* StravaImporter.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = StravaImporter.m; sourceTree = "<group>"; };
 		D457D2F02E64896B00D1DF73 /* StravaImporter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StravaImporter.h; sourceTree = "<group>"; };
+		D45F6B5E2E8C2336001531C3 /* InfoController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InfoController.h; sourceTree = "<group>"; };
+		D45F6B5F2E8C2336001531C3 /* InfoController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = InfoController.m; sourceTree = "<group>"; };
+		D45F6B602E8C2336001531C3 /* InfoController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = InfoController.xib; sourceTree = "<group>"; };
 		D473BB162E692FB200B504DC /* FullImageBrowserWindowController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = FullImageBrowserWindowController.m; path = "My Code/FullImageBrowserWindowController.m"; sourceTree = "<group>"; };
 		D473BB182E69300200B504DC /* FullImageBrowserWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FullImageBrowserWindowController.h; path = "My Code/FullImageBrowserWindowController.h"; sourceTree = "<group>"; };
 		D489E0E52E6B32BF0076E5DC /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/SplashPanel.xib; sourceTree = "<group>"; };
@@ -979,6 +984,9 @@
 				D41002232E85997F002942DE /* GeneralInfoController.h */,
 				D41002242E85997F002942DE /* GeneralInfoController.m */,
 				D41002252E85997F002942DE /* GeneralInfoController.xib */,
+				D45F6B5E2E8C2336001531C3 /* InfoController.h */,
+				D45F6B5F2E8C2336001531C3 /* InfoController.m */,
+				D45F6B602E8C2336001531C3 /* InfoController.xib */,
 				D41002022E859817002942DE /* InfoPaneController.h */,
 				D41002032E859817002942DE /* InfoPaneController.m */,
 				D41002042E859817002942DE /* InfoPaneController.xib */,
@@ -1016,10 +1024,10 @@
 				D4EB189B2E89944700B879FD /* TrackListController.h */,
 				D4EB189C2E89944700B879FD /* TrackListController.m */,
 				D420632C2E8619830041603B /* TrackListController.xib */,
+				D4EB189A2E8992AD00B879FD /* TrackListHandling.h */,
 				D41001F72E859731002942DE /* TrackPaneController.h */,
 				D41001F82E859731002942DE /* TrackPaneController.m */,
 				D420632A2E85F5820041603B /* TrackPaneController.xib */,
-				D4EB189A2E8992AD00B879FD /* TrackListHandling.h */,
 			);
 			path = "Main Window";
 			sourceTree = "<group>";
@@ -2096,6 +2104,7 @@
 				D4F13C782E4EAE4600462944 /* reverse_on.png in Resources */,
 				D4F13C792E4EAE4600462944 /* ZoomInButton.png in Resources */,
 				D4F13C7A2E4EAE4600462944 /* Calendar_Trans.png in Resources */,
+				D45F6B612E8C2336001531C3 /* InfoController.xib in Resources */,
 				D4F13C7C2E4EAE4600462944 /* Reg.nib in Resources */,
 				D4F13C7E2E4EAE4600462944 /* stop_off.png in Resources */,
 				D4F13C7F2E4EAE4600462944 /* InfoPlist.strings in Resources */,
@@ -2304,6 +2313,7 @@
 				D4F13D1A2E4EAE4600462944 /* MapPoint.m in Sources */,
 				D4F13D1B2E4EAE4600462944 /* AscentServer.mm in Sources */,
 				D41001F52E85970F002942DE /* LeftSplitController.m in Sources */,
+				D45F6B622E8C2336001531C3 /* InfoController.m in Sources */,
 				D4F13D1C2E4EAE4600462944 /* SplitTableItem.mm in Sources */,
 				D4F13D1D2E4EAE4600462944 /* SGView.mm in Sources */,
 				D457D2ED2E6488B400D1DF73 /* StravaAPI.m in Sources */,

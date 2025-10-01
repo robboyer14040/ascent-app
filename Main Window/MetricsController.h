@@ -16,6 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface MetricsController : NSViewController
 @property(nonatomic, assign) TrackBrowserDocument *document;
 @property(nonatomic, retain) Selection *selection;
+
+@property(nonatomic, assign) IBOutlet NSTableView   *metricsTable;
 @end
 
 

@@ -71,53 +71,6 @@ NSString * const LocationAPIErrorDomain = @"LocationAPI";
 
 #pragma mark - Helpers (coordinate extraction)
 
-+ (BOOL)_extractFirstValidLatLonFromTrack:(Track *)track
-                                      lat:(double *)outLat
-                                      lon:(double *)outLon
-{
-    double lat = (double)[track firstValidLatitude];
-    double lon = (double)[track firstValidLongitude];
-    BOOL ok = isfinite(lat) && isfinite(lon) &&
-              fabs(lat) <= 90.0 && fabs(lon) <= 180.0 &&
-              !(lat == 0.0 && lon == 0.0);
-
-    if (!ok) {
-        NSArray *pts = [track points];
-        for (NSUInteger i = 0, n = [pts count]; i < n; i++) {
-            TrackPoint *p = [pts objectAtIndex:i];
-            if (![p isKindOfClass:[TrackPoint class]]) continue;
-            float plat = [p latitude], plon = [p longitude];
-            if ([p validLatLon] && isfinite(plat) && isfinite(plon) &&
-                fabs(plat) <= 90.0f && fabs(plon) <= 180.0f &&
-                !(plat == 0.0f && plon == 0.0f)) {
-                lat = plat; lon = plon; ok = YES; break;
-            }
-        }
-    }
-    if (ok) { if (outLat) *outLat = lat; if (outLon) *outLon = lon; }
-    return ok;
-}
-
-+ (BOOL)_extractLastValidLatLonFromTrack:(Track *)track
-                                     lat:(double *)outLat
-                                     lon:(double *)outLon
-{
-    NSArray *pts = [track points];
-    for (NSInteger i = (NSInteger)[pts count] - 1; i >= 0; i--) {
-        TrackPoint *p = [pts objectAtIndex:(NSUInteger)i];
-        if (![p isKindOfClass:[TrackPoint class]]) continue;
-        float lat = [p latitude], lon = [p longitude];
-        if ([p validLatLon] && isfinite(lat) && isfinite(lon) &&
-            fabs(lat) <= 90.0f && fabs(lon) <= 180.0f &&
-            !(lat == 0.0f && lon == 0.0f)) {
-            if (outLat) *outLat = lat;
-            if (outLon) *outLon = lon;
-            return YES;
-        }
-    }
-    return NO;
-}
-
 #pragma mark - Reverse geocoding
 
 + (NSDictionary *)_reverseGeocodeLatitude:(double)lat
@@ -177,41 +130,8 @@ NSString * const LocationAPIErrorDomain = @"LocationAPI";
 
 #pragma mark - Core work (shared by sync & async)
 
-+ (NSDictionary *)_startEndWork_forTrack:(Track *)track
-                                   error:(NSError * _Nullable * _Nullable)outError
-{
-    double sLat=0, sLon=0, eLat=0, eLon=0;
-
-    if (![self _extractFirstValidLatLonFromTrack:track lat:&sLat lon:&sLon]) {
-        if (outError) *outError = [NSError errorWithDomain:LocationAPIErrorDomain
-                                                      code:4202
-                                                  userInfo:@{NSLocalizedDescriptionKey:@"No valid start coordinate"}];
-        return nil;
-    }
-    if (![self _extractLastValidLatLonFromTrack:track lat:&eLat lon:&eLon]) {
-        // If no separate end found, reuse start as end
-        eLat = sLat; eLon = sLon;
-    }
-
-    // Reverse-geocode sequentially (Apple's CLGeocoder is rate-limited).
-    NSError *sErr = nil, *eErr = nil;
-    NSDictionary *startDict = [self _reverseGeocodeLatitude:sLat longitude:sLon error:&sErr];
-    NSDictionary *endDict   = [self _reverseGeocodeLatitude:eLat longitude:eLon error:&eErr];
-
-    if (!startDict && !endDict) {
-        if (outError) *outError = (sErr ?: eErr ?: [NSError errorWithDomain:LocationAPIErrorDomain
-                                                                       code:4203
-                                                                   userInfo:@{NSLocalizedDescriptionKey:@"Reverse geocoding failed"}]);
-        return nil;
-    }
-
-    NSMutableDictionary *result = [[NSMutableDictionary alloc] initWithCapacity:2];
-    if (startDict) [result setObject:startDict forKey:kGeoStart];
-    if (endDict)   [result setObject:endDict   forKey:kGeoEnd];
-    return [result autorelease];
-}
-
-+ (NSDictionary *)startEndCityCountryForTrack:(Track *)track
++ (NSArray *)startEndCityCountryForTrack:(Track *)track
+                                 numLocations:(NSUInteger)num
                                         error:(NSError * _Nullable * _Nullable)outError
 {
     if (!track) {
@@ -221,19 +141,25 @@ NSString * const LocationAPIErrorDomain = @"LocationAPI";
         return nil;
     }
 
-    __block NSDictionary *resultDict = nil;
+    __block NSArray *resultArr = nil;
     __block NSError *blockErr = nil;
 
     if ([self _onGeoQueue]) {
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-        resultDict = [[self _startEndWork_forTrack:track error:&blockErr] retain];
-        if (blockErr) [blockErr retain];   // <-- keep error alive past pool
+        resultArr = [[self _startEndWork_forTrack:track
+                                     numLocations:num
+                                            error:&blockErr] retain];
+        if (blockErr)
+            [blockErr retain];   // <-- keep error alive past pool
         [pool drain];
     } else {
         dispatch_sync([self _geoWorkQueue], ^{
             NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-            resultDict = [[self _startEndWork_forTrack:track error:&blockErr] retain];
-            if (blockErr) [blockErr retain]; // <-- keep error alive past pool
+            resultArr = [[self _startEndWork_forTrack:track
+                                         numLocations:num
+                                                error:&blockErr] retain];
+            if (blockErr)
+                [blockErr retain]; // <-- keep error alive past pool
             [pool drain];
         });
     }
@@ -242,11 +168,13 @@ NSString * const LocationAPIErrorDomain = @"LocationAPI";
         // balance the retain above; return autoreleased error to caller’s pool
         *outError = [blockErr autorelease];
     }
-    return [resultDict autorelease];
+    return [resultArr autorelease];
 }
 
+
 + (void)startEndCityCountryForTrack:(Track *)track
-                         completion:(void(^)(NSDictionary * _Nullable result,
+                       numLocations:(NSUInteger)num
+                         completion:(void(^)(NSArray * _Nullable result,
                                              NSError * _Nullable error))completion
 {
     if (!track) {
@@ -261,19 +189,195 @@ NSString * const LocationAPIErrorDomain = @"LocationAPI";
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
         NSError *err = nil;
-        NSDictionary *dict = [self _startEndWork_forTrack:track error:&err];
+        NSArray *arr = [self _startEndWork_forTrack:track
+                                       numLocations:num
+                                              error:&err];
 
         // Retain both before draining the pool they were created in
-        [dict retain];
+        [arr retain];
         [err retain];
 
         [pool drain];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             // Hand back autoreleased objects to the caller on main
-            completion([dict autorelease], [err autorelease]);
+            completion([arr autorelease], [err autorelease]);
         });
     });
+}
+
+
+// Helpers (same as before)
++ (BOOL)_validLatLonFromPoint:(TrackPoint *)p lat:(double *)outLat lon:(double *)outLon {
+    if (![p isKindOfClass:[TrackPoint class]]) return NO;
+    float plat = [p latitude], plon = [p longitude];
+    BOOL ok = [p validLatLon] && isfinite(plat) && isfinite(plon) &&
+              fabsf(plat) <= 90.0f && fabsf(plon) <= 180.0f &&
+              !(plat == 0.0f && plon == 0.0f);
+    if (ok) { if (outLat) *outLat = plat; if (outLon) *outLon = plon; }
+    return ok;
+}
+
++ (BOOL)_extractFirstValidLatLonIndexFromTrack:(Track *)track
+                                        index:(NSUInteger *)outIdx
+                                          lat:(double *)outLat
+                                          lon:(double *)outLon
+{
+    NSArray *pts = [track points];
+    for (NSUInteger i = 0, n = [pts count]; i < n; i++) {
+        TrackPoint *p = [pts objectAtIndex:i];
+        double lat=0, lon=0;
+        if ([self _validLatLonFromPoint:p lat:&lat lon:&lon]) {
+            if (outIdx) *outIdx = i;
+            if (outLat) *outLat = lat;
+            if (outLon) *outLon = lon;
+            return YES;
+        }
+    }
+    return NO;
+}
+
++ (BOOL)_extractLastValidLatLonIndexFromTrack:(Track *)track
+                                       index:(NSUInteger *)outIdx
+                                         lat:(double *)outLat
+                                         lon:(double *)outLon
+{
+    NSArray *pts = [track points];
+    for (NSInteger i = (NSInteger)[pts count] - 1; i >= 0; i--) {
+        TrackPoint *p = [pts objectAtIndex:(NSUInteger)i];
+        double lat=0, lon=0;
+        if ([self _validLatLonFromPoint:p lat:&lat lon:&lon]) {
+            if (outIdx) *outIdx = (NSUInteger)i;
+            if (outLat) *outLat = lat;
+            if (outLon) *outLon = lon;
+            return YES;
+        }
+    }
+    return NO;
+}
+
+// Find the nearest valid point to a target index by scanning outward.
++ (BOOL)_nearestValidLatLonInTrack:(Track *)track
+                           nearIdx:(NSUInteger)idx
+                               lat:(double *)outLat
+                               lon:(double *)outLon
+{
+    NSArray *pts = [track points];
+    NSUInteger n = [pts count];
+    if (n == 0) return NO;
+    if (idx >= n) idx = n - 1;
+
+    TrackPoint *p = [pts objectAtIndex:idx];
+    if ([self _validLatLonFromPoint:p lat:outLat lon:outLon]) return YES;
+
+    for (NSUInteger step = 1; step < n; step++) {
+        if (idx >= step) {
+            p = [pts objectAtIndex:(idx - step)];
+            if ([self _validLatLonFromPoint:p lat:outLat lon:outLon]) return YES;
+        }
+        if (idx + step < n) {
+            p = [pts objectAtIndex:(idx + step)];
+            if ([self _validLatLonFromPoint:p lat:outLat lon:outLon]) return YES;
+        }
+    }
+    return NO;
+}
+
+// NEW: NSArray-returning API (ordered locations after de-dup).
++ (NSArray<NSDictionary *> *)_startEndWork_forTrack:(Track *)track
+                                       numLocations:(NSUInteger)numLocations
+                                              error:(NSError * _Nullable * _Nullable)outError
+{
+    if (numLocations == 0) numLocations = 1;
+
+    // Start / End indices & coords
+    NSUInteger iStart = 0, iEnd = 0;
+    double sLat=0, sLon=0, eLat=0, eLon=0;
+
+    if (![self _extractFirstValidLatLonIndexFromTrack:track index:&iStart lat:&sLat lon:&sLon]) {
+        if (outError) *outError = [NSError errorWithDomain:LocationAPIErrorDomain
+                                                      code:4202
+                                                  userInfo:@{NSLocalizedDescriptionKey:@"No valid start coordinate"}];
+        return nil;
+    }
+    if (![self _extractLastValidLatLonIndexFromTrack:track index:&iEnd lat:&eLat lon:&eLon]) {
+        iEnd = iStart; eLat = sLat; eLon = sLon; // reuse start if no separate end
+    }
+
+    // Build target indices: start, evenly spaced interior, end (inclusive)
+    NSMutableArray *indices = [NSMutableArray arrayWithCapacity:numLocations];
+    if (numLocations == 1) {
+        [indices addObject:[NSNumber numberWithUnsignedInteger:iStart]];
+    } else {
+        double span = (iEnd >= iStart) ? (double)(iEnd - iStart) : 0.0;
+        double step = (numLocations > 1) ? (span / (double)(numLocations - 1)) : 0.0;
+
+        NSInteger lastAdded = -1;
+        for (NSUInteger k = 0; k < numLocations; k++) {
+            double dIdx = (double)iStart + step * (double)k;
+            NSInteger idx = (NSInteger)llround(dIdx);
+            if (idx < (NSInteger)iStart) idx = (NSInteger)iStart;
+            if (idx > (NSInteger)iEnd)   idx = (NSInteger)iEnd;
+            if (idx != lastAdded) {
+                [indices addObject:[NSNumber numberWithInteger:idx]];
+                lastAdded = idx;
+            }
+        }
+        if ([indices count] == 0) {
+            [indices addObject:[NSNumber numberWithUnsignedInteger:iStart]];
+        }
+    }
+
+    // Reverse geocode each index (sequentially to respect CLGeocoder limits)
+    NSMutableArray *geoSeq = [NSMutableArray arrayWithCapacity:[indices count]];
+    for (NSNumber *nIdx in indices) {
+        NSUInteger idx = (NSUInteger)[nIdx unsignedIntegerValue];
+
+        double lat=0, lon=0;
+        if (![self _nearestValidLatLonInTrack:track nearIdx:idx lat:&lat lon:&lon]) {
+            continue; // no valid coordinate found near this index
+        }
+
+        NSError *gErr = nil;
+        NSDictionary *loc = [self _reverseGeocodeLatitude:lat longitude:lon error:&gErr];
+        if (!loc) {
+            // Keep lat/lon so spacing is preserved even if geocode fails
+            NSMutableDictionary *fallback = [[NSMutableDictionary alloc] initWithCapacity:2];
+            [fallback setObject:[NSNumber numberWithDouble:lat] forKey:kGeoLatitude];
+            [fallback setObject:[NSNumber numberWithDouble:lon] forKey:kGeoLongitude];
+            loc = [fallback autorelease];
+        }
+        [geoSeq addObject:loc];
+    }
+
+    if ([geoSeq count] == 0) {
+        if (outError) *outError = [NSError errorWithDomain:LocationAPIErrorDomain
+                                                      code:4203
+                                                  userInfo:@{NSLocalizedDescriptionKey:@"No locations could be geocoded"}];
+        return nil;
+    }
+
+    // Collapse adjacent duplicates where (city, country) match
+    NSMutableArray *uniqueSeq = [NSMutableArray arrayWithCapacity:[geoSeq count]];
+    NSString *prevCity = nil, *prevCountry = nil;
+
+    for (NSDictionary *loc in geoSeq) {
+        NSString *city    = [loc objectForKey:kGeoCity];
+        NSString *country = [loc objectForKey:kGeoCountry];
+
+        BOOL same =
+            ((prevCity    && city    && [prevCity isEqualToString:city])    || (!prevCity && !city)) &&
+            ((prevCountry && country && [prevCountry isEqualToString:country]) || (!prevCountry && !country));
+
+        if (![uniqueSeq count] || !same) {
+            [uniqueSeq addObject:loc];
+            prevCity    = city;
+            prevCountry = country;
+        }
+    }
+
+    // Return immutable NSArray (ordered)
+    return [[uniqueSeq copy] autorelease];
 }
 
 @end

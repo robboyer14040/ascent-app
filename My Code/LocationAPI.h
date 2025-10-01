@@ -24,20 +24,21 @@ FOUNDATION_EXPORT NSString * const kGeoLatitude;     // @"lat"
 FOUNDATION_EXPORT NSString * const kGeoLongitude;    // @"lon"
 
 // Container keys
-FOUNDATION_EXPORT NSString * const kGeoStart;        // @"start" -> NSDictionary (kGeoCity, ...)
-FOUNDATION_EXPORT NSString * const kGeoEnd;          // @"end"   -> NSDictionary (kGeoCity, ...)
+///FOUNDATION_EXPORT NSString * const kGeoStart;        // @"start" -> NSDictionary (kGeoCity, ...)
+///FOUNDATION_EXPORT NSString * const kGeoEnd;          // @"end"   -> NSDictionary (kGeoCity, ...)
 
 // Error domain
 FOUNDATION_EXPORT NSString * const LocationAPIErrorDomain;
 
 /// Synchronous (blocks), but **always runs work off the main thread** via an internal queue.
-/// Returns @{ kGeoStart: <dict>, kGeoEnd: <dict> } or nil + error.
-+ (nullable NSDictionary *)startEndCityCountryForTrack:(Track *)track
-                                                error:(NSError * _Nullable * _Nullable)outError;
++ (nullable NSArray *)startEndCityCountryForTrack:(Track *)track
+                                     numLocations:(NSUInteger)num
+                                            error:(NSError * _Nullable * _Nullable)outError;
 
 /// Asynchronous; executes on the same internal queue; completion is called on the **main thread**.
 + (void)startEndCityCountryForTrack:(Track *)track
-                         completion:(void(^)(NSDictionary * _Nullable result,
+                       numLocations:(NSUInteger)num
+                         completion:(void(^)(NSArray * _Nullable result,
                                              NSError * _Nullable error))completion;
 
 @end

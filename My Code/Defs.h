@@ -582,6 +582,7 @@ extern NSString* OpenMapDetailNotification;
 extern NSString* OpenActivityDetailNotification;
 extern NSString* TrackArrayChangedNotification;
 extern NSString* TrackSelectionDoubleClicked;
+extern NSString* TrackFieldsChanged;
 
 
 // other global strings

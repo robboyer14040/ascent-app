@@ -14,6 +14,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface IntervalsPaneController : NSSplitViewController
+
+@property(nonatomic, assign) IBOutlet NSTextField   *activityTitle;
+
 @property(nonatomic, assign) TrackBrowserDocument *document;
 @property(nonatomic, retain) Selection *selection;
 @property(nonatomic, retain) NSViewController *intervalsListVC;

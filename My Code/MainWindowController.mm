@@ -16,6 +16,7 @@ NSString* OpenMapDetailNotification         = @"OpenMapDetail";
 NSString* OpenActivityDetailNotification    = @"OpenActivityDetail";
 NSString* TrackArrayChangedNotification     = @"TrackArrayChanged";
 NSString* TrackSelectionDoubleClicked       = @"SelectionDoubleClicked";
+NSString* TrackFieldsChanged                = @"TrackFieldsChanged";
 
 @interface MainWindowController ()
 {

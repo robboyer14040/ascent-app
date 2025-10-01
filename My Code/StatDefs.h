@@ -29,7 +29,7 @@ struct tStatData
 	NSTimeInterval	atActiveTimeDelta[2];		// activeTime deltas, use index kMax for time at max, kMin for time at min
 };
 
-enum tStatType
+typedef NS_ENUM(NSInteger, tStatType) 
 {
 	kST_Distance,		// 0 uses val only
 	kST_Durations,		// 1 max = elapsed, min = moving

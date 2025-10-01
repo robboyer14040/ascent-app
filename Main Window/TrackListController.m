@@ -1722,10 +1722,10 @@ int searchTagToMask(int searchTag)
             [self endProgressIndicator];
             
         }];
-        [self _fetchWeatherAndGEOInfoForTrack:track
-                             selectTrackAfter:NO];
         return NO;
     }
+    [self _fetchWeatherAndGEOInfoForTrack:track
+                         selectTrackAfter:NO];
     return YES;
 }
 
@@ -1759,32 +1759,26 @@ int searchTagToMask(int searchTag)
             });
         }
         
-        NSDictionary *locs = [LocationAPI startEndCityCountryForTrack:track error:&err];
+        NSArray *locs = [LocationAPI startEndCityCountryForTrack:track
+                                                    numLocations:5
+                                                           error:&err];
         if (!err) {
             // update UI on main after
             dispatch_async(dispatch_get_main_queue(), ^{
-                if (locs && ([locs count] >= 2)) {
-                    NSDictionary *start = [locs objectForKey:kGeoStart];
-                    NSDictionary *end   = [locs objectForKey:kGeoEnd];
-                    if (start && end)
-                    {
-                        NSLog(@"Start: %@, %@  End: %@, %@",
-                              [start objectForKey:kGeoCity], [start objectForKey:kGeoCountry],
-                              [end objectForKey:kGeoCity],   [end objectForKey:kGeoCountry]);
-                        NSString* startEndCity = start[@"city"];
-                        startEndCity = [startEndCity stringByAppendingString:@" → "];
-                        startEndCity = [startEndCity stringByAppendingString:end[@"city"]];
-                        [track setAttribute:kLocation
-                                usingString:startEndCity];
-                        
-                    }
-                } else {
+                NSMutableString* str = [NSMutableString stringWithString:@""];
+                for (NSDictionary* locDict in locs) {
+                    [str appendString:locDict[@"city"]];
+                    if (locs.lastObject != locDict)
+                        [str appendString:@" → "];
                 }
+                [track setAttribute:kLocation
+                        usingString:str];
                 [self simpleUpdateBrowserTrack:track];
                 if (selectAfter)
                     [self resetSelectedTrack:track lap:nil];
                 [_document updateChangeCount:NSChangeDone];
-            });
+                [[NSNotificationCenter defaultCenter] postNotificationName:TrackFieldsChanged object:self];
+           });
         }
         else {
             NSLog(@"Geo failed: %@", [err localizedDescription]);
@@ -1812,7 +1806,6 @@ int searchTagToMask(int searchTag)
         }
     }
     [self reloadTable];
-    
 }
 
 

@@ -1,19 +1,102 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11134" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="23727" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11134"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23727"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="InfoPaneController">
             <connections>
+                <outlet property="activityTitle" destination="MPI-b2-uJM" id="RUz-cs-WyD"/>
+                <outlet property="contentContainer" destination="p7F-7H-kA8" id="UJ0-y9-SJm"/>
+                <outlet property="controlsBar" destination="7l1-K9-KYC" id="kW0-5m-acn"/>
+                <outlet property="modeToggle" destination="Pmw-OM-TFS" id="tCO-Lf-XLe"/>
                 <outlet property="view" destination="Hz6-mo-xeY" id="0bl-1N-x8E"/>
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <customView id="Hz6-mo-xeY">
-            <rect key="frame" x="0.0" y="0.0" width="480" height="272"/>
+        <customView id="Hz6-mo-xeY" userLabel="Info and Metrics">
+            <rect key="frame" x="0.0" y="0.0" width="704" height="357"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+            <subviews>
+                <visualEffectView blendingMode="behindWindow" material="appearanceBased" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="7l1-K9-KYC">
+                    <rect key="frame" x="0.0" y="321" width="704" height="36"/>
+                    <subviews>
+                        <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KWj-x7-hoe">
+                            <rect key="frame" x="6" y="0.0" width="573" height="36"/>
+                            <clipView key="contentView" drawsBackground="NO" id="Bka-W5-FJ8">
+                                <rect key="frame" x="0.0" y="0.0" width="573" height="36"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <textView wantsLayer="YES" editable="NO" importsGraphics="NO" richText="NO" verticallyResizable="YES" spellingCorrection="YES" smartInsertDelete="YES" id="MPI-b2-uJM">
+                                        <rect key="frame" x="0.0" y="0.0" width="573" height="36"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <color key="textColor" name="TextPrimary"/>
+                                        <color key="backgroundColor" name="BackgroundPrimary"/>
+                                        <size key="minSize" width="573" height="36"/>
+                                        <size key="maxSize" width="1584" height="10000000"/>
+                                    </textView>
+                                </subviews>
+                            </clipView>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="36" id="7EB-9v-7xa"/>
+                            </constraints>
+                            <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="UV1-uF-kHy">
+                                <rect key="frame" x="-100" y="-100" width="225" height="15"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                            </scroller>
+                            <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="s0j-5N-2vS">
+                                <rect key="frame" x="-100" y="-100" width="15" height="30"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                            </scroller>
+                        </scrollView>
+                        <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Pmw-OM-TFS" userLabel="Info, Metrics Button">
+                            <rect key="frame" x="583" y="5" width="117" height="24"/>
+                            <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="YsM-wz-YGV">
+                                <font key="font" metaFont="system"/>
+                                <segments>
+                                    <segment label="Info" width="54"/>
+                                    <segment label="Metrics" width="54" selected="YES" tag="1"/>
+                                </segments>
+                            </segmentedCell>
+                            <connections>
+                                <action selector="modeChanged:" target="-2" id="gfV-fd-bvY"/>
+                            </connections>
+                        </segmentedControl>
+                    </subviews>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="36" id="EtP-wN-Azz"/>
+                        <constraint firstItem="KWj-x7-hoe" firstAttribute="top" secondItem="7l1-K9-KYC" secondAttribute="top" id="gvq-Sh-3tC"/>
+                        <constraint firstItem="Pmw-OM-TFS" firstAttribute="leading" secondItem="KWj-x7-hoe" secondAttribute="trailing" constant="6" id="j1n-Ln-YBL"/>
+                        <constraint firstItem="Pmw-OM-TFS" firstAttribute="top" secondItem="7l1-K9-KYC" secondAttribute="top" constant="8" id="nh3-Fd-AuX"/>
+                        <constraint firstItem="KWj-x7-hoe" firstAttribute="leading" secondItem="7l1-K9-KYC" secondAttribute="leading" constant="6" id="qCM-br-wrz"/>
+                        <constraint firstAttribute="trailing" secondItem="Pmw-OM-TFS" secondAttribute="trailing" constant="6" id="waL-oh-VH5"/>
+                    </constraints>
+                </visualEffectView>
+                <customView translatesAutoresizingMaskIntoConstraints="NO" id="p7F-7H-kA8" userLabel="Content View">
+                    <rect key="frame" x="0.0" y="0.0" width="704" height="319"/>
+                </customView>
+            </subviews>
+            <constraints>
+                <constraint firstItem="7l1-K9-KYC" firstAttribute="top" secondItem="Hz6-mo-xeY" secondAttribute="top" id="5DZ-Nb-Vt5"/>
+                <constraint firstAttribute="trailing" secondItem="7l1-K9-KYC" secondAttribute="trailing" id="FYy-D8-xzW"/>
+                <constraint firstItem="p7F-7H-kA8" firstAttribute="top" secondItem="MPI-b2-uJM" secondAttribute="bottom" constant="2" id="FeR-2p-E59"/>
+                <constraint firstItem="7l1-K9-KYC" firstAttribute="leading" secondItem="Hz6-mo-xeY" secondAttribute="leading" id="Gsf-Bc-zgm"/>
+                <constraint firstAttribute="bottom" secondItem="p7F-7H-kA8" secondAttribute="bottom" id="XFl-PK-lMD"/>
+                <constraint firstAttribute="trailing" secondItem="p7F-7H-kA8" secondAttribute="trailing" id="eBK-jk-hTy"/>
+                <constraint firstItem="p7F-7H-kA8" firstAttribute="leading" secondItem="Hz6-mo-xeY" secondAttribute="leading" id="mhf-hI-z1d"/>
+            </constraints>
+            <point key="canvasLocation" x="-1259" y="277.5"/>
         </customView>
     </objects>
+    <resources>
+        <namedColor name="BackgroundPrimary">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="TextPrimary">
+            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
 </document>

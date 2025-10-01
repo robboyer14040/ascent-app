@@ -10,21 +10,25 @@
 
 @class TrackBrowserDocument;
 @class Selection;
-
+@class MetricsController;
+@class InfoController;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface InfoPaneController : NSViewController
-@property(nonatomic, assign) TrackBrowserDocument *document;
-@property(nonatomic, retain) Selection *selection;
+@property(nonatomic, assign) TrackBrowserDocument   *document;
+@property(nonatomic, retain) Selection              *selection;
 
-@property(nonatomic, assign) IBOutlet NSSegmentedControl *modeToggle; // 0=Metrics,1=Summary
-@property(nonatomic, assign) IBOutlet NSView            *contentContainer;
+@property(nonatomic, assign) IBOutlet NSSegmentedControl    *modeToggle; 
+@property(nonatomic, assign) IBOutlet NSView                *contentContainer;
+@property(nonatomic, assign) IBOutlet NSVisualEffectView    *controlsBar;
+@property(nonatomic, assign) IBOutlet NSTextView            *activityTitle;
 
-@property(nonatomic, retain) NSViewController *metricsVC;       // MetricsController
-@property(nonatomic, retain) NSViewController *summaryPhotoVC;  // SummaryPhotoController
+@property(nonatomic, retain) MetricsController  *metricsVC;
+@property(nonatomic, retain) InfoController     *infoVC;
 
 - (IBAction)modeChanged:(id)sender;
+
 - (void)showMode:(NSInteger)segmentIndex;
 @end
 

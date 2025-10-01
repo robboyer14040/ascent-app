@@ -527,7 +527,7 @@ DQ
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                                                             <clipView key="contentView" id="Ua7-Pe-iQ3">
                                                                                 <rect key="frame" x="2" y="2" width="410" height="67"/>
-                                                                                <autoresizingMask key="autoresizingMask"/>
+                                                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                 <subviews>
                                                                                     <textView importsGraphics="NO" horizontallyResizable="YES" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" linkDetection="YES" spellingCorrection="YES" smartInsertDelete="YES" id="2403" customClass="TextViewWithPlaceholder">
                                                                                         <rect key="frame" x="0.0" y="0.0" width="410" height="67"/>

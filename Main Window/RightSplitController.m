@@ -71,6 +71,9 @@
     [self addSplitViewItem:i2];
     [self addSplitViewItem:i3];
     
+    i3.minimumThickness = 286.0;    // Info pane min height
+
+    
     sv.autosaveName = @"RightSplitView";
 }
 

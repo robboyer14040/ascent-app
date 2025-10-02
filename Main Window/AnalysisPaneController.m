@@ -17,16 +17,7 @@
 @synthesize controlsBar = _controlsBar;
 @synthesize viewModeControl = _viewModeControl;
 @synthesize contentContainer = _contentContainer;
-
-- (void)dealloc
-{
-    if (_selection != nil) {
-        [_selection release];
-        [_segmentsVC release];
-        [_intervalsPaneVC release];
-    }
-    [super dealloc];
-}
+@synthesize parentSplitVC = _parentSplitVC;
 
 - (void)awakeFromNib
 {
@@ -54,6 +45,19 @@
         [_viewModeControl setAction:@selector(toggleViewMode:)];
     }
 }
+
+
+- (void)dealloc
+{
+    if (_selection != nil) {
+        [_parentSplitVC release];
+        [_selection release];
+        [_segmentsVC release];
+        [_intervalsPaneVC release];
+    }
+    [super dealloc];
+}
+
 
 - (IBAction)toggleViewMode:(id)sender
 {

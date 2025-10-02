@@ -8,11 +8,13 @@
 //
 //
 #import <Cocoa/Cocoa.h>
+#import "SplitDragHandleView.h"
 
 @class TrackBrowserDocument, Selection;
 @class TrackPaneController, AnalysisPaneController;
 
-@interface LeftSplitController : NSSplitViewController
+
+@interface LeftSplitController : NSSplitViewController<SplitDragHandleViewDelegate>
 {
 @private
     TrackBrowserDocument *_document;          // assign
@@ -24,9 +26,11 @@
 @property(nonatomic, assign) TrackBrowserDocument *document;
 @property(nonatomic, retain) Selection *selection;
 
-@property(nonatomic, retain) TrackPaneController     *trackPaneController;   // top
-@property(nonatomic, retain) AnalysisPaneController  *analysisPaneController; // bottom
+@property(nonatomic, retain) TrackPaneController     *trackPaneController;      // top
+@property(nonatomic, retain) AnalysisPaneController  *analysisPaneController;   // bottom
+
 
 - (void)injectDependencies;
+- (void)toggleLowerSplit;
 
 @end

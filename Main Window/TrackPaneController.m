@@ -20,7 +20,7 @@
 #import "StravaAPI.h"
 #import "StravaImporter.h"
 #import "DMWindowController.h"
-
+#import "LeftSplitController.h"
 
 enum
 {
@@ -74,20 +74,13 @@ enum
 
 @synthesize document = _document;
 @synthesize selection = _selection;
+@synthesize parentSplitVC = _parentSplitVC;
 @synthesize controlsBar = _controlsBar;
 @synthesize outlineOptionsMenu = _outlineOptionsMenu;
 @synthesize viewModeControl = _viewModeControl;
 @synthesize searchField = _searchField;
 @synthesize contentContainer = _contentContainer;
 @synthesize calendarMode = _calendarMode;
-
-
-- (void)dealloc {
-    [_outlineVC release];
-    [_calendarVC release];
-    [_selection release];
-    [super dealloc];
-}
 
 
 - (void)awakeFromNib
@@ -100,11 +93,8 @@ enum
         _controlsBar.state = NSVisualEffectStateFollowsWindowActiveState;
     }
 
-    TrackListController *outline = [[TrackListController alloc] initWithNibName:@"TrackListController" bundle:nil];
-    _outlineVC = outline;
-
-    TrackCalendarController *calendar = [[TrackCalendarController alloc] initWithNibName:@"TrackCalendarController" bundle:nil];
-    _calendarVC = calendar;
+    _outlineVC = [[TrackListController alloc] initWithNibName:@"TrackListController" bundle:nil];
+    _calendarVC = [[TrackCalendarController alloc] initWithNibName:@"TrackCalendarController" bundle:nil];
 
     [self injectDependencies];
 
@@ -125,14 +115,40 @@ enum
 }
 
 
+- (void)dealloc {
+    [_outlineVC release];
+    [_calendarVC release];
+    [_selection release];
+    [_parentSplitVC release];
+    [super dealloc];
+}
+
+
+
 - (void) viewDidLoad {
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(selectionDoubleClicked:)
                                                  name:TrackSelectionDoubleClicked
                                                object:nil];
     
-    [super viewDidLoad];
+   [super viewDidLoad];
 }
+
+
+-(void)setParentSplitVC:(LeftSplitController *)parentSplitVC
+{
+    if (parentSplitVC && !_parentSplitVC) {
+        _parentSplitVC = [parentSplitVC retain];
+        // Hook drag handle
+        if (self.dragHandle) {
+            self.dragHandle.delegate = _parentSplitVC;
+            if (!self.dragHandle.splitView) {
+                self.dragHandle.splitView = _parentSplitVC.splitView;
+            }
+        }
+    }
+}
+
 
 
 - (IBAction)toggleViewMode:(id)sender
@@ -1427,5 +1443,15 @@ enum
             break;
     }
 }
+
+
+- (IBAction)toggleLowerSplit:(id)sender;
+{
+    if (_parentSplitVC) {
+        [_parentSplitVC toggleLowerSplit];
+    }
+}
+
+
 
 @end

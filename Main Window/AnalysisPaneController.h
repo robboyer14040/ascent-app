@@ -20,8 +20,9 @@
     NSViewController *_current;
 }
 
-@property(nonatomic, assign) TrackBrowserDocument *document;
-@property(nonatomic, retain) Selection *selection;
+@property(nonatomic, assign) TrackBrowserDocument   *document;
+@property(nonatomic, retain) Selection              *selection;
+@property(nonatomic, retain) NSSplitViewController  *parentSplitVC;
 
 // Top bar (NSVisualEffectView) and control
 @property(nonatomic, assign) IBOutlet NSVisualEffectView *controlsBar;

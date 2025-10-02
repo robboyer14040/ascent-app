@@ -18,6 +18,8 @@
     Selection *_selection;           // retained
 }
 
+@property(nonatomic, assign) IBOutlet NSSplitView *splitView;
+
 /// Dependencies
 @property(nonatomic, assign) TrackBrowserDocument *document;
 @property(nonatomic, retain) Selection *selection;

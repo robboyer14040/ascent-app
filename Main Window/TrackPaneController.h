@@ -11,6 +11,8 @@
 
 @class TrackBrowserDocument, Selection;
 @class TrackListController, TrackCalendarController;
+@class SplitDragHandleView;
+@class LeftSplitController;
 
 @interface TrackPaneController : NSViewController <NSUserInterfaceValidations>
 {
@@ -23,14 +25,24 @@
     NSViewController<TrackListHandling> *_current;
 }
 
-@property(nonatomic, assign) TrackBrowserDocument *document;
-@property(nonatomic, retain) Selection *selection;
+@property(nonatomic, assign) TrackBrowserDocument   *document;
+@property(nonatomic, retain) Selection              *selection;
+@property(nonatomic, retain) LeftSplitController    *parentSplitVC;
 
-// Top bar (NSVisualEffectView) with controls
-@property(nonatomic, assign) IBOutlet NSVisualEffectView *controlsBar;
-@property(nonatomic, assign) IBOutlet NSSegmentedControl *viewModeControl;   // Outline / Calendar
-@property(nonatomic, assign) IBOutlet NSSearchField *searchField;
-@property(nonatomic, assign) IBOutlet NSPopUpButton *outlineOptionsMenu;
+
+// Configurable constraints
+@property(nonatomic, assign) CGFloat minUpperHeight;   // e.g. 160.0
+@property(nonatomic, assign) CGFloat minLowerHeight;   // e.g. 0.0 allows true collapse
+
+@property(nonatomic, assign) IBOutlet NSVisualEffectView    *controlsBar;
+@property(nonatomic, assign) IBOutlet NSSegmentedControl    *viewModeControl;   // Outline / Calendar
+@property(nonatomic, assign) IBOutlet NSSearchField         *searchField;
+@property(nonatomic, assign) IBOutlet NSPopUpButton         *outlineOptionsMenu;
+@property(nonatomic, assign) IBOutlet NSButton              *toggleLowerSplitButton;
+@property(nonatomic, assign) IBOutlet NSVisualEffectView    *bottomControlsBar;    // the bar that holds buttons + blank space
+@property(nonatomic, assign) IBOutlet SplitDragHandleView   *dragHandle;        // the blank area grip
+
+- (IBAction)toggleLowerSplit:(id)sender;
 
 - (IBAction)importTCX:(id)sender;
 - (IBAction)importFIT:(id)sender;

@@ -78,7 +78,6 @@
     li.minimumThickness  = 420.0;
     ri.minimumThickness = 420.0;
     ri.maximumThickness = ri.minimumThickness;
-    
     // Who resists resizing when the window size changes:
     // Higher holdingPriority = resists more.
     // We want LEFT to hold (stay ≥ 400), RIGHT to give way.

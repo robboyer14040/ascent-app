@@ -7,11 +7,20 @@
 //
 
 // RootSplitController.m  (MRC)
+
+@import QuartzCore;                       // if “Enable Modules” = YES
+
 #import "RootSplitController.h"
 #import "LeftSplitController.h"
 #import "RightSplitController.h"
 #import "TrackBrowserDocument.h"
 #import "Selection.h"
+
+
+@interface RootSplitController ()
+@property (assign) CGFloat lastRightPaneWidth;
+@end
+
 
 @implementation RootSplitController {
     LeftSplitController  *_leftSplitController;
@@ -32,11 +41,19 @@
 
 #pragma mark - Lifecycle
 
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    _lastRightPaneWidth = 420.0;
+}
+
+
 // ❗️Do NOT override -loadView. Let super create the NSSplitView.
 // If you had a -loadView before, delete it entirely.
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.splitView.delegate = (id<NSSplitViewDelegate>)self;
 
     // Configure the split that super created
     NSSplitView *sv = self.splitView;
@@ -58,9 +75,10 @@
     NSSplitViewItem *ri = [NSSplitViewItem splitViewItemWithViewController:_rightSplitController];
 
     // Min sizes
-    li.minimumThickness  = 400.0;
-    ri.minimumThickness = 0.0;
-
+    li.minimumThickness  = 420.0;
+    ri.minimumThickness = 420.0;
+    ri.maximumThickness = ri.minimumThickness;
+    
     // Who resists resizing when the window size changes:
     // Higher holdingPriority = resists more.
     // We want LEFT to hold (stay ≥ 400), RIGHT to give way.
@@ -69,7 +87,8 @@
 
     // Allow user to fully collapse the right side (optional but nice)
     ri.canCollapse = YES;
-
+    li.canCollapse = NO;
+    ri.preferredThicknessFraction = 0.25; // where it grows back to
 
     [self addSplitViewItem:li];
     [self addSplitViewItem:ri];
@@ -88,6 +107,7 @@
 //            NSLog(@"  sub=%@ frame=%@", sub, NSStringFromRect(sub.frame));
 //        }
 //    });
+    
 }
 
 
@@ -98,11 +118,12 @@
 
     // If autosave already has a stored position, don't override it
     NSString *key = [@"NSSplitView Subview Frames " stringByAppendingString:sv.autosaveName ?: @""];
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:key]) return;
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:key])
+        return;
 
     // Desired initial widths
     CGFloat leftDesired  = 600.0;
-    CGFloat rightDesired = 250.0;
+    ///CGFloat rightDesired = 250.0;
 
     // Clamp so we respect min thickness (left ≥ 400, right ≥ 0)
     CGFloat total = sv.bounds.size.width;
@@ -148,6 +169,61 @@
         if ([_rightSplitController respondsToSelector:@selector(injectDependencies)]) {
             [_rightSplitController performSelector:@selector(injectDependencies)];
         }
+    }
+}
+
+
+static const CGFloat kMinLeft = 160.0;
+static const CGFloat kMinRight = 20.0;
+
+- (CGFloat)splitView:(NSSplitView *)sv
+constrainSplitPosition:(CGFloat)proposed
+       ofSubviewAt:(NSInteger)dividerIndex
+{
+    if (sv.isVertical) {
+        CGFloat total = NSWidth(sv.bounds);
+        CGFloat maxPos = total - sv.dividerThickness - kMinRight; // keep right ≥ min
+        CGFloat minPos = kMinLeft;                                // keep left  ≥ min
+        return MIN(MAX(proposed, minPos), maxPos);
+    } else {
+        CGFloat total = NSHeight(sv.bounds);
+        CGFloat maxPos = total - sv.dividerThickness - kMinRight;
+        CGFloat minPos = kMinLeft;
+        return MIN(MAX(proposed, minPos), maxPos);
+    }
+}
+
+
+-(void)toggleCols
+{
+    NSSplitViewItem *item = self.splitViewItems.lastObject;
+    if (item.isCollapsed) {
+        NSSplitView* sv = self.splitView;
+        CGFloat total   = sv.isVertical ? NSWidth(sv.bounds) : NSHeight(sv.bounds);
+        CGFloat divider = sv.dividerThickness;
+        CGFloat pos     = total - divider - _lastRightPaneWidth;
+        ///[sv setPosition:pos ofDividerAtIndex:0];
+    }
+    [NSAnimationContext runAnimationGroup:^(NSAnimationContext *ctx) {
+        ctx.duration = 0.45;
+        ctx.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+        [[item animator] setCollapsed:!item.isCollapsed];
+    } completionHandler:nil];
+}
+
+
+- (void)splitViewDidResizeSubviews:(NSNotification *)aNotification
+{
+    NSSplitView *sv = aNotification.object;
+    if (sv != self.splitView || sv.subviews.count < 2) return;
+
+    NSView *right = sv.subviews[1]; // rightmost (or bottom if horizontal)
+    CGFloat w = sv.isVertical ? NSWidth(right.frame) : NSHeight(right.frame);
+
+    // Only remember non-zero sizes so we keep a good restore width after a collapse
+    if (w > 0.5) {
+        NSLog(@"saving right panel width %0.1f", w);
+        _lastRightPaneWidth = w;
     }
 }
 

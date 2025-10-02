@@ -32,6 +32,12 @@ NSString* TrackFieldsChanged                = @"TrackFieldsChanged";
 @synthesize reservedTopArea = _reservedTopArea;
 @synthesize contentContainer = _contentContainer;
 
+
+- (void)awakeFromNib
+{
+}
+
+
 - (void)dealloc
 {
     [_selection release];
@@ -71,6 +77,7 @@ NSString* TrackFieldsChanged                = @"TrackFieldsChanged";
 
     // Create and embed the root split controller (no xib)
     _root = [[RootSplitController alloc] init];
+    
     _root.document  = (TrackBrowserDocument *)self.document;
     
     _selection = [[Selection alloc] init];
@@ -190,6 +197,11 @@ static BOOL ActionIsTrackPaneAction(SEL a) {
 {
     [[NSNotificationCenter defaultCenter] postNotificationName:OpenActivityDetailNotification object:self];
 
+}
+
+
+- (IBAction)toggleRightColumns:(id)sender {
+    [_root toggleCols];
 }
 
 @end

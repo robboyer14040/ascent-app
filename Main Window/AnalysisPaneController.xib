@@ -36,7 +36,7 @@
                             <rect key="frame" x="654" y="8" width="130" height="25"/>
                             <popUpButtonCell key="cell" type="push" title="Split Length" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="vWz-0S-4TE" id="EEh-S7-qJg">
                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                <font key="font" metaFont="menu"/>
+                                <font key="font" metaFont="message"/>
                                 <menu key="menu" id="Om4-e4-3F6">
                                     <items>
                                         <menuItem title="Split Length" state="on" id="vWz-0S-4TE"/>
@@ -65,7 +65,7 @@
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <popUpButtonCell key="cell" type="push" title="Item 1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="wcD-nh-34O" id="D1p-0a-0Tr">
                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                <font key="font" metaFont="menu"/>
+                <font key="font" metaFont="message"/>
                 <menu key="menu" id="iuU-VI-Wk7">
                     <items>
                         <menuItem title="Item 1" state="on" id="wcD-nh-34O"/>

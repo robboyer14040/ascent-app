@@ -11,7 +11,7 @@
 @class TrackBrowserDocument, Selection;
 @class LeftSplitController, RightSplitController;
 
-@interface RootSplitController : NSSplitViewController
+@interface RootSplitController : NSSplitViewController<NSSplitViewDelegate>
 {
 @private
     TrackBrowserDocument *_document; // assign semantics
@@ -28,5 +28,5 @@
 
 /// Push current dependencies into the subtree (idempotent/safe)
 - (void)injectDependencies;
-
+- (void)toggleCols;
 @end

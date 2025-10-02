@@ -29,16 +29,6 @@ static void *kSelectionCtx = &kSelectionCtx;
 @implementation MapController
 @synthesize document=_document, selection=_selection;
 
-- (void)dealloc {
-    [_detailedMapWC release];
-    [_selection release];
-    [_mapPathView prepareToDie];
-    [_mapPathView killAnimThread];
-    // [_transparentMapWindow release]; don't need because setReleasedWhenClosed is set to "YES"
-    [_transparentMapAnimView release];
-    [super dealloc];
-}
-
 - (void)awakeFromNib {
     [super awakeFromNib];
     NSRect dummy;
@@ -60,6 +50,18 @@ static void *kSelectionCtx = &kSelectionCtx;
     [_mapPathView setDefaults];
 
 }
+
+
+- (void)dealloc {
+    [_detailedMapWC release];
+    [_selection release];
+    [_mapPathView prepareToDie];
+    [_mapPathView killAnimThread];
+    // [_transparentMapWindow release]; don't need because setReleasedWhenClosed is set to "YES"
+    [_transparentMapAnimView release];
+    [super dealloc];
+}
+
 
 - (void)injectDependencies {
     // Use _document / _selection as needed.

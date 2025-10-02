@@ -2,6 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="23727" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23727"/>
+        <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -9,6 +10,7 @@
             <connections>
                 <outlet property="contentContainer" destination="JjL-DU-5RS" id="cUg-He-3VM"/>
                 <outlet property="reservedTopArea" destination="cdn-qI-UNJ" id="Jw6-aG-9QF"/>
+                <outlet property="rightColsButton" destination="hEc-i3-BPX" id="gCk-hh-QlV"/>
                 <outlet property="window" destination="fMe-9M-Iya" id="TVE-uC-1LK"/>
             </connections>
         </customObject>
@@ -24,18 +26,36 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <visualEffectView blendingMode="behindWindow" material="appearanceBased" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="cdn-qI-UNJ">
-                        <rect key="frame" x="0.0" y="567" width="800" height="32"/>
+                        <rect key="frame" x="0.0" y="574" width="800" height="25"/>
+                        <subviews>
+                            <button wantsLayer="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hEc-i3-BPX" userLabel="Col">
+                                <rect key="frame" x="771" y="-5.5" width="24.5" height="32"/>
+                                <buttonCell key="cell" type="roundRect" title="RCol" bezelStyle="roundedRect" imagePosition="only" alignment="center" alternateImage="table" state="on" inset="2" id="87U-e5-sbc" userLabel="Col">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="cellTitle"/>
+                                    <imageReference key="image" image="sidebar.trailing" catalog="system" symbolScale="large"/>
+                                </buttonCell>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="23" id="DCC-QP-tfg"/>
+                                </constraints>
+                                <connections>
+                                    <action selector="toggleRightColumns:" target="-2" id="xRO-Mi-nLh"/>
+                                </connections>
+                            </button>
+                        </subviews>
                         <constraints>
-                            <constraint firstAttribute="height" constant="32" id="mqV-oN-7Rg"/>
+                            <constraint firstAttribute="trailing" secondItem="hEc-i3-BPX" secondAttribute="trailing" constant="5" id="9mY-69-TEb"/>
+                            <constraint firstItem="hEc-i3-BPX" firstAttribute="top" secondItem="cdn-qI-UNJ" secondAttribute="top" constant="3" id="egv-ey-gPM"/>
+                            <constraint firstAttribute="height" constant="25" id="sCK-et-igy"/>
                         </constraints>
                     </visualEffectView>
                     <customView translatesAutoresizingMaskIntoConstraints="NO" id="JjL-DU-5RS">
-                        <rect key="frame" x="0.0" y="0.0" width="800" height="553"/>
+                        <rect key="frame" x="0.0" y="0.0" width="800" height="572"/>
                     </customView>
                 </subviews>
                 <constraints>
                     <constraint firstItem="cdn-qI-UNJ" firstAttribute="top" secondItem="v38-fw-04a" secondAttribute="top" constant="1" id="Ley-aG-pR3"/>
-                    <constraint firstItem="JjL-DU-5RS" firstAttribute="top" secondItem="cdn-qI-UNJ" secondAttribute="bottom" constant="14" id="Rxw-hW-bkc"/>
+                    <constraint firstItem="JjL-DU-5RS" firstAttribute="top" secondItem="cdn-qI-UNJ" secondAttribute="bottom" constant="2" id="Rxw-hW-bkc"/>
                     <constraint firstAttribute="trailing" secondItem="cdn-qI-UNJ" secondAttribute="trailing" id="UaQ-YI-JAw"/>
                     <constraint firstAttribute="bottom" secondItem="JjL-DU-5RS" secondAttribute="bottom" id="aK6-59-61L"/>
                     <constraint firstItem="cdn-qI-UNJ" firstAttribute="leading" secondItem="v38-fw-04a" secondAttribute="leading" id="i4o-jk-itd"/>
@@ -46,4 +66,8 @@
             <point key="canvasLocation" x="-205" y="164"/>
         </window>
     </objects>
+    <resources>
+        <image name="sidebar.trailing" catalog="system" width="24" height="18"/>
+        <image name="table" width="128" height="128"/>
+    </resources>
 </document>

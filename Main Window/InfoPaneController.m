@@ -83,7 +83,10 @@ static void *kSelectionCtx = &kSelectionCtx;
     [self _stopObservingSelection];
 }
 
-
+- (void)viewWillAppear
+{
+    [self _startObservingSelection];
+}
 
 - (void)setMode:(BOOL)metricsMode
 {

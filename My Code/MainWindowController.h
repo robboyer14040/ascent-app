@@ -24,11 +24,13 @@
 
 // Refine type only; keep attributes compatible with NSWindowController
 @property(assign) TrackBrowserDocument *document;
-
 @property(nonatomic, retain) Selection *selection;
+
+@property(nonatomic, assign) IBOutlet NSButton *rightColsButton;
 
 -(IBAction)showMapDetail:(id)sender;
 -(IBAction)showActivityDetail:(id)sender;
+-(IBAction)toggleRightColumns:(id)sender;
 
 
 // IB outlets

@@ -53,10 +53,12 @@ static struct tEventInfo sEventInfo[] =
 
 static void *kSelectionCtx = &kSelectionCtx;
 
+
 @interface ASCVCenteredTextFieldCell : NSTextFieldCell
 @end
 
 @implementation ASCVCenteredTextFieldCell
+
 - (NSRect)drawingRectForBounds:(NSRect)rect {
     // Let super compute the text rect, then center it vertically
     NSRect r = [super drawingRectForBounds:rect];
@@ -70,17 +72,21 @@ static void *kSelectionCtx = &kSelectionCtx;
     r.size.height -= dy; // keep baseline math happy
     return r;
 }
+
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
     [super drawInteriorWithFrame:[self drawingRectForBounds:cellFrame] inView:controlView];
 }
+
 - (void)editWithFrame:(NSRect)aRect inView:(NSView *)controlView editor:(NSText *)textObj
              delegate:(id)anObject event:(NSEvent *)theEvent {
     [super editWithFrame:[self drawingRectForBounds:aRect] inView:controlView editor:textObj delegate:anObject event:theEvent];
 }
+
 - (void)selectWithFrame:(NSRect)aRect inView:(NSView *)controlView editor:(NSText *)textObj
                delegate:(id)anObject start:(NSInteger)selStart length:(NSInteger)selLength {
     [super selectWithFrame:[self drawingRectForBounds:aRect] inView:controlView editor:textObj delegate:anObject start:selStart length:selLength];
 }
+
 @end
 
 
@@ -90,11 +96,9 @@ static void *kSelectionCtx = &kSelectionCtx;
 @end
 
 
-
 @implementation MetricsController
 @synthesize document = _document;
 @synthesize selection = _selection;
-
 
 
 - (void)awakeFromNib
@@ -357,8 +361,8 @@ static void *kSelectionCtx = &kSelectionCtx;
     }
     [[AnimTimer defaultInstance] stop:self];
     [[AnimTimer defaultInstance] setAnimTime:atTime];
-    
 }
+
 
 // TableView delegate/datasource methods
 
@@ -387,7 +391,6 @@ objectValueForTableColumn:(NSTableColumn *)aTableColumn
         txtColor =  [NSColor colorNamed:@"TextPrimary"];
     [aCell setTextColor:txtColor];
 }
-
 
 
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification

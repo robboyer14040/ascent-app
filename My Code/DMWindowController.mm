@@ -70,7 +70,7 @@ enum
     self = [super initWithWindowNibName:@"DetailedMapWindow"];
     self.mainWC = wc;
     track = nil;
-    tbDocument = doc;
+    self.tbDocument = doc;
     dataType = dt;
     activitySelectorPopup = nil;
     [[AnimTimer defaultInstance] registerForTimerUpdates:self];
@@ -131,6 +131,7 @@ enum
 	[[self window] removeChildWindow:transparentMapWindow];
 	[transparentMapWindow close];		// default is to RELEASE window on close! (see setReleasedWhenClosed)
 	self.mainWC = nil;
+    self.tbDocument = nil;
 #if DEBUG_LEAKS
 	NSLog(@"dmc exiting, mapView retain count:%d %d", [mapView retainCount], [zoomSlider retainCount]);
 #endif
@@ -376,7 +377,7 @@ NSEvent* sMouseEv = nil;
 					}
 					[selectedLapPopup addItemWithTitle:s];
 				}
-				Lap* selectedLap = [tbDocument selectedLap];
+				Lap* selectedLap = [_tbDocument selectedLap];
 				NSUInteger idx = [laps indexOfObjectIdenticalTo:selectedLap];
 				if (idx != NSNotFound)
 				{
@@ -400,7 +401,7 @@ NSEvent* sMouseEv = nil;
 	}
 	[mapView setIsDetailedMap:YES];
 	[mapView setCurrentTrack:track];
-	[mapView setSelectedLap:[tbDocument selectedLap]];
+	[mapView setSelectedLap:[_tbDocument selectedLap]];
 	[mapView setMoveMapDuringAnimation:YES];
 
 
@@ -536,7 +537,7 @@ NSEvent* sMouseEv = nil;
 {
    //[[AnimTimer defaultInstance] stop];
   [[AnimTimer defaultInstance] updateTimerDuration];
-  [self setTrack:[[tbDocument trackArray] objectAtIndex:[sender indexOfSelectedItem]]]; 
+  [self setTrack:[[_tbDocument trackArray] objectAtIndex:[sender indexOfSelectedItem]]];
 }
 
 
@@ -859,7 +860,7 @@ NSEvent* sMouseEv = nil;
 
 -(void) rebuildActivitySelectorPopup
 {
-	NSArray* ta = [tbDocument trackArray];
+	NSArray* ta = [_tbDocument trackArray];
 	[activitySelectorPopup removeAllItems];
 	int count = [ta count];
 	for (int i=0; i<count; i++)
@@ -877,7 +878,7 @@ NSEvent* sMouseEv = nil;
 -(void) trackArrayChanged:(NSNotification *)notification
 {
 	[self rebuildActivitySelectorPopup];
-	NSArray* arr = [tbDocument trackArray];
+	NSArray* arr = [_tbDocument trackArray];
 	if (track != nil)
 	{
 		if ([arr indexOfObjectIdenticalTo:track] == NSNotFound)

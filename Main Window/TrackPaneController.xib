@@ -65,11 +65,17 @@
             <point key="canvasLocation" x="-93" y="-341"/>
         </menu>
         <customView id="5iD-PW-0U4" userLabel="Main View">
-            <rect key="frame" x="0.0" y="0.0" width="800" height="500"/>
+            <rect key="frame" x="0.0" y="0.0" width="862" height="529"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
+                <visualEffectView blendingMode="behindWindow" material="appearanceBased" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="Df4-Nq-8Rq">
+                    <rect key="frame" x="0.0" y="0.0" width="862" height="25"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="25" id="J3j-X8-psu"/>
+                    </constraints>
+                </visualEffectView>
                 <visualEffectView blendingMode="withinWindow" material="appearanceBased" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="lFF-BD-QU6">
-                    <rect key="frame" x="0.0" y="456" width="800" height="44"/>
+                    <rect key="frame" x="0.0" y="485" width="862" height="44"/>
                     <subviews>
                         <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1Sv-lI-wjo">
                             <rect key="frame" x="14" y="10" width="142" height="24"/>
@@ -82,7 +88,7 @@
                             </segmentedCell>
                         </segmentedControl>
                         <searchField wantsLayer="YES" focusRingType="none" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vXB-jx-KOT">
-                            <rect key="frame" x="245" y="11" width="310" height="22"/>
+                            <rect key="frame" x="245" y="11" width="372" height="22"/>
                             <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="339-oP-bgE">
                                 <font key="font" metaFont="system"/>
                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -97,7 +103,7 @@
                             </connections>
                         </searchField>
                         <popUpButton wantsLayer="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ocs-zh-Jcj">
-                            <rect key="frame" x="691" y="9" width="97" height="25"/>
+                            <rect key="frame" x="753" y="9" width="97" height="25"/>
                             <popUpButtonCell key="cell" type="push" title="Normal" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="wjy-9j-itP" id="1Mn-0Y-GOO">
                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                 <font key="font" metaFont="message"/>
@@ -148,19 +154,22 @@
                     </constraints>
                 </visualEffectView>
                 <customView translatesAutoresizingMaskIntoConstraints="NO" id="mr7-Ax-sbt" userLabel="Content View">
-                    <rect key="frame" x="0.0" y="0.0" width="800" height="456"/>
+                    <rect key="frame" x="0.0" y="25" width="862" height="460"/>
                 </customView>
             </subviews>
             <constraints>
+                <constraint firstItem="Df4-Nq-8Rq" firstAttribute="top" secondItem="mr7-Ax-sbt" secondAttribute="bottom" id="3Fx-lK-kBk"/>
                 <constraint firstItem="mr7-Ax-sbt" firstAttribute="top" secondItem="lFF-BD-QU6" secondAttribute="bottom" id="78m-QO-E5P"/>
                 <constraint firstItem="lFF-BD-QU6" firstAttribute="leading" secondItem="5iD-PW-0U4" secondAttribute="leading" id="RQ1-nP-MNZ"/>
+                <constraint firstItem="Df4-Nq-8Rq" firstAttribute="leading" secondItem="5iD-PW-0U4" secondAttribute="leading" id="Td0-ng-iRM"/>
                 <constraint firstItem="lFF-BD-QU6" firstAttribute="top" secondItem="5iD-PW-0U4" secondAttribute="top" id="bpD-Uz-Xdp"/>
                 <constraint firstItem="mr7-Ax-sbt" firstAttribute="leading" secondItem="5iD-PW-0U4" secondAttribute="leading" id="eOX-b5-jVF"/>
+                <constraint firstAttribute="trailing" secondItem="Df4-Nq-8Rq" secondAttribute="trailing" id="gG6-CA-Neo"/>
                 <constraint firstAttribute="trailing" secondItem="lFF-BD-QU6" secondAttribute="trailing" id="kqq-BP-Vxk"/>
                 <constraint firstAttribute="trailing" secondItem="mr7-Ax-sbt" secondAttribute="trailing" id="pWU-lG-2rW"/>
-                <constraint firstAttribute="bottom" secondItem="mr7-Ax-sbt" secondAttribute="bottom" id="xrn-Gt-ynv"/>
+                <constraint firstAttribute="bottom" secondItem="Df4-Nq-8Rq" secondAttribute="bottom" id="xRf-PQ-Qa1"/>
             </constraints>
-            <point key="canvasLocation" x="-253" y="-162"/>
+            <point key="canvasLocation" x="-222" y="-147.5"/>
         </customView>
     </objects>
 </document>

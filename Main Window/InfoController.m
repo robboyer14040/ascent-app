@@ -344,14 +344,10 @@ shouldAttemptToRecognizeWithEvent:(NSEvent *)event
     }
 }
 
-
--(void) _displayPicture:(Track*)track index:(NSUInteger)tentativeNewIndex
+-(NSArray*) _filteredPictureArray:(Track*)track
 {
     if (!track)
-        return;
-    
-    NSImage* img = nil;
-    
+        return nil;
     NSSet<NSString *> *imageExts = [NSSet setWithArray:@[
         @"jpg", @"jpeg", @"png", @"gif", @"tif", @"tiff", @"bmp", @"heic", @"heif", @"webp"
     ]];
@@ -366,7 +362,17 @@ shouldAttemptToRecognizeWithEvent:(NSEvent *)event
         BOOL isImage = (ext.length > 0) && [imageExts containsObject:ext];
         return isImage;
     }];
-    NSArray* filteredArray = [track.localMediaItems filteredArrayUsingPredicate:pred];
+    return  [track.localMediaItems filteredArrayUsingPredicate:pred];
+}
+
+
+-(void) _displayPicture:(Track*)track index:(NSUInteger)tentativeNewIndex
+{
+    if (!track)
+        return;
+    
+    NSImage* img = nil;
+    NSArray* filteredArray = [self _filteredPictureArray:track];
     NSUInteger numPictures = filteredArray.count;
     if (tentativeNewIndex < 0 || tentativeNewIndex >= numPictures) {
         return;
@@ -405,7 +411,7 @@ shouldAttemptToRecognizeWithEvent:(NSEvent *)event
         return;
     
     // Supply your filenames array (e.g. from the currently selected track)
-    NSArray<NSString *> *filenames = track.localMediaItems ?: @[];
+    NSArray<NSString *> *filenames = [self _filteredPictureArray:track];
 #if 0
     NSError *error = nil;
     
@@ -435,18 +441,12 @@ shouldAttemptToRecognizeWithEvent:(NSEvent *)event
     
     // Determine which image is currently shown in the thumbnail (optional)
     // If you know the filename, compute its index; otherwise just start at 0
-    NSString *currentName = [self filenameShownInThumbnailIfKnown]; // or nil
-    NSInteger startIndex = 0;
-    if (currentName.length) {
-        NSInteger i = [filenames indexOfObject:currentName];
-        if (i != NSNotFound) startIndex = i;
-    }
     
     if (!self.imageBrowser) {
          FullImageBrowserWindowController *wc =
              [[FullImageBrowserWindowController alloc] initWithBaseURL:root
                                                             mediaNames:filenames
-                                                            startIndex:0
+                                                            startIndex:_pictureIndex
                                                                  title:nil];
          self.imageBrowser = wc;          // retain (MRC)
          [wc release];
@@ -455,11 +455,10 @@ shouldAttemptToRecognizeWithEvent:(NSEvent *)event
                                                   selector:@selector(imageBrowserWillClose:)
                                                       name:NSWindowWillCloseNotification
                                                     object:[self.imageBrowser window]];
-     } else {
          [self.imageBrowser showWindow:self];
-         [self.imageBrowser showMediaAtIndex:0];
+     } else {
+         [self.imageBrowser showMediaAtIndex:_pictureIndex];
      }
-     [self.imageBrowser showWindow:self];
 }
 
 

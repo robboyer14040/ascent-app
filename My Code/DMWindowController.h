@@ -48,15 +48,14 @@
 	IBOutlet NSPopUpButton*			selectedLapPopup;
 
 	DataHUDWindowController*	dataHUDWC;
-    __unsafe_unretained NSWindowController*         mainWC;
 	NSTimer*					fadeTimer;
-	TrackBrowserDocument*		tbDocument;
 	Track*						track;
 	int							dataType;
 	int							numPos;
 	NSRect						windowFrameBeforeOpeningDrawer;
 }
-@property(assign, nonatomic) id mainWC;		// don't retain
+@property(retain, nonatomic) id mainWC;
+@property(retain, nonatomic) id tbDocument;
 
 - (IBAction) openDrawer:(id) sender;
 - (IBAction) closeDrawer:(id) sender;

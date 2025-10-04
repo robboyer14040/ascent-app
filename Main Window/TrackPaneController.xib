@@ -74,7 +74,7 @@
                 <visualEffectView blendingMode="withinWindow" material="appearanceBased" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="lFF-BD-QU6" userLabel="Top Bar">
                     <rect key="frame" x="0.0" y="462" width="936" height="44"/>
                     <subviews>
-                        <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1Sv-lI-wjo" userLabel="Outline settings">
+                        <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1Sv-lI-wjo" userLabel="Calender or Browser switch">
                             <rect key="frame" x="14" y="10" width="65" height="24"/>
                             <constraints>
                                 <constraint firstAttribute="width" constant="61" id="y40-WG-lhX"/>
@@ -105,29 +105,33 @@
                                 <outlet property="searchMenuTemplate" destination="V5d-Rc-CSN" id="bdk-ib-WUb"/>
                             </connections>
                         </searchField>
-                        <button toolTip="Set outline settings" wantsLayer="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IAI-di-N5n">
-                            <rect key="frame" x="889" y="9" width="30" height="29"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <button toolTip="Set outline settings" wantsLayer="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IAI-di-N5n" userLabel="Outline Settings button">
+                            <rect key="frame" x="888" y="4" width="30.5" height="36"/>
                             <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="NAn-35-mLT">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                 <font key="font" metaFont="system"/>
                                 <imageReference key="image" image="list.bullet.indent" catalog="system" symbolScale="large"/>
                             </buttonCell>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="30" id="LzU-PB-mUZ"/>
+                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="30" id="XXT-0j-Ho8"/>
+                                <constraint firstAttribute="height" constant="30" id="zjH-yk-p90"/>
+                            </constraints>
                             <connections>
                                 <action selector="showOutlineSettings:" target="-2" id="RG4-AB-bMI"/>
                             </connections>
                         </button>
                     </subviews>
                     <constraints>
+                        <constraint firstAttribute="trailing" secondItem="IAI-di-N5n" secondAttribute="trailing" constant="18" id="2EO-sW-eNs"/>
                         <constraint firstAttribute="trailing" secondItem="vXB-jx-KOT" secondAttribute="trailing" constant="145" id="8x3-Q6-bSk"/>
+                        <constraint firstItem="IAI-di-N5n" firstAttribute="top" secondItem="lFF-BD-QU6" secondAttribute="top" constant="7" id="CdD-2L-Lbu"/>
                         <constraint firstItem="vXB-jx-KOT" firstAttribute="leading" secondItem="lFF-BD-QU6" secondAttribute="leading" constant="101" id="F9O-zV-hmz"/>
                         <constraint firstItem="vXB-jx-KOT" firstAttribute="centerY" secondItem="lFF-BD-QU6" secondAttribute="centerY" id="Mjs-f6-m6b"/>
-                        <constraint firstItem="1Sv-lI-wjo" firstAttribute="top" secondItem="lFF-BD-QU6" secondAttribute="top" constant="11" id="R8S-qS-qBQ"/>
                         <constraint firstItem="vXB-jx-KOT" firstAttribute="centerX" secondItem="lFF-BD-QU6" secondAttribute="centerX" constant="-22" id="dhA-09-H4j"/>
                         <constraint firstItem="1Sv-lI-wjo" firstAttribute="top" secondItem="lFF-BD-QU6" secondAttribute="top" constant="11" id="e51-Xc-ybU"/>
                         <constraint firstAttribute="height" constant="44" id="g6f-0m-NZ5"/>
                         <constraint firstItem="1Sv-lI-wjo" firstAttribute="leading" secondItem="lFF-BD-QU6" secondAttribute="leading" constant="16" id="imp-WH-ItM"/>
-                        <constraint firstAttribute="trailing" secondItem="1Sv-lI-wjo" secondAttribute="trailing" constant="859" id="r1Y-XF-4Wl"/>
                         <constraint firstItem="vXB-jx-KOT" firstAttribute="top" secondItem="lFF-BD-QU6" secondAttribute="top" constant="11" id="ys1-65-Xib"/>
                     </constraints>
                 </visualEffectView>

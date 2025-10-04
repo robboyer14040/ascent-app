@@ -37,15 +37,18 @@ struct tEventInfo
 static struct tEventInfo sEventInfo[] =
 {
     { "Heart Rate",     "max", "bpm",           "bpm",              kST_Heartrate,      kMax, 0,                        kUseNumberFormatter },
+    { "Heart Rate",     "avg", "bpm",           "bpm",              kST_Heartrate,      kAvg, 0,                        kUseNumberFormatter },
     { "Power",          "max", "watts",         "watts",            kST_Power,          kMax, 0,                        kUseNumberFormatter },
     { "Power",          "avg", "watts",         "watts",            kST_Power,          kAvg, 0,                        kUseNumberFormatter },
     { "Speed",          "max", "mph",           "km/h",             kST_MovingSpeed,    kMax, &MilesToKilometers,       kUseNumberFormatter },
     { "Moving Speed",   "avg", "mph",           "km/h",             kST_MovingSpeed,    kAvg, &MilesToKilometers,       kUseNumberFormatter },
     { "Pace",           "min", "min/mi",        "min/km",           kST_MovingSpeed,    kMax, 0,                        kIsPace },
     { "Gradient",       "max", "%",             "%",                kST_Gradient,       kMax, 0,                        kUseNumberFormatter },
+    { "Gradient",       "min", "%",             "%",                kST_Gradient,       kMin, 0,                        kUseNumberFormatter },
     { "Altitude",       "max", "ft",            "m",                kST_Altitude,       kMax, &FeetToMeters,            kUseNumberFormatter },
     { "Altitude",       "min", "ft",            "m",                kST_Altitude,       kMin, &FeetToMeters,            kUseNumberFormatter },
     { "Cadence",        "max", "rpm",           "rpm",              kST_Cadence,        kMax, 0,                        kUseNumberFormatter },
+    { "Cadence",        "avg", "rpm",           "rpm",              kST_Cadence,        kAvg, 0,                        kUseNumberFormatter },
     { "Temperature",    "max", "\xC2\xB0""F",   "\xC2\xB0""C",      kST_Temperature,    kMax, &FahrenheightToCelsius,   kUseNumberFormatter },
     { "Temperature",    "min", "\xC2\xB0""F",   "\xC2\xB0""C",      kST_Temperature,    kMin, &FahrenheightToCelsius,   kUseNumberFormatter },
 };
@@ -241,7 +244,7 @@ static void *kSelectionCtx = &kSelectionCtx;
                                       row:(int)rowIndex
 {
     Track* track = _selection.selectedTrack;
-    Lap* lap = _selection.selectedLap;\
+    Lap* lap = _selection.selectedLap;
     id value = @"";
     if (track || lap)
     {
@@ -318,22 +321,26 @@ static void *kSelectionCtx = &kSelectionCtx;
         }
         else
         {
-            NSTimeInterval atTime;
-            if (lap)
-            {
-                [track statForLap:lap
-                         statType:eventInfo->statType
-                            index:eventInfo->subIndex
-                atActiveTimeDelta:&atTime];
-            }
-            else
-            {
-                [track statOrOverride:eventInfo->statType
+            if (eventInfo->subIndex == kAvg) {
+                value = @"";
+            } else {
+                NSTimeInterval atTime;
+                if (lap)
+                {
+                    [track statForLap:lap
+                             statType:eventInfo->statType
                                 index:eventInfo->subIndex
                     atActiveTimeDelta:&atTime];
+                }
+                else
+                {
+                    [track statOrOverride:eventInfo->statType
+                                    index:eventInfo->subIndex
+                        atActiveTimeDelta:&atTime];
+                }
+                int secs = (int)atTime;
+                value = [NSString stringWithFormat:@"%02d:%02d:%02d", secs/3600, (secs/60)%60, secs % 60 ];
             }
-            int secs = (int)atTime;
-            value = [NSString stringWithFormat:@"%02d:%02d:%02d", secs/3600, (secs/60)%60, secs % 60 ];
         }
     }
     return value;

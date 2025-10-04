@@ -1637,7 +1637,7 @@ int searchTagToMask(int searchTag)
         }
     }
     BOOL force = ShiftKeyIsDown() ;
-    BOOL stravaFirst = force || ([track.points count] == 0);
+    BOOL stravaFirst = force || (([track.points count] == 0) && (track.stravaActivityID != nil));
     if (stravaFirst)
     {
         [[NSNotificationCenter defaultCenter] postNotificationName:SyncActivitiesStartingNotification object:self];
@@ -1656,8 +1656,8 @@ int searchTagToMask(int searchTag)
                 
             }
             [self simpleUpdateBrowserTrack:track];
-            if (selectAfter && !error) {
-                // prevent infinite loop by not resetting selected track
+            if ((selectAfter && !error) && (track.points.count > 0)) {
+                // prevent infinite loop by not resetting selected track if error or no points
                 [self resetSelectedTrack:track lap:nil];
             }
             [_document updateChangeCount:NSChangeDone];
@@ -1678,14 +1678,14 @@ int searchTagToMask(int searchTag)
 
 - (void)_fetchWeatherAndGEOInfoForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter force:(BOOL)force
 {
-    
+    [[NSNotificationCenter defaultCenter] postNotificationName:SyncActivitiesStartingNotification object:self];
+
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
         NSString* curWeather = [track attribute:kWeather];
         NSString* curLocation = [track attribute:kLocation];
         NSError* err = nil;
         NSArray* weather = nil;
         if ((curWeather.length == 0) || force) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:SyncActivitiesStartingNotification object:self];
             weather = [WeatherAPI fetchWeatherTimelineForTrack:track
                                                         error:&err];
         }
@@ -1719,14 +1719,13 @@ int searchTagToMask(int searchTag)
         err = nil;
         NSArray *locs = nil;
         if (force || (track.hasLocationData && (curLocation.length == 0))) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:SyncActivitiesStartingNotification object:self];
             locs = [LocationAPI startEndCityCountryForTrack:track
                                                numLocations:5
                                                       error:&err];
         }
-        if (!err) {
-            // update UI on main after
-            dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (!err) {
+                // update UI on main after
                 if (locs) {
                     NSMutableString* str = [NSMutableString stringWithString:@""];
                     for (NSDictionary* locDict in locs) {
@@ -1745,13 +1744,11 @@ int searchTagToMask(int searchTag)
                     [_document updateChangeCount:NSChangeDone];
                 }
                 [[NSNotificationCenter defaultCenter] postNotificationName:TrackFieldsChanged object:self];
-                [[NSNotificationCenter defaultCenter] postNotificationName:SyncActivitiesStoppingNotification object:self];
-            });
-        }
-        else {
-            NSLog(@"Geo failed: %@", [err localizedDescription]);
+             } else {
+                NSLog(@"Geo failed: %@", [err localizedDescription]);
+            }
             [[NSNotificationCenter defaultCenter] postNotificationName:SyncActivitiesStoppingNotification object:self];
-       }
+        });
     });
 
 }

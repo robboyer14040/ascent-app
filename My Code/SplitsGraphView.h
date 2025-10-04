@@ -8,40 +8,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class SplitsTableStaticColumnInfo;
-@class Lap;
 @class SplitsTableView;
-@class ColumnInfo;
-@class ColorBoxView;
 
-@interface SplitsGraphView : NSView 
-{
-	SplitsTableStaticColumnInfo*	staticColumnInfo;
-	NSMutableDictionary*			tickFontAttrs; 
-	NSMutableDictionary*			valueFontAttrs; 
-	NSMutableDictionary*			textFontAttrs; 
-	NSArray*						splitArray;
-	NSColor*						valueColor;
-	ColorBoxView*					valueColorBox;
-	SplitsTableView*				splitsTableView;
-	NSTextField*					valueTextField;
-	NSString*						columnKey;
-	NSTimeInterval					selectedLapStartTime;
-	NSTimeInterval					selectedLapEndTime;
-	NSTrackingRectTag				trackingRect;
-	int								graphItem;
-	float							maxDist;
-	BOOL							xAxisIsTime;
-}
- 
-- (NSArray *)splitArray;
-- (void)setSplitArray:(NSArray *)value splitsTable:(SplitsTableView*)stv;
-- (int)graphItem;
-- (void)setGraphItem:(int)value;
-- (void)setSelectedLapTimes:(float)start end:(float)end;
--(void) resetTrackingRect;
--(void)setColumnKey:(NSString*)key;
--(NSString*)columnKey;
-
-
+@interface SplitsGraphView : NSView
+@property(nonatomic, retain) NSArray    *splitArray;
+@property(nonatomic, assign) int        graphItem;
 @end

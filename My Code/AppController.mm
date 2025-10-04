@@ -356,6 +356,7 @@ static void setColorDefault(NSMutableDictionary* dict,
 }
 
 
+
 - (void)applicationDidFinishLaunching:(NSNotification *)note
 {
     SplashPanelController *sp = [SplashPanelController sharedInstance];
@@ -375,7 +376,7 @@ static void setColorDefault(NSMutableDictionary* dict,
     dispatch_async(dispatch_get_main_queue(), ^{
         // Turn 2: now kick off deferred opens
         AscentDocumentController *dc =
-        (AscentDocumentController *)[NSDocumentController sharedDocumentController];
+            (AscentDocumentController *)[NSDocumentController sharedDocumentController];
         
         [dc drainDeferredOpensWithCompletion:^{
             self.deferringOpens = NO;        // <-- IMPORTANT
@@ -385,6 +386,8 @@ static void setColorDefault(NSMutableDictionary* dict,
             [self _startLaunchWork];
         }];
     });
+    
+
 }
 
 

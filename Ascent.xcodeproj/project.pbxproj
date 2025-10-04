@@ -1030,6 +1030,9 @@
 				D410021E2E859941002942DE /* MetricsController.h */,
 				D410021F2E859941002942DE /* MetricsController.m */,
 				D41002202E859941002942DE /* MetricsController.xib */,
+				D4E692EA2E90A8D900E90E6A /* OutlineSettingsDialogController.h */,
+				D4E692EB2E90A8D900E90E6A /* OutlineSettingsDialogController.m */,
+				D4E692EC2E90A8D900E90E6A /* OutlineSettingsDialogController.xib */,
 				D41002192E859916002942DE /* ProfileController.h */,
 				D410021A2E859916002942DE /* ProfileController.m */,
 				D410021B2E859916002942DE /* ProfileController.xib */,
@@ -1058,9 +1061,6 @@
 				D41001F72E859731002942DE /* TrackPaneController.h */,
 				D41001F82E859731002942DE /* TrackPaneController.m */,
 				D420632A2E85F5820041603B /* TrackPaneController.xib */,
-				D4E692EA2E90A8D900E90E6A /* OutlineSettingsDialogController.h */,
-				D4E692EB2E90A8D900E90E6A /* OutlineSettingsDialogController.m */,
-				D4E692EC2E90A8D900E90E6A /* OutlineSettingsDialogController.xib */,
 			);
 			path = "Main Window";
 			sourceTree = "<group>";

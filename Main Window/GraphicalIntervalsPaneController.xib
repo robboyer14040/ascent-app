@@ -13,25 +13,30 @@
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <scrollView autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="zDX-oo-3PI">
+        <scrollView autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" usesPredominantAxisScrolling="NO" id="zDX-oo-3PI">
             <rect key="frame" x="0.0" y="0.0" width="692" height="343"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <clipView key="contentView" id="49b-pz-BfY">
                 <rect key="frame" x="1" y="1" width="690" height="341"/>
                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                 <subviews>
-                    <view id="Maq-NL-3Yf" customClass="SplitsGraphView">
-                        <rect key="frame" x="0.0" y="0.0" width="675" height="326"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                    <view translatesAutoresizingMaskIntoConstraints="NO" id="Maq-NL-3Yf" customClass="SplitsGraphView">
+                        <rect key="frame" x="-1" y="-1" width="692" height="343"/>
                     </view>
                 </subviews>
             </clipView>
-            <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="DKx-AW-hbD">
-                <rect key="frame" x="1" y="327" width="675" height="15"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="Maq-NL-3Yf" secondAttribute="bottom" id="APp-Kd-afE"/>
+                <constraint firstItem="Maq-NL-3Yf" firstAttribute="leading" secondItem="zDX-oo-3PI" secondAttribute="leading" id="NUR-QH-Nfw"/>
+                <constraint firstAttribute="trailing" secondItem="Maq-NL-3Yf" secondAttribute="trailing" id="cxa-Iw-3iH"/>
+                <constraint firstItem="Maq-NL-3Yf" firstAttribute="top" secondItem="zDX-oo-3PI" secondAttribute="top" id="feq-4Y-Lh8"/>
+            </constraints>
+            <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="0.5" horizontal="YES" id="DKx-AW-hbD">
+                <rect key="frame" x="-100" y="-100" width="675" height="15"/>
                 <autoresizingMask key="autoresizingMask"/>
             </scroller>
             <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="uEN-ir-DD3">
-                <rect key="frame" x="676" y="1" width="15" height="326"/>
+                <rect key="frame" x="-100" y="-100" width="15" height="341"/>
                 <autoresizingMask key="autoresizingMask"/>
             </scroller>
             <point key="canvasLocation" x="330" y="39.5"/>

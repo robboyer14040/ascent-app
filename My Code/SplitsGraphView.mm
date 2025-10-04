@@ -26,51 +26,81 @@
 }
 @end
 
+@interface SplitsGraphView ()
+{
+    SplitsTableStaticColumnInfo*    staticColumnInfo;
+    NSMutableDictionary*            tickFontAttrs;
+    NSMutableDictionary*            valueFontAttrs;
+    NSMutableDictionary*            textFontAttrs;
+    NSColor*                        valueColor;
+    ColorBoxView*                   valueColorBox;
+    NSTextField*                    valueTextField;
+    NSString*                       columnKey;
+    NSTimeInterval                  selectedLapStartTime;
+    NSTimeInterval                  selectedLapEndTime;
+    NSTrackingRectTag               trackingRect;
+    int                             graphItem;
+    float                           maxDist;
+    BOOL                            xAxisIsTime;
+}
+@property(nonatomic, retain) SplitsTableView* splitsTableView;
+- (void)setColumnKey:(NSString*)key;
+- (NSString*)columnKey;
+- (void)resetTrackingRect;
+- (void)setSelectedLapTimes:(float)start end:(float)end;
+@end
 
 
 @implementation SplitsGraphView
+@synthesize graphItem = _graphItem;
 
 - (void)_commonInit
 {
-    staticColumnInfo = [[SplitsTableStaticColumnInfo alloc] init];
+    staticColumnInfo = [[SplitsTableStaticColumnInfo alloc] init];       // retained
     xAxisIsTime = NO;
-    maxDist = 0.0;
-    valueFontAttrs = [[NSMutableDictionary alloc] init];
-    [valueFontAttrs setObject:[NSFont boldSystemFontOfSize:10] forKey:NSFontAttributeName];
-    tickFontAttrs = [[NSMutableDictionary alloc] init];
-    [tickFontAttrs setObject:[NSFont systemFontOfSize:6] forKey:NSFontAttributeName];
+    maxDist = 1.0;
     selectedLapStartTime = selectedLapEndTime = -42.0;
-    textFontAttrs = [[NSMutableDictionary alloc] init];
+
+    valueFontAttrs = [[NSMutableDictionary alloc] init];      // retained
+    [valueFontAttrs setObject:[NSFont boldSystemFontOfSize:10]
+                       forKey:NSFontAttributeName];
+    [valueFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"]
+                       forKey:NSForegroundColorAttributeName];
+
+    tickFontAttrs = [[NSMutableDictionary alloc] init];      // retained
+    [tickFontAttrs setObject:[NSFont systemFontOfSize:6] forKey:NSFontAttributeName];
+    [tickFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"]
+                      forKey:NSForegroundColorAttributeName];
+
+    textFontAttrs = [[NSMutableDictionary alloc] init];      // retained
     [textFontAttrs setObject:[NSFont systemFontOfSize:18] forKey:NSFontAttributeName];
     [textFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"]
                       forKey:NSForegroundColorAttributeName];
 
-    
-    
     NSRect fr;
     fr.origin.x = fr.origin.y = 0.0;
     fr.size.width = 40.0;
     fr.size.height = 15.0;
-    splitsTableView = nil;
-    splitArray = nil;
-    valueColorBox = [[ColorBoxView alloc] initWithFrame:fr];
+    _splitsTableView = nil;
+    _splitArray = nil;
+    valueColorBox = [[[ColorBoxView alloc] initWithFrame:fr] autorelease];    // retained by parent view
     [valueColorBox setColor:[NSColor colorWithCalibratedRed:249.0/255.0
                                                       green:249.0/255.0
                                                        blue:19.0/255.0
                                                       alpha:1.0]];
     [valueColorBox setAlpha:0.5];
     [valueColorBox setHidden:YES];
-    valueTextField = [[NSTextField alloc] initWithFrame:fr];
-    //MyTextFieldCell* tcell = [[[MyTextFieldCell alloc] initTextCell:@""] autorelease];
-    //[valueTextField setCell:tcell];
+    [self addSubview:valueColorBox];
+
+    valueTextField = [[[NSTextField alloc] initWithFrame:fr] autorelease];     // retained by parent view
     [valueTextField setDrawsBackground:NO];
     [valueTextField setBezeled:NO];
     [valueTextField setEditable:NO];
     [valueTextField setHidden:YES];
     [valueTextField setAlignment:NSTextAlignmentCenter];
     [valueTextField setFont:[NSFont boldSystemFontOfSize:10]];
-    [self addSubview:valueColorBox];
     [self addSubview:valueTextField];
+    
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(splitSelected:)
                                                  name:@"SplitSelected"
@@ -91,6 +121,19 @@
 }
 
 
+- (void) dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [tickFontAttrs release];
+    [textFontAttrs release];
+    [staticColumnInfo release];
+    [_splitArray release];
+    [_splitsTableView release];
+    [super dealloc];
+}
+
+
+
 
 - (void)splitSelected:(NSNotification *)notification
 {
@@ -98,28 +141,17 @@
 }
 
 
-- (void) dealloc
-{
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-    [tickFontAttrs release];
-    [textFontAttrs release];
-    [valueColorBox release];
-    [valueTextField release];
-    [staticColumnInfo release];
-    [super dealloc];
-}
-
-
-#define Y_AXIS_WIDTH		25
-#define X_AXIS_HEIGHT		15
+#define Y_AXIS_WIDTH    18
+#define X_AXIS_HEIGHT   16
+#define XY_PAD          8
 
 -(NSRect) drawBounds
 {
 	NSRect bds = [self bounds];
 	bds.origin.x += Y_AXIS_WIDTH;
 	bds.origin.y += X_AXIS_HEIGHT;
-	bds.size.width -= (Y_AXIS_WIDTH + 3.0);
-	bds.size.height -= (X_AXIS_HEIGHT + 3.0);
+	bds.size.width -= (Y_AXIS_WIDTH + XY_PAD);
+	bds.size.height -= (X_AXIS_HEIGHT + XY_PAD);
 	return bds;
 }
 
@@ -131,8 +163,8 @@
 {
 	NSRect bounds = [self bounds];
 	bounds.origin.x += Y_AXIS_WIDTH;
-	bounds.size.width -= (Y_AXIS_WIDTH + 3.0);
-	bounds.size.height -= 4.0;
+	bounds.size.width -= (Y_AXIS_WIDTH + XY_PAD);
+	bounds.size.height -= XY_PAD;
 	[tickFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"] forKey:NSForegroundColorAttributeName];
 	float incr;
 	if (xAxisIsTime)
@@ -189,7 +221,9 @@
 		NSSize sz = [leg sizeWithAttributes:tickFontAttrs];
 		//if (kVerticalLeft == axis)
 		{
-			[leg drawAtPoint:NSMakePoint(bounds.origin.x + 0 - sz.width, bounds.origin.y - 12.0) withAttributes:tickFontAttrs];
+			[leg drawAtPoint:NSMakePoint(bounds.origin.x + 0 - sz.width,
+                                         bounds.origin.y - 10.0)
+              withAttributes:tickFontAttrs];
 		}
 		//else
 		//{
@@ -237,17 +271,17 @@
     [[NSColor colorNamed:@"BackgroundPrimary"] set];
 	[NSBezierPath fillRect:[self bounds]];
 	[[[NSColor colorNamed:@"TextPrimary"] colorWithAlphaComponent:0.6] set];
-	[NSBezierPath setDefaultLineWidth:1.0];
+	[NSBezierPath setDefaultLineWidth:0.1];
 	[NSBezierPath strokeRect:[self bounds]];
-    NSUInteger numSplits = splitArray ? [splitArray count] : 0;
+    NSUInteger numSplits = _splitArray ? [_splitArray count] : 0;
 	if (numSplits > 0)
     {
-        SplitTableItem* ti = [splitArray objectAtIndex:numSplits-1];
+        SplitTableItem* ti = [_splitArray objectAtIndex:numSplits-1];
         maxDist = [ti cumulativeDistanceInMiles] + [ti deltaDistanceInMiles];
         NSRect drawBounds = [self drawBounds];
         int numPossible = [staticColumnInfo numPossibleColumns];
-        if (!IS_BETWEEN(0, graphItem, numPossible-1)) graphItem = 0;
-        ColumnInfo* columnInfo = [[[ColumnInfo alloc] initWithInfo:[staticColumnInfo nthPossibleColumnInfo:graphItem]] autorelease];
+        if (!IS_BETWEEN(0, _graphItem, numPossible-1)) _graphItem = 0;
+        ColumnInfo* columnInfo = [[[ColumnInfo alloc] initWithInfo:[staticColumnInfo nthPossibleColumnInfo:_graphItem]] autorelease];
         if (maxDist > 0.0)
         {
             int colFlags = [columnInfo flags];
@@ -278,12 +312,12 @@
                 }
                 NSString* colIdent = [columnInfo ident];
                 NSString* kvMax = [NSString stringWithFormat:@"@max.%@", colIdent];
-                float max = [[splitArray valueForKeyPath:kvMax] floatValue];
+                float max = [[_splitArray valueForKeyPath:kvMax] floatValue];
                 max = [self drawTickMarks:columnInfo
                                  maxValue:max];
                 for (int i=0; i<numSplits; i++)
                 {
-                    SplitTableItem* sti = [splitArray objectAtIndex:i];
+                    SplitTableItem* sti = [_splitArray objectAtIndex:i];
                     float value = [[sti valueForKey:colIdent] floatValue];
                     float rectWidth = [sti deltaDistanceInMiles]*pixelsPerMile;
                     if (max != 0.0)
@@ -336,7 +370,7 @@
         else
         {
             NSRect dbounds = [self bounds];
-            NSString* s = splitArray ? @"No Split Data" : @"No Activity Selected";
+            NSString* s = _splitArray ? @"No Split Data" : @"No Activity Selected";
             NSSize size = [s sizeWithAttributes:textFontAttrs];
             float x = dbounds.origin.x + dbounds.size.width/2.0 - size.width/2.0;
             float y = (dbounds.size.height/2.0) - (size.height/2.0);
@@ -348,23 +382,12 @@
 }
 
 
-- (NSArray *)splitArray
+- (void)setSplitArray:(NSArray *)sa
+          splitsTable:(SplitsTableView*)stv
 {
-	return splitArray;
-}
-
-
-- (void)setSplitArray:(NSArray *)value  splitsTable:(SplitsTableView*)stv
-{
-	if (splitArray != value)
-	{
-		splitArray = value;
-		maxDist = 0.0;
-	}
-	if (splitsTableView != stv)
-	{
-		splitsTableView =  [stv retain];
-	}
+    self.splitArray = sa;
+    self.splitsTableView = stv;
+    maxDist = 0.0;
 	[self setNeedsDisplay:YES];
 }
 
@@ -377,15 +400,9 @@
 }
 
 
-- (int)graphItem
-{
-	return graphItem;
-}
-
-
 - (void)setGraphItem:(int)value
 {
-	graphItem = value;
+	_graphItem = value;
 	[self setNeedsDisplay:YES];
 }
 
@@ -395,10 +412,10 @@ static NSInteger sStartIdx = 0;
 
 - (int) tableIndexAtDistance:(float)dist
 {
-	NSUInteger num = [splitArray count];
+	NSUInteger num = [_splitArray count];
 	for (int i=0; i<num; i++)
 	{
-		SplitTableItem* sti = [splitArray objectAtIndex:i];
+		SplitTableItem* sti = [_splitArray objectAtIndex:i];
 		float low = [sti cumulativeDistanceInMiles];
 		float high = low +  [sti deltaDistanceInMiles];
 		if (IS_BETWEEN(low, dist, high))
@@ -443,11 +460,11 @@ static NSInteger sStartIdx = 0;
 			}
 			sLastIdx = idx;
 		}
-		[splitArray makeObjectsPerformSelector:@selector(deselect)];
+		[_splitArray makeObjectsPerformSelector:@selector(deselect)];
 		idx = [selSet firstIndex];
 		while (idx != NSNotFound)
 		{
-			[[splitArray objectAtIndex:idx] select];
+			[[_splitArray objectAtIndex:idx] select];
 			idx = [selSet indexGreaterThanIndex:idx];
 		}
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SplitSelected" object:self];
@@ -456,9 +473,9 @@ static NSInteger sStartIdx = 0;
 
 - (void)mouseDown:(NSEvent*) ev
 {
-	if ([splitsTableView numberOfSelectedRows] > 0)
+	if ([_splitsTableView numberOfSelectedRows] > 0)
 	{
-		[splitArray makeObjectsPerformSelector:@selector(deselect)];
+		[_splitArray makeObjectsPerformSelector:@selector(deselect)];
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SplitSelected" object:self];
 	}
 	else
@@ -509,10 +526,10 @@ static NSInteger sStartIdx = 0;
 
 -(SplitTableItem*)findSTI:(NSPoint)p
 {
-	NSUInteger num = [splitArray count];
+	NSUInteger num = [_splitArray count];
 	for (int i=0; i<num; i++)
 	{
-		SplitTableItem* sti = [splitArray objectAtIndex:i];
+		SplitTableItem* sti = [_splitArray objectAtIndex:i];
 		NSRect r = [sti trackingRect];
 		if (NSPointInRect(p, r))
 		{

@@ -401,7 +401,7 @@ NSEvent* sMouseEv = nil;
 	}
 	[mapView setIsDetailedMap:YES];
 	[mapView setCurrentTrack:track];
-	[mapView setSelectedLap:[_tbDocument selectedLap]];
+	///[mapView setSelectedLap:[_tbDocument selectedLap]];
 	[mapView setMoveMapDuringAnimation:YES];
 
 

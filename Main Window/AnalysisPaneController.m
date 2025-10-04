@@ -25,14 +25,14 @@ static void *kSelectionCtx = &kSelectionCtx;
 @interface AnalysisPaneController ()
 @property(nonatomic, assign) BOOL showSplitsGraphically;
 @property(nonatomic, assign) BOOL showingSplits;
-@property(nonatomic, assign) NSViewController* currentIntervalsVC;;
-@property(nonatomic, retain) GraphicalIntervalsPaneController* graphicalIntervalsVC;
-@property(nonatomic, retain) TextualIntervalsPaneController* textualIntervalsVC;
-@property(nonatomic, retain) NSPopover                      *intervalSettingsPopover;
-@property(nonatomic, retain) IndexTagMap                     *splitItemIndexToTag;  // index in sSplitsColInfo to UI settings popover tag
-@property (nonatomic, retain) NSMutableArray* splitArray;
-@property (nonatomic, assign) BOOL observingSelection;
-@property (nonatomic, retain) IntervalSettingsDialogController *intervalSettingsDialog;
+@property(nonatomic, assign) BOOL observingSelection;
+@property(nonatomic, assign) NSViewController                   *currentIntervalsVC;
+@property(nonatomic, retain) GraphicalIntervalsPaneController   *graphicalIntervalsVC;
+@property(nonatomic, retain) TextualIntervalsPaneController     *textualIntervalsVC;
+@property(nonatomic, retain) NSPopover                          *intervalSettingsPopover;
+@property(nonatomic, retain) IndexTagMap                        *splitItemIndexToTag;  // index in sSplitsColInfo to UI settings popover tag
+@property(nonatomic, retain) NSMutableArray                     *splitArray;
+@property(nonatomic, retain) IntervalSettingsDialogController   *intervalSettingsDialog;
 @end
 
 

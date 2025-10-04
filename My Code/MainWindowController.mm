@@ -43,7 +43,6 @@ NSString* SyncActivitiesStoppingNotification    = @"SyncActivitiesStopingNotific
     _syncing = NO;
 }
 
-
 - (void)dealloc
 {
     [_selection release];
@@ -59,13 +58,13 @@ NSString* SyncActivitiesStoppingNotification    = @"SyncActivitiesStopingNotific
 
 - (void)windowDidLoad {
     [super windowDidLoad];
-
+    
     NSView *contentView = self.window.contentView;
-
+    
     // Make sure these outlets exist and are in the window
     NSAssert(self.reservedTopArea.superview == contentView, @"reservedTopArea not in window");
     NSAssert(self.contentContainer.superview == contentView, @"contentContainer not in window");
-
+    
     // Give the top bar a fixed frame so the container actually has height
     CGFloat topH = 44.0;
     self.reservedTopArea.frame = NSMakeRect(0,
@@ -73,14 +72,14 @@ NSString* SyncActivitiesStoppingNotification    = @"SyncActivitiesStopingNotific
                                             NSWidth(contentView.bounds),
                                             topH);
     self.reservedTopArea.autoresizingMask = NSViewWidthSizable | NSViewMinYMargin;
-
+    
     // Fill the rest with the container
     self.contentContainer.frame = NSMakeRect(0,
                                              0,
                                              NSWidth(contentView.bounds),
                                              NSHeight(contentView.bounds) - topH);
     self.contentContainer.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-
+    
     // Create and embed the root split controller (no xib)
     _root = [[RootSplitController alloc] init];
     
@@ -88,27 +87,27 @@ NSString* SyncActivitiesStoppingNotification    = @"SyncActivitiesStopingNotific
     
     _selection = [[Selection alloc] init];
     _root.selection = _selection;
-
+    
     NSView *childView = _root.view;          // this triggers RootSplitController -loadView
     childView.frame = self.contentContainer.bounds;
     childView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
     [self.contentContainer addSubview:childView];
-
+    
     TrackPaneController *tpc = _root.leftSplitController.trackPaneController;
-
+    
     NSMenu *fileMenu = [[NSApp mainMenu] itemWithTitle:@"File"].submenu;
     NSMenu *viewMenu = [[NSApp mainMenu] itemWithTitle:@"View"].submenu;
-
+    
     NSSet<NSString *> *belongsToTPC = [NSSet setWithObjects:
-        @"exportGPX:", @"exportKML:", @"exportTCX:",
-        @"exportTXT:", @"exportCSV:",
-        @"exportSummaryTXT:", @"exportSummaryCSV:",
-        @"exportLatLonText:",
-        @"googleEarthFlyBy:",
-        @"centerOnPath:", @"centerAtStart:", @"centerAtEnd:",
-        @"zoomIn:", @"zoomOut:", @"syncStravaActivities:",
-        nil];
-
+                                       @"exportGPX:", @"exportKML:", @"exportTCX:",
+                                       @"exportTXT:", @"exportCSV:",
+                                       @"exportSummaryTXT:", @"exportSummaryCSV:",
+                                       @"exportLatLonText:",
+                                       @"googleEarthFlyBy:",
+                                       @"centerOnPath:", @"centerAtStart:", @"centerAtEnd:",
+                                       @"zoomIn:", @"zoomOut:", @"syncStravaActivities:",
+                                       nil];
+    
     __block void (^retarget)(NSMenu *menu, NSSet<NSString *> *sels);
     retarget = ^(NSMenu *menu, NSSet<NSString *> *sels) {
         for (NSMenuItem *it in menu.itemArray) {
@@ -126,8 +125,8 @@ NSString* SyncActivitiesStoppingNotification    = @"SyncActivitiesStopingNotific
                 NSLog(@"TPC does NOT implement %@", name); // <-- these will be disabled
             }
         }
-   };
-
+    };
+    
     retarget(fileMenu, belongsToTPC);
     ///retarget(viewMenu, belongsToTPC);
     
@@ -135,12 +134,17 @@ NSString* SyncActivitiesStoppingNotification    = @"SyncActivitiesStopingNotific
     [nc addObserver:self
            selector:@selector(_syncCompleted)
                name:SyncActivitiesStoppingNotification
-                    object:nil];
-   
+             object:nil];
+    
     [nc addObserver:self
            selector:@selector(_syncStarted)
                name:SyncActivitiesStartingNotification
-                    object:nil];
+             object:nil];
+    
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+       DumpWindowDiagnostics(self.window); // replace with your NSWindow *
+    });
 }
 
 
@@ -247,5 +251,136 @@ static BOOL ActionIsTrackPaneAction(SEL a) {
         _syncing = NO;
     }
 }
+
+
+// Latest Xcode / macOS helpers
+
+// -------- Helpers that NEVER reference enum identifiers --------
+
+static NSString *AttrName(NSInteger a) {
+    // Values are stable across AppKit; but we also fall back to "Attr(n)".
+    if (a == 0)  return @"NotAnAttribute";
+    if (a == 1)  return @"Left";
+    if (a == 2)  return @"Right";
+    if (a == 3)  return @"Top";
+    if (a == 4)  return @"Bottom";
+    if (a == 5)  return @"Leading";
+    if (a == 6)  return @"Trailing";
+    if (a == 7)  return @"Width";
+    if (a == 8)  return @"Height";
+    if (a == 9)  return @"CenterX";
+    if (a == 10) return @"CenterY";
+    if (a == 11) return @"Baseline";
+    if (a == 12) return @"FirstBaseline";
+    // We intentionally skip all *Margin variants.
+    return [NSString stringWithFormat:@"Attr(%ld)", (long)a];
+}
+
+static NSString *RelName(NSInteger r) {
+    if (r == 0) return @"<=";   // NSLayoutRelationLessThanOrEqual
+    if (r == 1) return @"==";   // NSLayoutRelationEqual
+    if (r == 2) return @">=";   // NSLayoutRelationGreaterThanOrEqual
+    return @"?";
+}
+
+static BOOL IsWidthAffectingAttribute(NSInteger a) {
+    // Don’t rely on margin attrs; check the core ones only.
+    return (a == 7 /*Width*/ ||
+            a == 1 /*Left*/  || a == 2 /*Right*/ ||
+            a == 5 /*Leading*/ || a == 6 /*Trailing*/ ||
+            a == 9 /*CenterX*/);
+}
+
+static BOOL IsWidthAffectingConstraint(NSLayoutConstraint *c) {
+    return IsWidthAffectingAttribute((NSInteger)c.firstAttribute) ||
+           IsWidthAffectingAttribute((NSInteger)c.secondAttribute);
+}
+
+static void DumpConstraint(NSLayoutConstraint *c) {
+    NSString *first  = c.firstItem  ? NSStringFromClass([c.firstItem  class]) : @"nil";
+    NSString *second = c.secondItem ? NSStringFromClass([c.secondItem class]) : @"nil";
+    NSLog(@"  • %@.%@ %@ %@.%@  mult=%.3f  const=%.3f  prio=%.0f  active=%d",
+          first,  AttrName((NSInteger)c.firstAttribute),
+          RelName((NSInteger)c.relation),
+          second, AttrName((NSInteger)c.secondAttribute),
+          c.multiplier, c.constant,
+          c.priority, c.isActive);
+}
+
+static void DumpViewHorizontalInfo(NSView *v, NSInteger depth) {
+    NSMutableString *indent = [NSMutableString string];
+    for (NSInteger i=0; i<depth; i++) [indent appendString:@"  "];
+
+    NSSize sz = v.frame.size;
+    NSLog(@"%@⟶ <%@:%p> frame=(%.1f×%.1f) hugH=%.0f compResH=%.0f ambiguous=%d",
+          indent, NSStringFromClass([v class]), v, sz.width, sz.height,
+          [v contentHuggingPriorityForOrientation:NSLayoutConstraintOrientationHorizontal],
+          [v contentCompressionResistancePriorityForOrientation:NSLayoutConstraintOrientationHorizontal],
+          v.hasAmbiguousLayout);
+
+    for (NSLayoutConstraint *c in v.constraints) {
+        if (IsWidthAffectingConstraint(c)) {
+            NSLog(@"%@  (owned)", indent);
+            DumpConstraint(c);
+        }
+    }
+
+    NSArray *aff = [v constraintsAffectingLayoutForOrientation:NSLayoutConstraintOrientationHorizontal];
+    if (aff.count) {
+        NSLog(@"%@  constraintsAffectingLayout(H):", indent);
+        for (NSLayoutConstraint *c in aff) DumpConstraint(c);
+    }
+
+    for (NSView *sv in v.subviews) DumpViewHorizontalInfo(sv, depth+1);
+}
+
+static void DumpSplitViewHints(NSView *root) {
+    if ([root isKindOfClass:[NSSplitView class]]) {
+        NSSplitView *sv = (NSSplitView *)root;
+        NSLog(@"[SPLIT] <%@: %p> isVertical=%d divider=%.1f subviews=%lu",
+              NSStringFromClass([sv class]), sv, sv.isVertical, sv.dividerThickness,
+              (unsigned long)sv.subviews.count);
+        for (NSView *svv in sv.subviews) {
+            NSLog(@"[SPLIT]   subview frame=(%.1f×%.1f) minW=%.1f maxW=%.1f",
+                  svv.frame.size.width, svv.frame.size.height,
+                  svv.fittingSize.width, CGFLOAT_MAX);
+        }
+    }
+    for (NSView *sv in root.subviews) DumpSplitViewHints(sv);
+}
+
+// -------- Public entry point --------
+
+void DumpWindowDiagnostics(NSWindow *w) {
+    if (!w) { NSLog(@"[Diag] Window is nil"); return; }
+
+    NSLog(@"[Window] %@ (ptr=%p)", w.title ?: @"<untitled>", w);
+    NSLog(@"[Window] styleMask=%lu resizable=%d",
+          (unsigned long)w.styleMask, (w.styleMask & NSWindowStyleMaskResizable) != 0);
+    NSLog(@"[Window] frame=(%.1f×%.1f) content=(%.1f×%.1f)",
+          w.frame.size.width, w.frame.size.height,
+          w.contentView.frame.size.width, w.contentView.frame.size.height);
+    NSLog(@"[Window] minSize=%@ maxSize=%@ contentMin=%@ contentMax=%@",
+          NSStringFromSize(w.minSize), NSStringFromSize(w.maxSize),
+          NSStringFromSize(w.contentMinSize), NSStringFromSize(w.contentMaxSize));
+    NSLog(@"[Window] resizeIncrements=%@ preservesContentDuringLiveResize=%d",
+          NSStringFromSize(w.resizeIncrements), w.preservesContentDuringLiveResize);
+
+    NSView *root = w.contentView;
+    if (!root) { NSLog(@"[Diag] No contentView"); return; }
+
+    NSLog(@"[ContentView] width-related constraints:");
+    for (NSLayoutConstraint *c in root.constraints) if (IsWidthAffectingConstraint(c)) DumpConstraint(c);
+
+    NSLog(@"[Hierarchy] Scanning…");
+    DumpViewHorizontalInfo(root, 0);
+
+    NSLog(@"[SplitView] Hints…");
+    DumpSplitViewHints(root);
+
+    NSLog(@"[End Diagnostics]");
+}
+
+
 
 @end

@@ -21,6 +21,8 @@
 #import "StravaImporter.h"
 #import "DMWindowController.h"
 #import "LeftSplitController.h"
+#import "OutlineSettingsDialogController.h"
+
 
 enum
 {
@@ -59,6 +61,8 @@ enum
 {
     ProgressBarHelper* _pbHelper;
 }
+@property(nonatomic, retain) NSPopover  *outlineSettingsPopover;
+
 - (NSString*) _getTempPath;
 - (void) _doTCXImport:(NSArray*)files showProgress:(BOOL)sp;
 - (void) _doTCXImportWithoutProgress:(NSArray*)files;
@@ -68,6 +72,7 @@ enum
 - (void) _doGPXImportWithProgress:(NSArray*)files;
 - (NSArray<NSString*>*) _postImportPanel:(NSArray<NSString*>*) extensions;
 -(void) _buildContextualMenu;
+-(NSButton*) _radioInBox:(NSBox*)box withTag:(NSInteger) tag;
 @end
 
 @implementation TrackPaneController
@@ -116,7 +121,8 @@ enum
 
 
 - (void)dealloc {
-    [_outlineVC release];
+    [_outlineSettingsPopover release];
+   [_outlineVC release];
     [_calendarVC release];
     [_selection release];
     [_parentSplitVC release];
@@ -131,6 +137,12 @@ enum
                                                  name:TrackSelectionDoubleClicked
                                                object:nil];
     
+    [[NSNotificationCenter defaultCenter] addObserverForName:SyncActivitiesKickOff
+                                                      object:nil
+                                                       queue:[NSOperationQueue mainQueue]  // <- main thread
+                                                  usingBlock:^(NSNotification *note){
+        [self _doSyncStravaActivities];
+    }];
    [super viewDidLoad];
 }
 
@@ -1110,6 +1122,13 @@ enum
 
 - (IBAction)syncStravaActivities:(id)sender
 {
+    [self _doSyncStravaActivities];
+}
+
+
+- (IBAction)_doSyncStravaActivities
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:SyncActivitiesStartingNotification object:self];
     NSWindow *host = self.view.window ?: NSApp.keyWindow ?: NSApp.mainWindow;
    // Get a fresh token (StravaAPI will refresh or re-auth as needed)
     [[StravaAPI shared] fetchFreshAccessToken:^(NSString * _Nullable token, NSError * _Nullable error) {
@@ -1230,6 +1249,8 @@ enum
 
                         [importer release];
                         [_pbHelper endProgressIndicator];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:SyncActivitiesStoppingNotification object:self];
+
                     });
                 }];
             };
@@ -1238,71 +1259,6 @@ enum
         });
     }];
 }
-
-
-#if 0
--(IBAction)showSummaryGraph:(id)sender
-{
-    TrackBrowserDocument* tbd = (TrackBrowserDocument*)
-    [[NSDocumentController sharedDocumentController] currentDocument];
-    MainWindowController* sc = [tbd windowController];
-    [sc showSummaryGraph:sender];
-}
-
-- (IBAction) showActivityDetail:(id) sender
-{
-    TrackBrowserDocument* tbd = (TrackBrowserDocument*)
-    [[NSDocumentController sharedDocumentController] currentDocument];
-    MainWindowController* sc = [tbd windowController];
-    [sc stopAnimations];
-    Track* track = [tbd currentlySelectedTrack];
-    if (track) {
-        Lap* lap = [tbd selectedLap];
-        ADWindowController* ad = [[ADWindowController alloc] initWithDocument:tbd];
-        [tbd addWindowController:ad];
-        [ad autorelease];
-        [ad showWindow:self];
-        [ad setTrack:track];
-        [ad setLap:lap];
-    }
-}
-
-- (IBAction) showActivityDataList:(id) sender
-{
-    TrackBrowserDocument* tbd = (TrackBrowserDocument*)
-    [[NSDocumentController sharedDocumentController] currentDocument];
-    MainWindowController* sc = [tbd windowController];
-    [sc stopAnimations];
-    Track* track = [tbd currentlySelectedTrack];
-    if (track) {
-        ALWindowController* al = [[ALWindowController alloc] initWithDocument:tbd];
-        [tbd addWindowController:al];
-        [al autorelease];
-        NSWindow* wind = [al window]; (void)wind;
-        
-        [al setTrack:track];
-        
-        NSDate* ct = [track creationTime];
-        NSString* name = [track attribute:kName] ?: @"";
-        NSString* title = @"Activity Data - ";
-        title = [title stringByAppendingString:name];
-        
-        NSString* format = @"%A, %B %d  %I:%M%p";
-        if (name.length != 0) format = @"  (%A, %B %d  %I:%M%p)";
-        
-        NSTimeZone* tz = [NSTimeZone timeZoneForSecondsFromGMT:[track secondsFromGMT]];
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        title = [title stringByAppendingString:
-                 [ct descriptionWithCalendarFormat:format
-                                          timeZone:tz
-                                            locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]]];
-#pragma clang diagnostic pop
-        [[al window] setTitle:title];
-        [al showWindow:self];
-    }
-}
-#endif
 
 
 
@@ -1452,6 +1408,80 @@ enum
     }
 }
 
+- (IBAction)showOutlineSettings:(id)sender {
+    NSButton *button = (NSButton *)sender;
+    
+    // Toggle if already visible
+    if (self.outlineSettingsPopover && [self.outlineSettingsPopover isShown]) {
+        [self.outlineSettingsPopover performClose:sender];
+        return;
+    }
+    
+    NSPopover *p = [[NSPopover alloc] init];
+    [p setBehavior:NSPopoverBehaviorTransient];   // ⬅️ closes on any outside click
+    [p setAnimates:YES];
+    [p setDelegate:self];
+    
+    OutlineSettingsDialogController* ovc =
+        [[[OutlineSettingsDialogController alloc] initWithNibName:@"OutlineSettingsDialogController" bundle:nil] autorelease];
+    [p setContentViewController:ovc];
+    [ovc setTrackPaneController:self];
 
+    // Optional fixed size; omit if Auto Layout sizes it
+    // [p setContentSize:NSMakeSize(360.0, 200.0)];
+
+    self.outlineSettingsPopover = p;   // retain (MRC)
+    [p release];
+
+    // Anchor under the button with the arrow pointing to it
+    [self.outlineSettingsPopover showRelativeToRect:[button bounds]
+                                    ofView:button
+                             preferredEdge:NSRectEdgeMaxY]; // below the button
+    
+    [self _setupPopup:ovc];
+}
+
+-(void) _setupPopup:(OutlineSettingsDialogController*) ovc
+{
+    int theTag = [Utils intFromDefaults:RCBDefaultBrowserViewType];
+    NSButton* theButton = [self _radioInBox:ovc.outlineStyleBox
+                                    withTag:theTag];
+    if (theButton) {
+        theButton.state = NSControlStateValueOn;
+    }
+}
+
+
+// Finds a radio button (NSButtonTypeRadio) with a given tag inside a container.
+static NSButton * _findRadioInView(NSView *view, NSInteger tag)
+{
+    for (NSView *sub in [view subviews]) {
+        if ([sub isKindOfClass:[NSButton class]]) {
+            NSButton *btn = (NSButton *)sub;
+            ///NSButtonType type = [[btn cell] buttonType];
+            if (/* type == NSButtonTypeRadio && */ [btn tag] == tag) {
+                return btn; // not retainedComparison
+            }
+        }
+        NSButton *found = _findRadioInView(sub, tag);
+        if (found) return found;
+    }
+    return nil;
+}
+
+// Convenience for NSBox
+-(NSButton*) _radioInBox:(NSBox *)box withTag:(NSInteger)tag
+{
+    NSView *root = [box contentView] ?: (NSView *)box;
+    return _findRadioInView(root, tag);
+}
+
+#pragma mark - NSPopoverDelegate
+
+- (void)popoverDidClose:(NSNotification *)note {
+    // Clean up so it can be re-created next time
+    self.outlineSettingsPopover = nil;
+    self.outlineSettingsPopover = nil;
+}
 
 @end

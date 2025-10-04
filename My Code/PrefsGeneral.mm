@@ -81,6 +81,7 @@ NSString*	RCBDefaultZoneTypeForStatsHUD	= @"DefaultZoneTypeForStatsHUD";
 NSString*	RCBDefaultSearchOptions			= @"DefaultSearchOptions";
 NSString*	RCBDefaultSplitIndex			= @"DefaultSplitIndex";
 NSString*	RCBDefaultSplitGraphItem		= @"DefaultSplitGraphItem";
+NSString*   RCBDefaultSplitVariant          = @"RCBDefaultSplitVariant";
 NSString*	RCBDefaultLastMainDisplay		= @"DefaultLastMainDisplay";		// 0 = browser, 1 = calendar
 NSString*	RCBDefaultCustomSplitDistance	= @"DefaultCustomSplitDistance";
 NSString*	RCBDefaultShowIntervalMarkers	= @"DefaultShowIntervalMarkers";

@@ -37,7 +37,7 @@
 		EquipmentItem* ei = [eis objectAtIndex:i];
 		if (ei)
 		{
-			BOOL uses = [ei usesForTrack:[tbDocument currentlySelectedTrack]];
+			BOOL uses = [ei usesForTrack:[tbDocument.windowControllers.firstObject currentlySelectedTrack]];
 			if (uses) [mis addIndex:i];
 		}
 	}

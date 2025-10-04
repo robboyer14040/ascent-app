@@ -36,8 +36,6 @@ NSString * const AscentUTIDatabase      = @"com.montebellosoftware.ascent.db";
 
 @interface TrackBrowserDocument : NSDocument
 {
-	Track*							currentlySelectedTrack;
-	Lap*							selectedLap;
 	BackupDelegate*					backupDelegate;
     NSURL*                          databaseFileURL;
 }
@@ -54,8 +52,6 @@ NSString * const AscentUTIDatabase      = @"com.montebellosoftware.ascent.db";
 - (NSDate*)lastSyncTime;
 - (void)setLastSyncTime:(NSDate*) d;
 - (void)setTracks:(NSMutableArray*)tracks;
-- (Track*) currentlySelectedTrack;
-- (void)setCurrentlySelectedTrack:(Track*)t;
 - (NSMutableArray*)trackArray;
 -(void) addTracks:(NSArray*)arr;
 -(NSArray*) addTracksAfterStravaSync:(NSArray*)arr;
@@ -79,8 +75,6 @@ NSString * const AscentUTIDatabase      = @"com.montebellosoftware.ascent.db";
 -(void) setColInfoDict:(NSMutableDictionary*)dict;
 -(NSMutableDictionary*) splitsColInfoDict;
 -(void) setSplitsColInfoDict:(NSMutableDictionary*)dict;
--(Lap*) selectedLap;
--(void) setSelectedLap:(Lap*)l;
 -(BOOL) insertLapMarker:(NSTimeInterval)atActiveTimeDelta inTrack:(Track*)track;
 -(BOOL) addLap:(Lap*)lap toTrack:(Track*)track;
 -(BOOL) deleteLap:(Lap*)lap fromTrack:(Track*)track;

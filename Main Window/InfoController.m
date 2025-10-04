@@ -512,7 +512,7 @@ shouldAttemptToRecognizeWithEvent:(NSEvent *)event
 - (NSString *)filenameShownInThumbnailIfKnown {
     // If you keep the current filename, return it here; otherwise return nil.
     // For example, if you just showed the first image from localMediaItems:
-    // return self.currentlySelectedTrack.localMediaItems.firstObject;
+    // return _selection.selectedTrack.localMediaItems.firstObject;
     return nil;
 }
 

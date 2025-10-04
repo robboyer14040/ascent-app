@@ -11,6 +11,7 @@
                 <outlet property="contentContainer" destination="JjL-DU-5RS" id="cUg-He-3VM"/>
                 <outlet property="reservedTopArea" destination="cdn-qI-UNJ" id="Jw6-aG-9QF"/>
                 <outlet property="rightColsButton" destination="hEc-i3-BPX" id="gCk-hh-QlV"/>
+                <outlet property="syncButton" destination="lOg-S1-U9H" id="yf3-Wn-85R"/>
                 <outlet property="window" destination="fMe-9M-Iya" id="TVE-uC-1LK"/>
             </connections>
         </customObject>
@@ -19,17 +20,17 @@
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="MainWindow" animationBehavior="default" id="fMe-9M-Iya">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="240" y="256" width="800" height="600"/>
+            <rect key="contentRect" x="240" y="256" width="896" height="618"/>
             <rect key="screenRect" x="0.0" y="0.0" width="2240" height="1235"/>
             <view key="contentView" id="v38-fw-04a">
-                <rect key="frame" x="0.0" y="0.0" width="800" height="600"/>
+                <rect key="frame" x="0.0" y="0.0" width="896" height="618"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <visualEffectView blendingMode="behindWindow" material="appearanceBased" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="cdn-qI-UNJ">
-                        <rect key="frame" x="0.0" y="574" width="800" height="25"/>
+                        <rect key="frame" x="0.0" y="592" width="896" height="25"/>
                         <subviews>
-                            <button wantsLayer="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hEc-i3-BPX" userLabel="Col">
-                                <rect key="frame" x="771" y="-5.5" width="24.5" height="32"/>
+                            <button toolTip="Toggle map, profile, and info/metrics" wantsLayer="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hEc-i3-BPX" userLabel="Col">
+                                <rect key="frame" x="867" y="-5.5" width="24.5" height="32"/>
                                 <buttonCell key="cell" type="roundRect" title="RCol" bezelStyle="roundedRect" imagePosition="only" alignment="center" alternateImage="table" state="on" inset="2" id="87U-e5-sbc" userLabel="Col">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="cellTitle"/>
@@ -42,15 +43,55 @@
                                     <action selector="toggleRightColumns:" target="-2" id="xRO-Mi-nLh"/>
                                 </connections>
                             </button>
+                            <button toolTip="Sync activities " wantsLayer="YES" allowsExpansionToolTips="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lOg-S1-U9H" userLabel="Sync Button">
+                                <rect key="frame" x="9.5" y="1" width="20.5" height="20"/>
+                                <buttonCell key="cell" type="bevel" bezelStyle="rounded" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="3DN-c0-rCi">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <imageReference key="image" image="arrow.trianglehead.2.clockwise.rotate.90" catalog="system" symbolScale="large"/>
+                                </buttonCell>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="19" id="zba-WO-ES7"/>
+                                </constraints>
+                                <connections>
+                                    <action selector="syncActivities:" target="-2" id="5Ed-ou-6Nt"/>
+                                </connections>
+                            </button>
+                            <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9tC-5o-evS" userLabel="Transport">
+                                <rect key="frame" x="355" y="-2" width="187" height="24"/>
+                                <segmentedCell key="cell" alignment="left" style="rounded" trackingMode="selectOne" id="I6J-Qb-dk9">
+                                    <font key="font" metaFont="system"/>
+                                    <segments>
+                                        <segment toolTip="rewind to beginning" image="backward.end.alt" catalog="system" width="28"/>
+                                        <segment toolTip="fast forward in reverse" image="backward" catalog="system" width="27" tag="1"/>
+                                        <segment toolTip="stop playback" image="stop" catalog="system" width="27" selected="YES">
+                                            <nil key="label"/>
+                                        </segment>
+                                        <segment image="play" catalog="system">
+                                            <nil key="label"/>
+                                        </segment>
+                                        <segment toolTip="fast foward" image="forward" catalog="system">
+                                            <nil key="label"/>
+                                        </segment>
+                                        <segment toolTip="go to the end" image="forward.end.alt" catalog="system">
+                                            <nil key="label"/>
+                                        </segment>
+                                    </segments>
+                                </segmentedCell>
+                            </segmentedControl>
                         </subviews>
                         <constraints>
+                            <constraint firstItem="9tC-5o-evS" firstAttribute="top" secondItem="cdn-qI-UNJ" secondAttribute="top" constant="4" id="4EO-g0-iul"/>
+                            <constraint firstItem="lOg-S1-U9H" firstAttribute="leading" secondItem="cdn-qI-UNJ" secondAttribute="leading" constant="10" id="61C-UR-pCl"/>
                             <constraint firstAttribute="trailing" secondItem="hEc-i3-BPX" secondAttribute="trailing" constant="5" id="9mY-69-TEb"/>
+                            <constraint firstItem="lOg-S1-U9H" firstAttribute="top" secondItem="cdn-qI-UNJ" secondAttribute="top" constant="10" id="Yla-gQ-8S0"/>
                             <constraint firstItem="hEc-i3-BPX" firstAttribute="top" secondItem="cdn-qI-UNJ" secondAttribute="top" constant="3" id="egv-ey-gPM"/>
+                            <constraint firstItem="9tC-5o-evS" firstAttribute="centerX" secondItem="cdn-qI-UNJ" secondAttribute="centerX" id="qcc-gu-LHd"/>
                             <constraint firstAttribute="height" constant="25" id="sCK-et-igy"/>
                         </constraints>
                     </visualEffectView>
                     <customView translatesAutoresizingMaskIntoConstraints="NO" id="JjL-DU-5RS">
-                        <rect key="frame" x="0.0" y="0.0" width="800" height="572"/>
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="590"/>
                     </customView>
                 </subviews>
                 <constraints>
@@ -63,11 +104,18 @@
                     <constraint firstAttribute="trailing" secondItem="JjL-DU-5RS" secondAttribute="trailing" id="yP7-MU-v2t"/>
                 </constraints>
             </view>
-            <point key="canvasLocation" x="-205" y="164"/>
+            <point key="canvasLocation" x="-133" y="93"/>
         </window>
     </objects>
     <resources>
+        <image name="arrow.trianglehead.2.clockwise.rotate.90" catalog="system" width="21" height="20"/>
+        <image name="backward" catalog="system" width="20" height="12"/>
+        <image name="backward.end.alt" catalog="system" width="22" height="12"/>
+        <image name="forward" catalog="system" width="20" height="12"/>
+        <image name="forward.end.alt" catalog="system" width="22" height="12"/>
+        <image name="play" catalog="system" width="12" height="13"/>
         <image name="sidebar.trailing" catalog="system" width="24" height="18"/>
+        <image name="stop" catalog="system" width="14" height="13"/>
         <image name="table" width="128" height="128"/>
     </resources>
 </document>

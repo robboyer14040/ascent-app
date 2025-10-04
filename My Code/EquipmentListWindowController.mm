@@ -42,6 +42,9 @@
 
 @end
 
+@interface EquipmentListWindowController ()
+@property(nonatomic, retain) Track* selectedTrack;
+@end
 
 @implementation EquipmentListWindowController
 
@@ -75,6 +78,7 @@
 											 selector:@selector(prefsChanged:)
 												 name:@"PreferencesChanged"
 											   object:nil];
+    _selectedTrack = nil;
 	return self;
 }
 
@@ -87,6 +91,7 @@
 	[forceSelectionUUID release];
 	[alphaSortDescriptors release];
 	[dateSortDescriptors release];
+    [_selectedTrack release];
 	[super dealloc];
 }	
 
@@ -293,9 +298,13 @@
 {
 	// need to force equipment box to update
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"TrackChanged" 
-														object:[tbDocument currentlySelectedTrack]];
+														object:_selectedTrack];
 }
 
+-(Track*)_selectedTrack
+{
+    return nil; /// FIXME!
+}
 
 -(void)updateEquipmentListAfterAdd:(id)junk
 {
@@ -414,7 +423,7 @@
 	{
 	// lame linear search here, @@FIXME@@
 		NSArray* arr = [equipmentItemsArrayController arrangedObjects];
-		int count = [arr count];
+        NSUInteger count = [arr count];
 		for (int i=0; i<count; i++)
 		{
 			EquipmentItem* e = [arr objectAtIndex:i];
@@ -552,8 +561,8 @@
 	EquipmentItem* ei = [[equipmentItemsArrayController selectedObjects] lastObject];
 	if (!ei) return;
 	NSArray* arrangedObjs = [equipmentTypesArrayController arrangedObjects];
-	int idx = [sender indexOfSelectedItem];
-	int ct = [arrangedObjs count];	// 'count' returns unsigned int
+    NSInteger idx = [sender indexOfSelectedItem];
+    NSUInteger ct = [arrangedObjs count];
 	if (IS_BETWEEN(0, idx, (ct-1)))
 	{
 		id et = [arrangedObjs objectAtIndex:idx];
@@ -675,7 +684,7 @@
 			EquipmentItem* ei = [selObjs lastObject];
 			// should be sorted from most recent date to oldest
 			NSSet* maintenanceLogs = [self filteredMaintenanceLogsForEquipmentItem:ei];
-			int numLogs = maintenanceLogs ? [maintenanceLogs count] : 0;
+            NSUInteger numLogs = maintenanceLogs ? [maintenanceLogs count] : 0;
 			if ([[aTableColumn identifier] isEqualToString:@"dist"])
 			{
 				float v = 0.0;
@@ -814,7 +823,7 @@
 {
 	NSString* s = @"";
 	NSArray* arrangedObjs = [equipmentTypesArrayController arrangedObjects];
-	int ct = [arrangedObjs count];	// 'count' returns unsigned int
+	NSUInteger ct = [arrangedObjs count];
 	if (IS_BETWEEN(0, index, (ct-1)))
 	{
 		id et = [arrangedObjs objectAtIndex:index];

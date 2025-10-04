@@ -14,7 +14,7 @@
 @class SplitDragHandleView;
 @class LeftSplitController;
 
-@interface TrackPaneController : NSViewController <NSUserInterfaceValidations>
+@interface TrackPaneController : NSViewController <NSUserInterfaceValidations, NSPopoverDelegate>
 {
 @private
     TrackBrowserDocument    *_document; // assign
@@ -75,6 +75,7 @@
 - (IBAction)combineActivities:(id)sender;
 - (IBAction)showActivityDetail:(id)sender;
 - (IBAction)showMapDetail:(id)sender;
+- (IBAction)showOutlineSettings:(id)sender;
 
 
 // Content host below the bar

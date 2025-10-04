@@ -306,35 +306,35 @@
 
 -(void)setCurrentEquipmentItemsAsDefault:(TrackBrowserDocument*)tbDocument
 {
-	Track* track = [tbDocument currentlySelectedTrack];
-	if (track)
-	{
-		EquipmentTrackInfo* trackInfo = [self fetchItemByValue:[track uuid]
-														forKey:@"trackID"
-													  inEntity:@"EquipmentTrackInfo"];
-		NSArray* el = [self getEquipmentList];
-		if (el && trackInfo)
-		{
-			NSSet* equipmentItems = [trackInfo equipmentItems];
-			EquipmentItem* eimain = [trackInfo mainEquipment];
-			for (EquipmentItem* ei in el)
-			{
-				BOOL used = [equipmentItems containsObject:ei];
-				[ei setPrimitiveValue:[NSNumber numberWithBool:used]
-							   forKey:@"default"];
-				int flags = [[ei flags] intValue];
-				if ([[eimain uniqueID] isEqualToString:[ei uniqueID]])
-				{
-					SET_FLAG(flags, kItemIsDefaultMain);
-				}
-				else
-				{
-					CLEAR_FLAG(flags, kItemIsDefaultMain);
-				}
-				[ei setFlags:[NSNumber numberWithInt:flags]];
-			}
-		}
-	}
+//	Track* track = [tbDocument currentlySelectedTrack];
+//	if (track)
+//	{
+//		EquipmentTrackInfo* trackInfo = [self fetchItemByValue:[track uuid]
+//														forKey:@"trackID"
+//													  inEntity:@"EquipmentTrackInfo"];
+//		NSArray* el = [self getEquipmentList];
+//		if (el && trackInfo)
+//		{
+//			NSSet* equipmentItems = [trackInfo equipmentItems];
+//			EquipmentItem* eimain = [trackInfo mainEquipment];
+//			for (EquipmentItem* ei in el)
+//			{
+//				BOOL used = [equipmentItems containsObject:ei];
+//				[ei setPrimitiveValue:[NSNumber numberWithBool:used]
+//							   forKey:@"default"];
+//				int flags = [[ei flags] intValue];
+//				if ([[eimain uniqueID] isEqualToString:[ei uniqueID]])
+//				{
+//					SET_FLAG(flags, kItemIsDefaultMain);
+//				}
+//				else
+//				{
+//					CLEAR_FLAG(flags, kItemIsDefaultMain);
+//				}
+//				[ei setFlags:[NSNumber numberWithInt:flags]];
+//			}
+//		}
+//	}
 }
 
 

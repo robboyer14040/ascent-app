@@ -72,6 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setCalculatedPower:(float)p;
 - (BOOL)powerIsCalculated;
 - (void)setDistance:(float)d;       // set calculated distance
+- (BOOL)validLocation;
 - (BOOL)validAltitude;
 - (BOOL)validDistance;
 - (BOOL)validOrigDistance;

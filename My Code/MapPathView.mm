@@ -817,24 +817,31 @@ static double getMetersPerTile(int zoom)
     NSUInteger numPts = [points count];
 	if (numPts > 2)
 	{
-		double northing, easting;
-		int zone;
-		PathPoint* mpt;
+        double northing = 0.0;
+        double easting = 0.0;
+		int zone = 0;
+        BOOL foundValidLocation = NO;
 		for (int i=0; i<numPts; i++)
 		{
 			TrackPoint* pt = [points objectAtIndex:i];
-			[self calcUTMForPoint:pt
-						nextPoint:nil
-							ratio:1.0
-						 eastingP:&easting
-						northingP:&northing
-							zoneP:&zone];
-			// if invalid point, use positioning from LAST good point
-			mpt = [[PathPoint alloc] initWithData:pt
-										  northing:northing 
-										   easting:easting 
-											  zone:zone];
-			[plottedPoints addObject:mpt];
+            BOOL pointHasValidLocation = [pt validLatLon];
+            if (pointHasValidLocation) {
+                foundValidLocation = YES;
+                [self calcUTMForPoint:pt
+                            nextPoint:nil
+                                ratio:1.0
+                             eastingP:&easting
+                            northingP:&northing
+                                zoneP:&zone];
+            } else if (!foundValidLocation) {
+                continue;   // haven't found a valid loc yet, ignore
+            }
+            // if invalid point, use positioning from LAST good point
+            PathPoint* mpt = [[[PathPoint alloc] initWithData:pt
+                                                   northing:northing
+                                                    easting:easting
+                                                       zone:zone] autorelease];
+            [plottedPoints addObject:mpt];
 		}
 	}
 	overrideDefaults = NO;
@@ -1651,28 +1658,30 @@ struct tStringInfo
          NSPoint p;
          p.x = x; p.y = y;
          pt->point = p;
-         if (count == 0)
-            [trackPath moveToPoint:p];
-         else
-            [trackPath lineToPoint:p];
-         ++count;
-         
-         if (selectedLap != nil)
-         {
-            //if ([currentTrack isTimeOfDayInLap:selectedLap tod:[pt time]])
-			if ([selectedLap isDeltaTimeDuringLap:[pt wallClockDelta]])
-            {
-               if (lapCount == 0)
-               {
-                  [lapPath moveToPoint:p];
-               }
-               else
-               {
-                  [lapPath lineToPoint:p];
-               }
-               ++lapCount;
-            }
-         }
+          if ([[pt trackPoint] validLocation]) {
+              if (count == 0)
+                  [trackPath moveToPoint:p];
+              else
+                  [trackPath lineToPoint:p];
+              ++count;
+              
+              if (selectedLap != nil)
+              {
+                  //if ([currentTrack isTimeOfDayInLap:selectedLap tod:[pt time]])
+                  if ([selectedLap isDeltaTimeDuringLap:[pt wallClockDelta]])
+                  {
+                      if (lapCount == 0)
+                      {
+                          [lapPath moveToPoint:p];
+                      }
+                      else
+                      {
+                          [lapPath lineToPoint:p];
+                      }
+                      ++lapCount;
+                  }
+              }
+          }
       }
    }   
 }

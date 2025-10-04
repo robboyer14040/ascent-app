@@ -105,9 +105,9 @@ int searchTagToMask(int searchTag);
 -(void) addTracksInItem:(TrackBrowserItem*)bi toArray:(NSMutableArray*)arr;
 -(void) addBrowserItemsWithTracks:(TrackBrowserItem*)bi toArray:(NSMutableArray*)arr;
 -(void)rebuildBrowserAndRestoreState:(Track*)track selectLap:(Lap*)lap;
--(void)resetSelectedTrack:(Track*)trk lap:(Lap*)lap;
+-(void)resetSelectedTrack:(Track*)trk lap:(Lap*)lap ;
 - (BOOL)_fetchMissingItemsForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter;
-- (void)_fetchWeatherAndGEOInfoForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter;
+- (void)_fetchWeatherAndGEOInfoForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter force:(BOOL)force;
 - (NSURL*) getRootMediaURL;
 ///- (BOOL)chooseStravaRootFolderAndSaveBookmarkFromWindow:(NSWindow *)win;
 - (void) startProgressIndicator:(NSString*)text;
@@ -223,8 +223,10 @@ int searchTagToMask(int searchTag);
                                                       object:nil
                                                        queue:[NSOperationQueue mainQueue]  // <- main thread
                                                   usingBlock:^(NSNotification *note){
-       [self trackArrayChanged:note];  // now guaranteed main thread
-   }];
+        [self trackArrayChanged:note];  // now guaranteed main thread
+    }];
+    
+
 }
 
 
@@ -1595,79 +1597,18 @@ int searchTagToMask(int searchTag)
     _selection.selectedTrack = trk;
     _selection.selectedLap = lap;
     [[AnimTimer defaultInstance] setAnimTime:0];
-    [_document setCurrentlySelectedTrack:trk];
-    [_document setSelectedLap:lap];
-    ///[self buildInfoPopupMenus];
     
     if (_selection.selectedTrack != nil)
     {
-        ///[activityDetailButton setEnabled:YES];
-        ///[detailedMapButton setEnabled:YES];
-        ///[compareActivitiesButton setEnabled:YES];
-        ///[self enableControlsRequiringASelectedTrack:YES];
-        ///BOOL hasPoints = [[trk goodPoints] count] > 1;
-        ///[transparentMapAnimView setHidden:!hasPoints];
-        ///[transparentMiniProfileAnimView setHidden:!hasPoints];
-        ///[mapPathView setSelectedLap:currentlySelectedLap];
-        ///[miniProfileView setSelectedLap:currentlySelectedLap];
         [[NSNotificationCenter defaultCenter] postNotificationName:@"LapSelectionChanged" object:_selection.selectedLap];
-        ///[miniProfileView setCurrentTrack:currentlySelectedTrack];
-        ///[mapPathView setCurrentTrack:currentlySelectedTrack];
-        /// [self syncTrackToAttributesAndEditWindow:_selection.selectedTrack];
-        ///[equipmentBox setTrack:trk];
         currentTrackPos = 0;
         _selection.selectedTrack.animTimeBegin = 0.0;
         _selection.selectedTrack.animTimeEnd =  _selection.selectedTrack.movingDuration;
     }
     NSInteger row = [_outlineView  selectedRow];
-    TrackBrowserItem* bi = [_outlineView  itemAtRow:row];
-    if (bi != nil)
-    {
-        [_document setCurrentlySelectedTrack:[bi track]];
-    }
-    //        else
-    //        {
-    ///[activityDetailButton setEnabled:NO];
-    ///[detailedMapButton setEnabled:NO];
-    //            [compareActivitiesButton setEnabled:NO];
-    //            [transparentMapAnimView setHidden:YES];
-    //            [transparentMiniProfileAnimView setHidden:YES];
-    //            [self enableControlsRequiringASelectedTrack:NO];
-    //            [miniProfileView setCurrentTrack:nil];
-    //            [mapPathView setCurrentTrack:nil];
-    //            [mapPathView setSelectedLap:nil];
-    //            [miniProfileView setSelectedLap:nil];
-    //            [self clearAttributes];
-    //        }
-    
-    
-    
-    
-    //        [[AnimTimer defaultInstance] updateTimerDuration];
-    //        [mapPathView setDefaults];
-    //        [miniProfileView setNeedsDisplay:YES];
-    //        [metricsEventTable reloadData];
-    //        [self rebuildSplitTable];
-    //        [splitsGraphView setSplitArray:splitArray
-    //                           splitsTable:splitsTableView];
-    //        [miniProfileView setSplitArray:splitArray];
-    //        [mapPathView setSplitArray:splitArray];
     if (_selection.selectedLap)
     {
-        ///float start = [_selection.selectedTrack lapActiveTimeDelta:_selection.selectedLap];
-        ///float end = start + [_selection.selectedTrack movingDurationOfLap:_selection.selectedLap] - 1.0;    // end 1 second before next starts
-        //printf("SELECT LAP, lap start:%0.1f end:%01.f\n", start, end);
-        //            [splitsGraphView setSelectedLapTimes:start
-        //                                             end:end];
     }
-    //        else
-    //        {
-    ////            [splitsGraphView setSelectedLapTimes:-42.0
-    //                                             end:-43.0];
-    //        }
-    //        [splitsGraphView setGraphItem:[Utils intFromDefaults:RCBDefaultSplitGraphItem]];
-    //        [splitsTableView reloadData];
-    //    }
 }
 
 
@@ -1675,6 +1616,7 @@ int searchTagToMask(int searchTag)
 // returns YES if everything is ready to go, NO if things are still updating async
 - (BOOL)_fetchMissingItemsForTrack:(Track*)track  selectTrackAfter:(BOOL)selectAfter
 {
+
     if (track.points.count == 0 /*&& track.pointsEverSaved */)
     {
         NSURL* url = _document.fileURL;
@@ -1694,11 +1636,11 @@ int searchTagToMask(int searchTag)
             }
         }
     }
-    
-    
-    BOOL stravaFirst = ShiftKeyIsDown() || ([track.points count] == 0);
+    BOOL force = ShiftKeyIsDown() ;
+    BOOL stravaFirst = force || ([track.points count] == 0);
     if (stravaFirst)
     {
+        [[NSNotificationCenter defaultCenter] postNotificationName:SyncActivitiesStartingNotification object:self];
         [self startProgressIndicator:@"fetching detailed Strava info..."];
         [[StravaImporter shared] enrichTrack:track
                              withSummaryDict:nil
@@ -1714,31 +1656,42 @@ int searchTagToMask(int searchTag)
                 
             }
             [self simpleUpdateBrowserTrack:track];
-            if (selectAfter)
+            if (selectAfter && !error) {
+                // prevent infinite loop by not resetting selected track
                 [self resetSelectedTrack:track lap:nil];
+            }
             [_document updateChangeCount:NSChangeDone];
             [self _fetchWeatherAndGEOInfoForTrack:track
-                                 selectTrackAfter:NO];
+                                 selectTrackAfter:NO
+                                            force:force];
             [self endProgressIndicator];
             
         }];
         return NO;
     }
     [self _fetchWeatherAndGEOInfoForTrack:track
-                         selectTrackAfter:NO];
+                         selectTrackAfter:NO
+                                    force:force];
     return YES;
 }
 
 
-- (void)_fetchWeatherAndGEOInfoForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter
+- (void)_fetchWeatherAndGEOInfoForTrack:(Track*)track selectTrackAfter:(BOOL)selectAfter force:(BOOL)force
 {
+    
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+        NSString* curWeather = [track attribute:kWeather];
+        NSString* curLocation = [track attribute:kLocation];
         NSError* err = nil;
-        NSArray* weather = [WeatherAPI fetchWeatherTimelineForTrack:track
-                                                              error:&err];
-        if (!err) {
+        NSArray* weather = nil;
+        if ((curWeather.length == 0) || force) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:SyncActivitiesStartingNotification object:self];
+            weather = [WeatherAPI fetchWeatherTimelineForTrack:track
+                                                        error:&err];
+        }
+        NSMutableString* weatherString = [NSMutableString string];
+        if (weather) {
             NSMutableArray* foundArray = [NSMutableArray array];
-            NSMutableString* weatherString = [NSMutableString string];
             for (NSDictionary<NSString *, NSNumber*> * dict in weather) {
                 NSNumber* wcode = dict[kWXCode];
                 if (wcode)
@@ -1752,39 +1705,55 @@ int searchTagToMask(int searchTag)
                     }
                 }
             }
-            // update UI on main after
-            dispatch_async(dispatch_get_main_queue(), ^{
+        }
+        // update UI on main after
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (weatherString.length > 0) {
                 [track setAttribute:kWeather
                         usingString:weatherString];
-            });
-        }
+                [_document updateChangeCount:NSChangeDone];
+                [[NSNotificationCenter defaultCenter] postNotificationName:TrackFieldsChanged object:self];
+             }
+        });
         
-        NSArray *locs = [LocationAPI startEndCityCountryForTrack:track
-                                                    numLocations:5
-                                                           error:&err];
+        err = nil;
+        NSArray *locs = nil;
+        if (force || (track.hasLocationData && (curLocation.length == 0))) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:SyncActivitiesStartingNotification object:self];
+            locs = [LocationAPI startEndCityCountryForTrack:track
+                                               numLocations:5
+                                                      error:&err];
+        }
         if (!err) {
             // update UI on main after
             dispatch_async(dispatch_get_main_queue(), ^{
-                NSMutableString* str = [NSMutableString stringWithString:@""];
-                for (NSDictionary* locDict in locs) {
-                    [str appendString:locDict[@"city"]];
-                    if (locs.lastObject != locDict)
-                        [str appendString:@" → "];
+                if (locs) {
+                    NSMutableString* str = [NSMutableString stringWithString:@""];
+                    for (NSDictionary* locDict in locs) {
+                        NSString* city = locDict[@"city"];
+                        if (city) {
+                            [str appendString:city];
+                            if (locs.lastObject != locDict)
+                                [str appendString:@" → "];
+                        }
+                    }
+                    [track setAttribute:kLocation
+                            usingString:str];
+                    [self simpleUpdateBrowserTrack:track];
+                    if (selectAfter)
+                        [self resetSelectedTrack:track lap:nil];
+                    [_document updateChangeCount:NSChangeDone];
                 }
-                [track setAttribute:kLocation
-                        usingString:str];
-                [self simpleUpdateBrowserTrack:track];
-                if (selectAfter)
-                    [self resetSelectedTrack:track lap:nil];
-                [_document updateChangeCount:NSChangeDone];
                 [[NSNotificationCenter defaultCenter] postNotificationName:TrackFieldsChanged object:self];
-           });
+                [[NSNotificationCenter defaultCenter] postNotificationName:SyncActivitiesStoppingNotification object:self];
+            });
         }
         else {
             NSLog(@"Geo failed: %@", [err localizedDescription]);
-        }
+            [[NSNotificationCenter defaultCenter] postNotificationName:SyncActivitiesStoppingNotification object:self];
+       }
     });
-    
+
 }
 
 

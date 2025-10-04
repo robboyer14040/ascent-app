@@ -12,7 +12,6 @@
                 <outlet property="contentContainer" destination="mr7-Ax-sbt" id="2JY-5G-8RW"/>
                 <outlet property="controlsBar" destination="lFF-BD-QU6" id="2x5-tk-GHH"/>
                 <outlet property="dragHandle" destination="m04-pa-sGf" id="Y65-yx-Rav"/>
-                <outlet property="outlineOptionsMenu" destination="Ocs-zh-Jcj" id="4Ys-ef-S3S"/>
                 <outlet property="searchField" destination="vXB-jx-KOT" id="IVs-47-DS9"/>
                 <outlet property="toggleLowerSplitButton" destination="9Sb-xN-FUg" id="bmK-so-FwE"/>
                 <outlet property="view" destination="5iD-PW-0U4" id="V13-sh-HlR"/>
@@ -69,24 +68,30 @@
             <point key="canvasLocation" x="-93" y="-341"/>
         </menu>
         <customView id="5iD-PW-0U4" userLabel="Main View">
-            <rect key="frame" x="0.0" y="0.0" width="862" height="529"/>
+            <rect key="frame" x="0.0" y="0.0" width="936" height="506"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <visualEffectView blendingMode="withinWindow" material="appearanceBased" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="lFF-BD-QU6" userLabel="Top Bar">
-                    <rect key="frame" x="0.0" y="485" width="862" height="44"/>
+                    <rect key="frame" x="0.0" y="462" width="936" height="44"/>
                     <subviews>
-                        <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1Sv-lI-wjo">
-                            <rect key="frame" x="14" y="10" width="142" height="24"/>
-                            <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="6YQ-qz-LLI">
+                        <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1Sv-lI-wjo" userLabel="Outline settings">
+                            <rect key="frame" x="14" y="10" width="65" height="24"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="61" id="y40-WG-lhX"/>
+                            </constraints>
+                            <segmentedCell key="cell" alignment="left" style="rounded" trackingMode="selectOne" id="6YQ-qz-LLI">
                                 <font key="font" metaFont="system"/>
                                 <segments>
-                                    <segment label="Outline" width="67" selected="YES"/>
-                                    <segment label="Calendar" width="66" tag="1"/>
+                                    <segment toolTip="show activity outline" image="list.bullet.rectangle" catalog="system" width="29" selected="YES"/>
+                                    <segment toolTip="show activity calendar" image="calendar" width="27" tag="1"/>
                                 </segments>
                             </segmentedCell>
+                            <connections>
+                                <action selector="showOutlineSettings:" target="-2" id="8nA-fe-l2W"/>
+                            </connections>
                         </segmentedControl>
                         <searchField wantsLayer="YES" focusRingType="none" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vXB-jx-KOT">
-                            <rect key="frame" x="245" y="11" width="372" height="22"/>
+                            <rect key="frame" x="101" y="11" width="690" height="22"/>
                             <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="339-oP-bgE">
                                 <font key="font" metaFont="system"/>
                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -100,62 +105,40 @@
                                 <outlet property="searchMenuTemplate" destination="V5d-Rc-CSN" id="bdk-ib-WUb"/>
                             </connections>
                         </searchField>
-                        <popUpButton wantsLayer="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ocs-zh-Jcj">
-                            <rect key="frame" x="753" y="9" width="97" height="25"/>
-                            <popUpButtonCell key="cell" type="push" title="Normal" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="wjy-9j-itP" id="1Mn-0Y-GOO">
-                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                <font key="font" metaFont="message"/>
-                                <menu key="menu" id="c0u-iA-70L">
-                                    <items>
-                                        <menuItem title="Normal" state="on" identifier="normal" id="wjy-9j-itP">
-                                            <connections>
-                                                <action selector="setBrowserViewMode:" target="-2" id="sj9-I9-YDG"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Flat" tag="1" identifier="flat" id="Pym-ZG-uvF">
-                                            <connections>
-                                                <action selector="setBrowserViewMode:" target="-2" id="PWI-EQ-EPg"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Weeks" tag="2" identifier="weeks" id="8Dv-ow-3sB" userLabel="Weeks">
-                                            <connections>
-                                                <action selector="setBrowserViewMode:" target="-2" id="V4F-gH-ue6"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Months" tag="3" identifier="months" id="J8L-b2-YHE" userLabel="Months">
-                                            <connections>
-                                                <action selector="setBrowserViewMode:" target="-2" id="JbB-kS-1gg"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Years" tag="4" identifier="years" id="9cf-78-X4j" userLabel="Years">
-                                            <connections>
-                                                <action selector="setBrowserViewMode:" target="-2" id="XiC-S4-qc8"/>
-                                            </connections>
-                                        </menuItem>
-                                    </items>
-                                </menu>
-                            </popUpButtonCell>
-                            <constraints>
-                                <constraint firstAttribute="width" constant="90" id="99g-Wn-uq5"/>
-                            </constraints>
-                        </popUpButton>
+                        <button toolTip="Set outline settings" wantsLayer="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IAI-di-N5n">
+                            <rect key="frame" x="889" y="9" width="30" height="29"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="NAn-35-mLT">
+                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                <font key="font" metaFont="system"/>
+                                <imageReference key="image" image="list.bullet.indent" catalog="system" symbolScale="large"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="showOutlineSettings:" target="-2" id="RG4-AB-bMI"/>
+                            </connections>
+                        </button>
                     </subviews>
                     <constraints>
-                        <constraint firstAttribute="trailing" secondItem="Ocs-zh-Jcj" secondAttribute="trailing" constant="16" id="6qS-dc-Zb8"/>
-                        <constraint firstAttribute="trailing" secondItem="vXB-jx-KOT" secondAttribute="trailing" constant="245" id="8x3-Q6-bSk"/>
-                        <constraint firstItem="vXB-jx-KOT" firstAttribute="leading" secondItem="lFF-BD-QU6" secondAttribute="leading" constant="245" id="F9O-zV-hmz"/>
-                        <constraint firstItem="Ocs-zh-Jcj" firstAttribute="top" secondItem="lFF-BD-QU6" secondAttribute="top" constant="11" id="IOV-c3-PX4"/>
+                        <constraint firstAttribute="trailing" secondItem="vXB-jx-KOT" secondAttribute="trailing" constant="145" id="8x3-Q6-bSk"/>
+                        <constraint firstItem="vXB-jx-KOT" firstAttribute="leading" secondItem="lFF-BD-QU6" secondAttribute="leading" constant="101" id="F9O-zV-hmz"/>
+                        <constraint firstItem="vXB-jx-KOT" firstAttribute="centerY" secondItem="lFF-BD-QU6" secondAttribute="centerY" id="Mjs-f6-m6b"/>
+                        <constraint firstItem="1Sv-lI-wjo" firstAttribute="top" secondItem="lFF-BD-QU6" secondAttribute="top" constant="11" id="R8S-qS-qBQ"/>
+                        <constraint firstItem="vXB-jx-KOT" firstAttribute="centerX" secondItem="lFF-BD-QU6" secondAttribute="centerX" constant="-22" id="dhA-09-H4j"/>
                         <constraint firstItem="1Sv-lI-wjo" firstAttribute="top" secondItem="lFF-BD-QU6" secondAttribute="top" constant="11" id="e51-Xc-ybU"/>
                         <constraint firstAttribute="height" constant="44" id="g6f-0m-NZ5"/>
                         <constraint firstItem="1Sv-lI-wjo" firstAttribute="leading" secondItem="lFF-BD-QU6" secondAttribute="leading" constant="16" id="imp-WH-ItM"/>
+                        <constraint firstAttribute="trailing" secondItem="1Sv-lI-wjo" secondAttribute="trailing" constant="859" id="r1Y-XF-4Wl"/>
                         <constraint firstItem="vXB-jx-KOT" firstAttribute="top" secondItem="lFF-BD-QU6" secondAttribute="top" constant="11" id="ys1-65-Xib"/>
                     </constraints>
                 </visualEffectView>
                 <visualEffectView blendingMode="behindWindow" material="appearanceBased" state="followsWindowActiveState" translatesAutoresizingMaskIntoConstraints="NO" id="Df4-Nq-8Rq" userLabel="Bottom Bar">
-                    <rect key="frame" x="0.0" y="0.0" width="862" height="25"/>
+                    <rect key="frame" x="0.0" y="0.0" width="936" height="22"/>
                     <subviews>
+                        <customView translatesAutoresizingMaskIntoConstraints="NO" id="m04-pa-sGf" customClass="SplitDragHandleView">
+                            <rect key="frame" x="0.0" y="0.0" width="903" height="22"/>
+                        </customView>
                         <button wantsLayer="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9Sb-xN-FUg" userLabel="SplitToggle">
-                            <rect key="frame" x="830" y="-2.5" width="24.5" height="32"/>
+                            <rect key="frame" x="903" y="-4.5" width="24.5" height="30"/>
                             <buttonCell key="cell" type="roundRect" bezelStyle="roundedRect" imagePosition="only" alignment="center" alternateImage="buttonCell:6So-5X-Ow8:alternateImage" state="on" inset="2" id="6So-5X-Ow8" userLabel="Col">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                 <font key="font" metaFont="cellTitle"/>
@@ -165,26 +148,22 @@
                                 </connections>
                             </buttonCell>
                             <constraints>
-                                <constraint firstAttribute="height" constant="23" id="MsA-V6-9pU"/>
+                                <constraint firstAttribute="height" constant="21" id="MsA-V6-9pU"/>
                             </constraints>
                         </button>
-                        <customView translatesAutoresizingMaskIntoConstraints="NO" id="m04-pa-sGf" customClass="SplitDragHandleView">
-                            <rect key="frame" x="0.0" y="0.0" width="829" height="25"/>
-                        </customView>
                     </subviews>
                     <constraints>
-                        <constraint firstAttribute="trailing" secondItem="9Sb-xN-FUg" secondAttribute="trailing" constant="8" id="GNv-Pf-BZx"/>
-                        <constraint firstAttribute="height" constant="25" id="J3j-X8-psu"/>
+                        <constraint firstAttribute="trailing" secondItem="9Sb-xN-FUg" secondAttribute="trailing" constant="9" id="GNv-Pf-BZx"/>
                         <constraint firstItem="m04-pa-sGf" firstAttribute="leading" secondItem="Df4-Nq-8Rq" secondAttribute="leading" id="Jq5-Go-gg1"/>
-                        <constraint firstItem="9Sb-xN-FUg" firstAttribute="top" secondItem="Df4-Nq-8Rq" secondAttribute="top" id="TTz-kE-gvr"/>
+                        <constraint firstItem="9Sb-xN-FUg" firstAttribute="top" secondItem="Df4-Nq-8Rq" secondAttribute="top" constant="1" id="TTz-kE-gvr"/>
                         <constraint firstItem="m04-pa-sGf" firstAttribute="top" secondItem="Df4-Nq-8Rq" secondAttribute="top" id="Ye0-Gd-eia"/>
                         <constraint firstAttribute="bottom" secondItem="m04-pa-sGf" secondAttribute="bottom" id="beM-na-sMO"/>
-                        <constraint firstItem="9Sb-xN-FUg" firstAttribute="leading" secondItem="m04-pa-sGf" secondAttribute="trailing" constant="1" id="ly2-9m-5vP"/>
-                        <constraint firstAttribute="bottom" secondItem="9Sb-xN-FUg" secondAttribute="bottom" constant="2" id="zaZ-5D-e1Y"/>
+                        <constraint firstItem="9Sb-xN-FUg" firstAttribute="leading" secondItem="m04-pa-sGf" secondAttribute="trailing" id="ly2-9m-5vP"/>
+                        <constraint firstAttribute="bottom" secondItem="9Sb-xN-FUg" secondAttribute="bottom" id="zaZ-5D-e1Y"/>
                     </constraints>
                 </visualEffectView>
-                <customView translatesAutoresizingMaskIntoConstraints="NO" id="mr7-Ax-sbt" userLabel="Content View">
-                    <rect key="frame" x="0.0" y="25" width="862" height="460"/>
+                <customView focusRingType="none" translatesAutoresizingMaskIntoConstraints="NO" id="mr7-Ax-sbt" userLabel="Content View">
+                    <rect key="frame" x="0.0" y="22" width="936" height="440"/>
                 </customView>
             </subviews>
             <constraints>
@@ -199,7 +178,7 @@
                 <constraint firstAttribute="trailing" secondItem="mr7-Ax-sbt" secondAttribute="trailing" id="pWU-lG-2rW"/>
                 <constraint firstAttribute="bottom" secondItem="Df4-Nq-8Rq" secondAttribute="bottom" id="xRf-PQ-Qa1"/>
             </constraints>
-            <point key="canvasLocation" x="-222" y="-147.5"/>
+            <point key="canvasLocation" x="-185" y="-159"/>
         </customView>
     </objects>
     <resources>
@@ -907,6 +886,9 @@ AXMDcwVzDHMOcxCQYpBnkHaQepCFkI2QmpCvkLSQuJC6kLyQvpDHkM+Q0ZDTkNWQ16J3onyihKKHooyi
 lAAAAAAAAAIBAAAAAAAAAJ8AAAAAAAAAAAAAAAAAAKKXA
 </mutableData>
         </image>
+        <image name="calendar" width="25" height="22"/>
+        <image name="list.bullet.indent" catalog="system" width="25" height="15"/>
+        <image name="list.bullet.rectangle" catalog="system" width="18" height="14"/>
         <image name="menubar.dock.rectangle" catalog="system" width="24" height="18"/>
     </resources>
 </document>

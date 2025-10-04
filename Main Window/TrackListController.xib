@@ -13,22 +13,22 @@
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <scrollView autohidesScrollers="YES" horizontalLineScroll="24" horizontalPageScroll="10" verticalLineScroll="24" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="cA1-QK-Y2d">
+        <scrollView focusRingType="none" borderType="none" autohidesScrollers="YES" horizontalLineScroll="24" horizontalPageScroll="10" verticalLineScroll="24" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="cA1-QK-Y2d">
             <rect key="frame" x="0.0" y="0.0" width="240" height="135"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <clipView key="contentView" id="aqu-Qz-0o6">
-                <rect key="frame" x="1" y="1" width="238" height="133"/>
+                <rect key="frame" x="0.0" y="0.0" width="240" height="135"/>
                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                 <subviews>
-                    <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" autosaveColumns="NO" rowHeight="24" headerView="VQb-mP-wZS" indentationPerLevel="13" outlineTableColumn="jtF-Pd-bIt" id="R5D-Gr-V2z" customClass="ActivityOutlineView">
-                        <rect key="frame" x="0.0" y="0.0" width="238" height="105"/>
+                    <outlineView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" autosaveColumns="NO" rowHeight="24" headerView="VQb-mP-wZS" indentationPerLevel="13" outlineTableColumn="jtF-Pd-bIt" id="R5D-Gr-V2z" customClass="ActivityOutlineView">
+                        <rect key="frame" x="0.0" y="0.0" width="240" height="107"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <size key="intercellSpacing" width="17" height="0.0"/>
                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                         <tableViewGridLines key="gridStyleMask" vertical="YES"/>
                         <color key="gridColor" name="systemGrayColor" catalog="System" colorSpace="catalog"/>
                         <tableColumns>
-                            <tableColumn identifier="name" width="226" minWidth="40" maxWidth="1000" id="jtF-Pd-bIt" userLabel="Date/Time">
+                            <tableColumn identifier="name" width="208" minWidth="40" maxWidth="1000" id="jtF-Pd-bIt" userLabel="Date/Time">
                                 <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Date/Time">
                                     <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -57,7 +57,7 @@
                 <autoresizingMask key="autoresizingMask"/>
             </scroller>
             <tableHeaderView key="headerView" wantsLayer="YES" id="VQb-mP-wZS">
-                <rect key="frame" x="0.0" y="0.0" width="238" height="28"/>
+                <rect key="frame" x="0.0" y="0.0" width="240" height="28"/>
                 <autoresizingMask key="autoresizingMask"/>
             </tableHeaderView>
             <point key="canvasLocation" x="-170" y="50"/>

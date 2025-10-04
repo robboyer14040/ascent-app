@@ -2248,5 +2248,4 @@ static int sPeakIntervals[] = { 5, 10, 20, 30, 60, 5*60, 10*60, 20*60, 30*60, 60
 	return name;
 }
 
-
 @end

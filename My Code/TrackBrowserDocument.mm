@@ -183,8 +183,6 @@ int kSearchEventType		= 0x0020;
         _libraryController = [[LibraryController alloc] initWithStateDirectoryURL:stateDir];
         _pbHelper = [ProgressBarHelper ProgressHelper];
 		equipmentTotalsNeedUpdate = YES;
-		currentlySelectedTrack = nil;
-		selectedLap = nil;
         self.docMetaData = [[[TrackBrowserData alloc] init] autorelease];
 		backupDelegate = [[BackupDelegate alloc] initWithDocument:self];
         databaseFileURL = nil;
@@ -206,17 +204,12 @@ int kSearchEventType		= 0x0020;
 
 - (void) dealloc
 {
-#if DEBUG_LEAKS
-	NSLog(@"doc DEALLOC %x rc: %d", self, [self retainCount]);
-#endif
     [databaseFileURL release];
 	[backupDelegate release];
 	[self.docMetaData release];
     [_libraryController release];
     [_library release];
     [_libraryBookmark release];
-	[selectedLap release];
-	[currentlySelectedTrack release];
 	[equipmentLog release];
 	[equipmentLogDataDict release];
 	[super dealloc];
@@ -697,35 +690,6 @@ getOut:
 	}
 	if (lastSyncedTrackDate != nil) [lastSyncedTrackDate release];
 	return tracksAdded;
-}
-
-
-- (Track*)currentlySelectedTrack
-{
-	return currentlySelectedTrack;
-}
-
-- (void)setCurrentlySelectedTrack:(Track*)t
-{
-	if (t != currentlySelectedTrack)
-	{
-		[currentlySelectedTrack release];
-		currentlySelectedTrack = t;
-		[currentlySelectedTrack retain];
-	}
-}
-   
-- (Lap *)selectedLap {
-	return [[selectedLap retain] autorelease];
-}
-
-- (void)setSelectedLap:(Lap *)value {
-   if (selectedLap != value) 
-   {
-      [selectedLap release];
-      selectedLap = value;
-      [selectedLap retain];
-   }
 }
 
 #if 0

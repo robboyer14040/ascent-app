@@ -350,6 +350,12 @@ static NSDate *sStartTime = nil;
 }
 
 
+-(BOOL)validLocation
+{
+    return _validLatLon;
+}
+
+
 - (BOOL)validAltitude
 {
     // if altitude is *exactly* 0.0 assume it is a bad value. BAD_ALTITUDE values may have

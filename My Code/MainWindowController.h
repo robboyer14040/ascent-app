@@ -6,8 +6,6 @@
 //  Copyright 2006 rcb Construction. All rights reserved.
 //
 //
-//  MainWindowController.h
-//  Ascent  (NON-ARC)
 //
 
 #import <Cocoa/Cocoa.h>
@@ -17,7 +15,7 @@
 @interface MainWindowController : NSWindowController<NSUserInterfaceValidations>
 {
 @private
-    Selection *_selection;     // yours
+    Selection *_selection;
     RootSplitController *_root;
 }
 
@@ -31,11 +29,13 @@
 -(IBAction)showMapDetail:(id)sender;
 -(IBAction)showActivityDetail:(id)sender;
 -(IBAction)toggleRightColumns:(id)sender;
+-(IBAction)syncActivities:(id)sender;
 
 
 // IB outlets
 @property(nonatomic, assign) IBOutlet NSVisualEffectView *reservedTopArea;
 @property(nonatomic, assign) IBOutlet NSView *contentContainer;
+@property(nonatomic, assign) IBOutlet NSButton *syncButton;
 
 // Access to embedded root split
 @property(nonatomic, retain) RootSplitController *rootSplitController;

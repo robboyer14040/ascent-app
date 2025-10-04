@@ -10,6 +10,7 @@
 #import "TrackBrowserDocument.h"
 #import "DMWindowController.h"
 #import "Utils.h"
+#import "NSView+Spin.h"
 
 
 NSString* OpenMapDetailNotification         = @"OpenMapDetail";
@@ -17,11 +18,15 @@ NSString* OpenActivityDetailNotification    = @"OpenActivityDetail";
 NSString* TrackArrayChangedNotification     = @"TrackArrayChanged";
 NSString* TrackSelectionDoubleClicked       = @"SelectionDoubleClicked";
 NSString* TrackFieldsChanged                = @"TrackFieldsChanged";
+NSString* SyncActivitiesKickOff                 = @"SyncActivitiesKickOffNotification";     // actually starts the sync
+NSString* SyncActivitiesStartingNotification    = @"SyncActivitiesStartingNotification";       // drives the animation
+NSString* SyncActivitiesStoppingNotification    = @"SyncActivitiesStopingNotification";        // drives the animation
 
 @interface MainWindowController ()
 {
 }
 @property(nonatomic, retain) DMWindowController* detailedMapWC;
+@property(nonatomic, assign) BOOL syncing;
 @end
 
 
@@ -35,6 +40,7 @@ NSString* TrackFieldsChanged                = @"TrackFieldsChanged";
 
 - (void)awakeFromNib
 {
+    _syncing = NO;
 }
 
 
@@ -126,6 +132,15 @@ NSString* TrackFieldsChanged                = @"TrackFieldsChanged";
     ///retarget(viewMenu, belongsToTPC);
     
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [nc addObserver:self
+           selector:@selector(_syncCompleted)
+               name:SyncActivitiesStoppingNotification
+                    object:nil];
+   
+    [nc addObserver:self
+           selector:@selector(_syncStarted)
+               name:SyncActivitiesStartingNotification
+                    object:nil];
 }
 
 
@@ -196,12 +211,41 @@ static BOOL ActionIsTrackPaneAction(SEL a) {
 - (IBAction) showActivityDetail:(id) sender
 {
     [[NSNotificationCenter defaultCenter] postNotificationName:OpenActivityDetailNotification object:self];
-
 }
 
 
 - (IBAction)toggleRightColumns:(id)sender {
     [_root toggleCols];
+}
+
+
+
+#pragma mark - sync activities
+
+
+-(IBAction)syncActivities:(id)sender
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:SyncActivitiesKickOff object:self];    
+}
+
+
+-(void)_syncStarted
+{
+    if (!_syncing) {
+        _syncing = YES;
+        [self.syncButton setEnabled:NO];
+        [self.syncButton asc_startSpinningWithDuration:0.9];
+    }
+}
+
+
+-(void)_syncCompleted
+{
+    if (_syncing) {
+        [self.syncButton asc_stopSpinning];
+        [self.syncButton setEnabled:YES];
+        _syncing = NO;
+    }
 }
 
 @end

@@ -295,6 +295,8 @@
 					<integer>6</integer>
 					<key>DefaultSplitIndex</key>
 					<integer>2</integer>
+					<key>DefaultSplitVariant</key>
+					<string>2</string>
 					<key>DefaultStatsHUDTransparency</key>
 					<real>1</real>
 					<key>DefaultSumPlotTypesEnabled</key>

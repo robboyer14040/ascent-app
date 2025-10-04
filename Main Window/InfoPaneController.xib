@@ -2,6 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="23727" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23727"/>
+        <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -25,17 +26,17 @@
                     <rect key="frame" x="0.0" y="321" width="704" height="36"/>
                     <subviews>
                         <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" hasVerticalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KWj-x7-hoe">
-                            <rect key="frame" x="6" y="0.0" width="573" height="36"/>
+                            <rect key="frame" x="6" y="0.0" width="627" height="36"/>
                             <clipView key="contentView" drawsBackground="NO" id="Bka-W5-FJ8">
-                                <rect key="frame" x="0.0" y="0.0" width="573" height="36"/>
+                                <rect key="frame" x="0.0" y="0.0" width="627" height="36"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
                                     <textView wantsLayer="YES" editable="NO" importsGraphics="NO" richText="NO" verticallyResizable="YES" spellingCorrection="YES" smartInsertDelete="YES" id="MPI-b2-uJM">
-                                        <rect key="frame" x="0.0" y="0.0" width="573" height="36"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="627" height="36"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <color key="textColor" name="TextPrimary"/>
                                         <color key="backgroundColor" name="BackgroundPrimary"/>
-                                        <size key="minSize" width="573" height="36"/>
+                                        <size key="minSize" width="627" height="36"/>
                                         <size key="maxSize" width="1584" height="10000000"/>
                                     </textView>
                                 </subviews>
@@ -53,12 +54,16 @@
                             </scroller>
                         </scrollView>
                         <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Pmw-OM-TFS" userLabel="Info, Metrics Button">
-                            <rect key="frame" x="583" y="5" width="117" height="24"/>
-                            <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="YsM-wz-YGV">
+                            <rect key="frame" x="637" y="5" width="63" height="24"/>
+                            <segmentedCell key="cell" alignment="left" style="rounded" trackingMode="selectOne" id="YsM-wz-YGV">
                                 <font key="font" metaFont="system"/>
                                 <segments>
-                                    <segment label="Info" width="54"/>
-                                    <segment label="Metrics" width="54" selected="YES" tag="1"/>
+                                    <segment width="27">
+                                        <imageReference key="image" image="info.circle" catalog="system" symbolScale="large"/>
+                                    </segment>
+                                    <segment width="27" selected="YES" tag="1">
+                                        <imageReference key="image" image="list.bullet.rectangle.portrait" catalog="system" symbolScale="large"/>
+                                    </segment>
                                 </segments>
                             </segmentedCell>
                             <connections>
@@ -92,6 +97,8 @@
         </customView>
     </objects>
     <resources>
+        <image name="info.circle" catalog="system" width="20" height="20"/>
+        <image name="list.bullet.rectangle.portrait" catalog="system" width="18" height="21"/>
         <namedColor name="BackgroundPrimary">
             <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

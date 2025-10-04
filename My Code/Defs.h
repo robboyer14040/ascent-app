@@ -278,6 +278,74 @@ typedef enum
 	kNumPlotTypes,
 } tPlotType;
 
+// Column item ordering - sSplitsColInfo in ColumnInfo.mm MUST match this ordering
+enum
+{
+    kSC_Distance = 0,
+    kSC_CumulativeDistance,
+    
+    kSC_Start,
+    
+    kSC_Duration,
+    
+    kSC_SpeedAvg,
+    kSC_SpeedMax,
+    kSC_SpeedDeltaFromLast,
+    kSC_SpeedDeltaFromAvg,
+    
+    kSC_PaceAvg,
+    kSC_PaceMin,
+    kSC_PaceDeltaFromLast,
+    kSC_PaceDeltaFromAvg,
+
+    kSC_HeartRateAvg,
+    kSC_HeartRateMax,
+    kSC_HeartRateDeltaFromLast,
+    kSC_HeartRateDeltaFromAvg,
+ 
+    kSC_CadenceAvg,
+    kSC_CadenceMax,
+    kSC_CadenceDeltaFromLast,
+    kSC_CadenceDeltaFromAvg,
+ 
+    kSC_PowerAvg,
+    kSC_PowerMax,
+    kSC_PowerDeltaFromLast,
+    kSC_PowerDeltaFromAvg,
+ 
+    kSC_GradientAvg,
+    kSC_GradientMax,
+    kSC_GradientMin,
+    kSC_GradientDeltaFromLast,
+    kSC_GradientDeltaFromAvg,
+
+    kSC_Calories,
+    kSC_CaloriesDeltaFromLast,
+
+    kSC_Climb,
+    kSC_ClimbDeltaFromLast,
+    
+    kSC_VAMPos,
+    kSC_VAMPosDeltaFromLast,
+    
+    kSC_VAMNeg,
+    kSC_VAMNegDeltaFromLast,
+    
+    kSC_Num,
+    kSC_Invalid = kSC_Num
+};
+
+// split item variants
+enum
+{
+    kVT_Maximum,
+    kVT_Minimum,
+    kVT_Average,
+    kVT_DeltaFromLast,
+    kVT_DeltaFromAverage,
+    kVT_Num,
+    kVT_Invalid = kVT_Num
+};
 
 // browser view types
 enum 
@@ -290,8 +358,7 @@ enum
     kViewTypeYears,
     kNumViewTypes
 };
-
-
+ 
 
 typedef enum
 {
@@ -561,6 +628,7 @@ extern NSString* RCBDefaultAttrKeyword2List;
 extern NSString* RCBDefaultSearchOptions;
 extern NSString* RCBDefaultSplitIndex;
 extern NSString* RCBDefaultSplitGraphItem;
+extern NSString* RCBDefaultSplitVariant;
 extern NSString* RCBDefaultLastMainDisplay;
 extern NSString* RCBDefaultSummaryGraphStyle;
 extern NSString* RCBDefaultSummaryGraphGranularity;	// 0=weeks, 1=months, etc
@@ -583,7 +651,9 @@ extern NSString* OpenActivityDetailNotification;
 extern NSString* TrackArrayChangedNotification;
 extern NSString* TrackSelectionDoubleClicked;
 extern NSString* TrackFieldsChanged;
-
+extern NSString* SyncActivitiesStartingNotification;
+extern NSString* SyncActivitiesStoppingNotification;
+extern NSString* SyncActivitiesKickOff;
 
 // other global strings
 extern NSString* TerraServerTopoMap;

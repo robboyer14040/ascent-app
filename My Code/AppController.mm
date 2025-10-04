@@ -483,24 +483,6 @@ static void setColorDefault(NSMutableDictionary* dict,
     [sc showSummaryGraph:sender];
 }
 
-//- (IBAction) showActivityDetail:(id) sender
-//{
-//    TrackBrowserDocument* tbd = (TrackBrowserDocument*)
-//    [[NSDocumentController sharedDocumentController] currentDocument];
-//    MainWindowController* sc = [tbd windowController];
-//    [sc stopAnimations];
-//    Track* track = [tbd currentlySelectedTrack];
-//    if (track) {
-//        Lap* lap = [tbd selectedLap];
-//        ADWindowController* ad = [[ADWindowController alloc] initWithDocument:tbd];
-//        [tbd addWindowController:ad];
-//        [ad autorelease];
-//        [ad showWindow:self];
-//        [ad setTrack:track];
-//        [ad setLap:lap];
-//    }
-//}
-
 - (IBAction) showActivityDataList:(id) sender
 {
     TrackBrowserDocument* tbd = (TrackBrowserDocument*)

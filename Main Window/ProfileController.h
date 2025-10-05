@@ -7,11 +7,13 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "AscentAnimationTargetProtocol.h"
+
 
 @class TrackBrowserDocument, Selection;
 @class MiniProfileView;
 
-@interface ProfileController : NSViewController
+@interface ProfileController : NSViewController  <AscentAnimationTarget>
 @property(nonatomic, assign) TrackBrowserDocument *document;
 @property(nonatomic, retain) Selection *selection;
 @property(nonatomic, assign) IBOutlet MiniProfileView *profileView;

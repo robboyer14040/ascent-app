@@ -37,7 +37,7 @@
 		remoteUUIDDict = nil;
 		[[NSNotificationCenter defaultCenter] addObserver:self
 												 selector:@selector(prefChange:)
-													 name:@"PreferencesChanged"
+													 name:PreferencesChanged
 												   object:nil];
 	}
 	return self;

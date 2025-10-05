@@ -418,10 +418,10 @@
 		D41002112E8598DF002942DE /* RightSplitController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RightSplitController.h; sourceTree = "<group>"; };
 		D41002122E8598DF002942DE /* RightSplitController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = RightSplitController.m; sourceTree = "<group>"; };
 		D41002142E859904002942DE /* MapController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MapController.h; sourceTree = "<group>"; };
-		D41002152E859904002942DE /* MapController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MapController.m; sourceTree = "<group>"; };
+		D41002152E859904002942DE /* MapController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = MapController.m; sourceTree = "<group>"; };
 		D41002162E859904002942DE /* MapController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MapController.xib; sourceTree = "<group>"; };
 		D41002192E859916002942DE /* ProfileController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProfileController.h; sourceTree = "<group>"; };
-		D410021A2E859916002942DE /* ProfileController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProfileController.m; sourceTree = "<group>"; };
+		D410021A2E859916002942DE /* ProfileController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = ProfileController.m; sourceTree = "<group>"; };
 		D410021B2E859916002942DE /* ProfileController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ProfileController.xib; sourceTree = "<group>"; };
 		D410021E2E859941002942DE /* MetricsController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MetricsController.h; sourceTree = "<group>"; };
 		D410021F2E859941002942DE /* MetricsController.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = MetricsController.m; sourceTree = "<group>"; };
@@ -434,6 +434,7 @@
 		D4263E542E90137A00396E0B /* IntervalSettingsDialogController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IntervalSettingsDialogController.h; sourceTree = "<group>"; };
 		D4263E552E90137A00396E0B /* IntervalSettingsDialogController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IntervalSettingsDialogController.m; sourceTree = "<group>"; };
 		D4263E562E90137A00396E0B /* IntervalSettingsDialogController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = IntervalSettingsDialogController.xib; sourceTree = "<group>"; };
+		D431DB852E92B19000E686E7 /* AscentAnimationTargetProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AscentAnimationTargetProtocol.h; path = "My Code/AscentAnimationTargetProtocol.h"; sourceTree = "<group>"; };
 		D4364F202E90571400C9A330 /* IndexTagMap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = IndexTagMap.h; path = "My Code/IndexTagMap.h"; sourceTree = "<group>"; };
 		D4364F212E90571400C9A330 /* IndexTagMap.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = IndexTagMap.m; path = "My Code/IndexTagMap.m"; sourceTree = "<group>"; };
 		D437641C2E5FA01A008AE5E4 /* Ascent.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Ascent.icns; path = graphics/Ascent.icns; sourceTree = "<group>"; };
@@ -1423,15 +1424,18 @@
 		D4F13AA72E4EAE4600462944 /* Misc */ = {
 			isa = PBXGroup;
 			children = (
+				D49F29462E6A5B1D00C5B87C /* ADQueuedRequest.h */,
 				D4F13A9A2E4EAE4600462944 /* AnimTimer.h */,
 				D4F13A9B2E4EAE4600462944 /* AnimTimer.mm */,
 				D4F13A9C2E4EAE4600462944 /* AppController.h */,
 				D4F13A9D2E4EAE4600462944 /* AppController.mm */,
+				D431DB852E92B19000E686E7 /* AscentAnimationTargetProtocol.h */,
 				D49F29422E69FB7000C5B87C /* AscentApplication.h */,
 				D49F293E2E69FAB100C5B87C /* AscentApplication.m */,
 				D49F29452E6A52DA00C5B87C /* AscentDocumentController.h */,
 				D49F29432E6A52C500C5B87C /* AscentDocumentController.m */,
-				D49F29462E6A5B1D00C5B87C /* ADQueuedRequest.h */,
+				D41001E82E84A5EC002942DE /* AscentPasteboard.h */,
+				D41001E92E84A604002942DE /* AscentPasteboard.m */,
 				D4F13A9E2E4EAE4600462944 /* AscentTextField.h */,
 				D4F13A9F2E4EAE4600462944 /* AscentTextField.mm */,
 				D4F13AA02E4EAE4600462944 /* ColorBoxView.h */,
@@ -1444,19 +1448,17 @@
 				D4F13A942E4EAE4600462944 /* GetPasswordController.h */,
 				D4F13A952E4EAE4600462944 /* GetPasswordController.mm */,
 				D4F13A962E4EAE4600462944 /* main.m */,
+				D49F29472E6A61CA00C5B87C /* NSDocumentController+AscentForceSubclass.m */,
 				D4F13A922E4EAE4600462944 /* ProgressBarController.h */,
 				D4F13A932E4EAE4600462944 /* ProgressBarController.mm */,
+				D4EB189E2E8997F200B879FD /* ProgressBarHelper.h */,
+				D4EB189F2E89981900B879FD /* ProgressBarHelper.m */,
 				D4F13A8C2E4EAE4600462944 /* TransparentWindowController.h */,
 				D4F13A8D2E4EAE4600462944 /* TransparentWindowController.mm */,
 				D4F13A8E2E4EAE4600462944 /* TransportPanelController.h */,
 				D4F13A8F2E4EAE4600462944 /* TransportPanelController.mm */,
 				D4F13A902E4EAE4600462944 /* TransportPanelView.h */,
 				D4F13A912E4EAE4600462944 /* TransportPanelView.mm */,
-				D49F29472E6A61CA00C5B87C /* NSDocumentController+AscentForceSubclass.m */,
-				D41001E82E84A5EC002942DE /* AscentPasteboard.h */,
-				D41001E92E84A604002942DE /* AscentPasteboard.m */,
-				D4EB189E2E8997F200B879FD /* ProgressBarHelper.h */,
-				D4EB189F2E89981900B879FD /* ProgressBarHelper.m */,
 			);
 			name = Misc;
 			sourceTree = "<group>";

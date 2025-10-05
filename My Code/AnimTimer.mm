@@ -12,6 +12,8 @@
 #import "TransportPanelController.h"
 #import "TrackPoint.h"
 #import "Utils.h"
+#import "AscentAnimationTargetProtocol.h"
+
 
 #define ANIM_UPDATE_TIME      (0.05)
 #define DATE_METHOD           activeTimeDelta
@@ -20,6 +22,15 @@
 NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
 
 @interface AnimTimer ()
+{
+   NSTimer*                   rideTimer;
+   NSMutableArray*            updateList;
+   BOOL                       playingInReverse;
+   BOOL                       animating;
+   float                      speedFactor;
+   NSTimeInterval             animTime;
+   NSTimeInterval             endingTime;
+}
 - (void)updateListeners:(BOOL)resetFrame updateTime:(BOOL)ut;
 @end
 
@@ -37,15 +48,14 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
         speedFactor = [Utils floatFromDefaults:RCBDefaultAnimSpeedFactor];
         if (speedFactor <= 0.0) speedFactor = 10.0;
         animTime = 0.0;
-        transportPanelController = nil;
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(locate:)
                                                      name:@"Locate"
                                                    object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(togglePlay:)
-                                                     name:@"TogglePlay"
+                                                 selector:@selector(transportStateChange:)
+                                                     name:TransportStateChanged
                                                    object:nil];
     }
     return self;
@@ -62,10 +72,10 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
     }
 
     [updateList release];
-    [transportPanelController release];
 
     [super dealloc];
 }
+
 
 + (AnimTimer*)defaultInstance
 {
@@ -77,6 +87,7 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
     return sdi;
 }
 
+
 - (void)registerForTimerUpdates:(id)obj
 {
     if ([updateList indexOfObjectIdenticalTo:obj] == NSNotFound)
@@ -85,6 +96,7 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
         [self updateTimerDuration];
     }
 }
+
 
 - (void)unregisterForTimerUpdates:(id)obj
 {
@@ -99,13 +111,14 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
     }
 }
 
+
 - (void)updateAnimState:(BOOL)start
 {
     animating = start;
     NSUInteger num = [updateList count];
     for (NSUInteger i = 0; i < num; i++)
     {
-        id <AnimationTarget> target = [updateList objectAtIndex:i];
+        id <AscentAnimationTarget> target = [updateList objectAtIndex:i];
         if (start)
         {
             [target beginAnimation];
@@ -117,6 +130,7 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
     }
 }
 
+
 - (void)stopAnimation
 {
     [self updateAnimState:NO];
@@ -126,7 +140,10 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
         [rideTimer release];
         rideTimer = nil;
     }
+    [self postStateChangeNotification:kStop
+                               sender:self];
 }
+
 
 - (void)updateTrackAnimData:(Track*)track time:(NSTimeInterval)trackTime
 {
@@ -186,10 +203,12 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
     [track setAnimIndex:(int)trackPos];
 }
 
+
 - (void)forceUpdate
 {
     [self updateListeners:NO updateTime:NO];
 }
+
 
 - (void)updateListeners:(BOOL)resetFrame updateTime:(BOOL)ut
 {
@@ -222,7 +241,7 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
     NSUInteger num = [updateList count];
     for (NSUInteger i = 0; i < num; i++)
     {
-        id <AnimationTarget> target = [updateList objectAtIndex:i];
+        id <AscentAnimationTarget> target = [updateList objectAtIndex:i];
         Track *t = (Track *)[target animationTrack];
         NSTimeInterval trackTime = animTime;
         if (t != nil)
@@ -235,6 +254,7 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
     }
 }
 
+
 - (void)updateTimerDuration
 {
     endingTime = 0.0;
@@ -242,7 +262,7 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
     NSUInteger num = [updateList count];
     for (NSUInteger i = 0; i < num; i++)
     {
-        id <AnimationTarget> target = [updateList objectAtIndex:i];
+        id <AscentAnimationTarget> target = [updateList objectAtIndex:i];
         Track *track = (Track *)[target animationTrack];
         if (track != nil)
         {
@@ -255,10 +275,12 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
         animTime = endingTime;
 }
 
+
 - (void)timerUpdate:(NSTimer*)timer
 {
     [self updateListeners:NO updateTime:YES];
 }
+
 
 - (void)startAnimation
 {
@@ -277,39 +299,53 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
     [self updateAnimState:YES];
 }
 
-- (void)postStateChangeNotification:(NSString*)st sender:(id)sndr
+
+- (void)postStateChangeNotification:(int)st sender:(id)sndr
 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"TransportStateChange"
+    [[NSNotificationCenter defaultCenter] postNotificationName:TransportStateChanged
                                                         object:sndr
-                                                      userInfo:[NSDictionary dictionaryWithObject:[NSString stringWithString:st]
-                                                                                           forKey:@"state"]];
+                                                      userInfo:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:st]
+                                                                                           forKey:TransportStateChangedInfoKey]];
 }
+
 
 - (void)stop:(id)sender
 {
     [self stopAnimation];
     playingInReverse = NO;
-    [self postStateChangeNotification:@"stop" sender:sender];
+    [self postStateChangeNotification:kStop
+                               sender:self];
 }
+
 
 - (void)play:(id)sender reverse:(BOOL)inReverse
 {
     [self stopAnimation];
     playingInReverse = inReverse;
-    [self postStateChangeNotification:@"play" sender:sender];
+    [self postStateChangeNotification:(inReverse ? kReverse : kPlay)
+                               sender:self];
     [self startAnimation];
 }
+
 
 - (void)fastForward
 {
     animTime = endingTime;
     [self updateListeners:NO updateTime:NO];
+    [self postStateChangeNotification:kFastForward
+                               sender:self];
+    [self stopAnimation];
 }
+
 
 - (void)rewind
 {
     [self updateListeners:YES updateTime:NO];
+    [self postStateChangeNotification:kGoToBeginning
+                               sender:self];
+    [self stopAnimation];
 }
+
 
 - (void)setSpeedFactor:(float)sf
 {
@@ -317,10 +353,12 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
     [Utils setFloatDefault:sf forKey:RCBDefaultAnimSpeedFactor];
 }
 
+
 - (float)speedFactor
 {
     return speedFactor;
 }
+
 
 - (void)setAnimTime:(NSTimeInterval)at
 {
@@ -329,25 +367,18 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
     [self updateListeners:NO updateTime:NO];
 }
 
+
 - (NSTimeInterval)animTime
 {
     return animTime;
 }
+
 
 - (NSTimeInterval)endingTime
 {
     return endingTime;
 }
 
-- (void)setTransportPanelController:(TransportPanelController*)tpc
-{
-    if (transportPanelController != tpc)
-    {
-        [transportPanelController release];
-        transportPanelController = tpc;
-        [transportPanelController retain];
-    }
-}
 
 - (void)locateToPercentage:(float)percent
 {
@@ -357,6 +388,7 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
     animTime = newAnimTime;
     [self updateListeners:NO updateTime:NO];
 }
+
 
 - (void)applyLocateDelta:(float)delta
 {
@@ -368,32 +400,79 @@ NSString* RCBDefaultAnimSpeedFactor = @"AnimSpeedFactor";
     }
 }
 
+
 - (void)locate:(NSNotification *)notification
 {
 }
+
 
 - (BOOL)playingInReverse
 {
     return playingInReverse;
 }
 
+
 - (BOOL)animating
 {
     return animating;
 }
 
-- (void)togglePlay:(NSNotification *)notification
+- (void)requestTransportStateChange:(int)requestedState;
 {
-    BOOL rev = [self playingInReverse];
-    if ([self animating])
+    switch (requestedState)
     {
-        [self stop:self];
-    }
-    else
-    {
-        [self play:self reverse:rev];
+        default:
+        case kStop:
+            [self stop:self];
+            break;
+        case kPlay:
+            playingInReverse = NO;
+            [self play:self reverse:NO];
+            break;
+        case kReverse:
+            playingInReverse = YES;
+            [self play:self reverse:YES];
+            break;
+        case kGoToBeginning:
+            [self rewind];
+            break;
+        case kGoToEnd:
+            [self fastForward];
+            break;
+        case kFastForward:
+            [self fastForward];
+            break;
     }
 }
+
+
+- (void)transportStateChange:(NSNotification *)notification
+{
+    // state changes we've sent
+    if (notification.object == self)
+        return;
+    
+}
+
+
+- (void) togglePlay
+{
+    int which = kStop;
+    if (animating) {
+        [self stop:self];
+    } else {
+        which = kPlay;
+        [self play:self reverse:NO];
+    }
+    NSNumber *num = [NSNumber numberWithInt: (int)which];
+    NSDictionary *info = [NSDictionary dictionaryWithObject:num
+                                                     forKey:TransportStateChangedInfoKey];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:TransportStateChanged
+                                                        object:self
+                                                      userInfo:info];
+}
+
 
 @end
 

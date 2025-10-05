@@ -7,7 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "AnimTimer.h"
+#import "AscentAnimationTargetProtocol.h"
 
 
 @class ADView;
@@ -15,7 +15,7 @@
 @class CWTransparentView;
 @class CWTransparentWindow;
 
-@interface CompareProfileViewController : NSObject <AnimationTarget>
+@interface CompareProfileViewController : NSObject <AscentAnimationTarget>
 {
 	ADView*					adView;
 	CWTransparentView*		transparentView;

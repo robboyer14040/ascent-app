@@ -76,7 +76,7 @@
 											   object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(prefsChanged:)
-												 name:@"PreferencesChanged"
+												 name:PreferencesChanged
 											   object:nil];
     _selectedTrack = nil;
 	return self;

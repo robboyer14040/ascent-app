@@ -3,6 +3,7 @@
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23727"/>
         <capability name="Image references" minToolsVersion="12.0"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -12,6 +13,8 @@
                 <outlet property="reservedTopArea" destination="cdn-qI-UNJ" id="Jw6-aG-9QF"/>
                 <outlet property="rightColsButton" destination="hEc-i3-BPX" id="gCk-hh-QlV"/>
                 <outlet property="syncButton" destination="lOg-S1-U9H" id="yf3-Wn-85R"/>
+                <outlet property="timecodeText" destination="EuE-n8-pXN" id="XlL-jR-c75"/>
+                <outlet property="transportControl" destination="9tC-5o-evS" id="fEZ-Ps-soj"/>
                 <outlet property="window" destination="fMe-9M-Iya" id="TVE-uC-1LK"/>
             </connections>
         </customObject>
@@ -58,34 +61,58 @@
                                 </connections>
                             </button>
                             <segmentedControl verticalHuggingPriority="750" allowsExpansionToolTips="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9tC-5o-evS" userLabel="Transport">
-                                <rect key="frame" x="382" y="-2" width="187" height="24"/>
+                                <rect key="frame" x="375" y="2" width="200" height="24"/>
                                 <segmentedCell key="cell" alignment="left" style="rounded" trackingMode="selectOne" id="I6J-Qb-dk9">
                                     <font key="font" metaFont="system"/>
                                     <segments>
-                                        <segment toolTip="rewind to beginning" image="backward.end.alt" catalog="system" width="28"/>
-                                        <segment toolTip="fast forward in reverse" image="backward" catalog="system" width="27" tag="1"/>
-                                        <segment toolTip="stop playback" image="stop" catalog="system" width="27" selected="YES">
-                                            <nil key="label"/>
+                                        <segment toolTip="rewind to beginning" width="28">
+                                            <imageReference key="image" image="backward.end.alt" catalog="system" symbolScale="large"/>
                                         </segment>
-                                        <segment image="play" catalog="system">
-                                            <nil key="label"/>
+                                        <segment toolTip="fast forward in reverse" width="27" tag="1">
+                                            <imageReference key="image" image="backward" catalog="system" symbolScale="large"/>
                                         </segment>
-                                        <segment toolTip="fast foward" image="forward" catalog="system">
+                                        <segment toolTip="stop playback" width="27" selected="YES">
                                             <nil key="label"/>
+                                            <imageReference key="image" image="stop" catalog="system" symbolScale="large"/>
                                         </segment>
-                                        <segment toolTip="go to the end" image="forward.end.alt" catalog="system">
+                                        <segment>
                                             <nil key="label"/>
+                                            <imageReference key="image" image="play" catalog="system" symbolScale="large"/>
+                                        </segment>
+                                        <segment toolTip="fast foward">
+                                            <nil key="label"/>
+                                            <imageReference key="image" image="forward" catalog="system" symbolScale="large"/>
+                                        </segment>
+                                        <segment toolTip="go to the end">
+                                            <nil key="label"/>
+                                            <imageReference key="image" image="forward.end.alt" catalog="system" symbolScale="large"/>
                                         </segment>
                                     </segments>
                                 </segmentedCell>
+                                <connections>
+                                    <action selector="transportButtonPushed:" target="-2" id="fdf-22-Xvb"/>
+                                </connections>
                             </segmentedControl>
+                            <textField wantsLayer="YES" focusRingType="none" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EuE-n8-pXN">
+                                <rect key="frame" x="652" y="4" width="138" height="27"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="138" id="gB9-Zb-QpT"/>
+                                </constraints>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" borderStyle="bezel" alignment="left" title="00:00:00" drawsBackground="YES" id="5j2-2Y-iui">
+                                    <font key="font" size="22" name="OCRAStd"/>
+                                    <color key="textColor" name="TextPrimary"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
                         </subviews>
                         <constraints>
-                            <constraint firstItem="9tC-5o-evS" firstAttribute="top" secondItem="cdn-qI-UNJ" secondAttribute="top" constant="4" id="4EO-g0-iul"/>
+                            <constraint firstItem="9tC-5o-evS" firstAttribute="top" secondItem="cdn-qI-UNJ" secondAttribute="top" id="4EO-g0-iul"/>
                             <constraint firstItem="lOg-S1-U9H" firstAttribute="leading" secondItem="cdn-qI-UNJ" secondAttribute="leading" constant="10" id="61C-UR-pCl"/>
                             <constraint firstAttribute="trailing" secondItem="hEc-i3-BPX" secondAttribute="trailing" constant="5" id="9mY-69-TEb"/>
+                            <constraint firstItem="EuE-n8-pXN" firstAttribute="centerY" secondItem="9tC-5o-evS" secondAttribute="centerY" constant="-3.5" id="S0n-mv-zqz"/>
                             <constraint firstItem="lOg-S1-U9H" firstAttribute="top" secondItem="cdn-qI-UNJ" secondAttribute="top" constant="10" id="Yla-gQ-8S0"/>
                             <constraint firstItem="hEc-i3-BPX" firstAttribute="top" secondItem="cdn-qI-UNJ" secondAttribute="top" constant="3" id="egv-ey-gPM"/>
+                            <constraint firstItem="EuE-n8-pXN" firstAttribute="leading" secondItem="9tC-5o-evS" secondAttribute="trailing" constant="79" id="nqD-SA-Ql4"/>
                             <constraint firstItem="9tC-5o-evS" firstAttribute="centerX" secondItem="cdn-qI-UNJ" secondAttribute="centerX" id="qcc-gu-LHd"/>
                             <constraint firstAttribute="height" constant="25" id="sCK-et-igy"/>
                         </constraints>
@@ -104,18 +131,21 @@
                     <constraint firstAttribute="trailing" secondItem="JjL-DU-5RS" secondAttribute="trailing" id="yP7-MU-v2t"/>
                 </constraints>
             </view>
-            <point key="canvasLocation" x="-106" y="84.5"/>
+            <point key="canvasLocation" x="-308" y="95.5"/>
         </window>
     </objects>
     <resources>
         <image name="arrow.trianglehead.2.clockwise.rotate.90" catalog="system" width="21" height="20"/>
-        <image name="backward" catalog="system" width="20" height="12"/>
-        <image name="backward.end.alt" catalog="system" width="22" height="12"/>
-        <image name="forward" catalog="system" width="20" height="12"/>
-        <image name="forward.end.alt" catalog="system" width="22" height="12"/>
-        <image name="play" catalog="system" width="12" height="13"/>
+        <image name="backward" catalog="system" width="25" height="16"/>
+        <image name="backward.end.alt" catalog="system" width="27" height="16"/>
+        <image name="forward" catalog="system" width="25" height="16"/>
+        <image name="forward.end.alt" catalog="system" width="27" height="16"/>
+        <image name="play" catalog="system" width="15" height="17"/>
         <image name="sidebar.trailing" catalog="system" width="24" height="18"/>
-        <image name="stop" catalog="system" width="14" height="13"/>
+        <image name="stop" catalog="system" width="18" height="17"/>
         <image name="table" width="128" height="128"/>
+        <namedColor name="TextPrimary">
+            <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

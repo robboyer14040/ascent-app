@@ -92,7 +92,7 @@ enum
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(mapPrefChange:)
-                                                 name:@"PreferencesChanged"
+                                                 name:PreferencesChanged
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(lapSelectionChange:)
@@ -650,7 +650,7 @@ NSEvent* sMouseEv = nil;
 	[intervalIncrementTextField setEnabled:on];
 	[intervalIncrementStepper setEnabled:on];
 	[intervalIncrementUnitsLabel setEnabled:on];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"PreferencesChanged" object:nil];
+	[[NSNotificationCenter defaultCenter] postNotificationName:PreferencesChanged object:nil];
 }
 
 
@@ -664,7 +664,7 @@ NSEvent* sMouseEv = nil;
 	[mapView setIntervalIncrement:v];
 	[Utils setFloatDefault:v
 					forKey:RCBDefaultIntervalMarkerIncrement];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"PreferencesChanged" object:nil];
+	[[NSNotificationCenter defaultCenter] postNotificationName:PreferencesChanged object:nil];
 }
 
 

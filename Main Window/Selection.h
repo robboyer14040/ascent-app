@@ -11,6 +11,7 @@
 @class Track;
 @class Lap;
 
+
 @interface Selection : NSObject
 {
 @private
@@ -29,5 +30,7 @@
 // Helpers to keep both properties consistent
 - (void)setSingleSelection:(Track *)track;      // sets selectedTracks = @[track] or @[]
 - (void)setMultipleSelection:(NSArray *)tracks; // sets selectedTrack = first or nil
+- (void)startObservingChanges:(NSObject*)observer;
+- (void)stopObservingChanges:(NSObject*)observer;
 
 @end

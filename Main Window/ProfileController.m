@@ -12,6 +12,8 @@
 #import "Selection.h"
 #import "Utils.h"
 #import "ADWindowController.h"
+#import "AnimTimer.h"
+#import "Track.h"
 
 
 @class track, lap;
@@ -28,24 +30,30 @@ static void *kSelectionCtx = &kSelectionCtx;
 @implementation ProfileController
 @synthesize document=_document, selection=_selection;
 
-- (void)dealloc {
-    [_selection release];
-    [super dealloc];
-}
-
-- (void)awakeFromNib {
+- (void)awakeFromNib
+{
     [super awakeFromNib];
     // Wire up plot view, axes, data sources here.
 }
 
-- (void)injectDependencies {
+
+- (void)dealloc
+{
+    [_selection release];
+    [super dealloc];
+}
+
+
+- (void)injectDependencies
+{
     // Pull data from _document / _selection and refresh plot if view is loaded.
 }
 
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
     [super viewDidLoad];
-    NSClickGestureRecognizer *single = [[[NSClickGestureRecognizer alloc] initWithTarget:self action:@selector(_didSingleClick:)] autorelease];
+    ///NSClickGestureRecognizer *single = [[[NSClickGestureRecognizer alloc] initWithTarget:self action:@selector(_didSingleClick:)] autorelease];
     NSClickGestureRecognizer *doubleClick = [[[NSClickGestureRecognizer alloc] initWithTarget:self action:@selector(_didDoubleClick:)] autorelease];
     doubleClick.numberOfClicksRequired = 2;
     doubleClick.buttonMask = 0x1;
@@ -56,10 +64,15 @@ static void *kSelectionCtx = &kSelectionCtx;
                                               selector:@selector(showActivityDetail)
                                                   name:OpenActivityDetailNotification
                                                 object:nil];
-
+    
+    [[AnimTimer defaultInstance] registerForTimerUpdates:self];
 }
 
 
+- (void)viewWillDisappear
+{
+    [[AnimTimer defaultInstance] unregisterForTimerUpdates:self];
+}
 
 
 - (void)_didSingleClick:(NSClickGestureRecognizer *)g
@@ -181,8 +194,42 @@ static void *kSelectionCtx = &kSelectionCtx;
 - (void)_displayTrackProfile:(Track *)track {
     [_profileView setCurrentTrack:track];
     [_profileView setNeedsDisplay:YES];
+    _selection.selectedTrack.animTimeBegin = 0.0;
+    _selection.selectedTrack.animTimeEnd =  _selection.selectedTrack.movingDuration;
+    [[AnimTimer defaultInstance] updateTimerDuration];
 }
 
+#pragma mark - AnimTimer...
+
+-(void) beginAnimation
+{
+}
+
+
+-(void) endAnimation
+{
+}
+
+
+- (Track*) animationTrack
+{
+    return _selection.selectedTrack;
+}
+
+
+- (void) updatePosition:(NSTimeInterval)trackTime reverse:(BOOL)rev  animating:(BOOL)anim;
+{
+    NSUInteger pos = 0;
+    Track* track = _selection.selectedTrack;
+    if (track)
+    {
+        NSUInteger numPoints = [[track goodPoints] count];
+        pos = [track animIndex];
+        if (pos >= numPoints && numPoints > 0)
+            pos = numPoints-1;
+        [_profileView updateTrackAnimation:(int)pos];
+    }
+}
 
 
 

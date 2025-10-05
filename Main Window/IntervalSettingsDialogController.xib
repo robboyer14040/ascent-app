@@ -209,7 +209,7 @@
                         </subviews>
                     </view>
                 </box>
-                <box fixedFrame="YES" title="Split Length" translatesAutoresizingMaskIntoConstraints="NO" id="w7p-1b-MKN">
+                <box fixedFrame="YES" title="Split Length in miles" translatesAutoresizingMaskIntoConstraints="NO" id="w7p-1b-MKN">
                     <rect key="frame" x="313" y="16" width="162" height="230"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <view key="contentView" id="DYI-Yj-cqW">
@@ -250,7 +250,7 @@
                                 </connections>
                             </button>
                             <button tag="3" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9o8-fu-gwg">
-                                <rect key="frame" x="18" y="126" width="45" height="18"/>
+                                <rect key="frame" x="17" y="126" width="45" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <buttonCell key="cell" type="radio" title="2.0" bezelStyle="regularSquare" imagePosition="left" inset="2" id="Sp8-Af-jVs">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -261,7 +261,7 @@
                                 </connections>
                             </button>
                             <button tag="4" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="n4Z-ex-pDN">
-                                <rect key="frame" x="18" y="106" width="45" height="18"/>
+                                <rect key="frame" x="17" y="106" width="45" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <buttonCell key="cell" type="radio" title="5.0" bezelStyle="regularSquare" imagePosition="left" inset="2" id="Vhl-YV-Paj">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -283,7 +283,7 @@
                                 </connections>
                             </button>
                             <button tag="6" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="uVZ-h7-bzU">
-                                <rect key="frame" x="18" y="65" width="53" height="18"/>
+                                <rect key="frame" x="17" y="65" width="53" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <buttonCell key="cell" type="radio" title="20.0" bezelStyle="regularSquare" imagePosition="left" inset="2" id="2ls-yI-jto">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -294,7 +294,7 @@
                                 </connections>
                             </button>
                             <button tag="7" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="en2-D8-2gy">
-                                <rect key="frame" x="18" y="44" width="53" height="18"/>
+                                <rect key="frame" x="17" y="44" width="53" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <buttonCell key="cell" type="radio" title="25.0" bezelStyle="regularSquare" imagePosition="left" inset="2" id="QHu-if-vfF">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -316,7 +316,7 @@
                                 </connections>
                             </button>
                             <button tag="9" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="a4e-n6-fvo">
-                                <rect key="frame" x="18" y="4" width="83" height="18"/>
+                                <rect key="frame" x="17" y="4" width="83" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <buttonCell key="cell" type="radio" title="Use Laps" bezelStyle="regularSquare" imagePosition="left" inset="2" id="sAl-zw-Fpv">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>

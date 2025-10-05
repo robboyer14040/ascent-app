@@ -77,12 +77,14 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 
 -(void)doInit:(NSArray*)ta  mainWC:(NSWindowController*)wc
 {
-	guideFollows = [Utils intFromDefaults:RCBDefaultCompareWindowGuideFollows];
-	self.xAxisIsTime = NO;
-	self.profileControllerArray = [NSMutableArray arrayWithCapacity:kMaxViews];
-	self.trackArray = ta;
-	self.mainWindowController = wc;
-	self.dotColorsArray = [NSArray arrayWithObjects:@"Dot", @"BlueDot", @"GreenDot", @"PurpleDot", nil];
+    guideFollows = [Utils intFromDefaults:RCBDefaultCompareWindowGuideFollows];
+    self.xAxisIsTime = NO;
+    self.profileControllerArray = [NSMutableArray arrayWithCapacity:kMaxViews];
+    self.trackArray = ta;
+    self.mainWindowController = wc;
+    self.dotColorsArray = [NSArray arrayWithObjects:@"Dot", @"BlueDot", @"GreenDot", @"PurpleDot", nil];
+    
+    /// FIXME ADD TRANSPARENT VIEWS TO map and zoommap
 }
 
 
@@ -179,13 +181,13 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	id sender = [notification object];
 	if (sender != self)
 	{
-		NSString* st = [[notification userInfo] objectForKey:@"state"];
-		if ([st isEqualToString:@"stop"])
+		NSNumber* st = [[notification userInfo] objectForKey:TransportStateChangedInfoKey];
+		if (st.intValue == kStop)
 		{
 			[profilesTransparentView setHidePosition:NO];
 			[stopButton setState:NSControlStateValueOn];
 		}
-		else if ([st isEqualToString:@"play"])
+		else if (st.intValue == kPlay)
 		{
 			[profilesTransparentView setHidePosition:YES];
 			if ([[AnimTimer defaultInstance] playingInReverse])
@@ -225,13 +227,13 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 																		styleMask:NSWindowStyleMaskBorderless
 																		  backing:NSBackingStoreBuffered 
 																			defer:NO];
-	[self.mapTransparentWindow setContentView:self.mapTransparentView];
-	[self.mapTransparentWindow setHasShadow:NO];
-	[self.mapTransparentWindow setIgnoresMouseEvents:YES];
-	[self.mapTransparentWindow setDelegate:self];
-	[[self window]  addChildWindow:(NSWindow*)self.mapTransparentWindow 
-						   ordered:NSWindowAbove];
-	[mapView setTransparentView:self.mapTransparentView];
+//	[self.mapTransparentWindow setContentView:self.mapTransparentView];
+//	[self.mapTransparentWindow setHasShadow:NO];
+//	[self.mapTransparentWindow setIgnoresMouseEvents:YES];
+//	[self.mapTransparentWindow setDelegate:self];
+//	[[self window]  addChildWindow:(NSWindow*)self.mapTransparentWindow 
+//						   ordered:NSWindowAbove];
+	///[mapView setTransparentView:self.mapTransparentView];
 	[mapView setIsDetailedMap:YES];
 	[mapView setMoveMapDuringAnimation:NO];
 	[mapView setShowIntervalMarkers:NO];
@@ -243,13 +245,13 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 																			styleMask:NSWindowStyleMaskBorderless
 																			  backing:NSBackingStoreBuffered
 																				defer:NO];
-	[self.zoomMapTransparentWindow setContentView:self.zoomMapTransparentView];
-	[self.zoomMapTransparentWindow setHasShadow:NO];
-	[self.zoomMapTransparentWindow setIgnoresMouseEvents:YES];
-	[self.zoomMapTransparentWindow setDelegate:self];
-	[[self window]  addChildWindow:(NSWindow*)self.zoomMapTransparentWindow 
-						   ordered:NSWindowAbove];
-	[zoomMapView setTransparentView:self.zoomMapTransparentView];
+//	[self.zoomMapTransparentWindow setContentView:self.zoomMapTransparentView];
+//	[self.zoomMapTransparentWindow setHasShadow:NO];
+//	[self.zoomMapTransparentWindow setIgnoresMouseEvents:YES];
+//	[self.zoomMapTransparentWindow setDelegate:self];
+//	[[self window]  addChildWindow:(NSWindow*)self.zoomMapTransparentWindow 
+//						   ordered:NSWindowAbove];
+	///[zoomMapView setTransparentView:self.zoomMapTransparentView];
 	[zoomMapView setIsDetailedMap:YES];
 	[zoomMapView setMoveMapDuringAnimation:YES];
 	[zoomMapView setShowIntervalMarkers:NO];
@@ -373,7 +375,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 											   object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(prefsChanged:)
-												 name:@"PreferencesChanged"
+												 name:PreferencesChanged
 											   object:nil];
 	
 	int plotType = [Utils intFromDefaults:RCBDefaultCompareWindowPlotType];

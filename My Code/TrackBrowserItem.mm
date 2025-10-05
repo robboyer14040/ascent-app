@@ -140,7 +140,7 @@
 	_children = [[NSMutableDictionary alloc] init];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(prefChange:)
-												 name:@"PreferencesChanged"
+												 name:PreferencesChanged
 											   object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(mustFixup:)

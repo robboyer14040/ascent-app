@@ -7,7 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "AnimTimer.h"
+#import "AscentAnimationTargetProtocol.h"
 
 @class MapPathView;
 @class ProfilesContainerView;
@@ -26,7 +26,7 @@ enum
 	kGuideFollowsNothing
 };
 
-@interface CompareWindowController : NSWindowController <AnimationTarget, NSWindowDelegate>
+@interface CompareWindowController : NSWindowController <AscentAnimationTarget, NSWindowDelegate>
 {
 	IBOutlet MapPathView*				mapView;
 	IBOutlet MapPathView*				zoomMapView;

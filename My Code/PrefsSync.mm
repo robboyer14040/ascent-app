@@ -62,7 +62,7 @@ NSString*  RCBDefaultGarminANTSync				= @"DefaultGarminANTSync";
 	}
 #endif
     [defaults synchronize];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"PreferencesChanged" object:nil];
+	[[NSNotificationCenter defaultCenter] postNotificationName:PreferencesChanged object:nil];
 }
 
 

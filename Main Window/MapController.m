@@ -13,6 +13,9 @@
 #import "Selection.h"
 #import "Utils.h"
 #import "DMWindowController.h"
+#import "AnimTimer.h"
+#import "Track.h"
+
 
 static void *kSelectionCtx = &kSelectionCtx;
 
@@ -53,6 +56,7 @@ static void *kSelectionCtx = &kSelectionCtx;
 
 
 - (void)dealloc {
+    [[AnimTimer defaultInstance] unregisterForTimerUpdates:self];
     [_detailedMapWC release];
     [_selection release];
     [_mapPathView prepareToDie];
@@ -68,7 +72,8 @@ static void *kSelectionCtx = &kSelectionCtx;
 }
 
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
     [super viewDidLoad];
     NSClickGestureRecognizer *doubleClick = [[[NSClickGestureRecognizer alloc] initWithTarget:self action:@selector(_didDoubleClick:)] autorelease];
     doubleClick.numberOfClicksRequired = 2;
@@ -80,13 +85,23 @@ static void *kSelectionCtx = &kSelectionCtx;
                                              selector:@selector(showMapDetail)
                                                  name:OpenMapDetailNotification
                                                object:nil];
+    [[AnimTimer defaultInstance] registerForTimerUpdates:self];
 }
 
-- (void)viewDidLayout {
+- (void)viewDidLayout
+{
     [super viewDidLayout];
     [self.mapPathView setCurrentTrack:_selection.selectedTrack];
     [self.mapPathView setNeedsDisplay:YES];
 }
+
+
+
+-(void)viewWillDisappear
+{
+    [[AnimTimer defaultInstance] unregisterForTimerUpdates:self];
+}
+
 
 
 - (void)_didDoubleClick:(NSClickGestureRecognizer *)g
@@ -210,6 +225,44 @@ static void *kSelectionCtx = &kSelectionCtx;
 - (void)_displayTrackOnMap:(Track *)track {
     [_mapPathView setCurrentTrack:track];
     [_mapPathView setNeedsDisplay:YES];
+    _selection.selectedTrack.animTimeBegin = 0.0;
+    _selection.selectedTrack.animTimeEnd =  _selection.selectedTrack.movingDuration;
+    [[AnimTimer defaultInstance] updateTimerDuration];
+}
+
+
+#pragma mark - AnimTimer...
+
+-(void) beginAnimation
+{
+}
+
+
+-(void) endAnimation
+{
+}
+
+
+- (Track*) animationTrack
+{
+    return _selection.selectedTrack;
+}
+
+
+- (void) updatePosition:(NSTimeInterval)trackTime reverse:(BOOL)rev  animating:(BOOL)anim;
+{
+    NSUInteger pos = 0;
+    Track* track = _selection.selectedTrack;
+    if (track)
+    {
+        NSUInteger numPoints = [[track goodPoints] count];
+        pos = [track animIndex];
+        if (pos >= numPoints && numPoints > 0) {
+            pos = numPoints-1;
+        }
+        [_mapPathView updateTrackAnimation:(int)pos
+                                    animID:0];
+    }
 }
 
 

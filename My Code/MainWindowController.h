@@ -9,10 +9,11 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "AscentAnimationTargetProtocol.h"
 
 @class TrackBrowserDocument, Selection, RootSplitController;
 
-@interface MainWindowController : NSWindowController<NSUserInterfaceValidations>
+@interface MainWindowController : NSWindowController<NSUserInterfaceValidations, AscentAnimationTarget>
 {
 @private
     Selection *_selection;
@@ -30,12 +31,14 @@
 -(IBAction)showActivityDetail:(id)sender;
 -(IBAction)toggleRightColumns:(id)sender;
 -(IBAction)syncActivities:(id)sender;
-
+-(IBAction)transportButtonPushed:(id)sender;
 
 // IB outlets
-@property(nonatomic, assign) IBOutlet NSVisualEffectView *reservedTopArea;
-@property(nonatomic, assign) IBOutlet NSView *contentContainer;
-@property(nonatomic, assign) IBOutlet NSButton *syncButton;
+@property(nonatomic, assign) IBOutlet NSVisualEffectView    *reservedTopArea;
+@property(nonatomic, assign) IBOutlet NSView                *contentContainer;
+@property(nonatomic, assign) IBOutlet NSButton              *syncButton;
+@property(nonatomic, assign) IBOutlet NSSegmentedControl    *transportControl;
+@property(nonatomic, assign) IBOutlet NSTextField           *timecodeText;
 
 // Access to embedded root split
 @property(nonatomic, retain) RootSplitController *rootSplitController;

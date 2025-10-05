@@ -135,7 +135,7 @@ NSString* TerraServerUrbanMap    = @"USGS Urban";
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(prefsChanged:)
-												 name:@"PreferencesChanged"
+												 name:PreferencesChanged
 											   object:nil];
 }
 
@@ -217,7 +217,7 @@ NSString* TerraServerUrbanMap    = @"USGS Urban";
 	v = MAX_SENS - (v * ((MAX_SENS-MIN_SENS)/100.0));
 	[Utils setFloatDefault:v
 					forKey:RCBDefaultScrollWheelSensitivty];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"PreferencesChanged" object:self];
+	[[NSNotificationCenter defaultCenter] postNotificationName:PreferencesChanged object:self];
 	[defaults synchronize];
 }
 
@@ -232,7 +232,7 @@ NSString* TerraServerUrbanMap    = @"USGS Urban";
 	[intervalIncrementStepper setEnabled:on];
 	[intervalIncrementUnitsLabel setEnabled:on];
 	
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"PreferencesChanged" object:self];
+	[[NSNotificationCenter defaultCenter] postNotificationName:PreferencesChanged object:self];
     NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
 	[defaults synchronize];
 }
@@ -247,7 +247,7 @@ NSString* TerraServerUrbanMap    = @"USGS Urban";
 	[intervalIncrementTextField setFloatValue:v];
 	[Utils setFloatDefault:v
 					forKey:RCBDefaultIntervalMarkerIncrement];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"PreferencesChanged" object:nil];
+	[[NSNotificationCenter defaultCenter] postNotificationName:PreferencesChanged object:nil];
     NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
 	[defaults synchronize];
 }
@@ -256,7 +256,8 @@ NSString* TerraServerUrbanMap    = @"USGS Urban";
 
 - (IBAction)setValueForSender:(id)sender;
 {
-    NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+   /// NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+    OFPreferenceWrapper* defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
 	if (sender == defaultMapType)
 	{
 		NSInteger idx = [sender indexOfSelectedItem];
@@ -335,7 +336,7 @@ NSString* TerraServerUrbanMap    = @"USGS Urban";
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"RebuildBrowser" object:nil];
 	}
 	[defaults synchronize];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"PreferencesChanged" object:nil];
+	[[NSNotificationCenter defaultCenter] postNotificationName:PreferencesChanged object:nil];
 }
 
 

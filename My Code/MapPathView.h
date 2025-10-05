@@ -2,11 +2,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+
 @class Track;
 @class Lap;
 @class NDRunLoopMessenger;
 @class TileInfo;
-@class TransparentMapView;
 @class PathPoint;
 @class TrackPoint;
 
@@ -21,7 +21,6 @@
 @interface MapPathView : NSView
 {
     TileFetcher*            fetcher;
-	id						transparentView;
 	Track*					currentTrack;
 	Lap*					selectedLap;
 	Track*					lastTrack;
@@ -142,7 +141,6 @@
 -(void) killAnimThread;
 -(void) getATile:(TileInfo*)ti;
 -(void) prepareToDie;
--(void) setTransparentView:(id)v;
 -(void) setContextualMenuInvocation:(NSInvocation*)inv;
 - (void)setDataHudUpdateInvocation:(NSInvocation *)value;
 - (void)centerOnMousePoint:(NSEvent*)ev;

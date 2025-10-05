@@ -8,13 +8,17 @@
 
 #import "IntervalSettingsDialogController.h"
 #import "AnalysisPaneController.h"
-
+#import "Utils.h"
 
 @interface IntervalSettingsDialogController ()
 
 @end
 
 @implementation IntervalSettingsDialogController
+
+-(void)awakeFromNib
+{
+}
 
 
 - (void)dealloc {
@@ -26,6 +30,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    BOOL useStatute = [Utils boolFromDefaults:RCBDefaultUnitsAreEnglishKey];
+    _splitLengthBox.title = useStatute ? @"Split length in miles" : @"Split length in km";
 }
 
 

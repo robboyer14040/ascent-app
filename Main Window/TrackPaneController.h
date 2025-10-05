@@ -15,25 +15,17 @@
 @class LeftSplitController;
 
 @interface TrackPaneController : NSViewController <NSUserInterfaceValidations, NSPopoverDelegate>
-{
-@private
-    TrackBrowserDocument    *_document; // assign
-    Selection               *_selection;           // retained
-    BOOL                    _calendarMode;
-    TrackListController     *_outlineVC;
-    TrackCalendarController *_calendarVC;
-    NSViewController<TrackListHandling> *_current;
-}
 
+@property(nonatomic, assign) BOOL                   calendarMode;
 @property(nonatomic, assign) TrackBrowserDocument   *document;
 @property(nonatomic, retain) Selection              *selection;
 @property(nonatomic, retain) LeftSplitController    *parentSplitVC;
-
 
 // Configurable constraints
 @property(nonatomic, assign) CGFloat minUpperHeight;   // e.g. 160.0
 @property(nonatomic, assign) CGFloat minLowerHeight;   // e.g. 0.0 allows true collapse
 
+@property(nonatomic, assign) IBOutlet NSView                *contentContainer;
 @property(nonatomic, assign) IBOutlet NSVisualEffectView    *controlsBar;
 @property(nonatomic, assign) IBOutlet NSSegmentedControl    *viewModeControl;   // Outline / Calendar
 @property(nonatomic, assign) IBOutlet NSSearchField         *searchField;
@@ -43,7 +35,6 @@
 @property(nonatomic, assign) IBOutlet SplitDragHandleView   *dragHandle;        // the blank area grip
 
 - (IBAction)toggleLowerSplit:(id)sender;
-
 - (IBAction)importTCX:(id)sender;
 - (IBAction)importFIT:(id)sender;
 - (IBAction)importHRM:(id)sender;
@@ -77,11 +68,6 @@
 - (IBAction)showMapDetail:(id)sender;
 - (IBAction)showOutlineSettings:(id)sender;
 
-
-// Content host below the bar
-@property(nonatomic, assign) IBOutlet NSView *contentContainer;
-
-@property(nonatomic, assign) BOOL calendarMode;
 
 - (BOOL) validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)anItem;
 - (void)injectDependencies;

@@ -107,7 +107,7 @@
                                               object:nil];
    [[NSNotificationCenter defaultCenter] addObserver:self
                                             selector:@selector(prefsChanged:)
-                                                name:@"PreferencesChanged"
+                                                name:PreferencesChanged
                                               object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(dataFilterChanged:)	// for advanced option

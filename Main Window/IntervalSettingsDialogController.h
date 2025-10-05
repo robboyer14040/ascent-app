@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) IBOutlet NSButton      *minVariantButton;
 @property(nonatomic, assign) IBOutlet NSButton      *maxVariantButton;
 @property(nonatomic, assign) IBOutlet NSButton      *deltaFromAvgVariantButton;
+@property(nonatomic, assign) IBOutlet NSTextField   *distanceUnitsField;
 
 @property(nonatomic, retain) AnalysisPaneController    *analysisController;
 

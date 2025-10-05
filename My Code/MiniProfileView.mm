@@ -13,32 +13,64 @@
 #define DATE_METHOD           activeTimeDelta
 #define DURATION_METHOD       movingDuration
 
+@interface MiniProfileView ()
+{
+    Track*                  lastTrack;
+    Lap*                    selectedLap;
+    NSBezierPath*           dpath;
+    NSBezierPath*           lpath;
+    float                    minalt, maxalt, altdif, maxdist;
+    int                     numPts;
+    int                     currentTrackPos;
+    NSMutableDictionary*    tickFontAttrs;
+    NSMutableDictionary*    textFontAttrs;
+    int                     numVertTickPoints;
+    NSPoint                 lastAnimPoint;
+    BOOL                    xAxisIsTime;
+}
+@property(nonatomic, retain) Track              *currentTrack;
+@property(nonatomic, retain) NSArray            *splitsArray;
+@property(nonatomic, retain) NSMutableArray     *plottedPoints;
+@property(nonatomic, retain) TransparentMapView *transparentView;
+
+@end
 
 @implementation MiniProfileView
 
 - (void)commonInit
 {
-    currentTrack = lastTrack = nil;
+    lastAnimPoint = NSZeroPoint;
+    currentTrackPos = 0;
+    _currentTrack = lastTrack = nil;
+    _splitsArray = nil;
+    _plottedPoints = [[NSMutableArray alloc] init];
     selectedLap = nil;
     dpath = [[NSBezierPath alloc] init];
     lpath = [[NSBezierPath alloc] init];
-    plottedPoints = [[NSMutableArray alloc] init];
     NSFont* font = [NSFont systemFontOfSize:6];
     tickFontAttrs = [[NSMutableDictionary alloc] init];
     [tickFontAttrs setObject:font forKey:NSFontAttributeName];
-    splitsArray = nil;
     font = [NSFont systemFontOfSize:18];
     textFontAttrs = [[NSMutableDictionary alloc] init];
     [textFontAttrs setObject:font forKey:NSFontAttributeName];
     [textFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"]
                       forKey:NSForegroundColorAttributeName];
+
+    TransparentMapView *overlay = [[TransparentMapView alloc] initWithFrame:self.bounds
+                                                                     hasHUD:NO];
+    overlay.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+
+    [self addSubview:overlay positioned:NSWindowAbove relativeTo:nil];
+    self.transparentView = overlay;
 }
+
 
 - (instancetype)initWithFrame:(NSRect)r {
     if ((self = [super initWithFrame:r]))
         [self commonInit];
     return self;
 }
+
 
 - (instancetype)initWithCoder:(NSCoder *)c {
     if ((self = [super initWithCoder:c]))
@@ -49,24 +81,17 @@
 
 - (void)dealloc
 {
-    [splitsArray release];
-    [plottedPoints release];
-    [transparentView release];
+    self.currentTrack = nil;
+    self.plottedPoints = nil;
+    self.splitsArray = nil;
+    self.transparentView = nil;
+    [dpath release];
+    [lpath release];
     [tickFontAttrs release];
     [textFontAttrs release];
-    [currentTrack release];
     [selectedLap release];
     [super dealloc];
 }
-
-
--(void) awakeFromNib
-{
-    [super awakeFromNib];
-    lastAnimPoint = NSZeroPoint;
-    currentTrackPos = 0;
-}
-
 
 
 - (NSRect) drawBounds
@@ -77,11 +102,6 @@
 	return db;
 }
 
-
--(void) setTransparentView:(TransparentMapView*)v
-{
-   transparentView = [v retain];
-}
 
 
 #define RANGE_INDICATOR_WIDTH 6.0
@@ -139,10 +159,10 @@ static float calcY(float ymin, float ymax, float h, float v)
    if (xAxisIsTime)
    {
 		tbounds = bounds;
-		int numHorizTicks = AdjustTimeRuler(numHorizTickPoints, 0.0, [currentTrack DURATION_METHOD], &incr);
+		int numHorizTicks = AdjustTimeRuler(numHorizTickPoints, 0.0, [_currentTrack DURATION_METHOD], &incr);
 		float graphDur = numHorizTicks*incr;
-		tbounds.size.width = (graphDur*tbounds.size.width)/[currentTrack DURATION_METHOD];
-		DUDrawTickMarks(tbounds, (int)kHorizontal, 0.0, 0.0, [currentTrack DURATION_METHOD], numHorizTicks, tickFontAttrs, YES, 
+		tbounds.size.width = (graphDur*tbounds.size.width)/[_currentTrack DURATION_METHOD];
+		DUDrawTickMarks(tbounds, (int)kHorizontal, 0.0, 0.0, [_currentTrack DURATION_METHOD], numHorizTicks, tickFontAttrs, YES,
 						tbounds.origin.x + bounds.size.width);
    }
    else
@@ -186,25 +206,24 @@ static float calcY(float ymin, float ymax, float h, float v)
 
 - (void) drawAnimationBitmap
 {
-   if ([plottedPoints count] > currentTrackPos)
+   if ([_plottedPoints count] > currentTrackPos)
    {
       MapPoint* mpt;
-      mpt = [plottedPoints objectAtIndex:currentTrackPos];
+      mpt = [_plottedPoints objectAtIndex:currentTrackPos];
       NSPoint pt = [mpt point];
       //pt.x -= 10.0;
       //pt.y -= 10.0;
       if ((lastAnimPoint.x != pt.x) ||
           (lastAnimPoint.y != pt.y))
       {
-		if (currentTrackPos < [[currentTrack goodPoints] count])
+		if (currentTrackPos < [[_currentTrack goodPoints] count])
 		{
-			[transparentView update:pt 
-						 trackPoint:[[currentTrack goodPoints] objectAtIndex:currentTrackPos]
-							 animID:0];
+			[_transparentView update:pt
+                          trackPoint:[[_currentTrack goodPoints] objectAtIndex:currentTrackPos]
+                              animID:0];
 			//NSLog(@"D: [%1.0f,%1.0f]", r.origin.x, r.origin.y);
 			lastAnimPoint = pt;
 		}
-		
       }
    }
 }       
@@ -213,16 +232,16 @@ static float calcY(float ymin, float ymax, float h, float v)
 
 - (void) drawSelectedRegion:(NSTimeInterval)wcStartTime endTime:(NSTimeInterval)wcEndTime color:(NSString*)clrString
 {
-	int sidx = [currentTrack findFirstGoodPointAtOrAfterDelta:wcStartTime
+	int sidx = [_currentTrack findFirstGoodPointAtOrAfterDelta:wcStartTime
 														startAt:0];
-	int eidx = [currentTrack findFirstGoodPointAtOrAfterDelta:wcEndTime
+	int eidx = [_currentTrack findFirstGoodPointAtOrAfterDelta:wcEndTime
 														startAt:sidx];
-	if ((sidx != -1) && (eidx == -1)) eidx = (int)[[currentTrack goodPoints] count] - 1;
+	if ((sidx != -1) && (eidx == -1)) eidx = (int)[[_currentTrack goodPoints] count] - 1;
 	int np = eidx-sidx+1;
 	[lpath removeAllPoints];
 	if ((np > 0) && (maxdist > 0.0))
 	{
-		NSMutableArray* pts = [currentTrack goodPoints];
+		NSMutableArray* pts = [_currentTrack goodPoints];
 		[lpath setLineWidth:1.0];
 		NSPoint p;
 		NSPoint firstP;
@@ -306,7 +325,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 	   ///NSTimeInterval lapTime = [currentTrack movingDurationOfLap:selectedLap];
 	   NSTimeInterval startTimeDelta = [selectedLap startingWallClockTimeDelta];
 	   //NSTimeInterval lapTime = [selectedLap totalTime];
-       NSTimeInterval lapTime = [currentTrack durationOfLap:selectedLap];
+       NSTimeInterval lapTime = [_currentTrack durationOfLap:selectedLap];
 	   [self drawSelectedRegion:startTimeDelta
 						endTime:startTimeDelta + lapTime
 						  color:RCBDefaultLapColor];
@@ -316,17 +335,17 @@ static float calcY(float ymin, float ymax, float h, float v)
 
 - (void) drawSelectedSplits
 {
-	if (splitsArray)
+	if (_splitsArray)
 	{
-        NSUInteger num = [splitsArray count];
+        NSUInteger num = [_splitsArray count];
 		for (int i=0; i<num; i++)
 		{
-			SplitTableItem* sti = [splitsArray objectAtIndex:i];
+			SplitTableItem* sti = [_splitsArray objectAtIndex:i];
 			if (sti && [sti selected])
 			{
 				NSTimeInterval start = [sti splitTime];
-                int idx = [currentTrack findIndexOfFirstPointAtOrAfterActiveTimeDelta:start];
-                NSArray* pts = [currentTrack points];
+                int idx = [_currentTrack findIndexOfFirstPointAtOrAfterActiveTimeDelta:start];
+                NSArray* pts = [_currentTrack points];
                 if (pts && [pts count] > idx)
                 {
                     NSUInteger np = [pts count];
@@ -365,11 +384,11 @@ static float calcY(float ymin, float ymax, float h, float v)
 
     [NSGraphicsContext restoreGraphicsState];
 
-    if ((currentTrack != nil) && [currentTrack hasElevationData] && ([[currentTrack goodPoints] count] > 1)) {
+    if ((_currentTrack != nil) && [_currentTrack hasElevationData] && ([[_currentTrack goodPoints] count] > 1)) {
         BOOL isStatute = [Utils boolFromDefaults:RCBDefaultUnitsAreEnglishKey];
         NSRect plotBounds = [self getPlotBounds];
-        lastTrack = currentTrack;
-        NSMutableArray *pts = [currentTrack goodPoints];
+        lastTrack = _currentTrack;
+        NSMutableArray *pts = [_currentTrack goodPoints];
 
         NSNumber *mxn, *mnn;
         [Utils maxMinAlt:pts max:&mxn min:&mnn];
@@ -416,15 +435,15 @@ static float calcY(float ymin, float ymax, float h, float v)
         const CGFloat y0 = plotBounds.origin.y;
 
         numPts = (int)[pts count];
-        [plottedPoints removeAllObjects];
+        [_plottedPoints removeAllObjects];
 
         NSTimeInterval dur = 0.0;
         if (numPts > 0) {
             TrackPoint *lastPt = [pts objectAtIndex:(numPts - 1)];
-            if ([lastPt DATE_METHOD] > [currentTrack DURATION_METHOD]) {
-                dur = [currentTrack duration];
+            if ([lastPt DATE_METHOD] > [_currentTrack DURATION_METHOD]) {
+                dur = [_currentTrack duration];
             } else {
-                dur = [currentTrack DURATION_METHOD];
+                dur = [_currentTrack DURATION_METHOD];
             }
         }
 
@@ -435,12 +454,12 @@ static float calcY(float ymin, float ymax, float h, float v)
             TrackPoint *pt = [pts objectAtIndex:0];
             p.x = x0;
 
-            float alt = [currentTrack firstValidAltitudeUsingGoodPoints:0];
+            float alt = [_currentTrack firstValidAltitudeUsingGoodPoints:0];
             if (alt == BAD_ALTITUDE) alt = 0.0f;
             p.y = y0 + ((alt - minalt) * h) / altdif;
 
             MapPoint *mpt0 = [[MapPoint alloc] initWithPoint:p time:[pt DATE_METHOD] speed:[pt speed]];
-            [plottedPoints addObject:mpt0];
+            [_plottedPoints addObject:mpt0];
             [mpt0 release];
 
             [dpath moveToPoint:p];
@@ -450,7 +469,7 @@ static float calcY(float ymin, float ymax, float h, float v)
             while (i < numPts) {
                 pt = [pts objectAtIndex:i];
 
-                alt = [currentTrack firstValidAltitudeUsingGoodPoints:i];
+                alt = [_currentTrack firstValidAltitudeUsingGoodPoints:i];
                 if (alt == BAD_ALTITUDE) alt = 0.0f;
 
                 float dist = [pt distance];
@@ -466,7 +485,7 @@ static float calcY(float ymin, float ymax, float h, float v)
                 p.y = y0 + (((alt - minalt) * h) / altdif);
 
                 MapPoint *mpt = [[MapPoint alloc] initWithPoint:p time:[pt DATE_METHOD] speed:[pt speed]];
-                [plottedPoints addObject:mpt];
+                [_plottedPoints addObject:mpt];
                 [mpt release];
 
                 [dpath lineToPoint:p];
@@ -549,7 +568,7 @@ static float calcY(float ymin, float ymax, float h, float v)
         [NSBezierPath setDefaultLineWidth:0.4];
         [NSBezierPath strokeRect:NSInsetRect(bounds, -0.4, 0.4)];
     } else {
-        NSString *s = currentTrack ? @"No Altitude Data" : @"No Activity Selected";
+        NSString *s = _currentTrack ? @"No Altitude Data" : @"No Activity Selected";
         NSSize size = [s sizeWithAttributes:textFontAttrs];
         CGFloat x = drawBounds.origin.x + drawBounds.size.width / 2.0 - size.width / 2.0;
         CGFloat y = (drawBounds.size.height / 2.0) - (size.height / 2.0);
@@ -562,13 +581,13 @@ static float calcY(float ymin, float ymax, float h, float v)
 
 -(void) setCurrentTrack:(Track*) tr
 {
-	if (currentTrack != tr)
+	if (_currentTrack != tr)
 	{
-        [currentTrack release];
-		currentTrack = [tr retain];
+        [_currentTrack release];
+        _currentTrack = [tr retain];
 	}
 	xAxisIsTime = [Utils intFromDefaults:RCBDefaultXAxisType] > 0 ? YES : NO;
-	[transparentView setHidden:(currentTrack == nil)||([[currentTrack goodPoints] count] <= 1)];
+	[_transparentView setHidden:(_currentTrack == nil)||([[_currentTrack goodPoints] count] <= 1)];
 	lastAnimPoint.x = -42.0;
 	lastAnimPoint.y = -42.0;
 	[self setNeedsDisplay:YES];
@@ -592,13 +611,14 @@ static float calcY(float ymin, float ymax, float h, float v)
 
 - (void)setSplitArray:(NSArray *)value
 {
-	if (splitsArray != value)
+	if (_splitsArray != value)
 	{
-        [splitsArray release];
-		splitsArray = [value retain];
+        [_splitsArray release];
+        _splitsArray = [value retain];
 	}
 	[self setNeedsDisplay:YES];
 }
+
 
 -(void)mouseDown:(NSEvent *)event
 {

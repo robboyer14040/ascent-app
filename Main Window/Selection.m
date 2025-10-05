@@ -10,15 +10,24 @@
 #import "Track.h"
 #import "Lap.h"
 
+static void *kSelectionCtx = &kSelectionCtx;
+
+@interface Selection ()
+@property(nonatomic, retain) NSMutableArray* selectionChangeObservers;
+@end
+
 
 @implementation Selection
-
 @synthesize selectedTrack = _selectedTrack;
 @synthesize selectedLap = _selectedLap;
 @synthesize selectedTracks = _selectedTracks;
 
 - (void)dealloc
 {
+    for (NSObject* observer in _selectionChangeObservers) {
+        [self stopObservingChanges:observer];
+    }
+    [_selectionChangeObservers release];
     [_selectedTrack release];
     [_selectedLap release];
     [_selectedTracks release];
@@ -88,5 +97,6 @@
     _selectedTracks = [arr copy]; // nil OK; copy yields immutable NSArray
     [self didChangeValueForKey:@"selectedTracks"];
 }
+
 
 @end

@@ -109,6 +109,7 @@ enum
 #if DEBUG_LEAKS
 	NSLog(@"AD Window controller dealloc'd... transparentWindow rc: %d", [transparentWindow retainCount]);
 #endif
+    [super dealloc];
 }
 
 
@@ -175,7 +176,7 @@ enum
 		NSTimeInterval wcd = [[[track points] objectAtIndex:idx] wallClockDelta];
 		
 		NSArray* laps = [track laps];
-		int numLaps = [laps count];
+        NSUInteger numLaps = [laps count];
 		Lap* lap = nil;
 		for (int i=0; i<numLaps; i++)
 		{
@@ -570,7 +571,7 @@ enum
    NSRect fr = [graphView frame];
    fr = NSInsetRect(fr, 10, 10);
    NSRect cfr = fr;
-   cfr.origin = [[self window] convertBaseToScreen:fr.origin];
+   cfr.origin = [[self window] convertPointToScreen:fr.origin];
    [transparentWindow setFrame:cfr display:NO];
    fr.origin = NSZeroPoint;
    [transparentView setFrame:fr];
@@ -587,7 +588,7 @@ enum
 	if (track != nil)
 	{
 		NSArray* laps = [track laps];
-		int nl = [laps count];
+        NSUInteger nl = [laps count];
 		[lapsPopup addItemWithTitle:@"all laps"];
 		if (nl > 0) 
 		{
@@ -984,7 +985,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 -(void)changeZoneTypeInStatsHUD:(id)sender
 {
-	int zoneType = [sender indexOfSelectedItem];
+	int zoneType = (int)[sender indexOfSelectedItem];
 	[Utils setIntDefault:zoneType
 				  forKey:RCBDefaultZoneTypeForStatsHUD];
 	NSArray* rangeStrings = [Utils rangeStringsForZoneType:zoneType];
@@ -1205,11 +1206,11 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 	// add popup for zone type
 	NSPopUpButton *ztpopup = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(154.0, yHR+(6*hudTH), 80.0, hudTH)];
-	float fontSize = [NSFont systemFontSizeForControlSize:NSMiniControlSize];
+	float fontSize = [NSFont systemFontSizeForControlSize:NSControlSizeMini];
 	NSCell *theCell = [ztpopup cell];
 	NSFont *theFont = [NSFont fontWithName:[[theCell font] fontName] size:fontSize];
 	[theCell setFont:theFont];   
-	[theCell setControlSize:NSMiniControlSize];
+	[theCell setControlSize:NSControlSizeMini];
 	[ztpopup addItemWithTitle:@"Heart Rate Zones"];
 	[ztpopup addItemWithTitle:@"Speed Zones"];
 	[ztpopup addItemWithTitle:@"Pace Zones"];
@@ -1238,7 +1239,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 	NSPoint cp = [graphView convertPoint:p toView:nil];      // to window coords
 	cp.x += 10.0;
 	cp.y += 20.0;
-	[dataHUDWC updateDataHUD:[[graphView window] convertBaseToScreen:cp]
+	[dataHUDWC updateDataHUD:[[graphView window] convertPointToScreen:cp]
 				  trackPoint:tpt
 					altitude:alt];
 }
@@ -1364,7 +1365,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 											   object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(prefsChanged:)
-												 name:@"PreferencesChanged"
+												 name:PreferencesChanged
 											   object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(HUDClosed:)
@@ -1464,7 +1465,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) selectLap:(id) sender
 {
-	int idx = [sender indexOfSelectedItem];
+	int idx = (int)[sender indexOfSelectedItem];
 	Lap* lap = nil;
 	if ((idx > 0) && (track != nil) && (idx <= [[track laps] count]))
 	{
@@ -1502,11 +1503,11 @@ static tHUDStringInfo sHUDStringInfo[] =
 {
    // update controls in the drawer
    NSArray* subviews = [[settingsDrawer contentView] subviews];
-   int num = [subviews count];
+    NSUInteger num = [subviews count];
    for (int i=0; i<num; i++)
    {
       id view = [subviews objectAtIndex:i];
-      int tag = [view tag];
+      int tag = (int)[view tag];
       if (tag >= kMinimumPlotTag && (tag < kStartingPeakPowerCheckboxTag))
       {
          tPlotType type = tagToPlotType(tag);
@@ -1607,7 +1608,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 	{
 		NSArray* keys = [dict allKeys];
 		keys = [keys sortedArrayUsingSelector:@selector(compareAsNumbers:)];
-		int numIntervals = [keys count];
+        NSUInteger numIntervals = [keys count];
 		int i = 0;
 		NSButton* v;
 		BOOL canShowPower = [track activityIsValidForPowerCalculation];
@@ -1752,7 +1753,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 	[graphView setNeedsDisplay:YES];
 	NSArray* pts = [track goodPoints];
 	NSTimeInterval atime = 0.0;
-	int np = [pts count];
+    NSUInteger np = [pts count];
 	if (np > 0)
 	{
 		TrackPoint* lastPoint = [pts objectAtIndex:(np-1)];
@@ -1771,10 +1772,10 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setPlotEnabled:(id) sender
 {
-   int state = [sender state];
-   int type = tagToPlotType([sender tag]);
-   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
-   [graphView setPlotEnabled:(tPlotType)type 
+    NSButton *btn = (NSButton *)sender;                   // since this action is wired from a button
+    BOOL on = (btn.state  == NSControlStateValueOn) ? YES : NO;
+     int type = (int)tagToPlotType((int)[sender tag]);
+   [graphView setPlotEnabled:(tPlotType)type
 					 enabled:on
 			  updateDefaults:YES];
 }
@@ -1782,9 +1783,9 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setPlotFillEnabled:(id) sender
 {
-   int state = [sender state];
-   int type = tagToPlotType([sender tag]);
-   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
+    NSButton *btn = (NSButton *)sender;                   // since this action is wired from a button
+    BOOL on = (btn.state  == NSControlStateValueOn) ? YES : NO;
+    int type = (int)tagToPlotType((int)[sender tag]);
    PlotAttributes* pa = [[graphView plotAttributesArray] objectAtIndex:type];
    [pa setFillEnabled:on];
    [graphView setNeedsDisplay:YES];
@@ -1793,20 +1794,21 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setPlotOpacity:(id) sender
 {
-   [graphView setPlotOpacity:tagToPlotType([sender tag]) opacity:[sender floatValue]];
+   [graphView setPlotOpacity:tagToPlotType((int)[sender tag]) opacity:[sender floatValue]];
 }
 
 
 - (IBAction) setPlotColor:(id) sender
 {
-   [graphView setPlotColor:tagToPlotType([sender tag]) color:[sender color]];
+   [graphView setPlotColor:tagToPlotType((int)[sender tag]) color:[sender color]];
 }
 
 
 - (IBAction) setPlotLineStyle:(id) sender
 {
-   int state = [sender indexOfSelectedItem];
-   int type = tagToPlotType([sender tag]);
+    NSButton *btn = (NSButton *)sender;                   // since this action is wired from a button
+    BOOL state = (btn.state  == NSControlStateValueOn) ? YES : NO;
+   int type = tagToPlotType((int)[sender tag]);
    PlotAttributes* pa = [[graphView plotAttributesArray] objectAtIndex:type];
    [pa setLineStyle:state];
    [graphView setNeedsDisplay:YES];
@@ -1819,19 +1821,19 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setShowMarkers:(id) sender
 {
-   int state = [sender state];
-   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
-   [graphView setShowMarkers:on];
-   [graphView setNeedsDisplay:YES];
-   [Utils setBoolDefault:on 
+    NSButton *btn = (NSButton *)sender;                   // since this action is wired from a button
+    BOOL on = (btn.state  == NSControlStateValueOn) ? YES : NO;
+    [graphView setShowMarkers:on];
+    [graphView setNeedsDisplay:YES];
+    [Utils setBoolDefault:on 
                   forKey:RCBDefaultShowMarkers];
 }
 
 
 - (IBAction) setShowPowerPeakIntervals:(id)sender
 {
-	int state = [sender state];
-	BOOL on = (state == NSControlStateValueOn) ? YES : NO;
+    NSButton *btn = (NSButton *)sender;                   // since this action is wired from a button
+    BOOL on = (btn.state  == NSControlStateValueOn) ? YES : NO;
 	[graphView setShowPowerPeakIntervals:on];
 	[graphView setNeedsDisplay:YES];
 	[Utils setBoolDefault:on 
@@ -1841,8 +1843,8 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setShowLaps:(id) sender
 {
-   int state = [sender state];
-   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
+    NSButton *btn = (NSButton *)sender;                   // since this action is wired from a button
+    BOOL on = (btn.state  == NSControlStateValueOn) ? YES : NO;
    [graphView setShowLaps:on];
    [graphView setNeedsDisplay:YES];
    [Utils setBoolDefault:on 
@@ -1852,8 +1854,8 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setShowPeaks:(id) sender
 {
-   int state = [sender state];
-   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
+    NSButton *btn = (NSButton *)sender;                   // since this action is wired from a button
+    BOOL on = (btn.state  == NSControlStateValueOn) ? YES : NO;
    [graphView setShowPeaks:on];
    [graphView setNeedsDisplay:YES];
    [self updatePeakControls:on];
@@ -1864,8 +1866,8 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setShowHeartrateZones:(id) sender
 {
-   int state = [sender state];
-   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
+    NSButton *btn = (NSButton *)sender;                   // since this action is wired from a button
+    BOOL on = (btn.state  == NSControlStateValueOn) ? YES : NO;
    [graphView setShowHeartrateZones:on];
    [graphView setNeedsDisplay:YES];
    [Utils setBoolDefault:on 
@@ -1875,7 +1877,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setPeakType:(id) sender
 {
-   int idx = [sender indexOfSelectedItem];
+   int idx = (int)[sender indexOfSelectedItem];
    int type = [[Utils graphItemList] tagOfItemAtIndex:idx];
    [graphView setPeakType:type];
    [graphView setNeedsDisplay:YES];
@@ -1886,7 +1888,8 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setNumberOfPeaks:(id) sender
 {
-   int state = [sender intValue];
+    NSButton *btn = (NSButton *)sender;                   // since this action is wired from a button
+    BOOL state = (btn.state  == NSControlStateValueOn) ? YES : NO;
    [numberOfPeaksField setIntValue:state];
    [graphView setNumPeaks:state];
    [graphView setNeedsDisplay:YES];
@@ -1897,7 +1900,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setZoneType:(id) sender
 {
-	int idx = [[sender selectedItem] tag];
+	int idx = (int)[[sender selectedItem] tag];
 	switch (idx)
 	{
 		case kUseHRZColorsForPath:
@@ -1997,8 +2000,8 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setShowCrossHairs:(id)sender
 {
-   int state = [sender state];
-   BOOL on = (state == NSControlStateValueOn) ? YES : NO;
+    NSButton *btn = (NSButton *)sender;                   // since this action is wired from a button
+    BOOL on = (btn.state  == NSControlStateValueOn) ? YES : NO;
    [graphView setShowCrossHairs:on];
    [graphView setNeedsDisplay:YES];
    [Utils setBoolDefault:on 
@@ -2010,7 +2013,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setDataRectType:(id)sender
 {
-   int idx = [sender indexOfSelectedItem];
+   int idx = (int)[sender indexOfSelectedItem];
    int type = [[Utils graphItemList] tagOfItemAtIndex:idx];
    [graphView setDataRectType:type];
    [graphView setNeedsDisplay:YES];
@@ -2079,7 +2082,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setPeakPowerIntervalEnabled:(id)sender
 {
-	int intervalIndex = [sender tag] - kStartingPeakPowerCheckboxTag;
+	int intervalIndex = (int)[sender tag] - kStartingPeakPowerCheckboxTag;
 	BOOL enabled = [sender state] == NSControlStateValueOn;
 	[Utils setPeakPowerIntervalAtIndexEnabled:intervalIndex
 									  enabled:enabled];
@@ -2124,7 +2127,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 {
 	NSArray* ta = [tbDocument trackArray];
 	[activitySelectorPopup removeAllItems];
-	int count = [ta count];
+    NSUInteger count = [ta count];
 	for (int i=0; i<count; i++)
 	{
 		NSString* title = [Utils buildTrackDisplayedName:[ta objectAtIndex:i] prePend:@""];

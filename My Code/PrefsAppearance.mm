@@ -63,7 +63,7 @@ NSString*  RCBDefaultSplitColor				= @"DefaultSplitColor";
    {
       [defaults setFloat:[sender floatValue] forKey:@"DefaultMapTransparency"];
    }
-   [[NSNotificationCenter defaultCenter] postNotificationName:@"PreferencesChanged" object:nil];
+   [[NSNotificationCenter defaultCenter] postNotificationName:PreferencesChanged object:nil];
    [defaults synchronize];
 }
 

@@ -13,18 +13,6 @@
 #import "DrawingUtilities.h"
 #import "ColorBoxView.h"
 
-@interface MyTextFieldCell : NSTextFieldCell
-{
-}
-@end
-
-@implementation MyTextFieldCell
-
--(BOOL)isOpaque
-{
-	return NO;
-}
-@end
 
 @interface SplitsGraphView ()
 {
@@ -35,24 +23,19 @@
     NSColor*                        valueColor;
     ColorBoxView*                   valueColorBox;
     NSTextField*                    valueTextField;
-    NSString*                       columnKey;
     NSTimeInterval                  selectedLapStartTime;
     NSTimeInterval                  selectedLapEndTime;
     NSTrackingRectTag               trackingRect;
-    int                             graphItem;
     float                           maxDist;
     BOOL                            xAxisIsTime;
 }
 @property(nonatomic, retain) SplitsTableView* splitsTableView;
-- (void)setColumnKey:(NSString*)key;
-- (NSString*)columnKey;
 - (void)resetTrackingRect;
 - (void)setSelectedLapTimes:(float)start end:(float)end;
 @end
 
 
 @implementation SplitsGraphView
-@synthesize graphItem = _graphItem;
 
 - (void)_commonInit
 {
@@ -248,22 +231,6 @@
 	float y = bounds.origin.y +  bounds.size.height - (size.height) + 2.0;
 	[s drawAtPoint:NSMakePoint(x,y) withAttributes:fontAttrs];
 }	
-
-
--(void)setColumnKey:(NSString*)key
-{
-	if (key != columnKey)
-	{
-		columnKey = key;
-	}
-}
-
-
--(NSString*)columnKey
-{
-	return columnKey;
-}
-
 
 
 - (void)drawRect:(NSRect)rect 
@@ -566,7 +533,7 @@ static NSInteger sStartIdx = 0;
 	SplitTableItem* sti = [self findSTI:local_point];
 	if (sti)
 	{
-		ColumnInfo* columnInfo = [[ColumnInfo alloc] initWithInfo:[staticColumnInfo nthPossibleColumnInfo:graphItem]];
+		ColumnInfo* columnInfo = [[[ColumnInfo alloc] initWithInfo:[staticColumnInfo nthPossibleColumnInfo:_graphItem]] autorelease];
 		float value = [[sti valueForKey:[columnInfo ident]] floatValue];
 		[valueTextField setFormatter:[columnInfo formatter]];
 		[valueTextField setFloatValue:value];

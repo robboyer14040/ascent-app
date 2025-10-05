@@ -88,7 +88,7 @@ NSString*  RCBDefaultCalculatePowerActivities		= @"CalculatePowerActivities";
 				forKey:RCBDefaultAltitudeSmoothingPercentage];
 	[defaults synchronize];
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"MustFixupTrack" object:nil];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"PreferencesChanged" object:nil];
+	[[NSNotificationCenter defaultCenter] postNotificationName:PreferencesChanged object:nil];
 }
 
 
@@ -101,7 +101,7 @@ NSString*  RCBDefaultCalculatePowerActivities		= @"CalculatePowerActivities";
 	[defaults setFloat:v 
 				forKey:RCBDefaultAltitudeFilter];
 	[defaults synchronize];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"PreferencesChanged" object:nil];
+	[[NSNotificationCenter defaultCenter] postNotificationName:PreferencesChanged object:nil];
 }
 
 
@@ -114,7 +114,7 @@ NSString*  RCBDefaultCalculatePowerActivities		= @"CalculatePowerActivities";
 	[defaults setFloat:v forKey:RCBDefaultMinSpeed];
 	[defaults synchronize];
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"MustFixupTrack" object:nil];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"PreferencesChanged" object:nil];
+	[[NSNotificationCenter defaultCenter] postNotificationName:PreferencesChanged object:nil];
 }
 
 
@@ -124,7 +124,7 @@ NSString*  RCBDefaultCalculatePowerActivities		= @"CalculatePowerActivities";
 	float v = [sender floatValue];
 	[defaults setFloat:v forKey:RCBDefaultAutoSplitMinutes];
 	[defaults synchronize];
-	//no need to do this [[NSNotificationCenter defaultCenter] postNotificationName:@"PreferencesChanged" object:nil];
+	//no need to do this [[NSNotificationCenter defaultCenter] postNotificationName:PreferencesChanged object:nil];
 }
 
 
@@ -142,7 +142,7 @@ NSString*  RCBDefaultCalculatePowerActivities		= @"CalculatePowerActivities";
 	}
 	[defaults setFloat:(float)cv forKey:RCBDefaultMaxAltitude];
 	[defaults synchronize];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"PreferencesChanged" object:nil];
+	[[NSNotificationCenter defaultCenter] postNotificationName:PreferencesChanged object:nil];
 }
 
 

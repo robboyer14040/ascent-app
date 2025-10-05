@@ -86,7 +86,7 @@ NSString*  RCBDefaultSharingAccountEmail		= @"DefaultSharingAccountEmail";
 	} 
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 	[defaults synchronize];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"PreferencesChanged" object:nil];
+	[[NSNotificationCenter defaultCenter] postNotificationName:PreferencesChanged object:nil];
 }
 
 

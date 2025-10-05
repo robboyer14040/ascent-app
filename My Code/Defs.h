@@ -241,6 +241,16 @@ enum tColMenuTags
 	kMT_Last,
 };
 
+// transport states
+enum
+{
+    kGoToBeginning = 0,
+    kReverse,
+    kStop,
+    kPlay,
+    kFastForward,
+    kGoToEnd
+};
 
 
 // don't change these enums -- there are controls defined in Interface Builder
@@ -654,6 +664,11 @@ extern NSString* TrackFieldsChanged;
 extern NSString* SyncActivitiesStartingNotification;
 extern NSString* SyncActivitiesStoppingNotification;
 extern NSString* SyncActivitiesKickOff;
+extern NSString* PreferencesChanged;
+extern NSString* TransportStateChanged;
+
+// Notification userInfo ids
+extern NSString* const TransportStateChangedInfoKey;
 
 // other global strings
 extern NSString* TerraServerTopoMap;

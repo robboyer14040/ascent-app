@@ -9,7 +9,6 @@
 #import "NDRunLoopMessenger.h"
 #import "math.h"
 #import <unistd.h>
-#import "TransparentMapWindow.h"
 #import "TransparentMapView.h"
 #import "SplitTableItem.h"
 #import <stdatomic.h>
@@ -263,6 +262,7 @@ static float sCumulativeDeltaY = 0.0;			// for scrolling/zoom
 //----------------------------------------------------------------------------------------------------
 
 @interface MapPathView ()
+@property(nonatomic, retain) TransparentMapView *transparentView;
 -(NSPoint)calcGraphPointFromUTMCoordinates:(double)easting northing:(double)northing;
 -(void)calcUTMForPoint:(TrackPoint*)pt nextPoint:(TrackPoint*)nextPt ratio:(float)ratio eastingP:(double*)easting northingP:(double*)northing zoneP:(int*)zone;
 -(void)resetUTMCoords:(double)ux utmy:(double)uy;
@@ -292,9 +292,16 @@ BOOL terraServerMap(int dt)
 
 - (void)commonInit
 {
+    TransparentMapView *overlay = [[TransparentMapView alloc] initWithFrame:self.bounds
+                                                                     hasHUD:NO];
+    overlay.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+
+    [self addSubview:overlay positioned:NSWindowAbove relativeTo:nil];
+    self.transparentView = overlay;
+    
+    
     fetcher = [[TileFetcher alloc] init];
     splitArray = nil;
-    transparentView = nil;
     noDataCond = nextAvailCond++;
     hasDataCond = nextAvailCond++;
     currentMapImages = [[NSMutableArray alloc] init];
@@ -401,17 +408,10 @@ BOOL terraServerMap(int dt)
     [dataInProgress release];
     [fetcher release];
     runLoopMessenger = nil;
+    self.transparentView = nil;
     [super dealloc];
 }
 
-
--(void) setTransparentView:(id)v
-{
-   if (v != transparentView)
-   {
-      transparentView = v;
-   }
-}
 
 
 - (void) killThyself:(id)junk
@@ -874,9 +874,9 @@ static double getMetersPerTile(int zoom)
 		maxarr[kDistance] = [currentTrack distance];
 		minarr[kDistance] = 0.0;
 	}
-	[transparentView setHidden:(currentTrack == nil)||(numPts <= 1)];
-	if ([transparentView respondsToSelector: @selector(setMaxMinValueArrays:min:)])
-	   [transparentView setMaxMinValueArrays:(float*)maxarr min:(float*)minarr];
+	[_transparentView setHidden:(currentTrack == nil)||(numPts <= 1)];
+	if ([_transparentView respondsToSelector: @selector(setMaxMinValueArrays:min:)])
+	   [_transparentView setMaxMinValueArrays:(float*)maxarr min:(float*)minarr];
 	[self recalcGeometry];
 	[self setNeedsDisplay:YES];
 }
@@ -1019,7 +1019,7 @@ static double getMetersPerTile(int zoom)
       //pt.x -= 10.0;
       //pt.y -= 10.0;
 	   TrackPoint* tpt = (TrackPoint*)[[currentTrack goodPoints] objectAtIndex:curPointIdx];
-	   [transparentView update:pt trackPoint:tpt animID:aid];
+	   [_transparentView update:pt trackPoint:tpt animID:aid];
 	   if (dataHudUpdateInvocation)
 	   {
 		   //float alt = [self getAltitude:curPointIdx];
@@ -1061,9 +1061,9 @@ static double getMetersPerTile(int zoom)
 					zoneP:&zone];
 	NSPoint p = [self calcGraphPointFromUTMCoordinates:easting
 											  northing:northing];
-	[transparentView update:p 
-				 trackPoint:pt 
-					 animID:aid];
+	[_transparentView update:p
+                  trackPoint:pt
+                      animID:aid];
 }
 
 

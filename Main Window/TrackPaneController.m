@@ -22,7 +22,7 @@
 #import "DMWindowController.h"
 #import "LeftSplitController.h"
 #import "OutlineSettingsDialogController.h"
-
+#import "CompareWindowController.h"
 
 enum
 {
@@ -59,7 +59,10 @@ enum
 
 @interface TrackPaneController ()
 {
-    ProgressBarHelper* _pbHelper;
+    TrackListController                 *_outlineVC;
+    TrackCalendarController             *_calendarVC;
+    NSViewController<TrackListHandling> *_current;
+    ProgressBarHelper                   * _pbHelper;
 }
 @property(nonatomic, retain) NSPopover  *outlineSettingsPopover;
 
@@ -85,7 +88,6 @@ enum
 @synthesize viewModeControl = _viewModeControl;
 @synthesize searchField = _searchField;
 @synthesize contentContainer = _contentContainer;
-@synthesize calendarMode = _calendarMode;
 
 
 - (void)awakeFromNib
@@ -143,7 +145,16 @@ enum
                                                   usingBlock:^(NSNotification *note){
         [self _doSyncStravaActivities];
     }];
-   [super viewDidLoad];
+    
+    [[NSNotificationCenter defaultCenter] addObserverForName:PreferencesChanged
+                                                      object:nil
+                                                       queue:[NSOperationQueue mainQueue]  // <- main thread
+                                                  usingBlock:^(NSNotification *note){
+        [_outlineVC rebuildBrowserAndRestoreState:_selection.selectedTrack
+                                        selectLap:_selection.selectedLap];
+    }];
+    
+    [super viewDidLoad];
 }
 
 
@@ -683,6 +694,15 @@ enum
         }
     }
 }
+
+- (IBAction)compareActivities:(id)sender
+{
+    NSArray* arr = [_outlineVC prepareArrayOfSelectedTracks];
+    CompareWindowController* wc = [[CompareWindowController alloc] initWithTracks:arr
+                                                                           mainWC:_document.windowControllers.firstObject];
+    [wc showWindow:self];
+}
+
 
 
 - (IBAction)googleEarthFlyBy:(id)sender

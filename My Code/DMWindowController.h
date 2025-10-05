@@ -7,7 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "AnimTimer.h"
+#import "AscentAnimationTargetProtocol.h"
 
 @class MapPathView;
 @class TrackBrowserDocument;
@@ -18,7 +18,7 @@
 @class TransparentMapWindow;
 @class DataHUDWindowController;
 
-@interface DMWindowController : NSWindowController  <AnimationTarget, NSWindowDelegate, NSDrawerDelegate>
+@interface DMWindowController : NSWindowController  <AscentAnimationTarget, NSWindowDelegate, NSDrawerDelegate>
 {
 	IBOutlet NSDrawer*				settingsDrawer;
 	IBOutlet MapPathView*			mapView;

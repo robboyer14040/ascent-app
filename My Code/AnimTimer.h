@@ -9,49 +9,25 @@
 #import <Cocoa/Cocoa.h>
 
 @class Track;
-@class TransportPanelController;
 
-@protocol AnimationTarget
-
--(Track*) animationTrack;
--(void) updatePosition:(NSTimeInterval)trackTime reverse:(BOOL)rev animating:(BOOL)anim;
--(void) beginAnimation;
--(void) endAnimation;
-@end
-
-
-@interface AnimTimer : NSObject 
-{
-   NSTimer*                   rideTimer;
-   NSMutableArray*            updateList;
-   TransportPanelController*  transportPanelController;
-   BOOL                       playingInReverse;
-   BOOL                       animating;
-   float                      speedFactor;
-   NSTimeInterval             animTime;
-   NSTimeInterval             endingTime;
-}
+@interface AnimTimer : NSObject
 
 + (AnimTimer*) defaultInstance;
 
 - (void) registerForTimerUpdates:(id)obj;
 - (void) unregisterForTimerUpdates:(id)obj;
-- (void) stop:(id)sender;
-- (void) play:(id)sender reverse:(BOOL)inReverse;
-- (void) fastForward;
-- (void) rewind;
+- (void) requestTransportStateChange:(int)requestedState;
 - (void) setSpeedFactor:(float)sf;
 - (float) speedFactor;
 - (void) setAnimTime:(NSTimeInterval)at;
 - (NSTimeInterval) animTime;
 - (NSTimeInterval) endingTime;
-- (void) setTransportPanelController:(TransportPanelController*)tpc;
 - (void) updateTimerDuration;
 - (void) locateToPercentage:(float)percent;
 - (void) applyLocateDelta:(float)delta;
 - (BOOL) animating;
 - (BOOL) playingInReverse;
-- (void)togglePlay:(NSNotification *)notification;
--(void)forceUpdate;
+- (void) forceUpdate;
+- (void) togglePlay;
 
 @end

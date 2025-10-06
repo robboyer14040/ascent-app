@@ -1622,18 +1622,7 @@ int searchTagToMask(int searchTag)
         NSURL* url = _document.fileURL;
         if (url)
         {
-            DatabaseManager* dbm = [[[DatabaseManager alloc] initWithURL:url
-                                                                readOnly:YES] autorelease];
-            TrackPointStore* tpStore = [[[TrackPointStore alloc] initWithDatabaseManager:dbm] autorelease];
-            NSError* err = nil;
-            NSArray* pts = [[tpStore loadPointsForTrackUUID:track.uuid error:&err] autorelease];
-            if (pts) {
-                NSLog(@"loaded %d points for %s", (int)pts.count, [track.name UTF8String]);
-                track.points = [[pts mutableCopy] autorelease];
-                track.pointsCount    = (int)pts.count;
-                track.pointsEverSaved = YES;
-                [track fixupTrack];
-            }
+            [track loadPoints:url];
         }
     }
     BOOL force = ShiftKeyIsDown() ;
@@ -2116,7 +2105,11 @@ static NSArray<NSArray<NSString *> *> *ASCParseCSV(NSString *text)
     NSError *error = nil;
     
     NSData *bm = [[NSUserDefaults standardUserDefaults] objectForKey:kStravaRootBookmarkKey];
-    if (!bm) { if (error) error = [NSError errorWithDomain:NSCocoaErrorDomain code:1 userInfo:@{NSLocalizedDescriptionKey:@"No saved folder permission"}]; return nil; }
+    if (!bm) {
+        if (error)
+            error = [NSError errorWithDomain:NSCocoaErrorDomain code:1 
+                                    userInfo:@{NSLocalizedDescriptionKey:@"No saved folder permission"}];
+        return nil; }
     
     BOOL stale = NO;
     NSError *err = nil;

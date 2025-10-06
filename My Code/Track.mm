@@ -15,7 +15,8 @@
 #import "PathMarker.h"
 #import "StringAdditions.h"
 #import "OverrideData.h"
-
+#import "DatabaseManager.h"
+#import "TrackPointStore.h"
 
 //------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------
@@ -735,8 +736,9 @@
 - (float)statForLap:(Lap*)lap statType:(tStatType)stat index:(int)idx atActiveTimeDelta:(NSTimeInterval*)atTime
 {
 	[self calculateLapStats:lap];
-	struct tStatData* data = [lap getStat:stat];
-	if (atTime != nil) *atTime = data->atActiveTimeDelta[idx];
+	struct tStatData* data = [lap getStat:(int)stat];
+	if (atTime != nil)
+        *atTime = data->atActiveTimeDelta[idx];
 	return data->vals[idx];
 }	
 
@@ -4707,5 +4709,21 @@ static tAttribute sAttributesInCSVHeader[] =
 //   return animIndex;
 //}
 
-
+-(void) loadPoints:(NSURL*) docURL
+{
+    if (!_points || (_points.count == 0)) {
+        DatabaseManager* dbm = [[[DatabaseManager alloc] initWithURL:docURL
+                                                            readOnly:YES] autorelease];
+        TrackPointStore* tpStore = [[[TrackPointStore alloc] initWithDatabaseManager:dbm] autorelease];
+        NSError* err = nil;
+        NSArray* pts = [[tpStore loadPointsForTrackUUID:_uuid error:&err] autorelease];
+        if (pts) {
+            NSLog(@"loaded %d points for %s", (int)pts.count, [_name UTF8String]);
+            self.points = [[pts mutableCopy] autorelease];
+            _pointsCount    = (int)pts.count;
+            _pointsEverSaved = YES;
+            [self fixupTrack];
+        }
+    }
+}
 @end

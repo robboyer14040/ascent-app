@@ -520,4 +520,11 @@ static NSDate *sStartTime = nil;
         return NSOrderedSame;
 }
 
+
+#pragma mark - point retrieval
+
+-(void)loadPoints
+{
+    
+}
 @end

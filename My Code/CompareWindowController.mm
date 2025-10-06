@@ -84,12 +84,17 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
     self.mainWindowController = wc;
     self.dotColorsArray = [NSArray arrayWithObjects:@"Dot", @"BlueDot", @"GreenDot", @"PurpleDot", nil];
     
+    for (Track* track in ta) {
+        [track loadPoints:[wc.document fileURL]];
+    }
+    
     /// FIXME ADD TRANSPARENT VIEWS TO map and zoommap
 }
 
 
 -(id) initWithTracks:(NSArray*)ta mainWC:(NSWindowController*)wc
 {
+    
     self = [super initWithWindowNibName:@"CompareWindow"];
 	if (self)
 	{

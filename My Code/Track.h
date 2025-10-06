@@ -324,5 +324,5 @@ struct tPeakIntervalData
 -(BOOL)hasExplicitDeadZones;
 -(void)setHasExplicitDeadZones:(BOOL)has;
 -(void)setHasDeviceTime:(BOOL)has;
-
+-(void)loadPoints:(NSURL*)docURL;
 @end

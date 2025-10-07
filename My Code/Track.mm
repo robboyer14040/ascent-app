@@ -17,6 +17,8 @@
 #import "OverrideData.h"
 #import "DatabaseManager.h"
 #import "TrackPointStore.h"
+#import "GeoHelper.h" // Assuming GeoHelper.h is included
+
 
 //------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------
@@ -4726,4 +4728,68 @@ static tAttribute sAttributesInCSVHeader[] =
         }
     }
 }
+
+
+// Helper method to find the start and end indices for a path segment of a given length
+// starting near a location. Returns YES on success, NO if path cannot be found.
+- (BOOL)findSegmentStart:(int*)startIdxPtr end:(int*)endIdxPtr forStartLocation:(tLocation)startLocation length:(float)lengthKM tolerance:(float)toleranceKM
+{
+    NSArray<TrackPoint*>* pts = [self points]; // MRC property accessor for points
+    int count = (int)[pts count];
+    
+    if (count < 2) {
+        *startIdxPtr = -1;
+        *endIdxPtr = -1;
+        return NO;
+    }
+
+    // 1. Find the starting point of the path segment
+    // Use a small distance tolerance (e.g., 50 meters, or 0.05 KM) for the initial location search.
+    // The path tolerance is for path *shape*, not finding the start point.
+    // If the input tolerance is small, use it, otherwise a fixed small value.
+    float startPointTolerance = fmaxf(0.05, lengthKM * toleranceKM / 100.0);
+    int startIndex = FindPointIndexNearLocation(pts, startLocation, startPointTolerance);
+
+    if (startIndex == -1) {
+        *startIdxPtr = -1;
+        *endIdxPtr = -1;
+        return NO;
+    }
+
+    // 2. Find the end point that corresponds to the requested length
+    float distanceTraversed = 0.0;
+    int endIndex = startIndex;
+    
+    for (int i = startIndex; i < count - 1; i++) {
+        TrackPoint *p1 = [pts objectAtIndex:i];
+        TrackPoint *p2 = [pts objectAtIndex:i+1];
+        
+        tLocation loc1 = {p1.latitude, p1.longitude};
+        tLocation loc2 = {p2.latitude, p2.longitude};
+
+        float segmentDist = GeodesicDistance(loc1, loc2);
+        
+        if (distanceTraversed + segmentDist >= lengthKM) {
+            // Found the segment that crosses the length. Use the *current* point as the end point.
+            // Note: The actual path segment might be slightly longer than 'lengthKM'.
+            endIndex = i + 1;
+            break;
+        }
+        
+        distanceTraversed += segmentDist;
+        endIndex = i + 1; // Update endIndex to the current point
+    }
+    
+    if (distanceTraversed < lengthKM * (1.0 - toleranceKM / 100.0)) {
+        // Track is too short to cover the required length within tolerance
+        *startIdxPtr = -1;
+        *endIdxPtr = -1;
+        return NO;
+    }
+    
+    *startIdxPtr = startIndex;
+    *endIdxPtr = endIndex;
+    return YES;
+}
+
 @end

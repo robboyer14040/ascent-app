@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D40CF9792E95D55500338C40 /* AscentPathFinder.m in Sources */ = {isa = PBXBuildFile; fileRef = D40CF9782E95D55500338C40 /* AscentPathFinder.m */; };
+		D40CF9812E95D5D900338C40 /* GeoHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = D40CF9802E95D5D900338C40 /* GeoHelper.m */; };
 		D41001E72E849689002942DE /* TrackClipboardSerializer.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001E62E849689002942DE /* TrackClipboardSerializer.m */; };
 		D41001EA2E84A604002942DE /* AscentPasteboard.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001E92E84A604002942DE /* AscentPasteboard.m */; };
 		D41001F12E8596A4002942DE /* RootSplitController.m in Sources */ = {isa = PBXBuildFile; fileRef = D41001F02E8596A4002942DE /* RootSplitController.m */; };
@@ -231,7 +233,6 @@
 		D4F13CC62E4EAE4600462944 /* ActivityDetailView.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13AB92E4EAE4600462944 /* ActivityDetailView.mm */; };
 		D4F13CC72E4EAE4600462944 /* SyncController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A372E4EAE4600462944 /* SyncController.mm */; };
 		D4F13CC82E4EAE4600462944 /* TCX.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13ACD2E4EAE4600462944 /* TCX.mm */; };
-		D4F13CC92E4EAE4600462944 /* TransparentMapWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A722E4EAE4600462944 /* TransparentMapWindow.mm */; };
 		D4F13CCA2E4EAE4600462944 /* SplitActivityController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A122E4EAE4600462944 /* SplitActivityController.mm */; };
 		D4F13CCB2E4EAE4600462944 /* DrawingUtilities.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F139E92E4EAE4600462944 /* DrawingUtilities.mm */; };
 		D4F13CCC2E4EAE4600462944 /* PrefsAppearance.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A4F2E4EAE4600462944 /* PrefsAppearance.mm */; };
@@ -390,6 +391,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D40CF9772E95D55500338C40 /* AscentPathFinder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AscentPathFinder.h; sourceTree = "<group>"; };
+		D40CF9782E95D55500338C40 /* AscentPathFinder.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = AscentPathFinder.m; sourceTree = "<group>"; };
+		D40CF97F2E95D5D900338C40 /* GeoHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeoHelper.h; sourceTree = "<group>"; };
+		D40CF9802E95D5D900338C40 /* GeoHelper.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = GeoHelper.m; sourceTree = "<group>"; };
 		D41001E52E849667002942DE /* TrackClipboardSerializer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TrackClipboardSerializer.h; path = "../My Code/TrackClipboardSerializer.h"; sourceTree = "<group>"; };
 		D41001E62E849689002942DE /* TrackClipboardSerializer.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; name = TrackClipboardSerializer.m; path = "../My Code/TrackClipboardSerializer.m"; sourceTree = "<group>"; };
 		D41001E82E84A5EC002942DE /* AscentPasteboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AscentPasteboard.h; path = "My Code/AscentPasteboard.h"; sourceTree = "<group>"; };
@@ -681,8 +686,6 @@
 		D4F13A6E2E4EAE4600462944 /* MapPathView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = MapPathView.mm; path = "My Code/MapPathView.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13A6F2E4EAE4600462944 /* MapPoint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MapPoint.h; path = "My Code/MapPoint.h"; sourceTree = SOURCE_ROOT; };
 		D4F13A702E4EAE4600462944 /* MapPoint.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = MapPoint.m; path = "My Code/MapPoint.m"; sourceTree = SOURCE_ROOT; };
-		D4F13A712E4EAE4600462944 /* TransparentMapWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TransparentMapWindow.h; path = "My Code/TransparentMapWindow.h"; sourceTree = SOURCE_ROOT; };
-		D4F13A722E4EAE4600462944 /* TransparentMapWindow.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = TransparentMapWindow.mm; path = "My Code/TransparentMapWindow.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13A732E4EAE4600462944 /* TransparentMapView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TransparentMapView.h; path = "My Code/TransparentMapView.h"; sourceTree = SOURCE_ROOT; };
 		D4F13A742E4EAE4600462944 /* TransparentMapView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = TransparentMapView.mm; path = "My Code/TransparentMapView.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13A752E4EAE4600462944 /* TransparentMapViewProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TransparentMapViewProtocol.h; path = "My Code/TransparentMapViewProtocol.h"; sourceTree = SOURCE_ROOT; };
@@ -996,6 +999,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D40CF9762E95D4FE00338C40 /* Geo */ = {
+			isa = PBXGroup;
+			children = (
+				D40CF9772E95D55500338C40 /* AscentPathFinder.h */,
+				D40CF9782E95D55500338C40 /* AscentPathFinder.m */,
+				D40CF97F2E95D5D900338C40 /* GeoHelper.h */,
+				D40CF9802E95D5D900338C40 /* GeoHelper.m */,
+			);
+			path = Geo;
+			sourceTree = "<group>";
+		};
 		D41001EE2E8592BB002942DE /* Main Window */ = {
 			isa = PBXGroup;
 			children = (
@@ -1378,8 +1392,6 @@
 				D4F13A6E2E4EAE4600462944 /* MapPathView.mm */,
 				D4F13A6F2E4EAE4600462944 /* MapPoint.h */,
 				D4F13A702E4EAE4600462944 /* MapPoint.m */,
-				D4F13A712E4EAE4600462944 /* TransparentMapWindow.h */,
-				D4F13A722E4EAE4600462944 /* TransparentMapWindow.mm */,
 				D4F13A732E4EAE4600462944 /* TransparentMapView.h */,
 				D4F13A742E4EAE4600462944 /* TransparentMapView.mm */,
 				D4F13A752E4EAE4600462944 /* TransparentMapViewProtocol.h */,
@@ -1578,6 +1590,7 @@
 		D4F13AF42E4EAE4600462944 /* Mainline Code */ = {
 			isa = PBXGroup;
 			children = (
+				D40CF9762E95D4FE00338C40 /* Geo */,
 				D41001EE2E8592BB002942DE /* Main Window */,
 				D489E0EA2E6D10D60076E5DC /* Database */,
 				D457D2EC2E6488B400D1DF73 /* Strava */,
@@ -2237,12 +2250,13 @@
 				D4F13CC22E4EAE4600462944 /* EquipmentListWindowController.mm in Sources */,
 				D4F13CC32E4EAE4600462944 /* GarminSyncWindowController.mm in Sources */,
 				D4E692E82E9095BC00E90E6A /* NSView+Spin.m in Sources */,
+				D40CF9792E95D55500338C40 /* AscentPathFinder.m in Sources */,
 				D4F13CC52E4EAE4600462944 /* AppController.mm in Sources */,
 				D489E0F32E6D13C60076E5DC /* IdentifierStore.m in Sources */,
+				D40CF9812E95D5D900338C40 /* GeoHelper.m in Sources */,
 				D4F13CC62E4EAE4600462944 /* ActivityDetailView.mm in Sources */,
 				D4F13CC72E4EAE4600462944 /* SyncController.mm in Sources */,
 				D4F13CC82E4EAE4600462944 /* TCX.mm in Sources */,
-				D4F13CC92E4EAE4600462944 /* TransparentMapWindow.mm in Sources */,
 				D4F13CCA2E4EAE4600462944 /* SplitActivityController.mm in Sources */,
 				D41001EA2E84A604002942DE /* AscentPasteboard.m in Sources */,
 				D41002012E8597D4002942DE /* AnalysisPaneController.m in Sources */,

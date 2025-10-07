@@ -211,8 +211,8 @@ NSString*  RCBDefaultAboveZoneColor		= @"DefaultAboveZoneColor";
    [fmt setMaximumFractionDigits:1];
    [fmt setFormat:@"#0.0;0.0;-#0.0"];
 
-   float v, top;
-   top = v;
+    float v = 0.0;
+    float top = v;
    v = [[dict objectForKey:RCBDefaultZone5Threshold] floatValue];
    [zone5ThresholdField setFormatter:fmt];
    [zone5ThresholdField setFloatValue:v];
@@ -624,7 +624,8 @@ NSString*  RCBDefaultAboveZoneColor		= @"DefaultAboveZoneColor";
          
          
    }
-    NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+    /// NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+     OFPreferenceWrapper* defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
    [defaults setObject:mdict forKey:dictKey];
 }
 
@@ -634,9 +635,10 @@ NSString*  RCBDefaultAboveZoneColor		= @"DefaultAboveZoneColor";
 
 - (IBAction)setValueForSender:(id)sender
 {
-    NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
-   int tg = [sender tag];
-   int znType = [zoneTypePopup indexOfSelectedItem];
+    /// NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+     OFPreferenceWrapper* defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
+   int tg = (int)(int)[sender tag];
+   int znType = (int)[zoneTypePopup indexOfSelectedItem];
    if (sender == zoneTypePopup)
    {
       [defaults setInteger:znType forKey:RCBDefaultZoneType];
@@ -693,8 +695,9 @@ NSString*  RCBDefaultAboveZoneColor		= @"DefaultAboveZoneColor";
 
 -(void)updateUI
 {
-    NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
-	int zoneType = [defaults integerForKey:RCBDefaultZoneType];
+    /// NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+     OFPreferenceWrapper* defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
+	int zoneType = (int)[defaults integerForKey:RCBDefaultZoneType];
 	if (!IS_BETWEEN(0, zoneType, kMaxZoneType))
 	{
 		zoneType = kSpeedDefaults;

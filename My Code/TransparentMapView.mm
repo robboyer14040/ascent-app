@@ -12,52 +12,85 @@
 #import "Defs.h"
 #import "AnimTimer.h"
 
+@interface TransparentMapView ()
+{
+   NSPoint              position;
+   NSImage*             dotImage;
+   NSImage*             dataGraphImage;
+   TrackPoint*          trackPoint;
+   NSMutableDictionary* animFontAttrs;
+   NSMutableDictionary* lcdFontAttrs;
+    float                maxValueArray[kNumPlotTypes];
+    float                minValueArray[kNumPlotTypes];
+    float                hudOpacity;
+    BOOL                 showDataRect;
+    BOOL                 useStatuteUnits;
+    BOOL    _hasHUD;
+}
+@property(nonatomic, retain) NSImage* dotImage;
+@property(nonatomic, retain) NSImage* dataGraphImage;
+@property(nonatomic, retain) NSMutableDictionary* animFontAttrs;
+@property(nonatomic, retain) NSMutableDictionary* lcdFontAttrs;
+
+@end
+
 
 @implementation TransparentMapView
+@synthesize hasHUD = _hasHUD;
+@synthesize dotImage = _dotImage;
+@synthesize dataGraphImage = _dataGraphImage;
+@synthesize animFontAttrs = _animFontAttrs;
+@synthesize lcdFontAttrs = _lcdFontAttrs;
 
-- (id)initWithFrame:(NSRect)frame hasHUD:(BOOL)hh
-{
-    self = [super initWithFrame:frame];
-    if (self) {
-        hasHUD = hh;
-        // Initialization code here.
-        NSString* path = [[NSBundle mainBundle] pathForResource:@"Dot" ofType:@"png"];
-        dotImage = [[NSImage alloc] initWithContentsOfFile:path];
-        path = [[NSBundle mainBundle] pathForResource:@"DataGraph" ofType:@"png"];
-        dataGraphImage = [[NSImage alloc] initWithContentsOfFile:path];
-        showDataRect = [Utils boolFromDefaults:RCBDefaultShowMDHUD] && hasHUD;
-        if (hasHUD)
-            hudOpacity = [Utils floatFromDefaults:RCBDefaultMDHUDTransparency];
-        else
-            hudOpacity = 0.0;
-        //NSFont* font = [NSFont systemFontOfSize:8];
-        NSFont* font = [NSFont boldSystemFontOfSize:8];
-        animFontAttrs = [[NSMutableDictionary alloc] init];
-        [animFontAttrs setObject:font forKey:NSFontAttributeName];
-        ///font = [NSFont fontWithName:@"LCDMono2 Normal" size:10];
-        font = [NSFont systemFontOfSize:10];
-        if (font) {
-            lcdFontAttrs = [[NSMutableDictionary alloc] init];
-            [lcdFontAttrs setObject:font forKey:NSFontAttributeName];
-            [lcdFontAttrs setObject:[NSColor whiteColor]  forKey:NSForegroundColorAttributeName];
-        }
-        position = NSZeroPoint;
-        [self prefsChanged];
-    }
+- (instancetype)initWithFrame:(NSRect)r {
+    if ((self = [super initWithFrame:r]))
+        [self _commonInit];
     return self;
 }
 
 
--(void) awakeFromNib
+- (instancetype)initWithCoder:(NSCoder *)c {
+    if ((self = [super initWithCoder:c]))
+        [self _commonInit];
+    return self;
+}
+
+
+- (void)_commonInit
 {
+    _hasHUD = NO;
+    // Initialization code here.
+    NSString* path = [[NSBundle mainBundle] pathForResource:@"Dot" ofType:@"png"];
+    dotImage = [[NSImage alloc] initWithContentsOfFile:path];
+    path = [[NSBundle mainBundle] pathForResource:@"DataGraph" ofType:@"png"];
+    dataGraphImage = [[NSImage alloc] initWithContentsOfFile:path];
+    showDataRect = [Utils boolFromDefaults:RCBDefaultShowMDHUD] && _hasHUD;
+    if (_hasHUD)
+        hudOpacity = [Utils floatFromDefaults:RCBDefaultMDHUDTransparency];
+    else
+        hudOpacity = 0.0;
+    //NSFont* font = [NSFont systemFontOfSize:8];
+    NSFont* font = [NSFont boldSystemFontOfSize:8];
+    animFontAttrs = [[NSMutableDictionary alloc] init];
+    [animFontAttrs setObject:font forKey:NSFontAttributeName];
+    ///font = [NSFont fontWithName:@"LCDMono2 Normal" size:10];
+    font = [NSFont systemFontOfSize:10];
+    if (font) {
+        lcdFontAttrs = [[NSMutableDictionary alloc] init];
+        [lcdFontAttrs setObject:font forKey:NSFontAttributeName];
+        [lcdFontAttrs setObject:[NSColor whiteColor]  forKey:NSForegroundColorAttributeName];
+    }
+    position = NSZeroPoint;
+    [self prefsChanged];
 }
 
 
 - (void) dealloc
 {
-#if DEBUG_LEAKS
-	NSLog(@"Transparent MAP view dealloc...rc:%d", [self retainCount]);
-#endif
+    [_dotImage release];
+    [_dataGraphImage release];
+    [_animFontAttrs release];
+    [_lcdFontAttrs release];
     [super dealloc];
 }
 
@@ -176,7 +209,7 @@
 {
    showDataRect = show;
    [self setNeedsDisplay:YES];
-   if (hasHUD) [Utils setBoolDefault:show
+   if (_hasHUD) [Utils setBoolDefault:show
                               forKey:RCBDefaultShowMDHUD];
 }
 

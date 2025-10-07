@@ -9,6 +9,7 @@
 @class TileInfo;
 @class PathPoint;
 @class TrackPoint;
+@class TransparentMapView;
 
 
 @interface TileFetcher : NSObject
@@ -18,98 +19,13 @@
 @property (atomic, strong) NDRunLoopMessenger *runLoopMessenger; // strong ref
 @end
 
+
 @interface MapPathView : NSView
-{
-    TileFetcher*            fetcher;
-	Track*					currentTrack;
-	Lap*					selectedLap;
-	Track*					lastTrack;
-	NSArray*				splitArray;
-	NSMutableArray*			plottedPoints;
-	NSMutableDictionary*	tileCache;
-	NSMutableArray*			tileFetchQueue;
-	NSMutableArray*			currentMapImages;
-	NSMutableArray*			averageXY;
-	NSMutableDictionary *   textFontAttrs; 
-	NSMutableDictionary *   mileageMarkerTextAttrs; 
-	NSMutableData*			dataInProgress;
-	float					mapOpacity;
-	float					pathOpacity;
-	int						dataType, lastDataType;
-	int						scale;
-	int						lastScale;
-	float					tileWidth;
-	float					tileHeight;
-	float					initialX;     
-	float					initialY;
-	double					metersPerPixel;
-	double					metersPerTile;
-	double					utmX, utmY, utmW, utmH;    // area currently being shown in window
-	double					tempX, tempY;
-	double					utmEastingMin, utmEastingMax, utmNorthingMin, utmNorthingMax;    // utm bb of path
-	int						leftTile, bottomTile;
-	BOOL					showPath;
-	BOOL					showLaps;
-	BOOL					showIntervalMarkers;
-	BOOL					overrideDefaults;
-	BOOL					dragging;
-	BOOL					animatingInPlace;
-	BOOL					animatingNormally;
-	BOOL					firstAnim;
-	BOOL					colorizePaths;
-	BOOL					moveMapDuringAnimation;
-	BOOL					isDetailedMap;
-	BOOL					enableMapInteraction;
-	volatile BOOL			animThreadRunning;
-	volatile BOOL			tileFetchThreadRunning;
-	volatile BOOL			tileFetchThreadFinished;
-	NSBezierPath*			trackPath;
-	NSBezierPath*			lapPath;
-	NSImage*				lapMarkerImage;
-	NSImage*				startMarkerImage;
-	NSImage*				finishMarkerImage;
-	NSBitmapImageRep*		cachedImageRep;
-	NSRect					lastBounds;
-	NSRect					cachedRect;
-	NSPoint					lastAnimPoint;
-	NDRunLoopMessenger*		runLoopMessenger;
-	NSURLConnection*		connection;
-	NSString*				cacheFilePath;
-	NSShadow *				dropShadow;
-	TileInfo*				tileBeingFetched;
-	PathPoint*				prevPathPoint;
-	NSDate*					selectedLapEndTime;
-	NSInvocation*			mContextualMenuInvocation;
-	NSInvocation*			dataHudUpdateInvocation;
-	int						refEllipsoid;
-	double					factor;
-	int						zoneMin;
-	int						zoneMax;
-	int						numHorizTiles;
-	int						numVertTiles;
-	// state info cached during detailed animation
-	float					xincr;
-	float					yincr;
-	float					tincr;
-	float					lastFps;
-	BOOL					lastRev;
-	BOOL					hasPoints;
-	int						curSubPointIdx;
-	int						numSubPoints;
-	int						noDataCond;
-	int						hasDataCond;
-	float					intervalMarkerIncrement;
-	float					scrollWheelSensitivity;
-	float					totalPixelsForPath;
-	// these are just used by the path-drawing routines
-	double					utmEastingOfLeftTile;
-	double					utmNorthingOfBottomTile;
-	
-}
 @property (nonatomic) float scrollWheelSensitivity;
 @property (nonatomic) BOOL enableMapInteraction;
 
--(void)setCurrentTrack:(Track*) tr;
+-(void) setTransparentView:(TransparentMapView*) v;
+-(void) setCurrentTrack:(Track*) tr;
 -(Lap *)selectedLap;
 -(void)setSelectedLap:(Lap *)value;
 -(int)dataType;

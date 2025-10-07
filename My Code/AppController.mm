@@ -4,9 +4,9 @@
 //
 
 #import "AppController.h"
-#import "ADWindowController.h"
+#import "ActivityWindowController.h"
 #import "ALWindowController.h"
-#import "DMWindowController.h"
+#import "DetailedMapWindowController.h"
 #import "SGWindowController.h"
 #import "EquipmentListWindowController.h"
 #import "TrackBrowserDocument.h"

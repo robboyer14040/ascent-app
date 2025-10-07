@@ -1,11 +1,11 @@
-/* ADView - Activity DETAIL View */
+/* ActivityDetailView - Activity DETAIL View */
 
 #import <Cocoa/Cocoa.h>
 #import "Defs.h"
 #import "ProfileTransparentView.h"
 
 @class Track;
-@class ADTransparentView;
+@class ActivityDetailTransparentView;
 @class Lap;
 
 
@@ -59,7 +59,7 @@ static tPlotType tagToPlotType(int tag)
 }
 
 
-@interface ADView : NSView
+@interface ActivityDetailView : NSView
 {
 	Track*								track;
 	Lap*								lap;
@@ -202,5 +202,6 @@ static tPlotType tagToPlotType(int tag)
 -(void) setZonesOpacity:(float)v;
 - (float) markerRightPad;
 - (void) markersChanged;
+-(void) prefsChanged;
 
 @end

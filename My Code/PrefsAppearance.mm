@@ -45,7 +45,8 @@ NSString*  RCBDefaultSplitColor				= @"DefaultSplitColor";
 
 - (IBAction)setValueForSender:(id)sender;
 {
-    NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+  ///  NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+    OFPreferenceWrapper* defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
 	int tag = (int) [sender tag];
    if (tag > 0)
    {
@@ -74,12 +75,12 @@ NSString*  RCBDefaultSplitColor				= @"DefaultSplitColor";
 {
     NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController]  defaults];
    NSArray* subviews = [self.controlBox subviews];
-   int num = [subviews count];
+    NSUInteger num = [subviews count];
    int i;
    for (i=0; i<num; i++)
    {
       id view = [subviews objectAtIndex:i];
-      int tag = [view tag];
+      int tag = (int)[view tag];
       if (tag > 0)
       {
          NSString* key = [Utils defaultColorKey:tag];

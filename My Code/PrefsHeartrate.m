@@ -73,7 +73,8 @@ static inline NSInteger pct(NSInteger v, NSInteger mx)
 
 - (void)adjustRanges
 {
-    NSUserDefaults *defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+    /// NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+     OFPreferenceWrapper* defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
 
     NSInteger maxhr = [maxHeartRateField integerValue];
     NSInteger v = [zone5ThresholdField integerValue];
@@ -224,7 +225,8 @@ static inline NSInteger pct(NSInteger v, NSInteger mx)
 
 - (IBAction)setValueForSender:(id)sender;
 {
-    NSUserDefaults *defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+    /// NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+     OFPreferenceWrapper* defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
 
     NSInteger v;
     if (sender == maxHeartRateStepper)
@@ -327,7 +329,8 @@ static inline NSInteger pct(NSInteger v, NSInteger mx)
 
 - (void)updateUI
 {
-    NSUserDefaults *defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+    /// NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+     OFPreferenceWrapper* defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
 
     [maxHeartRateField setIntegerValue:[defaults integerForKey:RCBDefaultMaxHeartrate]];
     [maxHeartRateStepper setIntegerValue:[defaults integerForKey:RCBDefaultMaxHeartrate]];

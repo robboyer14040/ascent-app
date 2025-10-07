@@ -2,12 +2,15 @@
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="23727" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23727"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="MapController">
             <connections>
+                <outlet property="expandButton" destination="kCW-Cn-ivl" id="4gW-F9-wHJ"/>
                 <outlet property="mapPathView" destination="Hz6-mo-xeY" id="Kq2-3q-k9C"/>
+                <outlet property="transparentView" destination="DRy-3W-pAF" id="53R-7w-1YH"/>
                 <outlet property="view" destination="Hz6-mo-xeY" id="ZVb-JT-eZA"/>
             </connections>
         </customObject>
@@ -16,7 +19,50 @@
         <customView id="Hz6-mo-xeY" customClass="MapPathView">
             <rect key="frame" x="0.0" y="0.0" width="480" height="272"/>
             <autoresizingMask key="autoresizingMask"/>
+            <subviews>
+                <customView translatesAutoresizingMaskIntoConstraints="NO" id="DRy-3W-pAF" customClass="TransparentMapView">
+                    <rect key="frame" x="0.0" y="0.0" width="480" height="272"/>
+                    <subviews>
+                        <button allowsExpansionToolTips="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kCW-Cn-ivl" userLabel="Expand Button">
+                            <rect key="frame" x="442" y="-2" width="39" height="36"/>
+                            <buttonCell key="cell" type="push" bezelStyle="rounded" image="arrow.up.left.and.arrow.down.right" catalog="system" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="pSe-b2-zaQ">
+                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                            <color key="bezelColor" name="BackgroundPrimary"/>
+                            <symbolConfiguration key="symbolConfiguration" scale="large">
+                                <nil key="locale"/>
+                            </symbolConfiguration>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="24" id="0kO-Z3-ZNd"/>
+                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="24" id="9xj-c3-ESE"/>
+                                <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="24" id="MoZ-hC-0hd"/>
+                                <constraint firstAttribute="width" constant="25" id="bOL-Ij-Sxl"/>
+                            </constraints>
+                            <connections>
+                                <action selector="expand:" target="-2" id="iL8-tW-127"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <constraints>
+                        <constraint firstAttribute="trailing" secondItem="kCW-Cn-ivl" secondAttribute="trailing" constant="6" id="N6k-aP-piw"/>
+                        <constraint firstAttribute="bottom" secondItem="kCW-Cn-ivl" secondAttribute="bottom" constant="5" id="ZbX-u6-qQk"/>
+                    </constraints>
+                </customView>
+            </subviews>
+            <constraints>
+                <constraint firstItem="DRy-3W-pAF" firstAttribute="leading" secondItem="Hz6-mo-xeY" secondAttribute="leading" id="UVI-0g-T9r"/>
+                <constraint firstItem="DRy-3W-pAF" firstAttribute="top" secondItem="Hz6-mo-xeY" secondAttribute="top" id="lnW-Et-nOz"/>
+                <constraint firstAttribute="trailing" secondItem="DRy-3W-pAF" secondAttribute="trailing" id="oBU-xy-Mw7"/>
+                <constraint firstAttribute="bottom" secondItem="DRy-3W-pAF" secondAttribute="bottom" id="plN-tj-uhk"/>
+            </constraints>
             <point key="canvasLocation" x="115" y="144"/>
         </customView>
     </objects>
+    <resources>
+        <image name="arrow.up.left.and.arrow.down.right" catalog="system" width="16" height="15"/>
+        <namedColor name="BackgroundPrimary">
+            <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
 </document>

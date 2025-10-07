@@ -625,7 +625,7 @@ extern NSString*  RCBDefaultShowTransportPanel;
 extern NSString*  RCBDefaultBrowserTabView;
 extern NSString*  RCBDefaultColorPathUsingZone;
 extern NSString*  RCBDefaultZoneTypeForStatsHUD;
-extern NSString*  RCBDefaultZoneInADViewItem;
+extern NSString*  RCBDefaultZoneInActivityDetailViewItem;
 extern NSString*  RCBDefaultZonesTransparency;
 extern NSString* RCBDefaultAttrActivityList;
 extern NSString* RCBDefaultAttrEquipmentList;

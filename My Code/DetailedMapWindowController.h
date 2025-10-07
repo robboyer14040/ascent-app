@@ -1,5 +1,5 @@
 //
-//  DMWindowController.h
+//  DetailedMapWindowController.h
 //  TLP
 //
 //  Created by Rob Boyer on 10/14/06.
@@ -17,9 +17,17 @@
 @class TransparentMapView;
 @class TransparentMapWindow;
 @class DataHUDWindowController;
+@class DetailedMapWindowController;
 
-@interface DMWindowController : NSWindowController  <AscentAnimationTarget, NSWindowDelegate, NSDrawerDelegate>
+
+@protocol DetailedMapWindowControllerDelegate <NSObject>
+@required
+- (void)detailedMapWindowControllerDidClose:(DetailedMapWindowController *)controller;
+@end
+
+@interface DetailedMapWindowController : NSWindowController  <AscentAnimationTarget, NSWindowDelegate, NSDrawerDelegate>
 {
+    IBOutlet TransparentMapView     *_transparentView;
 	IBOutlet NSDrawer*				settingsDrawer;
 	IBOutlet MapPathView*			mapView;
 	IBOutlet NSPopUpButton*			activitySelectorPopup;
@@ -42,8 +50,7 @@
 	IBOutlet NSTextField*			intervalIncrementTextField;
 	IBOutlet NSStepper*				intervalIncrementStepper;
 	IBOutlet NSTextField*			intervalIncrementUnitsLabel;
-	IBOutlet TransparentMapView*    transparentMapAnimView;
-	IBOutlet TransparentMapWindow*  transparentMapWindow;
+	IBOutlet TransparentMapView*    transparentView;
 	IBOutlet NSPopUpButton*			colorPathPopup;
 	IBOutlet NSPopUpButton*			selectedLapPopup;
 
@@ -56,6 +63,9 @@
 }
 @property(retain, nonatomic) id mainWC;
 @property(retain, nonatomic) id tbDocument;
+@property (nonatomic, assign) id<DetailedMapWindowControllerDelegate> customDelegate;
+@property(nonatomic, assign) BOOL hasHUD;
+@property(nonatomic, retain) TransparentMapView *transparentView;
 
 - (IBAction) openDrawer:(id) sender;
 - (IBAction) closeDrawer:(id) sender;

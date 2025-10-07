@@ -11,7 +11,7 @@
 #import "PathMarker.h"
 #import "Utils.h"
 #import "Defs.h"
-#import "ADView.h"
+#import "ActivityDetailView.h"
 
 @implementation EMCTableView
 
@@ -62,7 +62,7 @@
 
 
 - (id) initWithTrack:(Track*)tr
-              adView:(ADView*)adv;
+              adView:(ActivityDetailView*)adv;
 {
    self = [super initWithWindowNibName:@"EditMarkers"];
    track = tr ;

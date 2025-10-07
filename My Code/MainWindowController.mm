@@ -8,7 +8,7 @@
 #import "LeftSplitController.h"
 #import "Selection.h"
 #import "TrackBrowserDocument.h"
-#import "DMWindowController.h"
+#import "DetailedMapWindowController.h"
 #import "Utils.h"
 #import "NSView+Spin.h"
 #import "AnimTimer.h"
@@ -36,7 +36,7 @@ static void *kSelectionCtx = &kSelectionCtx;
 {
     id _keyMonitor;
 }
-@property(nonatomic, retain) DMWindowController* detailedMapWC;
+@property(nonatomic, retain) DetailedMapWindowController* detailedMapWC;
 @property(nonatomic, assign) BOOL syncing;
 @property(nonatomic, assign) BOOL observingSelection;
 @end
@@ -180,9 +180,9 @@ static void *kSelectionCtx = &kSelectionCtx;
         }
     }];
 
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-       DumpWindowDiagnostics(self.window); // replace with your NSWindow *
-    });
+//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//       DumpWindowDiagnostics(self.window); // replace with your NSWindow *
+//    });
     
     // spacebar handling
     __block __weak MainWindowController *weakSelf = self; // weak to avoid retain-cycle with block

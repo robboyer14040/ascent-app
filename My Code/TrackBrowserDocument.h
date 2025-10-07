@@ -9,7 +9,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class ADWindowController;
+@class ActivityWindowController;
 @class MainWindowController;
 @class Lap;
 @class Track;

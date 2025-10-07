@@ -19,7 +19,7 @@
     Lap*                    selectedLap;
     NSBezierPath*           dpath;
     NSBezierPath*           lpath;
-    float                    minalt, maxalt, altdif, maxdist;
+    float                   minalt, maxalt, altdif, maxdist;
     int                     numPts;
     int                     currentTrackPos;
     NSMutableDictionary*    tickFontAttrs;
@@ -31,7 +31,7 @@
 @property(nonatomic, retain) Track              *currentTrack;
 @property(nonatomic, retain) NSArray            *splitsArray;
 @property(nonatomic, retain) NSMutableArray     *plottedPoints;
-@property(nonatomic, retain) TransparentMapView *transparentView;
+@property(nonatomic, retain) TransparentMapView  *transparentView;
 
 @end
 
@@ -56,14 +56,7 @@
     [textFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"]
                       forKey:NSForegroundColorAttributeName];
 
-    TransparentMapView *overlay = [[TransparentMapView alloc] initWithFrame:self.bounds
-                                                                     hasHUD:NO];
-    overlay.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-
-    [self addSubview:overlay positioned:NSWindowAbove relativeTo:nil];
-    self.transparentView = overlay;
 }
-
 
 - (instancetype)initWithFrame:(NSRect)r {
     if ((self = [super initWithFrame:r]))
@@ -91,6 +84,21 @@
     [textFontAttrs release];
     [selectedLap release];
     [super dealloc];
+}
+
+
+-(void)setTransparentView:(TransparentMapView*) v
+{
+    if (_transparentView)
+        [_transparentView release];
+    
+    _transparentView = [v retain];
+    if (_transparentView) {
+        _transparentView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+        
+        [self addSubview:_transparentView
+              positioned:NSWindowAbove relativeTo:nil];
+    }
 }
 
 

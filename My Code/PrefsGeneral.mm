@@ -53,7 +53,7 @@ NSString*  RCBDefaultShowADHUD            = @"DefaultShowADHUD";
 NSString*  RCBDefaultAnimationFollows     = @"DefaultAnimationFollows";
 NSString*  RCBDefaultDataHUDTransparency  = @"DefaultDataHUDTransparency";
 NSString*  RCBDefaultStatsHUDTransparency = @"DefaultStatsHUDTransparency";
-NSString*  RCBDefaultZoneInADViewItem     = @"DefaultZoneInADViewItem";
+NSString*  RCBDefaultZoneInActivityDetailViewItem     = @"DefaultZoneInActivityDetailViewItem";
 NSString*  RCBDefaultZonesTransparency    = @"DefaultZonesTransparency"; 
 
 // defaults in the map detail view
@@ -186,7 +186,8 @@ NSString* TerraServerUrbanMap    = @"USGS Urban";
 
 - (void) setAttributeDefaultPopup:(id)sender attrID:(int)attrID defaultsKey:(NSString*)defKey
 {
-    NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+    /// NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+     OFPreferenceWrapper* defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
 	BOOL changed = NO;
 	if ([sender indexOfSelectedItem] >= [sender numberOfItems]-1)
 	{
@@ -212,7 +213,8 @@ NSString* TerraServerUrbanMap    = @"USGS Urban";
 #define MIN_SENS		0.1
 - (IBAction)setScrollingSensitivity:(id)sender;
 {
-    NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+    /// NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+     OFPreferenceWrapper* defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
 	float v = [sender floatValue];
 	v = MAX_SENS - (v * ((MAX_SENS-MIN_SENS)/100.0));
 	[Utils setFloatDefault:v
@@ -366,10 +368,11 @@ NSString* TerraServerUrbanMap    = @"USGS Urban";
 
 -(void)updateUI
 {
-    NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+    ///NSUserDefaults* defaults = [[NSUserDefaultsController sharedUserDefaultsController] defaults];
+    OFPreferenceWrapper* defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
 
-    NSString* s = [defaults stringForKey:RCBDefaultCustomFieldLabel];
-    NSString* s1 = [ defaults stringForKey:RCBDefaultMapType];
+    ///NSString* s = [defaults stringForKey:RCBDefaultCustomFieldLabel];
+    ///NSString* s1 = [ defaults stringForKey:RCBDefaultMapType];
 
 	[customFieldLabel setStringValue:[defaults stringForKey:RCBDefaultCustomFieldLabel]];
 	[keyword1Label setStringValue:[defaults stringForKey:RCBDefaultKeyword1Label]];

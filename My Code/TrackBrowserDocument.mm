@@ -8,7 +8,7 @@
 #import "Defs.h"
 #import "TrackBrowserDocument.h"
 #import "MainWindowController.h"
-#import "ADWindowController.h"
+#import "ActivityWindowController.h"
 #import "TrackPoint.h"
 #import "Track.h"
 #import "LatLong-UTMconversion.h"

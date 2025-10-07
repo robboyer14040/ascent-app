@@ -7,7 +7,7 @@
 //
 
 #import "CompareProfileViewController.h"
-#import "ADView.h"
+#import "ActivityDetailView.h"
 #import "CWTransparentView.h"
 #import "CWTransparentWindow.h"
 
@@ -18,7 +18,7 @@
 @synthesize track;
 @synthesize lapOffset;
 
--(id)initWithTrack:(Track*)t profileView:(ADView*)av transparentView:(CWTransparentView*)tv  transparentWindow:(CWTransparentWindow*)tw
+-(id)initWithTrack:(Track*)t profileView:(ActivityDetailView*)av transparentView:(CWTransparentView*)tv  transparentWindow:(CWTransparentWindow*)tw
 {
 	if (self = [super init])
 	{

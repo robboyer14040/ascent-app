@@ -1,5 +1,5 @@
 //
-//  ADWindowController.h - Activity Detail window controller.  Glue between the
+//  ActivityWindowController.h - Activity Detail window controller.  Glue between the
 //    activity view and data
 //
 //  Ascent
@@ -10,24 +10,34 @@
 
 #import <Cocoa/Cocoa.h>
 
+
+
 @class Track;
 @class TrackPoint;
 @class Lap;
-@class ADView;
+@class ActivityDetailView;
 @class TrackBrowserDocument;
-@class ADTransparentView;
+@class ActivityDetailTransparentView;
 @class ADTransparentWindow;
 @class ADStatsView;
 @class HUDWindow;
 //@class DataHUDView;
 @class EditMarkersController;
 @class DataHUDWindowController;
+@class ActivityWindowController;
 
-@interface ADWindowController : NSWindowController <NSWindowDelegate, NSDrawerDelegate>
+
+@protocol ActivityWindowControllerDelegate <NSObject>
+@required
+- (void)activityWindowControllerDidClose:(ActivityWindowController *)controller;
+@end
+
+
+@interface ActivityWindowController : NSWindowController <NSWindowDelegate, NSDrawerDelegate>
 {
 	IBOutlet NSDrawer*      settingsDrawer;
 	IBOutlet NSWindow*      activityWindow;
-	IBOutlet ADView*        graphView;
+	IBOutlet ActivityDetailView*        graphView;
 	IBOutlet NSTextField*   numberOfPeaksField;
 	IBOutlet NSStepper*     numberOfPeaksStepper;
 	IBOutlet NSTextField*   peakThresholdField;
@@ -64,29 +74,10 @@
 	IBOutlet NSSlider*      dataHUDOpacitySlider;
 	IBOutlet NSSlider*      statsHUDOpacitySlider;
 	IBOutlet NSSlider*      zonesOpacitySlider;
-	ADTransparentView*      transparentView;
-	ADTransparentWindow*    transparentWindow;
-	ADStatsView*            statsView;           // view for "statistics" HUD
-	DataHUDWindowController*	dataHUDWC;
-	//DataHUDView*            dataHUDView;         // view for "data" HUD
-	HUDWindow*              statsHUDWindow;
-	//HUDWindow*              dataHUDWindow;
-	EditMarkersController*  editMarkersController; 
-	NSMutableArray*         colorBoxes;
-	NSTimer*                fadeTimer;
-	Track*                  track;
-	TrackBrowserDocument*   tbDocument;
-	NSMutableDictionary*    hudTextAttrs;
-	NSString*               altFormat;
-	NSString*               speedFormat;
-	NSString*               paceFormat;
-	NSString*               distanceFormat;
-	NSNumberFormatter*		numberFormatter;
-	int                     currentFrame;
-	BOOL					regionSelected;
-	BOOL                    useStatuteUnits;
-	BOOL                    drawerColorBoxesCreated;
+
+    IBOutlet ActivityDetailTransparentView  *transparentView;
 }
+@property (nonatomic, assign) id<ActivityWindowControllerDelegate> customDelegate;
 
 // actions initiated by the GUI
 - (IBAction) openDrawer:(id)sender;

@@ -137,7 +137,7 @@
 		D4F13C3A2E4EAE4600462944 /* AdvancedPreferences.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA92E4EAE4600462944 /* AdvancedPreferences.tiff */; };
 		D4F13C3B2E4EAE4600462944 /* ABAction.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BA72E4EAE4600462944 /* ABAction.tiff */; };
 		D4F13C3D2E4EAE4600462944 /* AltSmoothingFactor.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B052E4EAE4600462944 /* AltSmoothingFactor.nib */; };
-		D4F13C3F2E4EAE4600462944 /* ActivityWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B032E4EAE4600462944 /* ActivityWindow.nib */; };
+		D4F13C3F2E4EAE4600462944 /* ActivityWindowController.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B032E4EAE4600462944 /* ActivityWindowController.nib */; };
 		D4F13C402E4EAE4600462944 /* RightArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BDA2E4EAE4600462944 /* RightArrow.png */; };
 		D4F13C412E4EAE4600462944 /* skiis.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BDF2E4EAE4600462944 /* skiis.png */; };
 		D4F13C422E4EAE4600462944 /* minus.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD12E4EAE4600462944 /* minus.png */; };
@@ -160,7 +160,7 @@
 		D4F13C5B2E4EAE4600462944 /* CompareWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B012E4EAE4600462944 /* CompareWindow.xib */; };
 		D4F13C5C2E4EAE4600462944 /* TransparentMapWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B412E4EAE4600462944 /* TransparentMapWindow.nib */; };
 		D4F13C5D2E4EAE4600462944 /* TransportPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B432E4EAE4600462944 /* TransportPanel.nib */; };
-		D4F13C5F2E4EAE4600462944 /* DetailedMapWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B0B2E4EAE4600462944 /* DetailedMapWindow.nib */; };
+		D4F13C5F2E4EAE4600462944 /* DetailedMapWindowController.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B0B2E4EAE4600462944 /* DetailedMapWindowController.nib */; };
 		D4F13C602E4EAE4600462944 /* line_solid.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BCD2E4EAE4600462944 /* line_solid.png */; };
 		D4F13C662E4EAE4600462944 /* PrefsBackup.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B252E4EAE4600462944 /* PrefsBackup.nib */; };
 		D4F13C692E4EAE4600462944 /* bike chain.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB22E4EAE4600462944 /* bike chain.png */; };
@@ -228,7 +228,7 @@
 		D4F13CC22E4EAE4600462944 /* EquipmentListWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A802E4EAE4600462944 /* EquipmentListWindowController.mm */; };
 		D4F13CC32E4EAE4600462944 /* GarminSyncWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A782E4EAE4600462944 /* GarminSyncWindowController.mm */; };
 		D4F13CC52E4EAE4600462944 /* AppController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A9D2E4EAE4600462944 /* AppController.mm */; };
-		D4F13CC62E4EAE4600462944 /* ADView.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13AB92E4EAE4600462944 /* ADView.mm */; };
+		D4F13CC62E4EAE4600462944 /* ActivityDetailView.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13AB92E4EAE4600462944 /* ActivityDetailView.mm */; };
 		D4F13CC72E4EAE4600462944 /* SyncController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A372E4EAE4600462944 /* SyncController.mm */; };
 		D4F13CC82E4EAE4600462944 /* TCX.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13ACD2E4EAE4600462944 /* TCX.mm */; };
 		D4F13CC92E4EAE4600462944 /* TransparentMapWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A722E4EAE4600462944 /* TransparentMapWindow.mm */; };
@@ -236,7 +236,6 @@
 		D4F13CCB2E4EAE4600462944 /* DrawingUtilities.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F139E92E4EAE4600462944 /* DrawingUtilities.mm */; };
 		D4F13CCC2E4EAE4600462944 /* PrefsAppearance.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A4F2E4EAE4600462944 /* PrefsAppearance.mm */; };
 		D4F13CCD2E4EAE4600462944 /* ListEditorController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A102E4EAE4600462944 /* ListEditorController.mm */; };
-		D4F13CCF2E4EAE4600462944 /* ADTransparentWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13AB72E4EAE4600462944 /* ADTransparentWindow.mm */; };
 		D4F13CD02E4EAE4600462944 /* GetPasswordController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A952E4EAE4600462944 /* GetPasswordController.mm */; };
 		D4F13CD22E4EAE4600462944 /* DistanceMethodController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A082E4EAE4600462944 /* DistanceMethodController.mm */; };
 		D4F13CD32E4EAE4600462944 /* PrefsSharing.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A572E4EAE4600462944 /* PrefsSharing.mm */; };
@@ -270,7 +269,7 @@
 		D4F13CF12E4EAE4600462944 /* PrefsAdvanced.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A4D2E4EAE4600462944 /* PrefsAdvanced.mm */; };
 		D4F13CF22E4EAE4600462944 /* GMTOffsetController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A0C2E4EAE4600462944 /* GMTOffsetController.mm */; };
 		D4F13CF32E4EAE4600462944 /* EquipmentLog.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A832E4EAE4600462944 /* EquipmentLog.xcdatamodel */; };
-		D4F13CF42E4EAE4600462944 /* DMWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A6C2E4EAE4600462944 /* DMWindowController.mm */; };
+		D4F13CF42E4EAE4600462944 /* DetailedMapWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A6C2E4EAE4600462944 /* DetailedMapWindowController.mm */; };
 		D4F13CF52E4EAE4600462944 /* TransparentView.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A232E4EAE4600462944 /* TransparentView.mm */; };
 		D4F13CF62E4EAE4600462944 /* PrefsSync.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A592E4EAE4600462944 /* PrefsSync.mm */; };
 		D4F13CF72E4EAE4600462944 /* AscentClientProxy.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A282E4EAE4600462944 /* AscentClientProxy.mm */; };
@@ -293,7 +292,7 @@
 		D4F13D082E4EAE4600462944 /* KML.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13AC92E4EAE4600462944 /* KML.mm */; };
 		D4F13D092E4EAE4600462944 /* SplitsTableView.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A172E4EAE4600462944 /* SplitsTableView.mm */; };
 		D4F13D0A2E4EAE4600462944 /* Track.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A662E4EAE4600462944 /* Track.mm */; };
-		D4F13D0B2E4EAE4600462944 /* ADWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13ABB2E4EAE4600462944 /* ADWindowController.mm */; };
+		D4F13D0B2E4EAE4600462944 /* ActivityWindowController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13ABB2E4EAE4600462944 /* ActivityWindowController.mm */; };
 		D4F13D0C2E4EAE4600462944 /* TCPService.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A352E4EAE4600462944 /* TCPService.m */; };
 		D4F13D0D2E4EAE4600462944 /* TrackBrowserDocument.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A1D2E4EAE4600462944 /* TrackBrowserDocument.mm */; };
 		D4F13D0E2E4EAE4600462944 /* StringAdditions.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F139EF2E4EAE4600462944 /* StringAdditions.mm */; };
@@ -305,7 +304,7 @@
 		D4F13D142E4EAE4600462944 /* ItemList.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F139EB2E4EAE4600462944 /* ItemList.m */; };
 		D4F13D152E4EAE4600462944 /* CWSummaryPanelController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13AEC2E4EAE4600462944 /* CWSummaryPanelController.mm */; };
 		D4F13D162E4EAE4600462944 /* fit_convert.c in Sources */ = {isa = PBXBuildFile; fileRef = D4F13AD62E4EAE4600462944 /* fit_convert.c */; };
-		D4F13D172E4EAE4600462944 /* ADTransparentView.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13AB52E4EAE4600462944 /* ADTransparentView.mm */; };
+		D4F13D172E4EAE4600462944 /* ActivityDetailTransparentView.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F13AB52E4EAE4600462944 /* ActivityDetailTransparentView.mm */; };
 		D4F13D182E4EAE4600462944 /* SplashPanelController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A452E4EAE4600462944 /* SplashPanelController.m */; };
 		D4F13D192E4EAE4600462944 /* TrackPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A642E4EAE4600462944 /* TrackPoint.m */; };
 		D4F13D1A2E4EAE4600462944 /* MapPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F13A702E4EAE4600462944 /* MapPoint.m */; };
@@ -510,10 +509,10 @@
 		D4CCE9042E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/GarminSync.xib; sourceTree = SOURCE_ROOT; };
 		D4CCE9062E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/PrefsBackup.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9072E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/Reg.nib; sourceTree = SOURCE_ROOT; };
-		D4CCE9082E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/DetailedMapWindow.nib; sourceTree = SOURCE_ROOT; };
+		D4CCE9082E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/DetailedMapWindowController.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9092E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/TransportPanel.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE90A2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/ImportDateEntry.nib; sourceTree = SOURCE_ROOT; };
-		D4CCE90C2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/ActivityWindow.nib; sourceTree = SOURCE_ROOT; };
+		D4CCE90C2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/ActivityWindowController.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE90D2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/SplitActivity.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE90E2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/EquipmentList.xib; sourceTree = SOURCE_ROOT; };
 		D4CCE90F2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/PrefsAdvanced.nib; sourceTree = SOURCE_ROOT; };
@@ -676,8 +675,8 @@
 		D4F13A662E4EAE4600462944 /* Track.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = Track.mm; path = "My Code/Track.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13A682E4EAE4600462944 /* MiniProfileView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MiniProfileView.h; path = "My Code/MiniProfileView.h"; sourceTree = SOURCE_ROOT; };
 		D4F13A692E4EAE4600462944 /* MiniProfileView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = MiniProfileView.mm; path = "My Code/MiniProfileView.mm"; sourceTree = SOURCE_ROOT; };
-		D4F13A6B2E4EAE4600462944 /* DMWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DMWindowController.h; path = "My Code/DMWindowController.h"; sourceTree = SOURCE_ROOT; };
-		D4F13A6C2E4EAE4600462944 /* DMWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = DMWindowController.mm; path = "My Code/DMWindowController.mm"; sourceTree = SOURCE_ROOT; };
+		D4F13A6B2E4EAE4600462944 /* DetailedMapWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DetailedMapWindowController.h; path = "My Code/DetailedMapWindowController.h"; sourceTree = SOURCE_ROOT; };
+		D4F13A6C2E4EAE4600462944 /* DetailedMapWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = DetailedMapWindowController.mm; path = "My Code/DetailedMapWindowController.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13A6D2E4EAE4600462944 /* MapPathView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MapPathView.h; path = "My Code/MapPathView.h"; sourceTree = SOURCE_ROOT; };
 		D4F13A6E2E4EAE4600462944 /* MapPathView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = MapPathView.mm; path = "My Code/MapPathView.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13A6F2E4EAE4600462944 /* MapPoint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MapPoint.h; path = "My Code/MapPoint.h"; sourceTree = SOURCE_ROOT; };
@@ -741,14 +740,12 @@
 		D4F13AB02E4EAE4600462944 /* ALWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = ALWindowController.mm; path = "My Code/ALWindowController.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13AB12E4EAE4600462944 /* SelectAndApplyActionController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SelectAndApplyActionController.h; path = "My Code/SelectAndApplyActionController.h"; sourceTree = SOURCE_ROOT; };
 		D4F13AB22E4EAE4600462944 /* SelectAndApplyActionController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = SelectAndApplyActionController.mm; path = "My Code/SelectAndApplyActionController.mm"; sourceTree = SOURCE_ROOT; };
-		D4F13AB42E4EAE4600462944 /* ADTransparentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ADTransparentView.h; path = "My Code/ADTransparentView.h"; sourceTree = SOURCE_ROOT; };
-		D4F13AB52E4EAE4600462944 /* ADTransparentView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = ADTransparentView.mm; path = "My Code/ADTransparentView.mm"; sourceTree = SOURCE_ROOT; };
-		D4F13AB62E4EAE4600462944 /* ADTransparentWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ADTransparentWindow.h; path = "My Code/ADTransparentWindow.h"; sourceTree = SOURCE_ROOT; };
-		D4F13AB72E4EAE4600462944 /* ADTransparentWindow.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = ADTransparentWindow.mm; path = "My Code/ADTransparentWindow.mm"; sourceTree = SOURCE_ROOT; };
-		D4F13AB82E4EAE4600462944 /* ADView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ADView.h; path = "My Code/ADView.h"; sourceTree = SOURCE_ROOT; };
-		D4F13AB92E4EAE4600462944 /* ADView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = ADView.mm; path = "My Code/ADView.mm"; sourceTree = SOURCE_ROOT; };
-		D4F13ABA2E4EAE4600462944 /* ADWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ADWindowController.h; path = "My Code/ADWindowController.h"; sourceTree = SOURCE_ROOT; };
-		D4F13ABB2E4EAE4600462944 /* ADWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = ADWindowController.mm; path = "My Code/ADWindowController.mm"; sourceTree = SOURCE_ROOT; };
+		D4F13AB42E4EAE4600462944 /* ActivityDetailTransparentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ActivityDetailTransparentView.h; path = "My Code/ActivityDetailTransparentView.h"; sourceTree = SOURCE_ROOT; };
+		D4F13AB52E4EAE4600462944 /* ActivityDetailTransparentView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = ActivityDetailTransparentView.mm; path = "My Code/ActivityDetailTransparentView.mm"; sourceTree = SOURCE_ROOT; };
+		D4F13AB82E4EAE4600462944 /* ActivityDetailView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ActivityDetailView.h; path = "My Code/ActivityDetailView.h"; sourceTree = SOURCE_ROOT; };
+		D4F13AB92E4EAE4600462944 /* ActivityDetailView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = ActivityDetailView.mm; path = "My Code/ActivityDetailView.mm"; sourceTree = SOURCE_ROOT; };
+		D4F13ABA2E4EAE4600462944 /* ActivityWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ActivityWindowController.h; path = "My Code/ActivityWindowController.h"; sourceTree = SOURCE_ROOT; };
+		D4F13ABB2E4EAE4600462944 /* ActivityWindowController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = ActivityWindowController.mm; path = "My Code/ActivityWindowController.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13ABC2E4EAE4600462944 /* EditMarkersController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EditMarkersController.h; path = "My Code/EditMarkersController.h"; sourceTree = SOURCE_ROOT; };
 		D4F13ABD2E4EAE4600462944 /* EditMarkersController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = EditMarkersController.mm; path = "My Code/EditMarkersController.mm"; sourceTree = SOURCE_ROOT; };
 		D4F13ABE2E4EAE4600462944 /* PathMarker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PathMarker.h; path = "My Code/PathMarker.h"; sourceTree = SOURCE_ROOT; };
@@ -1374,8 +1371,9 @@
 		D4F13A762E4EAE4600462944 /* Map View */ = {
 			isa = PBXGroup;
 			children = (
-				D4F13A6B2E4EAE4600462944 /* DMWindowController.h */,
-				D4F13A6C2E4EAE4600462944 /* DMWindowController.mm */,
+				D4F13A6B2E4EAE4600462944 /* DetailedMapWindowController.h */,
+				D4F13A6C2E4EAE4600462944 /* DetailedMapWindowController.mm */,
+				D4F13B0B2E4EAE4600462944 /* DetailedMapWindowController.nib */,
 				D4F13A6D2E4EAE4600462944 /* MapPathView.h */,
 				D4F13A6E2E4EAE4600462944 /* MapPathView.mm */,
 				D4F13A6F2E4EAE4600462944 /* MapPoint.h */,
@@ -1490,14 +1488,13 @@
 		D4F13AC72E4EAE4600462944 /* Activity View */ = {
 			isa = PBXGroup;
 			children = (
-				D4F13AB42E4EAE4600462944 /* ADTransparentView.h */,
-				D4F13AB52E4EAE4600462944 /* ADTransparentView.mm */,
-				D4F13AB62E4EAE4600462944 /* ADTransparentWindow.h */,
-				D4F13AB72E4EAE4600462944 /* ADTransparentWindow.mm */,
-				D4F13AB82E4EAE4600462944 /* ADView.h */,
-				D4F13AB92E4EAE4600462944 /* ADView.mm */,
-				D4F13ABA2E4EAE4600462944 /* ADWindowController.h */,
-				D4F13ABB2E4EAE4600462944 /* ADWindowController.mm */,
+				D4F13AB42E4EAE4600462944 /* ActivityDetailTransparentView.h */,
+				D4F13AB52E4EAE4600462944 /* ActivityDetailTransparentView.mm */,
+				D4F13AB82E4EAE4600462944 /* ActivityDetailView.h */,
+				D4F13AB92E4EAE4600462944 /* ActivityDetailView.mm */,
+				D4F13ABA2E4EAE4600462944 /* ActivityWindowController.h */,
+				D4F13ABB2E4EAE4600462944 /* ActivityWindowController.mm */,
+				D4F13B032E4EAE4600462944 /* ActivityWindowController.nib */,
 				D4F13ABC2E4EAE4600462944 /* EditMarkersController.h */,
 				D4F13ABD2E4EAE4600462944 /* EditMarkersController.mm */,
 				D4F13ABE2E4EAE4600462944 /* PathMarker.h */,
@@ -1618,12 +1615,10 @@
 		D4F13B442E4EAE4600462944 /* nibs */ = {
 			isa = PBXGroup;
 			children = (
-				D4F13B032E4EAE4600462944 /* ActivityWindow.nib */,
 				D4F13B052E4EAE4600462944 /* AltSmoothingFactor.nib */,
 				D4F13B072E4EAE4600462944 /* BackupNag.nib */,
 				D4F13B012E4EAE4600462944 /* CompareWindow.xib */,
 				D4F13B092E4EAE4600462944 /* DataListView.nib */,
-				D4F13B0B2E4EAE4600462944 /* DetailedMapWindow.nib */,
 				D4F13B0D2E4EAE4600462944 /* DistanceMethod.nib */,
 				D4F13B0F2E4EAE4600462944 /* EditMarkers.nib */,
 				D4F13B112E4EAE4600462944 /* EquipmentList.xib */,
@@ -2101,7 +2096,7 @@
 				D4F13C3A2E4EAE4600462944 /* AdvancedPreferences.tiff in Resources */,
 				D4F13C3B2E4EAE4600462944 /* ABAction.tiff in Resources */,
 				D4F13C3D2E4EAE4600462944 /* AltSmoothingFactor.nib in Resources */,
-				D4F13C3F2E4EAE4600462944 /* ActivityWindow.nib in Resources */,
+				D4F13C3F2E4EAE4600462944 /* ActivityWindowController.nib in Resources */,
 				D4F13C402E4EAE4600462944 /* RightArrow.png in Resources */,
 				D4F13C412E4EAE4600462944 /* skiis.png in Resources */,
 				D4F13C422E4EAE4600462944 /* minus.png in Resources */,
@@ -2127,7 +2122,7 @@
 				D4F13C5C2E4EAE4600462944 /* TransparentMapWindow.nib in Resources */,
 				D4F13C5D2E4EAE4600462944 /* TransportPanel.nib in Resources */,
 				D4CCE92A2E5049B900B46DB2 /* MainMenu.nib in Resources */,
-				D4F13C5F2E4EAE4600462944 /* DetailedMapWindow.nib in Resources */,
+				D4F13C5F2E4EAE4600462944 /* DetailedMapWindowController.nib in Resources */,
 				D41002052E859817002942DE /* InfoPaneController.xib in Resources */,
 				D4F13C602E4EAE4600462944 /* line_solid.png in Resources */,
 				D4F13C662E4EAE4600462944 /* PrefsBackup.nib in Resources */,
@@ -2244,7 +2239,7 @@
 				D4E692E82E9095BC00E90E6A /* NSView+Spin.m in Sources */,
 				D4F13CC52E4EAE4600462944 /* AppController.mm in Sources */,
 				D489E0F32E6D13C60076E5DC /* IdentifierStore.m in Sources */,
-				D4F13CC62E4EAE4600462944 /* ADView.mm in Sources */,
+				D4F13CC62E4EAE4600462944 /* ActivityDetailView.mm in Sources */,
 				D4F13CC72E4EAE4600462944 /* SyncController.mm in Sources */,
 				D4F13CC82E4EAE4600462944 /* TCX.mm in Sources */,
 				D4F13CC92E4EAE4600462944 /* TransparentMapWindow.mm in Sources */,
@@ -2254,7 +2249,6 @@
 				D4F13CCB2E4EAE4600462944 /* DrawingUtilities.mm in Sources */,
 				D4F13CCC2E4EAE4600462944 /* PrefsAppearance.mm in Sources */,
 				D4F13CCD2E4EAE4600462944 /* ListEditorController.mm in Sources */,
-				D4F13CCF2E4EAE4600462944 /* ADTransparentWindow.mm in Sources */,
 				D4F13CD02E4EAE4600462944 /* GetPasswordController.mm in Sources */,
 				D4F13CD22E4EAE4600462944 /* DistanceMethodController.mm in Sources */,
 				D4F13CD32E4EAE4600462944 /* PrefsSharing.mm in Sources */,
@@ -2296,7 +2290,7 @@
 				D4F13CF12E4EAE4600462944 /* PrefsAdvanced.mm in Sources */,
 				D4F13CF22E4EAE4600462944 /* GMTOffsetController.mm in Sources */,
 				D4F13CF32E4EAE4600462944 /* EquipmentLog.xcdatamodel in Sources */,
-				D4F13CF42E4EAE4600462944 /* DMWindowController.mm in Sources */,
+				D4F13CF42E4EAE4600462944 /* DetailedMapWindowController.mm in Sources */,
 				D4F13CF52E4EAE4600462944 /* TransparentView.mm in Sources */,
 				D4F13CF62E4EAE4600462944 /* PrefsSync.mm in Sources */,
 				D4F13CF72E4EAE4600462944 /* AscentClientProxy.mm in Sources */,
@@ -2335,7 +2329,7 @@
 				D4F13D092E4EAE4600462944 /* SplitsTableView.mm in Sources */,
 				D41002132E8598DF002942DE /* RightSplitController.m in Sources */,
 				D4F13D0A2E4EAE4600462944 /* Track.mm in Sources */,
-				D4F13D0B2E4EAE4600462944 /* ADWindowController.mm in Sources */,
+				D4F13D0B2E4EAE4600462944 /* ActivityWindowController.mm in Sources */,
 				D4F13D0C2E4EAE4600462944 /* TCPService.m in Sources */,
 				D49F293F2E69FAB100C5B87C /* AscentApplication.m in Sources */,
 				D467A3E52E8F1A4300EBF495 /* TextualIntervalsPaneController.m in Sources */,
@@ -2351,7 +2345,7 @@
 				D467A3E02E8EB57D00EBF495 /* SplitDragHandleView.m in Sources */,
 				D4F13D152E4EAE4600462944 /* CWSummaryPanelController.mm in Sources */,
 				D4F13D162E4EAE4600462944 /* fit_convert.c in Sources */,
-				D4F13D172E4EAE4600462944 /* ADTransparentView.mm in Sources */,
+				D4F13D172E4EAE4600462944 /* ActivityDetailTransparentView.mm in Sources */,
 				D41001FC2E859779002942DE /* TrackCalendarController.m in Sources */,
 				D4F13D182E4EAE4600462944 /* SplashPanelController.m in Sources */,
 				D41001F12E8596A4002942DE /* RootSplitController.m in Sources */,
@@ -2453,12 +2447,12 @@
 			name = CompareWindow.xib;
 			sourceTree = "<group>";
 		};
-		D4F13B032E4EAE4600462944 /* ActivityWindow.nib */ = {
+		D4F13B032E4EAE4600462944 /* ActivityWindowController.nib */ = {
 			isa = PBXVariantGroup;
 			children = (
 				D4CCE90C2E5048D300B46DB2 /* en */,
 			);
-			name = ActivityWindow.nib;
+			name = ActivityWindowController.nib;
 			sourceTree = "<group>";
 		};
 		D4F13B052E4EAE4600462944 /* AltSmoothingFactor.nib */ = {
@@ -2485,12 +2479,12 @@
 			name = DataListView.nib;
 			sourceTree = "<group>";
 		};
-		D4F13B0B2E4EAE4600462944 /* DetailedMapWindow.nib */ = {
+		D4F13B0B2E4EAE4600462944 /* DetailedMapWindowController.nib */ = {
 			isa = PBXVariantGroup;
 			children = (
 				D4CCE9082E5048D300B46DB2 /* en */,
 			);
-			name = DetailedMapWindow.nib;
+			name = DetailedMapWindowController.nib;
 			sourceTree = "<group>";
 		};
 		D4F13B0D2E4EAE4600462944 /* DistanceMethod.nib */ = {

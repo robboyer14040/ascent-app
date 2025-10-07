@@ -9,10 +9,9 @@
 #import "MapController.h"
 #import "MapPathView.h"
 #import "TransparentMapView.h"
-#import "TransparentMapWindow.h"
 #import "Selection.h"
 #import "Utils.h"
-#import "DMWindowController.h"
+#import "DetailedMapWindowController.h"
 #import "AnimTimer.h"
 #import "Track.h"
 
@@ -21,16 +20,19 @@ static void *kSelectionCtx = &kSelectionCtx;
 
 @interface MapController ()
 {
-    TransparentMapView*         _transparentMapAnimView;
-    TransparentMapWindow*       _transparentMapWindow;
-    DMWindowController*         _detailedMapWC;
+    DetailedMapWindowController      *_detailedMapWC;
 }
+@property(nonatomic, assign) BOOL isExpanded;
+@property(nonatomic, retain) DetailedMapWindowController     *detailedMapWC;
 - (void)_didDoubleClick:(NSClickGestureRecognizer *)g;
 - (void)_showMapDetail;
 @end
 
+
 @implementation MapController
 @synthesize document=_document, selection=_selection;
+@synthesize detailedMapWC       =   _detailedMapWC;
+
 
 - (void)awakeFromNib {
     [super awakeFromNib];
@@ -39,15 +41,6 @@ static void *kSelectionCtx = &kSelectionCtx;
     dummy.size.height = 10;
     dummy.origin.x = 0;
     dummy.origin.y = 0;
-//    transparentMapWindow = [[[TransparentMapWindow alloc] initWithContentRect:dummy
-//                                                                  styleMask:NSWindowStyleMaskBorderless
-//                                                                    backing:NSBackingStoreBuffered
-//                                                                      defer:NO] retain];
-//    
-//    transparentMapAnimView = [[TransparentMapView alloc] initWithFrame:dummy
-//                                                               hasHUD:NO];
-//    [transparentMapWindow setContentView:transparentMapAnimView];
-    
     float opac = [Utils floatFromDefaults:@"DefaultMapTransparency"];
     [_mapPathView setMapOpacity:opac];
     [_mapPathView setDefaults];
@@ -56,13 +49,14 @@ static void *kSelectionCtx = &kSelectionCtx;
 
 
 - (void)dealloc {
+    if (self.detailedMapWC) {
+        self.detailedMapWC.customDelegate = nil;
+        [_detailedMapWC release];
+    }
     [[AnimTimer defaultInstance] unregisterForTimerUpdates:self];
-    [_detailedMapWC release];
     [_selection release];
     [_mapPathView prepareToDie];
     [_mapPathView killAnimThread];
-    // [_transparentMapWindow release]; don't need because setReleasedWhenClosed is set to "YES"
-    [_transparentMapAnimView release];
     [super dealloc];
 }
 
@@ -82,10 +76,12 @@ static void *kSelectionCtx = &kSelectionCtx;
     ///[single requireGestureRecognizerToFail:doubleClick];
     [self.mapPathView addGestureRecognizer:doubleClick];
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(showMapDetail)
+                                             selector:@selector(_showMapDetail)
                                                  name:OpenMapDetailNotification
                                                object:nil];
     [[AnimTimer defaultInstance] registerForTimerUpdates:self];
+    [self.mapPathView setTransparentView:_transparentView];
+    self.expandButton.alphaValue = .6;
 }
 
 - (void)viewDidLayout
@@ -109,34 +105,11 @@ static void *kSelectionCtx = &kSelectionCtx;
     if (g.state == NSGestureRecognizerStateEnded) {
 //        NSPoint p = [g locationInView:self.mapPathView];
 //        [self _handleDoubleClickAt:p];
-        [self showMapDetail];
+        [self _showMapDetail];
         
     }
 }
 
-
-- (void)showMapDetail
-{
-    Track* track = _selection.selectedTrack;
-    if (!_document || !track)
-        return;
-    
-    if (!_detailedMapWC)
-    {
-        int curDataType = [[self mapPathView] dataType];
-        _detailedMapWC   = [[[DMWindowController alloc] initWithDocument:_document
-                                                         initialDataType:curDataType
-                                                                  mainWC:self.view.window.windowController] retain];
-        [_document addWindowController:_detailedMapWC];
-      }
-    
-    if (_detailedMapWC) {
-        [_detailedMapWC setTrack:track];
-        [_detailedMapWC setSelectedLap:_selection.selectedLap];
-        [_detailedMapWC showWindow:self];
-        [[_detailedMapWC window] makeKeyAndOrderFront:self];
-    }
-}
 
 
 #pragma mark - Selection wiring
@@ -265,6 +238,47 @@ static void *kSelectionCtx = &kSelectionCtx;
     }
 }
 
+#pragma mark - expand handling
 
+
+- (IBAction)expand:(id)sender
+{
+    [self _showMapDetail];
+
+}
+
+
+- (void)_showMapDetail
+{
+    Track* track = _selection.selectedTrack;
+    if (!_document || !track)
+        return;
+    
+    if (!_detailedMapWC)
+    {
+        int curDataType = [[self mapPathView] dataType];
+        _detailedMapWC   = [[[DetailedMapWindowController alloc] initWithDocument:_document
+                                                         initialDataType:curDataType
+                                                                  mainWC:self.view.window.windowController] retain];
+        self.detailedMapWC.customDelegate = self;
+
+      }
+    
+    if (_detailedMapWC) {
+        [_detailedMapWC setTrack:track];
+        [_detailedMapWC setSelectedLap:_selection.selectedLap];
+        [_detailedMapWC showWindow:self];
+        _detailedMapWC.hasHUD = YES;
+        _isExpanded = YES;
+        _expandButton.enabled = NO;
+    }
+}
+
+#pragma mark - Window delegate
+- (void)detailedMapWindowControllerDidClose:(DetailedMapWindowController *)controller;
+{
+    _isExpanded = NO;
+    _expandButton.enabled = YES;
+}
 
 @end

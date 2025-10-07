@@ -1,4 +1,4 @@
-#import "ADView.h"
+#import "ActivityDetailView.h"
 #import "Track.h"
 #import "TrackPoint.h"
 #import "DrawingUtilities.h"
@@ -8,11 +8,11 @@
 #import "Defs.h"
 #import "PathMarker.h"
 #import "AnimTimer.h"
-//#import "ADTransparentView.h"
+//#import "ActivityDetailTransparentView.h"
 
 typedef float (*tAccessor)(id, SEL);
 
-@interface ADView ()
+@interface ActivityDetailView ()
 -(void) resetPaths;
 -(void)doDragMove:(float)dx;
 @property(nonatomic) float maxdist;
@@ -20,7 +20,7 @@ typedef float (*tAccessor)(id, SEL);
 @end
 
 
-@implementation ADView
+@implementation ActivityDetailView
 
 @synthesize drawHeader;
 @synthesize dragStart;
@@ -399,172 +399,102 @@ tPlotInfo plotInfoArray[] =
 }
       
 
-- (id)initWithFrame:(NSRect)frameRect
+- (instancetype)initWithFrame:(NSRect)r {
+    if ((self = [super initWithFrame:r])) [self commonInit];
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)c {
+    if ((self = [super initWithCoder:c])) [self commonInit];
+    return self;
+}
+
+- (void)commonInit
 {
-	if ((self = [super initWithFrame:frameRect]) != nil) 
-	{
-#if DEBUG_LEAKS
-		NSLog(@"AD View %x alloc'd...", self);
-#endif
-		transparentView = nil;
-		track = nil;
-		lap = nil;
-		vertPlotYOffset = 14.0;
-		dragStart = NO;
-		drawHeader = YES;
-		showVerticalTicks= YES;
-		showHorizontalTicks= YES;
-		overrideDistance = NO;
-		topAreaHeight = ACTIVITY_VIEW_TOP_AREA_HEIGHT;
-		NSFont* font = [NSFont systemFontOfSize:8];
-		tickFontAttrs = [[NSMutableDictionary alloc] init];
-		[tickFontAttrs setObject:font forKey:NSFontAttributeName];
-		font = [NSFont systemFontOfSize:9];
-		animFontAttrs = [[NSMutableDictionary alloc] init];
-		[animFontAttrs setObject:font forKey:NSFontAttributeName];
-		font = [NSFont systemFontOfSize:12];
-		headerFontAttrs = [[NSMutableDictionary alloc] init];
-		[headerFontAttrs setObject:font forKey:NSFontAttributeName];
-		font = [NSFont systemFontOfSize:24];
-		textFontAttrs = [[NSMutableDictionary alloc] init];
-		[textFontAttrs setObject:font forKey:NSFontAttributeName];
-		[textFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"] forKey:NSForegroundColorAttributeName];
-		
-		plotAttributesArray = [[NSMutableArray arrayWithCapacity:kNumPlotTypes] retain];
-		int i;
-		int numPlotTypes = sizeof(plotInfoArray)/sizeof(tPlotInfo);
-		for (i=0; i<kNumPlotTypes; i++) 
-		{
-			[plotAttributesArray addObject:[[[PlotAttributes alloc] init] autorelease]];
-		}
+    track = nil;
+    lap = nil;
+    vertPlotYOffset = 14.0;
+    dragStart = NO;
+    drawHeader = YES;
+    showVerticalTicks= YES;
+    showHorizontalTicks= YES;
+    overrideDistance = NO;
+    topAreaHeight = ACTIVITY_VIEW_TOP_AREA_HEIGHT;
+    NSFont* font = [NSFont systemFontOfSize:8];
+    tickFontAttrs = [[NSMutableDictionary alloc] init];
+    [tickFontAttrs setObject:font forKey:NSFontAttributeName];
+    font = [NSFont systemFontOfSize:9];
+    animFontAttrs = [[NSMutableDictionary alloc] init];
+    [animFontAttrs setObject:font forKey:NSFontAttributeName];
+    font = [NSFont systemFontOfSize:12];
+    headerFontAttrs = [[NSMutableDictionary alloc] init];
+    [headerFontAttrs setObject:font forKey:NSFontAttributeName];
+    font = [NSFont systemFontOfSize:24];
+    textFontAttrs = [[NSMutableDictionary alloc] init];
+    [textFontAttrs setObject:font forKey:NSFontAttributeName];
+    [textFontAttrs setObject:[NSColor colorNamed:@"TextPrimary"] forKey:NSForegroundColorAttributeName];
+    
+    [self _updatePlotAttributes];
+    
 
-		for (i=0; i<numPlotTypes; i++) 
-		{
-			tPlotInfo* pinfo = &plotInfoArray[i];
-			BOOL plotEnabled = pinfo->enabledDefault;
-			int lineStyle = pinfo->lineStyleDefault;
-			float opacity = pinfo->opacityDefault;
+    animRectColor = [[NSColor colorWithCalibratedRed:(217.0/255.0)
+                                               green:(217.0/255.0)
+                                                blue:(217.0/255.0)
+                                               alpha:0.65] retain];
 
-			NSString* s = pinfo->defaultsKey;
-
-			NSMutableString* key = [NSMutableString stringWithString:s];
-			[key appendString:@"Opacity"];
-			float defaultsOpac = [Utils floatFromDefaults:key];
-			// if opacity is found, then assume other keys are present...
-			if (defaultsOpac > 0.0)
-			{
-				opacity = defaultsOpac;
-
-				key = [NSMutableString stringWithString:s];
-				[key appendString:@"Enabled"];
-				plotEnabled = [Utils boolFromDefaults:key];
-
-				key = [NSMutableString stringWithString:s];
-				[key appendString:@"LineStyle"];
-				lineStyle = [Utils intFromDefaults:key];
-			}  
-			else
-			{
-				[Utils setFloatDefault:opacity 
-								forKey:key];
-
-				key = [NSMutableString stringWithString:s];
-				[key appendString:@"Enabled"];
-				[Utils setBoolDefault:plotEnabled
-							   forKey:key];
-
-				key = [NSMutableString stringWithString:s];
-				[key appendString:@"LineStyle"];
-				[Utils setIntDefault:lineStyle
-							  forKey:key];
-			}
-
-
-			PlotAttributes* pa = [[PlotAttributes alloc] initWithAttributes:[NSString stringWithFormat:@"%s", pinfo->name]
-																defaultsKey:pinfo->defaultsKey
-																	  color:[Utils colorFromDefaults:[Utils defaultColorKey:pinfo->colorTag]]
-																	opacity:opacity
-																  lineStyle:lineStyle
-																 enabled:plotEnabled
-																fillEnabled:pinfo->fillEnabledDefault
-																   showLaps:pinfo->showLapsDefault
-																showMarkers:pinfo->showMarkersDefault
-																  showPeaks:pinfo->showPeaksDefault
-																   numPeaks:pinfo->numPeaksDefault
-															  peakThreshold:pinfo->peakThresholdDefault
-																averageType:pinfo->averageType
-																  isAverage:pinfo->isAverage];
-
-
-			[plotAttributesArray replaceObjectAtIndex:pinfo->type withObject:pa];
-			[pa autorelease];
-
-		}
-
-		animRectColor = [[NSColor colorWithCalibratedRed:(217.0/255.0) 
-												   green:(217.0/255.0) 
-													blue:(217.0/255.0) 
-												   alpha:0.65] retain];
-
-		currentTrackPos = 0;
-		posOffsetIndex = 0;
-		markerRightPadding = -1.0;
-		lastdist = 0.0;
-		firstAnim = NO;
-		bypassAnim = NO;
-		animating = NO;
-		trackHasPoints = NO;
-		selectRegionInProgress = NO;
-		xAxisIsTime = NO;
-		lastXAxisIsTime = xAxisIsTime;
-		NSString* path = [[NSBundle mainBundle] pathForResource:@"AltitudeSign" ofType:@"png"];
-		altSignImage = [[NSImage alloc] initWithContentsOfFile:path];
-		path = [[NSBundle mainBundle] pathForResource:@"LapMarker" ofType:@"png"];
-		lapMarkerImage = [[NSImage alloc] initWithContentsOfFile:path];
-		path = [[NSBundle mainBundle] pathForResource:@"StartMarker" ofType:@"png"];
-		startMarkerImage = [[NSImage alloc] initWithContentsOfFile:path];
-		path = [[NSBundle mainBundle] pathForResource:@"FinishMarker" ofType:@"png"];
-		finishMarkerImage = [[NSImage alloc] initWithContentsOfFile:path];
-		path = [[NSBundle mainBundle] pathForResource:@"PeakMarker" ofType:@"png"];
-		peakImage = [[NSImage alloc] initWithContentsOfFile:path];
-		peakType = [Utils intFromDefaults:RCBDefaultPeakItem];
-		dataRectType = [Utils intFromDefaults:RCBDefaultAnimationFollows];;
-		numPeaks = [Utils intFromDefaults:RCBDefaultNumPeaks];
-		numAvgPoints = [Utils intFromDefaults:RCBDefaultNumPointsToAverage];
-		if (numAvgPoints <= 0) numAvgPoints = 10;
-		peakThreshold = [Utils intFromDefaults:RCBDefaultPeakThreshold];
-		showPeaks = [Utils boolFromDefaults:RCBDefaultShowPeaks];
-		showLaps = [Utils boolFromDefaults:RCBDefaultShowLaps];
-		showMarkers = [Utils boolFromDefaults:RCBDefaultShowMarkers];
-		showPowerPeakIntervals = [Utils boolFromDefaults:RCBDefaultShowPowerPeakIntervals];
-		showCrossHairs = [Utils boolFromDefaults:RCBDefaultShowCrosshairs];
-		showHRZones = [Utils boolFromDefaults:RCBDefaultShowHRZones];
-		showPace = [Utils boolFromDefaults:RCBDefaultDisplayPace];
-		zonesOpacity = [Utils floatFromDefaults:RCBDefaultZonesTransparency];
-		numberFormatter = [[NSNumberFormatter alloc] init];
-		[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
-		[numberFormatter setMaximumFractionDigits:1];
+    currentTrackPos = 0;
+    posOffsetIndex = 0;
+    markerRightPadding = -1.0;
+    lastdist = 0.0;
+    firstAnim = NO;
+    bypassAnim = NO;
+    animating = NO;
+    trackHasPoints = NO;
+    selectRegionInProgress = NO;
+    xAxisIsTime = NO;
+    lastXAxisIsTime = xAxisIsTime;
+    NSString* path = [[NSBundle mainBundle] pathForResource:@"AltitudeSign" ofType:@"png"];
+    altSignImage = [[NSImage alloc] initWithContentsOfFile:path];
+    path = [[NSBundle mainBundle] pathForResource:@"LapMarker" ofType:@"png"];
+    lapMarkerImage = [[NSImage alloc] initWithContentsOfFile:path];
+    path = [[NSBundle mainBundle] pathForResource:@"StartMarker" ofType:@"png"];
+    startMarkerImage = [[NSImage alloc] initWithContentsOfFile:path];
+    path = [[NSBundle mainBundle] pathForResource:@"FinishMarker" ofType:@"png"];
+    finishMarkerImage = [[NSImage alloc] initWithContentsOfFile:path];
+    path = [[NSBundle mainBundle] pathForResource:@"PeakMarker" ofType:@"png"];
+    peakImage = [[NSImage alloc] initWithContentsOfFile:path];
+    peakType = [Utils intFromDefaults:RCBDefaultPeakItem];
+    dataRectType = [Utils intFromDefaults:RCBDefaultAnimationFollows];;
+    numPeaks = [Utils intFromDefaults:RCBDefaultNumPeaks];
+    numAvgPoints = [Utils intFromDefaults:RCBDefaultNumPointsToAverage];
+    if (numAvgPoints <= 0) numAvgPoints = 10;
+    peakThreshold = [Utils intFromDefaults:RCBDefaultPeakThreshold];
+    showPeaks = [Utils boolFromDefaults:RCBDefaultShowPeaks];
+    showLaps = [Utils boolFromDefaults:RCBDefaultShowLaps];
+    showMarkers = [Utils boolFromDefaults:RCBDefaultShowMarkers];
+    showPowerPeakIntervals = [Utils boolFromDefaults:RCBDefaultShowPowerPeakIntervals];
+    showCrossHairs = [Utils boolFromDefaults:RCBDefaultShowCrosshairs];
+    showHRZones = [Utils boolFromDefaults:RCBDefaultShowHRZones];
+    showPace = [Utils boolFromDefaults:RCBDefaultDisplayPace];
+    zonesOpacity = [Utils floatFromDefaults:RCBDefaultZonesTransparency];
+    numberFormatter = [[NSNumberFormatter alloc] init];
+    [numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
+    [numberFormatter setMaximumFractionDigits:1];
 #if TEST_LOCALIZATION
-		[numberFormatter setLocale:[[[NSLocale alloc] initWithLocaleIdentifier:@"de_DE"] autorelease]];
+    [numberFormatter setLocale:[[[NSLocale alloc] initWithLocaleIdentifier:@"de_DE"] autorelease]];
 #else
-		[numberFormatter setLocale:[NSLocale currentLocale]];
+    [numberFormatter setLocale:[NSLocale currentLocale]];
 #endif
-	}
- 	return self;
 }
 
 
 - (void) dealloc
 {
-#if DEBUG_LEAKS
-	NSLog(@"AD View %x dealloc'd...view retain: %d window: %d", self, [transparentView retainCount], [[transparentView window] retainCount]);
-#endif
 	[numberFormatter release];
 	[self resetPaths];
 	[mContextualMenuInvocation release];
 	[mSelectionUpdateInvocation release];
 	[dataHudUpdateInvocation release];
-	[transparentView release];
 	[track release];
 	[lap release];
 	[plotAttributesArray release];
@@ -581,8 +511,87 @@ tPlotInfo plotInfoArray[] =
 	[super dealloc];
 }
 
+-(void) _updatePlotAttributes
+{
+    if (!plotAttributesArray) {
+        plotAttributesArray = [[NSMutableArray arrayWithCapacity:kNumPlotTypes] retain];
+    } else {
+        [plotAttributesArray removeAllObjects];
+    }
+    
+    int i;
+    int numPlotTypes = sizeof(plotInfoArray)/sizeof(tPlotInfo);
+    for (i=0; i<kNumPlotTypes; i++)
+    {
+        [plotAttributesArray addObject:[[[PlotAttributes alloc] init] autorelease]];
+    }
 
-- (void)awakeFromNib    
+    for (i=0; i<numPlotTypes; i++)
+    {
+        tPlotInfo* pinfo = &plotInfoArray[i];
+        BOOL plotEnabled = pinfo->enabledDefault;
+        int lineStyle = pinfo->lineStyleDefault;
+        float opacity = pinfo->opacityDefault;
+
+        NSString* s = pinfo->defaultsKey;
+
+        NSMutableString* key = [NSMutableString stringWithString:s];
+        [key appendString:@"Opacity"];
+        float defaultsOpac = [Utils floatFromDefaults:key];
+        // if opacity is found, then assume other keys are present...
+        if (defaultsOpac > 0.0)
+        {
+            opacity = defaultsOpac;
+
+            key = [NSMutableString stringWithString:s];
+            [key appendString:@"Enabled"];
+            plotEnabled = [Utils boolFromDefaults:key];
+
+            key = [NSMutableString stringWithString:s];
+            [key appendString:@"LineStyle"];
+            lineStyle = [Utils intFromDefaults:key];
+        }
+        else
+        {
+            [Utils setFloatDefault:opacity
+                            forKey:key];
+
+            key = [NSMutableString stringWithString:s];
+            [key appendString:@"Enabled"];
+            [Utils setBoolDefault:plotEnabled
+                           forKey:key];
+
+            key = [NSMutableString stringWithString:s];
+            [key appendString:@"LineStyle"];
+            [Utils setIntDefault:lineStyle
+                          forKey:key];
+        }
+
+
+        PlotAttributes* pa = [[PlotAttributes alloc] initWithAttributes:[NSString stringWithFormat:@"%s", pinfo->name]
+                                                            defaultsKey:pinfo->defaultsKey
+                                                                  color:[Utils colorFromDefaults:[Utils defaultColorKey:pinfo->colorTag]]
+                                                                opacity:opacity
+                                                              lineStyle:lineStyle
+                                                             enabled:plotEnabled
+                                                            fillEnabled:pinfo->fillEnabledDefault
+                                                               showLaps:pinfo->showLapsDefault
+                                                            showMarkers:pinfo->showMarkersDefault
+                                                              showPeaks:pinfo->showPeaksDefault
+                                                               numPeaks:pinfo->numPeaksDefault
+                                                          peakThreshold:pinfo->peakThresholdDefault
+                                                            averageType:pinfo->averageType
+                                                              isAverage:pinfo->isAverage];
+
+
+        [plotAttributesArray replaceObjectAtIndex:pinfo->type withObject:pa];
+        [pa autorelease];
+
+    }
+}
+
+
+- (void)awakeFromNib
 {
    [self updateAnimation:[[AnimTimer defaultInstance] animTime] reverse:NO];
    lastBounds.origin = NSZeroPoint;
@@ -601,17 +610,6 @@ tPlotInfo plotInfoArray[] =
 	{
 		return [track goodPoints];
 	}
-}
-
-
--(void) setTransparentView:(id)v
-{
-   if (v != transparentView)
-   {
-      [transparentView autorelease];
-      transparentView = v;
-      [transparentView retain];
-   }
 }
 
 
@@ -1495,7 +1493,7 @@ struct tPosInfo
     float mx = 0.0;
 	float zn = 0.0;
 	NSRect zoneBounds;
-	int znType = [Utils intFromDefaults:RCBDefaultZoneInADViewItem];
+	int znType = [Utils intFromDefaults:RCBDefaultZoneInActivityDetailViewItem];
 	BOOL rev = NO;
 	if (znType == kUseHRZColorsForPath)
 	{
@@ -1708,7 +1706,8 @@ BOOL mightBeAMax(NSArray* pts, int num, int idx, int thresh, tAccessor ysel)
    
 	//NSDate* startTime = [[pts objectAtIndex:0] DATE_METHOD];
 	NSTimeInterval startTimeDelta = [[pts objectAtIndex:0] DATE_METHOD];
-    NSColor* textColor = [NSColor colorNamed:@"TextPrimary"];
+    // always show black; drawing on top of white peak icon
+    NSColor* textColor = [NSColor blackColor];
 	[tickFontAttrs setObject:textColor forKey:NSForegroundColorAttributeName];
    
 	for (i=0; i<n; i++)
@@ -1976,6 +1975,7 @@ BOOL mightBeAMax(NSArray* pts, int num, int idx, int thresh, tAccessor ysel)
 	float w = bounds.size.width;
 	float h = bounds.size.height;
 	NSPoint pt;
+    float offset = 0.0;        // 10.0?
 	if (xAxisIsTime)
 	{
 		
@@ -1993,11 +1993,11 @@ BOOL mightBeAMax(NSArray* pts, int num, int idx, int thresh, tAccessor ysel)
 	 {
 		if (maxdist > mindist)
 		{
-			pt.x = bounds.origin.x + ((([tpt distance]-mindist) * w)/(maxdist-mindist)) - 10.0;
+			pt.x = bounds.origin.x + ((([tpt distance]-mindist) * w)/(maxdist-mindist)) - offset;
 		}
 		else
 		{
-			pt.x = bounds.origin.x - 10;
+			pt.x = bounds.origin.x - offset;
 		}
 	}
 	pt.y = bounds.origin.y;
@@ -2066,7 +2066,7 @@ BOOL mightBeAMax(NSArray* pts, int num, int idx, int thresh, tAccessor ysel)
 			break;
 		}
 	}
-	pt.y -= 10.0;
+	pt.y -= offset;
 	return pt;
 }   
 
@@ -3537,7 +3537,7 @@ static float calcY(float ymin, float ymax, float h, float v)
 		[self drawPowerPeakIntervals];
 	
 		// do the plotting --------------------------------------------------------- 
-		int znType = [Utils intFromDefaults:RCBDefaultZoneInADViewItem];
+		int znType = [Utils intFromDefaults:RCBDefaultZoneInActivityDetailViewItem];
 		int posidx = 0;
 	   
 		if ([track hasElevationData])
@@ -3963,7 +3963,7 @@ static BOOL dragging = NO;
 }
 
 
-static ADView* lastDown = nil;
+static ActivityDetailView* lastDown = nil;
 
 - (void)mouseDown:(NSEvent*) ev
 {
@@ -4211,6 +4211,11 @@ static ADView* lastDown = nil;
 }
 
 
+-(void)prefsChanged
+{
+    [self _updatePlotAttributes];
+    [self setNeedsDisplay:YES];
+}
 
 
 @end

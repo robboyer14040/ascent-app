@@ -1,12 +1,12 @@
 //
-//  ADTransparentView.mm
+//  ActivityDetailTransparentView.mm
 //  Ascent
 //
 //  Created by Rob Boyer on 11/29/06.
 //  Copyright 2006 Montebello Software. All rights reserved.
 //
 
-#import "ADTransparentView.h"
+#import "ActivityDetailTransparentView.h"
 #import "Defs.h"
 #import "Utils.h"
 #import "TrackPoint.h"
@@ -16,7 +16,7 @@
 NSString*      altFormat;
 NSString*      speedFormat;
 
-@implementation ADTransparentView
+@implementation ActivityDetailTransparentView
 
 - (id)initWithFrame:(NSRect)frame 
 {
@@ -92,7 +92,7 @@ NSString*      speedFormat;
 
 	if (showCrossHairs)
 	{
-		[[NSColor blackColor] set];
+		[[NSColor colorNamed:@"TextPrimary"] set];
 		[NSBezierPath setDefaultLineWidth:0.4];
 		NSPoint pt1, pt2;
 

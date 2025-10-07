@@ -16,7 +16,7 @@
 #import "ProfilesContainerView.h"
 #import "ProfilesTransparentView.h"
 #import "MapPathView.h"
-#import "ADView.h"
+#import "ActivityDetailView.h"
 #import "Utils.h"
 #import "Track.h"
 #import "TrackPoint.h"
@@ -273,7 +273,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	{
 		Track* track = nil;
 		if (i<trackCount) track = [trackArray objectAtIndex:i];
-		ADView* adv = [[ADView alloc] initWithFrame:dummy];
+		ActivityDetailView* adv = [[ActivityDetailView alloc] initWithFrame:dummy];
 		CWTransparentView* tv = [[CWTransparentView alloc] initWithFrame:dummy
 																 iconFile:[self.dotColorsArray objectAtIndex:i]
 																	track:track];
@@ -445,7 +445,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 {
 	for (CompareProfileViewController* pvc in profileControllerArray)
 	{
-		ADView* adv = pvc.adView;
+		ActivityDetailView* adv = pvc.adView;
 		if (adv == [[self window] firstResponder])
 		{
 			int newLap = setToNext ? pvc.lapOffset+1 : pvc.lapOffset-1;
@@ -474,7 +474,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 
 -(void)setPVCToRulerPosition:(CompareProfileViewController*)pvc
 {
-	ADView* adv = pvc.adView;
+	ActivityDetailView* adv = pvc.adView;
 	float mnd = adv.mindist;
 	float mxd = adv.maxdist;
 	float dx = profilesTransparentView.curDist - profilesTransparentView.minDist;
@@ -501,7 +501,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 {
 	for (CompareProfileViewController* pvc in profileControllerArray)
 	{
-		ADView* adv = pvc.adView;
+		ActivityDetailView* adv = pvc.adView;
 		if (adv == [[self window] firstResponder])
 		{
 			[self setPVCToRulerPosition:pvc];
@@ -546,7 +546,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 												 lapIndex:lapIdx];
 					if (start < 0.0) start = defaultStart;
 				}
-				ADView* adv = pvc.adView;
+				ActivityDetailView* adv = pvc.adView;
 				[adv setDistanceOverride:start
 									 max:start+dist];
 				[pvc.transparentView setFastestDistance:0.0
@@ -587,7 +587,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 		{
 			if (pvc.track != nil)
 			{
-				ADView* adv = pvc.adView;
+				ActivityDetailView* adv = pvc.adView;
 				float mn_off = 0.0;
 				mn_off = mn - omn;
 				float nmn = adv.mindist + mn_off;
@@ -621,7 +621,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	{
 		if (pvc.track != nil)
 		{
-			ADView* adv = pvc.adView;
+			ActivityDetailView* adv = pvc.adView;
 			float mn = zoomIn ? adv.mindist + delta : 0;
 			[adv setDistanceOverride:mn
 								 max:mn+dist];
@@ -1289,7 +1289,7 @@ enum
 {
 	for (CompareProfileViewController* pvc in profileControllerArray)
 	{
-		ADView* adv = pvc.adView;
+		ActivityDetailView* adv = pvc.adView;
 		if (adv == [[self window] firstResponder])
 		{
 			Track* t = pvc.track;

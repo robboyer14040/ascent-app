@@ -1,14 +1,14 @@
 //
-//  ADWindowController.mm
+//  ActivityWindowController.mm
 //  TLP
 //
 //  Created by Rob Boyer on 7/24/06.
 //  Copyright 2006 rcb Construction. All rights reserved.
 //
 
-#import "ADWindowController.h"
+#import "ActivityWindowController.h"
 #import "TrackBrowserDocument.h"
-#import "ADView.h"
+#import "ActivityDetailView.h"
 #import "Track.h"
 #import "TrackPoint.h"
 #import "PlotAttributes.h"
@@ -17,8 +17,7 @@
 #import "ItemList.h"
 #import "EditMarkersController.h"
 #import "AnimTimer.h"
-#import "ADTransparentView.h"
-#import "ADTransparentWindow.h"
+#import "ActivityDetailTransparentView.h"
 #import "ADStatsView.h"
 #import "DataHUDWindowController.h"
 #import "HUDWindow.h"
@@ -43,8 +42,33 @@ enum
 	kCM_SplitActivity,
 };
 
-@interface ADWindowController ()
-
+@interface ActivityWindowController ()
+{
+    id<ActivityWindowControllerDelegate> __unsafe_unretained _customDelegate;
+    
+    NSTimer*                    _fadeTimer;
+    id                          _keyMonitor;
+    ADStatsView                 *statsView;           // view for "statistics" HUD
+    DataHUDWindowController     *dataHUDWC;
+    HUDWindow                   *statsHUDWindow;
+    EditMarkersController       *editMarkersController;
+    NSMutableArray              *colorBoxes;
+    Track                       *track;
+    TrackBrowserDocument        *tbDocument;
+    NSMutableDictionary         *hudTextAttrs;
+    NSString                    *altFormat;
+    NSString                    *speedFormat;
+    NSString                    *paceFormat;
+    NSString                    *distanceFormat;
+    NSNumberFormatter           *numberFormatter;
+    int                         currentFrame;
+    BOOL                        regionSelected;
+    BOOL                        useStatuteUnits;
+    BOOL                        drawerColorBoxesCreated;
+    //DataHUDView*            dataHUDView;         // view for "data" HUD
+    //HUDWindow*              dataHUDWindow;
+}
+@property(nonatomic, retain) NSTimer* fadeTimer;
 -(void) rebuildActivitySelectorPopup;
 -(void) trackChanged:(NSNotification *)notification;
 -(void) trackEdited:(NSNotification *)notification;
@@ -58,13 +82,15 @@ enum
 
 
 
-@implementation ADWindowController
+@implementation ActivityWindowController
+@synthesize customDelegate = _customDelegate;
+@synthesize fadeTimer = _fadeTimer;
 
 
 
 - (id)initWithDocument:(TrackBrowserDocument*)doc
 {
-	self = [super initWithWindowNibName:@"ActivityWindow"];
+	self = [super initWithWindowNibName:@"ActivityWindowController"];
 	track = nil;
 	activitySelectorPopup = nil;
 	statsView = nil;
@@ -80,12 +106,6 @@ enum
 	dummy.size.height = 10;
 	dummy.origin.x = 0;
 	dummy.origin.y = 0;
-	transparentWindow = [[ADTransparentWindow alloc] initWithContentRect:dummy 
-															   styleMask:NSWindowStyleMaskBorderless 
-																 backing:NSBackingStoreBuffered 
-																   defer:NO];
-	transparentView = [[ADTransparentView alloc] initWithFrame:dummy];
-	[transparentWindow setContentView:transparentView];
 	numberFormatter = [[NSNumberFormatter alloc] init];
 	[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
 	[numberFormatter setMaximumFractionDigits:1];
@@ -94,6 +114,7 @@ enum
 #else
 	[numberFormatter setLocale:[NSLocale currentLocale]];
 #endif
+    [doc addWindowController:self];
 	return self;
 }
 
@@ -102,14 +123,14 @@ enum
 
 - (void)dealloc
 {
+    if (_keyMonitor) {
+        [NSEvent removeMonitor:_keyMonitor];
+        _keyMonitor = nil;
+    }
+    [_fadeTimer release];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	if (editMarkersController != nil) [editMarkersController release];
-	[transparentWindow close];
-	[[self window] removeChildWindow:transparentWindow];
-#if DEBUG_LEAKS
-	NSLog(@"AD Window controller dealloc'd... transparentWindow rc: %d", [transparentWindow retainCount]);
-#endif
-    [super dealloc];
+   [super dealloc];
 }
 
 
@@ -570,9 +591,6 @@ enum
 {
    NSRect fr = [graphView frame];
    fr = NSInsetRect(fr, 10, 10);
-   NSRect cfr = fr;
-   cfr.origin = [[self window] convertPointToScreen:fr.origin];
-   [transparentWindow setFrame:cfr display:NO];
    fr.origin = NSZeroPoint;
    [transparentView setFrame:fr];
    [transparentView setBounds:fr];
@@ -728,7 +746,7 @@ enum
 						   hrz:zoneTimes
 					  zoneType:zoneForHUD];
          
-		float mxtime;
+		float mxtime = 0.0;
 	   
 		//---- speed
 		tStatData& spdData = statsArray[kST_Speed];
@@ -776,8 +794,13 @@ enum
 			tf = [view viewWithTag:(140+3)];
 			[numberFormatter setMaximumFractionDigits:1];
 			dispString = [numberFormatter stringFromNumber:[NSNumber numberWithFloat:[Utils convertDistanceValue:spdData.vals[kDistanceAtMax]]]];
-			if (tf) [tf setStringValue:[NSString stringWithFormat:@"%02.2d:%02.2d:%02.2d/%@", 
-										((int)mxtime)/3600,  (((int)mxtime)/60) % 60, ((int)mxtime) % 60, dispString]]; 
+            if (tf) {
+                [tf setStringValue:[NSString stringWithFormat:@"%02.2d:%02.2d:%02.2d/%@",
+                                    ((int)mxtime)/3600,
+                                    (((int)mxtime)/60) % 60,
+                                    ((int)mxtime) % 60,
+                                    dispString]];
+            }
 		}
 
 		//---- heart rate
@@ -1381,10 +1404,6 @@ static tHUDStringInfo sHUDStringInfo[] =
 	BOOL xAxisIsTime = [Utils intFromDefaults:RCBDefaultXAxisType] > 0 ? YES : NO;
 	[graphView setXAxisIsTime:xAxisIsTime];
 
-	[[self window]  addChildWindow:(NSWindow*)transparentWindow ordered:NSWindowAbove];
-	[transparentWindow setHasShadow:NO];
-	[transparentWindow setIgnoresMouseEvents:YES];
-	[transparentWindow setDelegate:self];
 	[graphView setShowCrossHairs:[graphView showCrossHairs]];
 	[xAxisTypePopup selectItemAtIndex:([graphView xAxisIsTime] ? 1 : 0)];
 	[speedPacePopup selectItemAtIndex:([graphView showPace] ? 1 : 0)];
@@ -1392,21 +1411,21 @@ static tHUDStringInfo sHUDStringInfo[] =
 	[self rebuildActivitySelectorPopup];
 	
 	SEL sel = @selector(buildContextualMenu);
-	NSMethodSignature* sig = [ADWindowController instanceMethodSignatureForSelector:sel];
+	NSMethodSignature* sig = [ActivityWindowController instanceMethodSignatureForSelector:sel];
 	NSInvocation* inv = [NSInvocation invocationWithMethodSignature:sig];
 	[inv setSelector:sel];
 	[inv setTarget:self];
 	[graphView setContextualMenuInvocation:inv];
 
 	sel = @selector(updateSelectionInfo:);
-	sig = [ADWindowController instanceMethodSignatureForSelector:sel];
+	sig = [ActivityWindowController instanceMethodSignatureForSelector:sel];
 	inv = [NSInvocation invocationWithMethodSignature:sig];
 	[inv setSelector:sel];
 	[inv setTarget:self];
 	[graphView setSelectionUpdateInvocation:inv];
 
 	sel = @selector(updateDataHUD:x:y:altitude:);
-	sig = [ADWindowController instanceMethodSignatureForSelector:sel];
+	sig = [ActivityWindowController instanceMethodSignatureForSelector:sel];
 	inv = [NSInvocation invocationWithMethodSignature:sig];
 	[inv setSelector:sel];
 	[inv setTarget:self];
@@ -1643,62 +1662,104 @@ static tHUDStringInfo sHUDStringInfo[] =
 	[showCrossHairsButton setState:[graphView showCrossHairs]];
 	[self updatePeakControls:[graphView showPeaks]];
 	[dataRectTypePopup selectItemWithTag:[graphView dataRectType]];
-	[zoneTypePopup selectItemWithTag:[Utils intFromDefaults:RCBDefaultZoneInADViewItem]];
+	[zoneTypePopup selectItemWithTag:[Utils intFromDefaults:RCBDefaultZoneInActivityDetailViewItem]];
 	[zonesOpacitySlider setFloatValue:[Utils floatFromDefaults:RCBDefaultZonesTransparency]];
 }
 
 
 - (void)windowDidLoad
 {
-   BOOL show = [Utils boolFromDefaults:RCBDefaultShowADHUD];
-   if (show)
-   {
-      [[self window] addChildWindow:(NSWindow*)[dataHUDWC window] ordered:NSWindowAbove];
-   }
-   else
-   {
-      [[dataHUDWC window] orderOut:self];
-   }
-   [showDataHudButton setState:show];
+    BOOL show = [Utils boolFromDefaults:RCBDefaultShowADHUD];
+    if (show)
+    {
+        [[self window] addChildWindow:(NSWindow*)[dataHUDWC window] ordered:NSWindowAbove];
+    }
+    else
+    {
+        [[dataHUDWC window] orderOut:self];
+    }
+    [showDataHudButton setState:show];
+    
+    // spacebar handling
+    __block __weak ActivityWindowController *weakSelf = self; // weak to avoid retain-cycle with block
+    _keyMonitor = [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskKeyDown
+                                                       handler:^NSEvent * (NSEvent *e)
+    {
+        ActivityWindowController *self = weakSelf;
+        if (!self) return e;
+
+        if (e.window == self.window) {
+            NSString *s = [e charactersIgnoringModifiers];
+            if ([s isEqualToString:@" "]) {
+                // optional: ignore if typing in a text view
+                NSResponder *r = e.window.firstResponder;
+                if (![r isKindOfClass:[NSTextView class]]) {
+                    [[AnimTimer defaultInstance] togglePlay];   // your action
+                    return nil; // swallow the space so it doesn’t trigger anything else
+                }
+            }
+        }
+        return e; // let other keys flow
+    }];
+
 }
 
 
 - (void)fade:(NSTimer *)theTimer
 {
-   if ([[self window] alphaValue] > 0.0) {
-      // If window is still partially opaque, reduce its opacity.
-      [[self window]  setAlphaValue:[[self window]  alphaValue] - 0.2];
-   } else {
-      // Otherwise, if window is completely transparent, destroy the timer and close the window.
-      [fadeTimer invalidate];
-      fadeTimer = nil;
-      
-      [[self window]  close];
-      
-      // Make the window fully opaque again for next time.
-      [[self window]  setAlphaValue:1.0];
-   }
+    if ([[self window] alphaValue] > 0.0) {
+        // If window is still partially opaque, reduce its opacity.
+        [[self window]  setAlphaValue:[[self window]  alphaValue] - 0.2];
+    } else {
+        // Otherwise, if window is completely transparent, destroy the timer and close the window.
+        [_fadeTimer invalidate];
+        self.fadeTimer = nil;
+
+        if ([self.customDelegate respondsToSelector:@selector(activityWindowControllerDidClose:)]) {
+            [self.customDelegate activityWindowControllerDidClose:self];
+        }
+        [[self window]  close];
+
+        // Make the window fully opaque again for next time.
+        [[self window]  setAlphaValue:1.0];
+    }
 }
 
 
 - (BOOL)windowShouldClose:(id)sender
 {
-   // Set up our timer to periodically call the fade: method.
-   fadeTimer = [NSTimer scheduledTimerWithTimeInterval:0.05 target:self selector:@selector(fade:) userInfo:nil repeats:YES];
+    // Set up our timer to periodically call the fade: method.
+    self.fadeTimer = [NSTimer scheduledTimerWithTimeInterval:0.05
+                                                      target:self
+                                                    selector:@selector(fade:)
+                                                    userInfo:nil repeats:YES];
    
-   // Don't close just yet.
-   return NO;
+    return NO;
 }
 
 
 - (void)windowWillClose:(NSNotification *)aNotification
 {
-   [statsHUDWindow orderOut:self];
-   [[AnimTimer defaultInstance] unregisterForTimerUpdates:self];
-   if (editMarkersController != nil)
-   {
-      [[editMarkersController window] orderOut:[self window]];
-   }
+
+    [statsHUDWindow orderOut:self];
+    [[AnimTimer defaultInstance] unregisterForTimerUpdates:self];
+    if (editMarkersController != nil)
+    {
+        [[editMarkersController window] orderOut:[self window]];
+    }
+    if ([self document])
+    {
+        // 1. Get a safe reference to the document (no retain necessary, it's a weak/assign property)
+        NSDocument *theDocument = [self document];
+
+        // 2. Remove self from the NSDocument's list of window controllers
+        [theDocument removeWindowController:self];
+
+        // 3. Since the NSDocument is no longer retaining the NSWindowController (self),
+        // and assuming this controller does not own any other object retaining it,
+        // the NSWindowController will be deallocated after this method returns
+        // and the autorelease pool drains.
+    }
 }
 
 
@@ -1888,13 +1949,13 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (IBAction) setNumberOfPeaks:(id) sender
 {
-    NSButton *btn = (NSButton *)sender;                   // since this action is wired from a button
-    BOOL state = (btn.state  == NSControlStateValueOn) ? YES : NO;
-   [numberOfPeaksField setIntValue:state];
-   [graphView setNumPeaks:state];
-   [graphView setNeedsDisplay:YES];
-   [Utils setIntDefault:state 
-                 forKey:RCBDefaultNumPeaks];
+    NSStepper *stepper = (NSStepper *)sender;
+    int v = stepper.intValue;
+    [numberOfPeaksField setIntValue:v];
+    [graphView setNumPeaks:v];
+    [graphView setNeedsDisplay:YES];
+    [Utils setIntDefault:v
+                  forKey:RCBDefaultNumPeaks];
 }
 
 
@@ -1973,7 +2034,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 	[graphView setNeedsDisplay:YES];
 	[Utils setIntDefault:idx 
-				  forKey:RCBDefaultZoneInADViewItem];
+				  forKey:RCBDefaultZoneInActivityDetailViewItem];
 }	
 
 
@@ -2182,6 +2243,7 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (void)prefsChanged:(NSNotification *)notification
 {
+    [graphView prefsChanged];
 	[graphView setTrack:track
 			forceUpdate:YES];
 	[graphView setNeedsDisplay:YES];

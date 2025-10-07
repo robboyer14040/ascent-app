@@ -1,5 +1,5 @@
 //
-//  ADTransparentView.h
+//  ActivityDetailTransparentView.h
 //  Ascent
 //
 //  Created by Rob Boyer on 11/29/06.
@@ -21,7 +21,7 @@
 @class TrackPoint;
 
 
-@interface ADTransparentView : NSView<ProfileTransparentView>
+@interface ActivityDetailTransparentView : NSView<ProfileTransparentView>
 {
 	NSImage*                dataRectImage;
 	NSImage*                dotImage;

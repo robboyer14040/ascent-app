@@ -2,7 +2,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class ADWindowController;
+@class ActivityWindowController;
 @class TransportPanelController;
 @class SUUpdater;
 @class SyncController;

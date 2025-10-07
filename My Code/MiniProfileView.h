@@ -4,6 +4,8 @@
 
 @class Track;
 @class Lap;
+@class TransparentMapView;
+
 
 @interface MiniProfileView : NSView
 -(void) setCurrentTrack:(Track*) tr;
@@ -11,6 +13,7 @@
 -(Lap *) selectedLap;
 -(void) setSelectedLap:(Lap *)value;
 -(void) setSplitArray:(NSArray *)value;
+-(void) setTransparentView:(TransparentMapView*) v;
 
 
 @end

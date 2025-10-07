@@ -37,7 +37,7 @@
 
 
 // draw background (alternating gray rects, 1 per line) and the heart rate zone color.  The 
-// rest of the HUD is updated by the ADWindowController
+// rest of the HUD is updated by the ActivityWindowController
 - (void)drawRect:(NSRect)rect 
 {
    [NSBezierPath setDefaultLineWidth:1.0];

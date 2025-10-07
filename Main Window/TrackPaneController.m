@@ -19,7 +19,7 @@
 #import "ProgressBarHelper.h"
 #import "StravaAPI.h"
 #import "StravaImporter.h"
-#import "DMWindowController.h"
+#import "DetailedMapWindowController.h"
 #import "LeftSplitController.h"
 #import "OutlineSettingsDialogController.h"
 #import "CompareWindowController.h"

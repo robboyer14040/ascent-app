@@ -1,0 +1,487 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="23727" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <deployment version="1050" identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="23727"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="DetailedMapWindowController">
+            <connections>
+                <outlet property="_transparentView" destination="dbc-Sd-Jnm" id="lML-vC-Fsu"/>
+                <outlet property="activitySelectorPopup" destination="289" id="315"/>
+                <outlet property="applyDefaultsButton" destination="299" id="316"/>
+                <outlet property="colorPathPopup" destination="299" id="327"/>
+                <outlet property="hudOpacitySlider" destination="295" id="322"/>
+                <outlet property="intervalIncrementStepper" destination="521" id="529"/>
+                <outlet property="intervalIncrementTextField" destination="518" id="528"/>
+                <outlet property="intervalIncrementUnitsLabel" destination="516" id="527"/>
+                <outlet property="mapDataTypePopup" destination="258" id="319"/>
+                <outlet property="mapView" destination="270" id="332"/>
+                <outlet property="selectedLapPopup" destination="309" id="326"/>
+                <outlet property="settingsDrawer" destination="352" id="424"/>
+                <outlet property="showHudButton" destination="294" id="320"/>
+                <outlet property="showIntervalMarkersButton" destination="511" id="523"/>
+                <outlet property="transparentView" destination="dbc-Sd-Jnm" id="WLw-U0-plf"/>
+                <outlet property="window" destination="256" id="314"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" titlebarAppearsTransparent="YES" id="256" userLabel="Window">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="77" y="108" width="769" height="748"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2240" height="1235"/>
+            <value key="minSize" type="size" width="768" height="480"/>
+            <view key="contentView" id="257">
+                <rect key="frame" x="0.0" y="0.0" width="769" height="748"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <popUpButton tag="2002" imageHugsTitle="YES" horizontalHuggingPriority="249" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="258">
+                        <rect key="frame" x="199" y="5" width="274" height="22"/>
+                        <popUpButtonCell key="cell" type="push" title="USGS Topo" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="261" id="486">
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                            <menu key="menu" title="OtherViews" id="259">
+                                <items>
+                                    <menuItem title="USGS Aerial" id="262"/>
+                                    <menuItem title="USGS Topo" state="on" id="261"/>
+                                    <menuItem title="USGS Urban" id="263"/>
+                                    <menuItem title="VE Aerial" id="264"/>
+                                    <menuItem title="VE Road" id="265"/>
+                                    <menuItem title="VE Hybrid" id="260"/>
+                                </items>
+                            </menu>
+                        </popUpButtonCell>
+                        <constraints>
+                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="102" id="BSD-o3-LJL"/>
+                        </constraints>
+                        <connections>
+                            <action selector="setMapDataType:" target="-2" id="335"/>
+                        </connections>
+                    </popUpButton>
+                    <customView translatesAutoresizingMaskIntoConstraints="NO" id="270" customClass="MapPathView">
+                        <rect key="frame" x="0.0" y="34" width="769" height="714"/>
+                        <subviews>
+                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="dbc-Sd-Jnm" customClass="TransparentMapView">
+                                <rect key="frame" x="0.0" y="0.0" width="769" height="714"/>
+                            </customView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="dbc-Sd-Jnm" firstAttribute="leading" secondItem="270" secondAttribute="leading" id="dUc-UF-EjX"/>
+                            <constraint firstAttribute="trailing" secondItem="dbc-Sd-Jnm" secondAttribute="trailing" id="fi5-zQ-FsP"/>
+                            <constraint firstItem="dbc-Sd-Jnm" firstAttribute="top" secondItem="270" secondAttribute="top" id="k4N-bP-bHo"/>
+                            <constraint firstAttribute="bottom" secondItem="dbc-Sd-Jnm" secondAttribute="bottom" id="nnc-fe-Dsv"/>
+                        </constraints>
+                    </customView>
+                    <popUpButton tag="2003" imageHugsTitle="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="289">
+                        <rect key="frame" x="480" y="5" width="72" height="22"/>
+                        <popUpButtonCell key="cell" type="push" title="Activity" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="291" id="487">
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                            <menu key="menu" title="OtherViews" id="290">
+                                <items>
+                                    <menuItem title="Activity" state="on" id="291"/>
+                                    <menuItem title="Item2" id="292"/>
+                                    <menuItem title="Item3" id="293"/>
+                                </items>
+                            </menu>
+                        </popUpButtonCell>
+                        <connections>
+                            <action selector="selectActivity:" target="-2" id="334"/>
+                        </connections>
+                    </popUpButton>
+                    <button tag="2005" imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="294">
+                        <rect key="frame" x="652" y="9" width="46" height="17"/>
+                        <buttonCell key="cell" type="check" title="HUD" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="2005" inset="2" id="488">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="setShowHud:" target="-2" id="336"/>
+                        </connections>
+                    </button>
+                    <slider verticalHuggingPriority="750" tag="2006" translatesAutoresizingMaskIntoConstraints="NO" id="295">
+                        <rect key="frame" x="699" y="5" width="60" height="16"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="56" id="ZN3-iH-Cln"/>
+                        </constraints>
+                        <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="2006" minValue="0.40000000000000002" maxValue="1" doubleValue="0.75" tickMarkPosition="above" sliderType="linear" id="489">
+                            <font key="font" size="12" name="Helvetica"/>
+                        </sliderCell>
+                        <connections>
+                            <action selector="setHudOpacity:" target="-2" id="339"/>
+                        </connections>
+                    </slider>
+                    <popUpButton tag="2001" imageHugsTitle="YES" horizontalHuggingPriority="249" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="299">
+                        <rect key="frame" x="35" y="5" width="157" height="22"/>
+                        <popUpButtonCell key="cell" type="push" title="Power zones" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" tag="6" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="483" id="490">
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                            <menu key="menu" title="OtherViews" id="300">
+                                <items>
+                                    <menuItem title="Heart rate zones" id="302"/>
+                                    <menuItem title="Speed zones" tag="1" id="304"/>
+                                    <menuItem title="Pace zones" tag="2" id="306"/>
+                                    <menuItem title="Cadence zones" tag="4" id="305"/>
+                                    <menuItem title="Gradient zones" tag="3" id="303"/>
+                                    <menuItem title="Altitude zones" tag="5" id="455"/>
+                                    <menuItem title="Power zones" state="on" tag="6" id="483">
+                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                    </menuItem>
+                                    <menuItem title="Default path color" tag="7" id="301"/>
+                                </items>
+                            </menu>
+                        </popUpButtonCell>
+                        <connections>
+                            <action selector="setColorPath:" target="-2" id="342"/>
+                        </connections>
+                    </popUpButton>
+                    <popUpButton tag="2004" imageHugsTitle="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="309">
+                        <rect key="frame" x="559" y="5" width="84" height="22"/>
+                        <popUpButtonCell key="cell" type="push" title="nothing" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="311" id="491">
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                            <menu key="menu" title="OtherViews" id="310">
+                                <items>
+                                    <menuItem title="all laps" id="312"/>
+                                    <menuItem title="nothing" state="on" id="311"/>
+                                </items>
+                            </menu>
+                        </popUpButtonCell>
+                        <constraints>
+                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="76" id="qZb-fw-ysx"/>
+                        </constraints>
+                        <connections>
+                            <action selector="selectLap:" target="-2" id="343"/>
+                        </connections>
+                    </popUpButton>
+                    <button imageHugsTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="427">
+                        <rect key="frame" x="11" y="9" width="16" height="17"/>
+                        <buttonCell key="cell" type="smallSquare" title="..." bezelStyle="smallSquare" alignment="center" borderStyle="border" inset="2" id="492">
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
+                            <font key="font" metaFont="system" size="10"/>
+                        </buttonCell>
+                        <constraints>
+                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="16" id="BIS-cn-8uB"/>
+                        </constraints>
+                        <connections>
+                            <action selector="openDrawer:" target="-2" id="428"/>
+                        </connections>
+                    </button>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="trailing" secondItem="295" secondAttribute="trailing" constant="12" id="1Yt-fa-UpP"/>
+                    <constraint firstItem="427" firstAttribute="bottom" secondItem="295" secondAttribute="bottom" constant="-3" id="5sU-Wu-bGH"/>
+                    <constraint firstItem="294" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="309" secondAttribute="trailing" constant="8" symbolic="YES" id="62o-b8-wwE"/>
+                    <constraint firstItem="258" firstAttribute="baseline" secondItem="294" secondAttribute="baseline" id="EMA-Xn-dHH"/>
+                    <constraint firstItem="427" firstAttribute="leading" secondItem="257" secondAttribute="leading" constant="11" id="Gbu-sL-2Vh"/>
+                    <constraint firstItem="258" firstAttribute="leading" secondItem="257" secondAttribute="leading" constant="203" id="IYZ-f2-gb7"/>
+                    <constraint firstItem="258" firstAttribute="baseline" secondItem="299" secondAttribute="baseline" id="LIM-Vs-QGf"/>
+                    <constraint firstItem="258" firstAttribute="baseline" secondItem="289" secondAttribute="baseline" id="Pak-9z-LoJ"/>
+                    <constraint firstItem="427" firstAttribute="centerY" secondItem="294" secondAttribute="centerY" id="Q7z-Qi-v5X"/>
+                    <constraint firstItem="258" firstAttribute="baseline" secondItem="427" secondAttribute="firstBaseline" id="SrF-bc-4fN"/>
+                    <constraint firstItem="427" firstAttribute="firstBaseline" secondItem="258" secondAttribute="firstBaseline" id="Viy-ei-I4L"/>
+                    <constraint firstItem="258" firstAttribute="leading" secondItem="299" secondAttribute="trailing" constant="15" id="W7i-UJ-jaB"/>
+                    <constraint firstAttribute="bottom" secondItem="270" secondAttribute="bottom" constant="34" id="Wdj-Z7-uw9"/>
+                    <constraint firstAttribute="trailing" secondItem="309" secondAttribute="trailing" constant="130" id="XHq-QS-hhK"/>
+                    <constraint firstItem="258" firstAttribute="top" secondItem="270" secondAttribute="bottom" constant="9" id="cpl-Kr-1XB"/>
+                    <constraint firstItem="295" firstAttribute="top" secondItem="270" secondAttribute="bottom" constant="15" id="gVc-UQ-hlc"/>
+                    <constraint firstItem="289" firstAttribute="leading" secondItem="258" secondAttribute="trailing" constant="15" id="jcQ-gm-KFk"/>
+                    <constraint firstItem="299" firstAttribute="leading" secondItem="427" secondAttribute="trailing" constant="12" id="lDz-Pf-Zeg"/>
+                    <constraint firstAttribute="trailing" secondItem="270" secondAttribute="trailing" id="oym-r1-Ysw"/>
+                    <constraint firstItem="270" firstAttribute="centerX" secondItem="257" secondAttribute="centerX" id="qxA-O3-8Z5"/>
+                    <constraint firstItem="258" firstAttribute="top" secondItem="294" secondAttribute="top" id="qxU-Aw-u3x"/>
+                    <constraint firstItem="270" firstAttribute="top" secondItem="257" secondAttribute="top" id="rDv-Lm-icY"/>
+                    <constraint firstItem="295" firstAttribute="leading" secondItem="294" secondAttribute="trailing" constant="3" id="ryB-sB-gi0"/>
+                    <constraint firstItem="258" firstAttribute="baseline" secondItem="309" secondAttribute="baseline" id="w3x-TP-lUP"/>
+                    <constraint firstItem="270" firstAttribute="leading" secondItem="257" secondAttribute="leading" id="w4U-m9-o7Z"/>
+                    <constraint firstItem="270" firstAttribute="leading" secondItem="257" secondAttribute="leading" id="x0M-wo-8iv"/>
+                    <constraint firstItem="309" firstAttribute="leading" secondItem="289" secondAttribute="trailing" constant="15" id="yXI-KG-hfB"/>
+                </constraints>
+            </view>
+            <connections>
+                <outlet property="delegate" destination="-2" id="313"/>
+            </connections>
+            <point key="canvasLocation" x="87.5" y="98"/>
+        </window>
+        <drawer preferredEdge="minX" trailingOffset="15" id="352" userLabel="SettingsDrawer">
+            <size key="contentSize" width="200" height="716"/>
+            <size key="minContentSize" width="180" height="480"/>
+            <size key="maxContentSize" width="200" height="1200"/>
+            <connections>
+                <outlet property="contentView" destination="354" id="425"/>
+                <outlet property="delegate" destination="-2" id="426"/>
+                <outlet property="parentWindow" destination="256" id="353"/>
+            </connections>
+        </drawer>
+        <customView id="354" userLabel="DrawerContents">
+            <rect key="frame" x="0.0" y="0.0" width="211" height="518"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="7" translatesAutoresizingMaskIntoConstraints="NO" id="394">
+                    <rect key="frame" x="152" y="194" width="11" height="13"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="-" id="510">
+                        <font key="font" metaFont="systemBold" size="10"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="8" translatesAutoresizingMaskIntoConstraints="NO" id="393">
+                    <rect key="frame" x="151" y="279" width="12" height="26"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" id="509">
+                        <font key="font" metaFont="systemBold" size="10"/>
+                        <string key="title">+
+</string>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <button imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="392">
+                    <rect key="frame" x="8" y="440" width="82" height="18"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="check" title="Show Maps" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" enabled="NO" state="on" inset="2" id="508">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                </button>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="2003" translatesAutoresizingMaskIntoConstraints="NO" id="384">
+                    <rect key="frame" x="131" y="420" width="60" height="12"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="2003" minValue="0.25" maxValue="1" doubleValue="0.75" tickMarkPosition="above" sliderType="linear" id="507">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setPathTransparency:" target="-2" id="413"/>
+                    </connections>
+                </slider>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" tag="2000" translatesAutoresizingMaskIntoConstraints="NO" id="383">
+                    <rect key="frame" x="131" y="442" width="60" height="12"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <sliderCell key="cell" controlSize="mini" continuous="YES" alignment="left" tag="2000" maxValue="1" doubleValue="0.63265305757522583" tickMarkPosition="above" sliderType="linear" id="506">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="setMapTransparency:" target="-2" id="412"/>
+                    </connections>
+                </slider>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="29" translatesAutoresizingMaskIntoConstraints="NO" id="382">
+                    <rect key="frame" x="142" y="304" width="33" height="11"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Zoom" id="505">
+                        <font key="font" metaFont="miniSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <box verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="379">
+                    <rect key="frame" x="11" y="467" width="183" height="5"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                </box>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="106" translatesAutoresizingMaskIntoConstraints="NO" id="378">
+                    <rect key="frame" x="11" y="469" width="110" height="13"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" id="504">
+                        <font key="font" metaFont="label"/>
+                        <string key="title">Display Settings
+</string>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <button imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="377">
+                    <rect key="frame" x="30" y="99" width="138" height="28"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="push" title="Center at end" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" inset="2" id="503">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="centerAtEnd:" target="-2" id="422"/>
+                    </connections>
+                </button>
+                <button imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="376">
+                    <rect key="frame" x="30" y="126" width="138" height="28"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="push" title="Center at start" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" inset="2" id="502">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="centerAtStart:" target="-2" id="421"/>
+                    </connections>
+                </button>
+                <slider horizontalHuggingPriority="750" fixedFrame="YES" tag="2008" translatesAutoresizingMaskIntoConstraints="NO" id="375">
+                    <rect key="frame" x="152" y="205" width="19" height="87"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <sliderCell key="cell" controlSize="small" alignment="left" tag="2008" minValue="8" maxValue="19" doubleValue="17" tickMarkPosition="right" numberOfTickMarks="12" allowsTickMarkValuesOnly="YES" sliderType="linear" id="501">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                    <connections>
+                        <action selector="zoom:" target="-2" id="419"/>
+                    </connections>
+                </slider>
+                <button imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="374">
+                    <rect key="frame" x="84" y="238" width="32" height="32"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="bevel" title="&gt;" bezelStyle="regularSquare" alignment="center" continuous="YES" borderStyle="border" inset="2" id="500">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="moveRight:" target="-2" id="417"/>
+                    </connections>
+                </button>
+                <button imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="373">
+                    <rect key="frame" x="52" y="208" width="32" height="32"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="bevel" title="v" bezelStyle="regularSquare" alignment="center" continuous="YES" borderStyle="border" inset="2" id="499">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="moveUp:" target="-2" id="415"/>
+                    </connections>
+                </button>
+                <button imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="372">
+                    <rect key="frame" x="20" y="238" width="32" height="32"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="bevel" title="&lt;" bezelStyle="regularSquare" alignment="center" continuous="YES" borderStyle="border" inset="2" id="498">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="moveLeft:" target="-2" id="416"/>
+                    </connections>
+                </button>
+                <button imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="371">
+                    <rect key="frame" x="52" y="268" width="32" height="32"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="bevel" title="^" bezelStyle="regularSquare" alignment="center" continuous="YES" borderStyle="border" inset="2" id="497">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="moveDown:" target="-2" id="414"/>
+                    </connections>
+                </button>
+                <box verticalHuggingPriority="750" fixedFrame="YES" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="369">
+                    <rect key="frame" x="11" y="319" width="183" height="5"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                </box>
+                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" preferredMaxLayoutWidth="106" translatesAutoresizingMaskIntoConstraints="NO" id="368">
+                    <rect key="frame" x="11" y="324" width="110" height="13"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" id="496">
+                        <font key="font" metaFont="label"/>
+                        <string key="title">Positioning Controls
+</string>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <button imageHugsTitle="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="367">
+                    <rect key="frame" x="30" y="153" width="138" height="28"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="push" title="Center entire path" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" inset="2" id="495">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="centerOnPath:" target="-2" id="420"/>
+                    </connections>
+                </button>
+                <progressIndicator hidden="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="365">
+                    <rect key="frame" x="397" y="-229" width="16" height="16"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                </progressIndicator>
+                <button tag="2001" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="364">
+                    <rect key="frame" x="8" y="400" width="134" height="18"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="check" title="Show Lap Markers" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="2001" inset="2" id="494">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setShowLaps:" target="-2" id="410"/>
+                    </connections>
+                </button>
+                <button tag="2002" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="363">
+                    <rect key="frame" x="8" y="420" width="107" height="18"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="check" title="Show Path" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="2002" inset="2" id="493">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setShowPath:" target="-2" id="411"/>
+                    </connections>
+                </button>
+                <button tag="2002" imageHugsTitle="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="511">
+                    <rect key="frame" x="8" y="380" width="140" height="18"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="check" title="Show Interval Markers" bezelStyle="regularSquare" imagePosition="leading" alignment="left" controlSize="small" tag="2002" inset="2" id="512">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="setShowIntervalMarkers:" target="-2" id="524"/>
+                    </connections>
+                </button>
+                <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="514">
+                    <rect key="frame" x="30" y="361" width="49" height="14"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Interval:" id="515">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="516">
+                    <rect key="frame" x="128" y="361" width="22" height="14"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="km" id="517">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="518">
+                    <rect key="frame" x="79" y="357" width="27" height="22"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="519">
+                        <numberFormatter key="formatter" formatterBehavior="custom10_4" positiveFormat="#0" numberStyle="decimal" usesGroupingSeparator="NO" formatWidth="-1" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="2" id="520">
+                            <real key="minimum" value="1"/>
+                            <real key="maximum" value="25"/>
+                        </numberFormatter>
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                    <connections>
+                        <action selector="setIntervalIncrement:" target="-2" id="525"/>
+                    </connections>
+                </textField>
+                <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="521">
+                    <rect key="frame" x="105" y="354" width="19" height="27"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <stepperCell key="cell" continuous="YES" alignment="left" minValue="1" maxValue="25" doubleValue="1" id="522"/>
+                    <connections>
+                        <action selector="setIntervalIncrement:" target="-2" id="526"/>
+                    </connections>
+                </stepper>
+            </subviews>
+        </customView>
+        <view id="370">
+            <rect key="frame" x="0.0" y="0.0" width="125" height="1"/>
+            <autoresizingMask key="autoresizingMask"/>
+        </view>
+        <view id="380">
+            <rect key="frame" x="0.0" y="0.0" width="125" height="1"/>
+            <autoresizingMask key="autoresizingMask"/>
+        </view>
+    </objects>
+</document>

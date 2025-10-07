@@ -10,7 +10,7 @@
 
 @class Track;
 @class TrackBrowserDocument;
-@class ADView;
+@class ActivityDetailView;
 
 @interface EMCTableView : NSTableView
 {
@@ -29,7 +29,7 @@
    IBOutlet NSSlider*         opacitySlider;
    NSMutableArray*            markers;
    Track*                     track;
-   ADView*                    adView;
+   ActivityDetailView*                    adView;
    float                      currentDistance;
    float                      panelOpacity;
    BOOL                       isValid;
@@ -44,7 +44,7 @@
 -(IBAction) setPanelOpacity:(id)sender;
 
 - (id) initWithTrack:(Track*)track
-              adView:(ADView*)adView;
+              adView:(ActivityDetailView*)adView;
 - (void) reset;
 - (void) resetMarkers;
 -(NSMutableArray*) markers;

@@ -11,16 +11,18 @@
 #import "MiniProfileView.h"
 #import "Selection.h"
 #import "Utils.h"
-#import "ADWindowController.h"
+#import "ActivityWindowController.h"
 #import "AnimTimer.h"
 #import "Track.h"
-
+#import "TransparentMapView.h"
 
 @class track, lap;
 
 static void *kSelectionCtx = &kSelectionCtx;
 
 @interface ProfileController()
+@property(nonatomic, assign) BOOL isExpanded;
+@property(nonatomic, retain) ActivityWindowController* expandedActivityWindow;
 - (void)_didSingleClick:(NSClickGestureRecognizer *)g;
 - (void)_didDoubleClick:(NSClickGestureRecognizer *)g;
 - (void) showActivityDetail;
@@ -32,6 +34,7 @@ static void *kSelectionCtx = &kSelectionCtx;
 
 - (void)awakeFromNib
 {
+    _isExpanded = NO;
     [super awakeFromNib];
     // Wire up plot view, axes, data sources here.
 }
@@ -39,6 +42,10 @@ static void *kSelectionCtx = &kSelectionCtx;
 
 - (void)dealloc
 {
+    if (self.expandedActivityWindow) {
+         self.expandedActivityWindow.customDelegate = nil;
+    }
+    [_expandedActivityWindow release];
     [_selection release];
     [super dealloc];
 }
@@ -66,6 +73,9 @@ static void *kSelectionCtx = &kSelectionCtx;
                                                 object:nil];
     
     [[AnimTimer defaultInstance] registerForTimerUpdates:self];
+    
+    [self.profileView setTransparentView:_transparentView];
+    self.expandButton.alphaValue = .6;
 }
 
 
@@ -93,21 +103,6 @@ static void *kSelectionCtx = &kSelectionCtx;
 }
 
 
-- (void) showActivityDetail
-{
-    if (!_document)
-        return;
-    
-    Track* track = _selection.selectedTrack;
-    if (track) {
-        Lap* lap = _selection.selectedLap;
-        ADWindowController* ad = [[[ADWindowController alloc] initWithDocument:_document] autorelease];
-        [_document addWindowController:ad];
-        [ad showWindow:self];
-        [ad setTrack:track];
-        [ad setLap:lap];
-    }
-}
 
 
 #pragma mark - Selection wiring
@@ -232,5 +227,40 @@ static void *kSelectionCtx = &kSelectionCtx;
 }
 
 
+- (IBAction)expand:(id)sender
+{
+    [self showActivityDetail];
+}
+
+
+- (void) showActivityDetail
+{
+    if (!_document)
+        return;
+    
+    Track* track = _selection.selectedTrack;
+    if (track && !_isExpanded) {
+        Lap* lap = _selection.selectedLap;
+        if (!_expandedActivityWindow) {
+            ActivityWindowController* ad = [[[ActivityWindowController alloc] initWithDocument:_document] autorelease];
+            self.expandedActivityWindow = ad;
+            self.expandedActivityWindow.customDelegate = self;
+        }
+        [_expandedActivityWindow showWindow:self];
+        [_expandedActivityWindow setTrack:track];
+        [_expandedActivityWindow setLap:lap];
+        
+        _isExpanded = YES;
+        _expandButton.enabled = NO;
+    }
+}
+
+
+#pragma mark - Window delegate
+- (void)activityWindowControllerDidClose:(ActivityWindowController *)controller;
+{
+    _isExpanded = NO;
+    _expandButton.enabled = YES;
+}
 
 @end

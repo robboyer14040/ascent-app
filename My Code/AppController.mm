@@ -6,7 +6,7 @@
 #import "AppController.h"
 #import "ActivityWindowController.h"
 #import "ALWindowController.h"
-#import "DetailedMapWindowController.h"
+#import "MapDetailWindowController.h"
 #import "SGWindowController.h"
 #import "EquipmentListWindowController.h"
 #import "TrackBrowserDocument.h"

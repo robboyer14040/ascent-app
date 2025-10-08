@@ -3567,9 +3567,9 @@ enum
 - (float)stat:(tStatType)stat index:(int)idx atActiveTimeDelta:(NSTimeInterval*)atTime 
 {
 	float val;
-	if ([_overrideData isOverridden:stat])
+	if ([_overrideData isOverridden:(int)stat])
 	{
-		val = [_overrideData value:stat index:idx];
+		val = [_overrideData value:(int)stat index:idx];
 	}
 	else
 	{
@@ -3587,9 +3587,9 @@ enum
 -(float)statOrOverride:(tStatType)stype index:(int)idx atActiveTimeDelta:(NSTimeInterval*)atTime
 {
 	float val;
-	if ([_overrideData isOverridden:stype])
+	if ([_overrideData isOverridden:(int)stype])
 	{
-		val = [_overrideData value:stype 
+		val = [_overrideData value:(int)stype
 							index:idx];
 		///if (atTime) *atTime = nil;
 	}
@@ -4655,7 +4655,7 @@ static tAttribute sAttributesInCSVHeader[] =
 
 - (void) setOverrideValue:(tStatType)stat index:(int)idx value:(float)v
 {
-	[_overrideData setValue:stat
+	[_overrideData setValue:(int)stat
 					 index:idx
 					 value:v];
 }
@@ -4663,53 +4663,21 @@ static tAttribute sAttributesInCSVHeader[] =
 
 - (float) overrideValue:(tStatType)stat index:(int)idx
 {
-    return [_overrideData value:stat index:idx];
+    return [_overrideData value:(int)stat index:idx];
 }
 
 
 - (void) clearOverride:(tStatType)stat
 {
-	return [_overrideData clearOverride:stat];
+	return [_overrideData clearOverride:(int)stat];
 }
 
 
 - (BOOL) isOverridden:(tStatType)stat
 {
-	return [_overrideData isOverridden:stat];
+	return [_overrideData isOverridden:(int)stat];
 }
 
-//- (OverrideData*) overrideData
-//{
-//    return overrideData;
-//}
-//
-
-//--------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------
-//----- Animation control --------------------------------
-
-//- (void) setAnimTime:(NSTimeInterval)at
-//{
-//   animTime = at;
-//}
-//
-//
-//- (NSTimeInterval) animTime
-//{
-//   return animTime;
-//}
-//
-//- (void) setAnimIndex:(int)idx
-//{
-//   animIndex = idx;
-//}
-//
-//
-//- (int) animIndex
-//{
-//   return animIndex;
-//}
 
 -(void) loadPoints:(NSURL*) docURL
 {

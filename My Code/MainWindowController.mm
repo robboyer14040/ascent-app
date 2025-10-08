@@ -8,7 +8,7 @@
 #import "LeftSplitController.h"
 #import "Selection.h"
 #import "TrackBrowserDocument.h"
-#import "DetailedMapWindowController.h"
+#import "MapDetailWindowController.h"
 #import "Utils.h"
 #import "NSView+Spin.h"
 #import "AnimTimer.h"
@@ -36,7 +36,7 @@ static void *kSelectionCtx = &kSelectionCtx;
 {
     id _keyMonitor;
 }
-@property(nonatomic, retain) DetailedMapWindowController* detailedMapWC;
+@property(nonatomic, retain) MapDetailWindowController* detailedMapWC;
 @property(nonatomic, assign) BOOL syncing;
 @property(nonatomic, assign) BOOL observingSelection;
 @end

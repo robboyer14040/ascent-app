@@ -95,7 +95,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 -(id) initWithTracks:(NSArray*)ta mainWC:(NSWindowController*)wc
 {
     
-    self = [super initWithWindowNibName:@"CompareWindow"];
+    self = [super initWithWindowNibName:@"CompareWindowController"];
 	if (self)
 	{
 		[self doInit:ta
@@ -670,7 +670,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	NSRect rsfr = [mainSplitView frame];
 	zfr.origin.x += rsfr.origin.x;
 	zfr.origin.y = rsfr.origin.y;		// zoom map is always starting at y=0 within content rect
-	zfr.origin = [[self window] convertBaseToScreen:zfr.origin];
+	zfr.origin = [[self window] convertPointToScreen:zfr.origin];
 	//zfr = NSInsetRect(zfr, 10.0, 10.0);
 	NSRect vfr = zfr;
 	vfr.origin = NSZeroPoint;
@@ -685,7 +685,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	fr.origin.x += rsfr.origin.x;
 	fr.origin.y += rsfr.origin.y;
 	fr.origin.y += zfr.size.height + [leftSplitView dividerThickness];
-	fr.origin = [[self window] convertBaseToScreen:fr.origin];
+	fr.origin = [[self window] convertPointToScreen:fr.origin];
 	//fr = NSInsetRect(fr, 10.0, 10.0);
 	vfr = fr;
 	vfr.origin = NSZeroPoint;
@@ -724,7 +724,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 		twfr.size.height += 10.0;
 		twfr.origin.x += sfr.origin.x + cfr.origin.x;
 		twfr.origin.y += sfr.origin.y;
-		twfr.origin = [[self window] convertBaseToScreen:twfr.origin];
+		twfr.origin = [[self window] convertPointToScreen:twfr.origin];
 		NSRect tvfr = twfr;
 		tvfr.origin = NSZeroPoint;
 		for (CompareProfileViewController* pvc in profileControllerArray)
@@ -1093,16 +1093,16 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 - (IBAction)play:(id)sender
 {
 	AnimTimer* at = [AnimTimer defaultInstance];
+    [at requestTransportStateChange:kStop];
 	if ([sender intValue] == NSControlStateValueOn)
 	{
-		[at stop:self];
-		[at play:self reverse:NO];
+        [at requestTransportStateChange:kPlay];
 		[profilesTransparentView setHidePosition:YES];
 		///[reverseButton setIntValue:0];
 	}
 	else
 	{
-		[at stop:self];
+        [at requestTransportStateChange:kStop];
 	}
 }
 
@@ -1110,32 +1110,27 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 - (IBAction)reverse:(id)sender
 {
 	AnimTimer* at = [AnimTimer defaultInstance];
+    [at requestTransportStateChange:kStop];
 	if ([sender intValue] == NSControlStateValueOn)
 	{
-		[at stop:self];
-		[at play:self reverse:YES];
-		///[playButton setIntValue:0];
-	}
-	else
-	{
-		[at stop:self];
+        [at requestTransportStateChange:kReverse];
 	}
 }
+
 
 - (IBAction)rtz:(id)sender
 {
 	fastestPVC = nil;
-	[[AnimTimer defaultInstance] rewind];
-	///[reverseButton setIntValue:0];
+    AnimTimer* at = [AnimTimer defaultInstance];
+    [at requestTransportStateChange:kGoToBeginning];
 }
 
 
 - (IBAction)rte:(id)sender
 {
 	fastestPVC = nil;
-	[[AnimTimer defaultInstance] fastForward];
-	///[playButton setIntValue:0];
-	///[reverseButton setIntValue:0];
+    AnimTimer* at = [AnimTimer defaultInstance];
+    [at requestTransportStateChange:kGoToEnd];
 }
 
 
@@ -1148,7 +1143,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	{
 		[at updateTimerDuration];
 	}
-	[at togglePlay:nil];
+	[at togglePlay];
 	///[playButton setIntValue:0];
 	///[reverseButton setIntValue:0];
 }
@@ -1184,8 +1179,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	[at locateToPercentage:[sender floatValue]];
 	if ([at animating] && [at playingInReverse])
 	{
-		[at play:self
-		 reverse:NO];
+        [at requestTransportStateChange:kPlay];
 	}
 }
 

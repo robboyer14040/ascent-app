@@ -6,7 +6,7 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
-        <customObject id="-2" userLabel="File's Owner" customClass="DetailedMapWindowController">
+        <customObject id="-2" userLabel="File's Owner" customClass="MapDetailWindowController">
             <connections>
                 <outlet property="_transparentView" destination="dbc-Sd-Jnm" id="lML-vC-Fsu"/>
                 <outlet property="activitySelectorPopup" destination="289" id="315"/>

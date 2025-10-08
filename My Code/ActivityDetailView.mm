@@ -511,6 +511,7 @@ tPlotInfo plotInfoArray[] =
 	[super dealloc];
 }
 
+
 -(void) _updatePlotAttributes
 {
     if (!plotAttributesArray) {
@@ -1780,7 +1781,7 @@ BOOL mightBeAMax(NSArray* pts, int num, int idx, int thresh, tAccessor ysel)
 			}
 			NSSize size = [s sizeWithAttributes:tickFontAttrs];
 			float xoff = (40 - size.width)/2.0;
-			float yoff = (15 - size.height)/2.0;
+			float yoff = (15 - size.height)/2.0 - 1;
 			[s drawAtPoint:NSMakePoint((int)(p.x + xoff), (int)(p.y + 11 + yoff + 1.0)) withAttributes:tickFontAttrs];
 		}
 	}

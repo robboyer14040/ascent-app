@@ -1,5 +1,5 @@
 //
-//  DetailedMapWindowController.h
+//  MapDetailWindowController.h
 //  TLP
 //
 //  Created by Rob Boyer on 10/14/06.
@@ -17,15 +17,15 @@
 @class TransparentMapView;
 @class TransparentMapWindow;
 @class DataHUDWindowController;
-@class DetailedMapWindowController;
+@class MapDetailWindowController;
 
 
-@protocol DetailedMapWindowControllerDelegate <NSObject>
+@protocol MapDetailWindowControllerDelegate <NSObject>
 @required
-- (void)detailedMapWindowControllerDidClose:(DetailedMapWindowController *)controller;
+- (void)detailedMapWindowControllerDidClose:(MapDetailWindowController *)controller;
 @end
 
-@interface DetailedMapWindowController : NSWindowController  <AscentAnimationTarget, NSWindowDelegate, NSDrawerDelegate>
+@interface MapDetailWindowController : NSWindowController  <AscentAnimationTarget, NSWindowDelegate, NSDrawerDelegate>
 {
     IBOutlet TransparentMapView     *_transparentView;
 	IBOutlet NSDrawer*				settingsDrawer;
@@ -53,17 +53,10 @@
 	IBOutlet TransparentMapView*    transparentView;
 	IBOutlet NSPopUpButton*			colorPathPopup;
 	IBOutlet NSPopUpButton*			selectedLapPopup;
-
-	DataHUDWindowController*	dataHUDWC;
-	NSTimer*					fadeTimer;
-	Track*						track;
-	int							dataType;
-	int							numPos;
-	NSRect						windowFrameBeforeOpeningDrawer;
 }
 @property(retain, nonatomic) id mainWC;
 @property(retain, nonatomic) id tbDocument;
-@property (nonatomic, assign) id<DetailedMapWindowControllerDelegate> customDelegate;
+@property (nonatomic, assign) id<MapDetailWindowControllerDelegate> customDelegate;
 @property(nonatomic, assign) BOOL hasHUD;
 @property(nonatomic, retain) TransparentMapView *transparentView;
 

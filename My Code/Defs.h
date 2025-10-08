@@ -708,3 +708,10 @@ extern NSString* ActivityDragType;
 // 310XT requires special handling
 #define PROD_ID_310XT   1018
 #define PROD_ID_FR60    988
+
+
+// A simple structure for location data
+typedef struct {
+    float latitude;
+    float longitude;
+} tLocation;

@@ -14,7 +14,6 @@
 @class ProfilesTransparentView;
 @class CWTransparentView;
 @class CWTransparentMapView;
-@class CWTransparentWindow;
 @class CompareProfileViewController;
 @class CWSummaryPanelController;
 @class Track;
@@ -58,11 +57,9 @@ enum
 	NSMutableArray*						profileControllerArray;
 	NSArray*							trackArray;
 	NSArray*							dotColorsArray;
-	CWTransparentWindow*				mapTransparentWindow;
 	CWTransparentMapView*				mapTransparentView;
-	CWTransparentWindow*				zoomMapTransparentWindow;
 	CWTransparentMapView*				zoomMapTransparentView;
-	__unsafe_unretained id									mainWindowController;
+	__unsafe_unretained id		        mainWindowController;
 	BOOL								xAxisIsTime;
 	float								startingDistance;
 	float								origMaxDistance;

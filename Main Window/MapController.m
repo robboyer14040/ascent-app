@@ -11,7 +11,7 @@
 #import "TransparentMapView.h"
 #import "Selection.h"
 #import "Utils.h"
-#import "DetailedMapWindowController.h"
+#import "MapDetailWindowController.h"
 #import "AnimTimer.h"
 #import "Track.h"
 
@@ -20,10 +20,10 @@ static void *kSelectionCtx = &kSelectionCtx;
 
 @interface MapController ()
 {
-    DetailedMapWindowController      *_detailedMapWC;
+    MapDetailWindowController      *_detailedMapWC;
 }
 @property(nonatomic, assign) BOOL isExpanded;
-@property(nonatomic, retain) DetailedMapWindowController     *detailedMapWC;
+@property(nonatomic, retain) MapDetailWindowController     *detailedMapWC;
 - (void)_didDoubleClick:(NSClickGestureRecognizer *)g;
 - (void)_showMapDetail;
 @end
@@ -79,6 +79,10 @@ static void *kSelectionCtx = &kSelectionCtx;
                                              selector:@selector(_showMapDetail)
                                                  name:OpenMapDetailNotification
                                                object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(_prefsChange)
+                                                 name:PreferencesChanged
+                                               object:nil];
     [[AnimTimer defaultInstance] registerForTimerUpdates:self];
     [self.mapPathView setTransparentView:_transparentView];
     self.expandButton.alphaValue = .6;
@@ -98,6 +102,22 @@ static void *kSelectionCtx = &kSelectionCtx;
     [[AnimTimer defaultInstance] unregisterForTimerUpdates:self];
 }
 
+-(void)_prefsChange
+{
+    float v = [Utils floatFromDefaults:RCBDefaultMapTransparency];
+    [_mapPathView setMapOpacity:v];
+    v = [Utils floatFromDefaults:RCBDefaultPathTransparency];
+    [_mapPathView setPathOpacity:v];
+    int idx = [Utils intFromDefaults:RCBDefaultMapType];
+    [_mapPathView setDataType:[Utils mapIndexToType:idx]];
+    [_mapPathView setIntervalIncrement:[Utils floatFromDefaults:RCBDefaultIntervalMarkerIncrement]];
+    BOOL on = [Utils boolFromDefaults:RCBDefaultShowIntervalMarkers];
+    [_mapPathView setShowIntervalMarkers:on];
+    [_mapPathView setNeedsDisplay:YES];
+    [_mapPathView setScrollWheelSensitivity:[Utils floatFromDefaults:RCBDefaultScrollWheelSensitivty]];
+    [_transparentView prefsChanged];
+
+}
 
 
 - (void)_didDoubleClick:(NSClickGestureRecognizer *)g
@@ -257,7 +277,7 @@ static void *kSelectionCtx = &kSelectionCtx;
     if (!_detailedMapWC)
     {
         int curDataType = [[self mapPathView] dataType];
-        _detailedMapWC   = [[[DetailedMapWindowController alloc] initWithDocument:_document
+        _detailedMapWC   = [[[MapDetailWindowController alloc] initWithDocument:_document
                                                          initialDataType:curDataType
                                                                   mainWC:self.view.window.windowController] retain];
         self.detailedMapWC.customDelegate = self;
@@ -275,7 +295,7 @@ static void *kSelectionCtx = &kSelectionCtx;
 }
 
 #pragma mark - Window delegate
-- (void)detailedMapWindowControllerDidClose:(DetailedMapWindowController *)controller;
+- (void)detailedMapWindowControllerDidClose:(MapDetailWindowController *)controller;
 {
     _isExpanded = NO;
     _expandButton.enabled = YES;

@@ -11,7 +11,6 @@
 #import "StatDefs.h"
 #import "Defs.h"
 
-
 enum
 {
    kValidSpeedMax = 54,
@@ -325,4 +324,11 @@ struct tPeakIntervalData
 -(void)setHasExplicitDeadZones:(BOOL)has;
 -(void)setHasDeviceTime:(BOOL)has;
 -(void)loadPoints:(NSURL*)docURL;
+- (BOOL)findSegmentStart:(int*)startIdxPtr
+                     end:(int*)endIdxPtr
+        forStartLocation:(tLocation)startLocation
+                  length:(float)lengthKM
+               tolerance:(float)toleranceKM;
+
+
 @end

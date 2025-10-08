@@ -1,12 +1,12 @@
 //
-//  DetailedMapWindowController.mm
+//  MapDetailWindowController.mm
 //  TLP
 //
 //  Created by Rob Boyer on 10/14/06.
 //  Copyright 2006 Montebello Software. All rights reserved.
 //
 
-#import "DetailedMapWindowController.h"
+#import "MapDetailWindowController.h"
 #import "Track.h"
 #import "Lap.h"
 #import "TrackBrowserDocument.h"
@@ -35,17 +35,25 @@ enum
 
 
 
-@interface DetailedMapWindowController ()
+@interface MapDetailWindowController ()
 {
-    id<DetailedMapWindowControllerDelegate> __unsafe_unretained _customDelegate;
-    NSTimer*                _fadeTimer;
-    id                      _keyMonitor;
-    BOOL                    _hasHUD;
+    id<MapDetailWindowControllerDelegate> __unsafe_unretained _customDelegate;
+    NSTimer*                    _fadeTimer;
+    id                          _keyMonitor;
+    BOOL                        _hasHUD;
+    BOOL                        _registeredForAnimation;
+    DataHUDWindowController     *_dataHUDWC;
+    Track                       *_track;
+    int                         _dataType;
+    int                         _numPos;
+    NSRect                      _windowFrameBeforeOpeningDrawer;
 }
-@property(nonatomic, retain) NSTimer* fadeTimer;
+@property(nonatomic, retain) NSTimer                    *fadeTimer;
+@property(nonatomic, retain) DataHUDWindowController    *dataHUDWC;
+@property(nonatomic, retain) Track                      *track;
 
--(void) trackArrayChanged:(NSNotification *)notification;
--(void) rebuildActivitySelectorPopup;
+- (void)trackArrayChanged:(NSNotification *)notification;
+- (void)rebuildActivitySelectorPopup;
 - (void)startProgress:(NSNotification *)notification;
 - (void)endProgress:(NSNotification *)notification;
 - (void)mapPrefChange:(NSNotification *)notification;
@@ -59,29 +67,89 @@ enum
 
 //----- PUBLIC INTERFACE --------------------------------------------------------------------------------
 
-@implementation DetailedMapWindowController
+@implementation MapDetailWindowController
 @synthesize hasHUD = _hasHUD;
 @synthesize mainWC;
 @synthesize customDelegate = _customDelegate;
 @synthesize fadeTimer = _fadeTimer;
 @synthesize transparentView = _transparentView;
+@synthesize dataHUDWC = _dataHUDWC;
+@synthesize track = _track;
 
 
-- (void)scaleChanged:(NSNotification *)notification
+-(void) awakeFromNib
 {
-   [self setDataType:[mapView dataType]];
+    [settingsDrawer setDelegate:self];
+    [self setShouldCascadeWindows:NO];
+    [[self window] setFrameAutosaveName:@"MapDetailWindowFrame"];
+    if (![[self window] setFrameUsingName:@"MapDetailWindowFrame"])
+    {
+        [[self window] center];
+    }
+    [mapView setIsDetailedMap:YES];
+    [mapView setCurrentTrack:_track];
+    ///[mapView setSelectedLap:[_tbDocument selectedLap]];
+    [mapView setMoveMapDuringAnimation:YES];
+
+
+    [self setDataType:_dataType];
+    [Utils buildDataTypePopup:mapDataTypePopup isPullDown:NO];
+    int val = [Utils dataTypeToIndex:_dataType];
+    [mapDataTypePopup selectItemAtIndex:val];
+    int cpz = [Utils intFromDefaults:RCBDefaultColorPathUsingZone];
+    [colorPathPopup selectItemWithTag:cpz];
+    [self buildLapPopUp];
+    [showHudButton setIntValue:[_transparentView showHud]];
+    
+
+    float opac = [Utils floatFromDefaults:RCBDefaultMDMapTransparency];
+    [mapView setMapOpacity:opac];
+    opac = [Utils floatFromDefaults:RCBDefaultMDPathTransparency];
+    [mapView setPathOpacity:opac];
+
+
+    [[self window] makeFirstResponder:mapView];
+    [mapView setTransparentView:_transparentView];
+    _transparentView.hasHUD = _hasHUD;
+    [self positionEverything];
+    ///[transparentMapWindow setHasShadow:NO];
+    //[transparentView setShowHud:YES];
+
+    SEL sel = @selector(buildContextualMenu:);
+    NSMethodSignature* sig = [MapDetailWindowController instanceMethodSignatureForSelector:sel];
+    NSInvocation* inv = [NSInvocation invocationWithMethodSignature:sig];
+    [inv setSelector:sel];
+    [inv setTarget:self];
+    [mapView setContextualMenuInvocation:inv];
+    
+    self.dataHUDWC = [[[DataHUDWindowController alloc] initWithSize:NSMakeSize(0.0,0.0)] autorelease];
+    sel = @selector(updateDataHUD:x:y:altitude:);
+    sig = [MapDetailWindowController instanceMethodSignatureForSelector:sel];
+    inv = [NSInvocation invocationWithMethodSignature:sig];
+    [inv setSelector:sel];
+    [inv setTarget:self];
+    [mapView setDataHudUpdateInvocation:inv];
+
+    float v = [Utils floatFromDefaults:RCBDefaultMDHUDTransparency];
+    [hudOpacitySlider  setFloatValue:v];
+    [[_dataHUDWC window] setAlphaValue:v];
+
+    [self rebuildActivitySelectorPopup];
 }
 
 
 - (id)initWithDocument:(TrackBrowserDocument*)doc initialDataType:(int)dt  mainWC:(NSWindowController*)wc
 {
-    self = [super initWithWindowNibName:@"DetailedMapWindowController"];
+    _registeredForAnimation = NO;
+    _hasHUD = NO;
+    self = [super initWithWindowNibName:@"MapDetailWindowController"];
     self.mainWC = wc;
-    track = nil;
+    _track = nil;
     self.tbDocument = doc;
-    dataType = dt;
+    self.track = nil;
+    self.dataHUDWC = nil;
+    _dataType = dt;
     activitySelectorPopup = nil;
-    [[AnimTimer defaultInstance] registerForTimerUpdates:self];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(scaleChanged:)
                                                  name:@"MapScaleChanged"
@@ -122,6 +190,11 @@ enum
 
 - (void)dealloc
 {
+    if (_registeredForAnimation) {
+        [[AnimTimer defaultInstance] unregisterForTimerUpdates:self];
+        _registeredForAnimation = NO;
+    }
+
     if (_keyMonitor) {
         [NSEvent removeMonitor:_keyMonitor];
         _keyMonitor = nil;
@@ -132,16 +205,11 @@ enum
 	[mapView killAnimThread];
 	self.mainWC = nil;
     self.tbDocument = nil;
-#if DEBUG_LEAKS
-	NSLog(@"dmc exiting, mapView retain count:%d %d", [mapView retainCount], [zoomSlider retainCount]);
-#endif
+    self.track = nil;
+    self.dataHUDWC = nil;
     [super dealloc];
 }
 		   
--(void)setHasHUD:(BOOL)hasHUD
-{
-    _hasHUD = hasHUD;
-}
 
 - (void)fade:(NSTimer *)theTimer
 {
@@ -150,8 +218,8 @@ enum
       [[self window]  setAlphaValue:[[self window]  alphaValue] - 0.2];
    } else {
       // Otherwise, if window is completely transparent, destroy the timer and close the window.
-      [fadeTimer invalidate];
-      fadeTimer = nil;
+      [_fadeTimer invalidate];
+      _fadeTimer = nil;
        if ([self.customDelegate respondsToSelector:@selector(detailedMapWindowControllerDidClose:)]) {
            [self.customDelegate detailedMapWindowControllerDidClose:self];
        }
@@ -167,7 +235,7 @@ enum
 - (BOOL)windowShouldClose:(id)sender
 {
    // Set up our timer to periodically call the fade: method.
-   fadeTimer = [NSTimer scheduledTimerWithTimeInterval:0.05 target:self selector:@selector(fade:) userInfo:nil repeats:YES];
+   _fadeTimer = [NSTimer scheduledTimerWithTimeInterval:0.05 target:self selector:@selector(fade:) userInfo:nil repeats:YES];
    
    // Don't close just yet.
    return NO;
@@ -177,11 +245,16 @@ enum
 - (void)windowWillClose:(NSNotification *)aNotification
 {
     [self.tbDocument removeWindowController:self];
-	[[AnimTimer defaultInstance] unregisterForTimerUpdates:self];
-//	if (mainWC && [mainWC respondsToSelector:@selector(dismissDetailedMapWindow:)])
-//	{
-//		[(id)mainWC dismissDetailedMapWindow:self];
-//	}
+    if (_registeredForAnimation) {
+        [[AnimTimer defaultInstance] unregisterForTimerUpdates:self];
+        _registeredForAnimation = NO;
+    }
+}
+
+
+- (void)scaleChanged:(NSNotification *)notification
+{
+   [self setDataType:[mapView dataType]];
 }
 
 
@@ -193,7 +266,7 @@ enum
     [transparentView setBounds:fr];
     [transparentView setNeedsDisplayInRect:fr];
     [transparentView setHidden:NO];
-    [mapView setCurrentTrack:track];    // recalcs geometry, full update
+    [mapView setCurrentTrack:_track];    // recalcs geometry, full update
     [mapView setNeedsDisplay:YES];
 }
 
@@ -248,9 +321,8 @@ NSEvent* sMouseEv = nil;
 		case kCM_RefreshMap:
 			[mapView refreshMaps];
 			break;
-   }
+    }
 }
-
 
 
 
@@ -352,16 +424,16 @@ NSEvent* sMouseEv = nil;
 -(void) buildLapPopUp
 {
 	[selectedLapPopup removeAllItems];
-	if (track != nil)
+	if (_track != nil)
 	{
-		NSArray* laps = [track laps];
+		NSArray* laps = [_track laps];
         NSUInteger nl = [laps count];
 		[selectedLapPopup addItemWithTitle:@"All laps"];
 		if (nl > 0) 
 		{
 			Lap* lap = [laps objectAtIndex:0];
-			float lapEndTime = [lap startingWallClockTimeDelta] + [track durationOfLap:lap];
-			if (lapEndTime < [track duration])
+			float lapEndTime = [lap startingWallClockTimeDelta] + [_track durationOfLap:lap];
+			if (lapEndTime < [_track duration])
 			{
 				for (int i=0; i<nl; i++)
 				{
@@ -388,73 +460,6 @@ NSEvent* sMouseEv = nil;
 }
 
 
--(void) awakeFromNib
-{
-	[settingsDrawer setDelegate:self];
-   //NSLog(@"detailed map window awakening..mapView retain count: %d\n", [mapView retainCount]);
-	[self setShouldCascadeWindows:NO];
-	[[self window] setFrameAutosaveName:@"DetailedMapWindowFrame"];
-	if (![[self window] setFrameUsingName:@"DetailedMapWindowFrame"])
-	{
-		[[self window] center];
-	}
-	[mapView setIsDetailedMap:YES];
-	[mapView setCurrentTrack:track];
-	///[mapView setSelectedLap:[_tbDocument selectedLap]];
-	[mapView setMoveMapDuringAnimation:YES];
-
-
-	[self setDataType:dataType];
-	[Utils buildDataTypePopup:mapDataTypePopup isPullDown:NO];
-	int val = [Utils dataTypeToIndex:dataType];
-	[mapDataTypePopup selectItemAtIndex:val];
-	int cpz = [Utils intFromDefaults:RCBDefaultColorPathUsingZone];
-	[colorPathPopup selectItemWithTag:cpz];
-	[self buildLapPopUp];
-	[showHudButton setIntValue:[_transparentView showHud]];
-	
-
-	float opac = [Utils floatFromDefaults:RCBDefaultMDMapTransparency];
-	[mapView setMapOpacity:opac];
-	opac = [Utils floatFromDefaults:RCBDefaultMDPathTransparency];
-	[mapView setPathOpacity:opac];
-
-
-	[[self window] makeFirstResponder:mapView];
-    [mapView setTransparentView:_transparentView];
-    _transparentView.hasHUD = _hasHUD;
-    
-	///[mapView setTransparentView:transparentView];
-	///[transparentMapWindow setContentView:transparentView];
-
-	[self positionEverything];
-	///[[self window]  addChildWindow:(NSWindow*)transparentMapWindow ordered:NSWindowAbove];
-	///[transparentMapWindow setHasShadow:NO];
-	//[transparentView setShowHud:YES];
-
-
-	SEL sel = @selector(buildContextualMenu:);
-	NSMethodSignature* sig = [DetailedMapWindowController instanceMethodSignatureForSelector:sel];
-	NSInvocation* inv = [NSInvocation invocationWithMethodSignature:sig];
-	[inv setSelector:sel];
-	[inv setTarget:self];
-	[mapView setContextualMenuInvocation:inv];
-	
-	dataHUDWC = [[DataHUDWindowController alloc] initWithSize:NSMakeSize(0.0,0.0)];
-	sel = @selector(updateDataHUD:x:y:altitude:);
-	sig = [DetailedMapWindowController instanceMethodSignatureForSelector:sel];
-	inv = [NSInvocation invocationWithMethodSignature:sig];
-	[inv setSelector:sel];
-	[inv setTarget:self];
-	[mapView setDataHudUpdateInvocation:inv];
-
-	float v = [Utils floatFromDefaults:RCBDefaultMDHUDTransparency];
-	[hudOpacitySlider  setFloatValue:v];
-	[[dataHUDWC window] setAlphaValue:v];
-
-	[self rebuildActivitySelectorPopup];
-}
-
 
 // update the Data HUD during animation or as the user drags the HUD over the view
 -(void) updateDataHUD:(TrackPoint*)tpt x:(CGFloat)x y:(CGFloat)y altitude:(CGFloat)alt
@@ -462,16 +467,16 @@ NSEvent* sMouseEv = nil;
 	NSPoint p = NSMakePoint(x,y);
 	NSPoint cp = [mapView convertPoint:p toView:nil];      // to window coords
 	cp.y += 15.0;
-	[dataHUDWC updateDataHUD:[[mapView window] convertPointToScreen:cp]
-				  trackPoint:tpt
-					altitude:alt];
+	[_dataHUDWC updateDataHUD:[[mapView window] convertPointToScreen:cp]
+                   trackPoint:tpt
+                     altitude:alt];
 }
 
 
 - (BOOL)drawerShouldOpen:(NSDrawer *)sender
 {
-	windowFrameBeforeOpeningDrawer = [[self window] frame];
-	NSRect fr = windowFrameBeforeOpeningDrawer;
+	_windowFrameBeforeOpeningDrawer = [[self window] frame];
+	NSRect fr = _windowFrameBeforeOpeningDrawer;
 	NSRect screenFr = [[[self window] screen] visibleFrame];
 	NSSize drawerSize = [settingsDrawer contentSize];
 	drawerSize.width += 10.0;
@@ -489,9 +494,9 @@ NSEvent* sMouseEv = nil;
 
 - (void)drawerDidClose:(NSNotification *)notification
 {
-	if (!NSEqualRects(windowFrameBeforeOpeningDrawer, [[self window] frame]))
+	if (!NSEqualRects(_windowFrameBeforeOpeningDrawer, [[self window] frame]))
 	{
-		[[self window] setFrame:windowFrameBeforeOpeningDrawer
+		[[self window] setFrame:_windowFrameBeforeOpeningDrawer
 						display:YES];
 	}
 }
@@ -509,19 +514,21 @@ NSEvent* sMouseEv = nil;
 	BOOL show = [Utils boolFromDefaults:RCBDefaultShowMDHUD];
 	if (show)
 	{
-		[[self window] addChildWindow:(NSWindow*)[dataHUDWC window] ordered:NSWindowAbove];
+		[[self window] addChildWindow:(NSWindow*)[_dataHUDWC window] ordered:NSWindowAbove];
 	}
 	else
 	{
-		[[dataHUDWC window] orderOut:self];
+		[[_dataHUDWC window] orderOut:self];
 	}
 	[showHudButton setState:show];
+    
+
     // spacebar handling
-    __block __weak DetailedMapWindowController *weakSelf = self; // weak to avoid retain-cycle with block
+    __block __weak MapDetailWindowController *weakSelf = self; // weak to avoid retain-cycle with block
     _keyMonitor = [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskKeyDown
                                                        handler:^NSEvent * (NSEvent *e)
     {
-        DetailedMapWindowController *self = weakSelf;
+        MapDetailWindowController *self = weakSelf;
         if (!self) return e;
 
         if (e.window == self.window) {
@@ -539,6 +546,14 @@ NSEvent* sMouseEv = nil;
     }];
 }
 
+
+-(void)windowDidBecomeKey:(NSNotification *)notification
+{
+    if (!_registeredForAnimation) {
+        [[AnimTimer defaultInstance] registerForTimerUpdates:self];
+        _registeredForAnimation = YES;
+    }
+}
 
 
 - (void)windowDidMove:(NSNotification *)aNotification
@@ -563,31 +578,26 @@ NSEvent* sMouseEv = nil;
 }
 
 
-- (Track*)track
-{
-   return track;
-}
-
-
 - (void)setTrack:(Track*)t
 {
-	if (t != track)
+	if (t != _track)
 	{
-		track = t;
-		[mapView setCurrentTrack:track];
-		if ((activitySelectorPopup != nil) && (track != nil))
+        _track = [t retain];
+		[mapView setCurrentTrack:_track];
+		if ((activitySelectorPopup != nil) && (_track != nil))
 		{
-            [activitySelectorPopup setTitle:[Utils buildTrackDisplayedName:track prePend:@""]]; 
-            [[self window] setTitle:[Utils buildTrackDisplayedName:track prePend:@"Map Detail - "]];
+            [activitySelectorPopup setTitle:[Utils buildTrackDisplayedName:_track prePend:@""]];
+            [[self window] setTitle:[Utils buildTrackDisplayedName:_track prePend:@"Map Detail - "]];
 		}
 		[self buildLapPopUp];
 		[self selectLap:nil];
 	}
 }
 
+
 - (void)setInitialDataType:(int)dt
 {
-   dataType = dt;
+   _dataType = dt;
 }
 
 
@@ -603,7 +613,7 @@ NSEvent* sMouseEv = nil;
 
 - (void)setDataType:(int)dt
 {
-   dataType = dt;
+   _dataType = dt;
    if (mapView != nil)
    {
       switch (dt)
@@ -695,12 +705,12 @@ NSEvent* sMouseEv = nil;
 	BOOL on = [sender state] == NSControlStateValueOn;
 	if (on)
 	{
-		[[self window] addChildWindow:(NSWindow*)[dataHUDWC window] ordered:NSWindowAbove];
+		[[self window] addChildWindow:(NSWindow*)[_dataHUDWC window] ordered:NSWindowAbove];
 	}
 	else
 	{
-		[[self window] removeChildWindow:[dataHUDWC window] ];
-		[[dataHUDWC window]  orderOut:self];
+		[[self window] removeChildWindow:[_dataHUDWC window] ];
+		[[_dataHUDWC window]  orderOut:self];
 	}
 	[Utils setBoolDefault:on 
 				   forKey:RCBDefaultShowMDHUD];
@@ -711,8 +721,8 @@ NSEvent* sMouseEv = nil;
 {
    //[transparentView setHudOpacity:[sender floatValue]];
 	float v = [sender floatValue];
-	[[dataHUDWC window] setAlphaValue:v];
-	[[dataHUDWC window] display];
+	[[_dataHUDWC window] setAlphaValue:v];
+	[[_dataHUDWC window] display];
 	[Utils setFloatDefault:v forKey:RCBDefaultMDHUDTransparency];
 }
 
@@ -722,9 +732,9 @@ NSEvent* sMouseEv = nil;
 {
    Lap* lap = nil;
    int idx = (int)[sender indexOfSelectedItem];
-   if ((idx > 0) && (track != nil))
+   if ((idx > 0) && (_track != nil))
    {
-      NSArray* laps = [track laps];
+      NSArray* laps = [_track laps];
        NSUInteger nl = [laps count];
       if (IS_BETWEEN(0, (idx-1), (nl-1)))
       {
@@ -813,39 +823,16 @@ NSEvent* sMouseEv = nil;
 }
 
 
--(void) beginAnimation
-{
-   [mapView beginAnimation];
-}
-
-
--(void) endAnimation
-{
-   [mapView cancelAnimation];
-}
-
-
--(void) updatePosition:(NSTimeInterval)trackTime reverse:(BOOL)rev animating:(BOOL)anim
-{
-   [mapView updateDetailedPosition:trackTime reverse:rev animating:anim];
-}
-
-
 
 
 - (IBAction)setMapTransparency:(id)sender
 {
-   [mapView setMapOpacity:[sender floatValue]];
+   [mapView setMapOpacity:[sender  floatValue]];
 }
 
 - (IBAction)setPathTransparency:(id)sender
 {
    [mapView setPathOpacity:[sender floatValue]];
-}
-
-- (Track*) animationTrack
-{
-   return track;
 }
 
 
@@ -886,7 +873,9 @@ NSEvent* sMouseEv = nil;
 												action:0
 										 keyEquivalent:@""];
 	}
-	if (track != nil) [[self window] setTitle:[Utils buildTrackDisplayedName:track prePend:@"Map Detail - "]];
+	if (_track != nil)
+        [[self window] setTitle:[Utils buildTrackDisplayedName:_track
+                                                       prePend:@"Map Detail - "]];
 }
 
 
@@ -894,11 +883,11 @@ NSEvent* sMouseEv = nil;
 {
 	[self rebuildActivitySelectorPopup];
 	NSArray* arr = [_tbDocument trackArray];
-	if (track != nil)
+	if (_track != nil)
 	{
-		if ([arr indexOfObjectIdenticalTo:track] == NSNotFound)
+		if ([arr indexOfObjectIdenticalTo:_track] == NSNotFound)
 		{
-			NSUInteger idx = [arr indexOfObject:track];
+			NSUInteger idx = [arr indexOfObject:_track];
 			if (idx != NSNotFound)
 			{
 				[self setTrack:[arr objectAtIndex:idx]];
@@ -976,7 +965,7 @@ NSEvent* sMouseEv = nil;
 
 - (void)trackEdited:(NSNotification *)notification
 {
-	[mapView setCurrentTrack:track];
+	[mapView setCurrentTrack:_track];
 }
 
 
@@ -1030,8 +1019,35 @@ enum
 	[mapTransparencySlider setFloatValue:opac];
 	opac = [Utils floatFromDefaults:RCBDefaultMDPathTransparency];
 	[pathTransparencySlider setFloatValue:opac];
-	[self setDataType:dataType];
+	[self setDataType:_dataType];
 	
+}
+
+
+#pragma mark - AnimtationTarget protocol
+
+
+-(void) beginAnimation
+{
+   [mapView beginAnimation];
+}
+
+
+-(void) endAnimation
+{
+   [mapView cancelAnimation];
+}
+
+
+-(void) updatePosition:(NSTimeInterval)trackTime reverse:(BOOL)rev animating:(BOOL)anim
+{
+   [mapView updateDetailedPosition:trackTime reverse:rev animating:anim];
+}
+
+
+- (Track*) animationTrack
+{
+   return _track;
 }
 
 

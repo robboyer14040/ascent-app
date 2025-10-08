@@ -7,14 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "Defs.h"
+
 
 @class TrackPoint;
 
-// A simple structure for location data
-typedef struct {
-    float latitude;
-    float longitude;
-} tLocation;
 
 // Helper functions for geospatial calculations (in GeoHelper.m)
 float GeodesicDistance(tLocation p1, tLocation p2);

@@ -8,13 +8,13 @@
 
 // MapController.h  (NON-ARC)
 #import <Cocoa/Cocoa.h>
-#import "DetailedMapWindowController.h"
+#import "MapDetailWindowController.h"
 
 @class TrackBrowserDocument, Selection;
 @class MapPathView;
 @class TransparentMapView;
 
-@interface MapController : NSViewController <DetailedMapWindowControllerDelegate>
+@interface MapController : NSViewController <MapDetailWindowControllerDelegate>
 @property(nonatomic, assign) TrackBrowserDocument   *document; // assign: document owns controllers
 @property(nonatomic, retain) Selection              *selection;
 

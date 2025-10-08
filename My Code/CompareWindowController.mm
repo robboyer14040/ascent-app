@@ -11,7 +11,6 @@
 #import "CompareProfileViewController.h"
 #import "CWTransparentView.h"
 #import "CWTransparentMapView.h"
-#import "CWTransparentWindow.h"
 #import "CWSummaryPanelController.h"
 #import "ProfilesContainerView.h"
 #import "ProfilesTransparentView.h"
@@ -65,9 +64,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 @synthesize trackArray;
 @synthesize xAxisIsTime;
 @synthesize mapTransparentView;
-@synthesize mapTransparentWindow;
 @synthesize zoomMapTransparentView;
-@synthesize zoomMapTransparentWindow;
 @synthesize mainWindowController;
 @synthesize dotColorsArray;
 @dynamic startingDistance;
@@ -115,9 +112,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	[[AnimTimer defaultInstance] unregisterForTimerUpdates:self];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	self.mapTransparentView = nil;
-	self.mapTransparentWindow = nil;
 	self.zoomMapTransparentView = nil;
-	self.zoomMapTransparentWindow = nil;
 	self.profileControllerArray = nil;
 	self.trackArray = nil;
 }
@@ -228,10 +223,6 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	// set up map views
 	self.mapTransparentView = [[CWTransparentMapView alloc] initWithFrame:dummy
 																 dotColors:dotColorsArray];
-	self.mapTransparentWindow = [[CWTransparentWindow alloc] initWithContentRect:dummy
-																		styleMask:NSWindowStyleMaskBorderless
-																		  backing:NSBackingStoreBuffered 
-																			defer:NO];
 //	[self.mapTransparentWindow setContentView:self.mapTransparentView];
 //	[self.mapTransparentWindow setHasShadow:NO];
 //	[self.mapTransparentWindow setIgnoresMouseEvents:YES];
@@ -246,10 +237,6 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	
 	self.zoomMapTransparentView = [[CWTransparentMapView alloc] initWithFrame:dummy
 																	 dotColors:dotColorsArray];
-	self.zoomMapTransparentWindow = [[CWTransparentWindow alloc] initWithContentRect:dummy
-																			styleMask:NSWindowStyleMaskBorderless
-																			  backing:NSBackingStoreBuffered
-																				defer:NO];
 //	[self.zoomMapTransparentWindow setContentView:self.zoomMapTransparentView];
 //	[self.zoomMapTransparentWindow setHasShadow:NO];
 //	[self.zoomMapTransparentWindow setIgnoresMouseEvents:YES];
@@ -277,20 +264,9 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 		CWTransparentView* tv = [[CWTransparentView alloc] initWithFrame:dummy
 																 iconFile:[self.dotColorsArray objectAtIndex:i]
 																	track:track];
-		CWTransparentWindow* tw = [[CWTransparentWindow alloc] initWithContentRect:dummy
-																		 styleMask:NSWindowStyleMaskBorderless 
-																		   backing:NSBackingStoreBuffered 
-																			 defer:NO];
-		[tw setContentView:tv];
-		[tw setHasShadow:NO];
-		[tw setIgnoresMouseEvents:YES];
-		[tw setDelegate:self];
-		[[self window]  addChildWindow:(NSWindow*)tw 
-							   ordered:NSWindowAbove];
 		CompareProfileViewController* pvc = [[CompareProfileViewController alloc] initWithTrack:track
 																					 profileView:adv 
-																				 transparentView:tv
-																			   transparentWindow:tw];
+																				 transparentView:tv];
 		[adv setTransparentView:tv];
 		[adv setDragStart:YES];
 		[adv setDrawHeader:NO];
@@ -678,8 +654,6 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	[zoomMapTransparentView setFrame:vfr];
 	[zoomMapTransparentView setBounds:vfr];
 	[zoomMapTransparentView setNeedsDisplay:YES];
-	[zoomMapTransparentWindow setFrame:zfr 
-							   display:YES];
 	
 	
 	fr.origin.x += rsfr.origin.x;
@@ -692,8 +666,6 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	[mapTransparentView setFrame:vfr];
 	[mapTransparentView setBounds:vfr];
 	[mapTransparentView setNeedsDisplay:YES];
-	[mapTransparentWindow setFrame:fr 
-						   display:YES];
 }
 	
 	
@@ -737,8 +709,6 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 				[pvc.transparentView.layer setNeedsDisplay];
 				[pvc.adView setNeedsDisplay:YES];
 				[pvc.transparentView setNeedsDisplay:YES];
-				[pvc.transparentWindow setFrame:twfr 
-										display:YES];
 				afr.origin.y -= areaH;
 				twfr.origin.y -= areaH;
 			}

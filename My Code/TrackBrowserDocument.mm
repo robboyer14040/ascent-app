@@ -17,7 +17,6 @@
 #import "BrowserInfo.h"
 #import "Lap.h"
 #import "Utils.h"
-#import "RegController.h"
 #import "TCX.h"
 #import "GPX.h"
 #import "KML.h"
@@ -1194,18 +1193,11 @@ getOut:
 					BOOL contains = [[self.docMetaData userDeletedTrackTimes] containsObject:[t creationTime]];
 					if (contains == NO)
 					{
-						if (([trackArray count] <= kNumUnregisteredTracks) || [RegController CHECK_REGISTRATION])
-						{
 							[self addTracksToDB:[NSArray arrayWithObject:t]
 							alsoAddToTrackArray:YES];
 
 							*numLoadedPtr = *numLoadedPtr + 1;
 							lastTrack = t;
-						}
-						else
-						{
- 							break;
-						}
 					}
 				}
 			}

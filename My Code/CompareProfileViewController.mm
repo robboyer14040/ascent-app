@@ -9,23 +9,20 @@
 #import "CompareProfileViewController.h"
 #import "ActivityDetailView.h"
 #import "CWTransparentView.h"
-#import "CWTransparentWindow.h"
 
 @implementation CompareProfileViewController
 @synthesize adView;
 @synthesize transparentView;
-@synthesize transparentWindow;
 @synthesize track;
 @synthesize lapOffset;
 
--(id)initWithTrack:(Track*)t profileView:(ActivityDetailView*)av transparentView:(CWTransparentView*)tv  transparentWindow:(CWTransparentWindow*)tw
+-(id)initWithTrack:(Track*)t profileView:(ActivityDetailView*)av transparentView:(CWTransparentView*)tv
 {
 	if (self = [super init])
 	{
 		self.track = t;
 		self.transparentView = tv;
 		self.adView = av;
-		self.transparentWindow = tw;
 		self.lapOffset = 0;
 	}
 	return self;
@@ -35,8 +32,8 @@
 {
 	self.track = nil;
 	self.transparentView = nil;
-	self.transparentWindow = nil;
 	self.adView = nil;
+    [super dealloc];
 }
 
 

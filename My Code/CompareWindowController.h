@@ -70,9 +70,7 @@ enum
 @property(retain, nonatomic) NSArray* trackArray;
 @property(retain, nonatomic) NSArray* dotColorsArray;
 @property(retain, nonatomic) CWTransparentMapView* mapTransparentView;
-@property(retain, nonatomic) CWTransparentWindow* mapTransparentWindow;
 @property(retain, nonatomic) CWTransparentMapView* zoomMapTransparentView;
-@property(retain, nonatomic) CWTransparentWindow* zoomMapTransparentWindow;
 @property(assign, nonatomic) id mainWindowController;		// don't retain
 @property(nonatomic) BOOL xAxisIsTime;
 @property(nonatomic) float startingDistance;

@@ -15,7 +15,6 @@
 #import "Defs.h"
 #import "SplashPanelController.h"
 #import "TransportPanelController.h"
-#import "RegController.h"
 #import "MapPathView.h"
 #import "StravaAPI.h"
 #import <OmniAppKit/OAPreferenceClient.h>
@@ -427,15 +426,6 @@ static void setColorDefault(NSMutableDictionary* dict,
 - (void)afterSplashPanelDone:(NSNotification *)notification
 {
     BOOL ok = YES; // (registration check omitted)
-    
-    if (!ok) {
-        RegController* rc = [[RegController alloc] init];
-        [[rc window] center];
-        [rc showWindow:self];
-        [NSApp runModalForWindow:[rc window]];
-        [[rc window] orderOut:self];
-        [rc release];
-    }
     
     if ([Utils boolFromDefaults:RCBDefaultShowTransportPanel]) {
         [self showTransportPanel:self];

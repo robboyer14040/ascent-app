@@ -9,7 +9,6 @@
 #import "PrefsSharing.h"
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/OmniAppKit.h>
-#import "RegController.h"
 #import "GetPasswordController.h"
 #import "Utils.h"
 #import "DBComm.h"
@@ -99,38 +98,34 @@ NSString*  RCBDefaultSharingAccountEmail		= @"DefaultSharingAccountEmail";
 
 -(void)updateUI
 {
-	if ([RegController CHECK_REGISTRATION])
-	{
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-		//NSString* regCode = [NSMutableString stringWithString:@""];
-		NSString* email = [defaults stringForKey:RCBDefaultSharingAccountEmail];
-		NSString* pw = [defaults stringForKey:RCBDefaultSharingAccountPassword];
-		NSString* userName = [defaults stringForKey:RCBDefaultSharingAccountName];
-		if (userName && ![userName isEqualToString:@""] && pw && ![pw isEqualToString:@""] && email && ![email isEqualToString:@""])
-		{
-			[emailField setStringValue:email];
-			[emailField setEnabled:YES];
-			[userNameField setStringValue:userName];
-			[userNameField setEnabled:YES];
-			[createOrModifyButton setStringValue:@"Change password..."];
-		}
-		else
-		{
-			NSMutableString* un = [NSMutableString stringWithString:@""];
-			NSMutableString* em = [NSMutableString stringWithString:@""];
-			NSMutableString* rc = [NSMutableString stringWithString:@""];
-			[RegController gi:un a2:em a3:rc];
-			[emailField setStringValue:em];
-			[emailField setEnabled:NO];
-			[userNameField setStringValue:un];
-			[userNameField setEnabled:NO];
-			[Utils setStringDefault:un
-							 forKey:RCBDefaultSharingAccountName];
-			[Utils setStringDefault:em
-							 forKey:RCBDefaultSharingAccountEmail];
-			[createOrModifyButton setStringValue:@"Create Password..."];
-		}
-	}
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    //NSString* regCode = [NSMutableString stringWithString:@""];
+    NSString* email = [defaults stringForKey:RCBDefaultSharingAccountEmail];
+    NSString* pw = [defaults stringForKey:RCBDefaultSharingAccountPassword];
+    NSString* userName = [defaults stringForKey:RCBDefaultSharingAccountName];
+    if (userName && ![userName isEqualToString:@""] && pw && ![pw isEqualToString:@""] && email && ![email isEqualToString:@""])
+    {
+        [emailField setStringValue:email];
+        [emailField setEnabled:YES];
+        [userNameField setStringValue:userName];
+        [userNameField setEnabled:YES];
+        [createOrModifyButton setStringValue:@"Change password..."];
+    }
+    else
+    {
+        NSMutableString* un = [NSMutableString stringWithString:@""];
+        NSMutableString* em = [NSMutableString stringWithString:@""];
+        NSMutableString* rc = [NSMutableString stringWithString:@""];
+        [emailField setStringValue:em];
+        [emailField setEnabled:NO];
+        [userNameField setStringValue:un];
+        [userNameField setEnabled:NO];
+        [Utils setStringDefault:un
+                         forKey:RCBDefaultSharingAccountName];
+        [Utils setStringDefault:em
+                         forKey:RCBDefaultSharingAccountEmail];
+        [createOrModifyButton setStringValue:@"Create Password..."];
+    }
 }
 
 @end

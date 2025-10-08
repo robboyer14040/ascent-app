@@ -178,7 +178,6 @@
 		D4F13C782E4EAE4600462944 /* reverse_on.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BD92E4EAE4600462944 /* reverse_on.png */; };
 		D4F13C792E4EAE4600462944 /* ZoomInButton.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B982E4EAE4600462944 /* ZoomInButton.png */; };
 		D4F13C7A2E4EAE4600462944 /* Calendar_Trans.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BB82E4EAE4600462944 /* Calendar_Trans.png */; };
-		D4F13C7C2E4EAE4600462944 /* Reg.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B332E4EAE4600462944 /* Reg.nib */; };
 		D4F13C7E2E4EAE4600462944 /* stop_off.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BE52E4EAE4600462944 /* stop_off.png */; };
 		D4F13C7F2E4EAE4600462944 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D4F13AF62E4EAE4600462944 /* InfoPlist.strings */; };
 		D4F13C812E4EAE4600462944 /* line_dashed_2_1.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BCB2E4EAE4600462944 /* line_dashed_2_1.png */; };
@@ -513,7 +512,6 @@
 		D4CCE9032E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/SummaryWindow.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9042E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/GarminSync.xib; sourceTree = SOURCE_ROOT; };
 		D4CCE9062E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/PrefsBackup.nib; sourceTree = SOURCE_ROOT; };
-		D4CCE9072E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/Reg.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9082E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/MapDetailWindowController.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9092E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/TransportPanel.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE90A2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/ImportDateEntry.nib; sourceTree = SOURCE_ROOT; };
@@ -530,7 +528,6 @@
 		D4CCE9172E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/CompareWindow.xib; sourceTree = SOURCE_ROOT; };
 		D4CCE9182E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/ListEditor.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE91A2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/AltSmoothingFactor.nib; sourceTree = SOURCE_ROOT; };
-		D4CCE91B2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/TrackBrowserDocument.xib; sourceTree = "<group>"; };
 		D4CCE91C2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/EquipmentSelector.xib; sourceTree = SOURCE_ROOT; };
 		D4CCE91D2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/PrefsAppearance.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9202E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/PrefsSync.nib; sourceTree = SOURCE_ROOT; };
@@ -1638,12 +1635,10 @@
 				D4F18D022E5248980032E51D /* PrefsUser.xib */,
 				D4F18D032E5248980032E51D /* PrefsZones.xib */,
 				D4F18D042E5248980032E51D /* ProgressBar.xib */,
-				D4F13B332E4EAE4600462944 /* Reg.nib */,
 				D4F13B352E4EAE4600462944 /* SelectAndApplyAction.nib */,
 				D489E0E42E6B32BF0076E5DC /* SplashPanel.xib */,
 				D4F13B392E4EAE4600462944 /* SplitActivity.nib */,
 				D4F13B3B2E4EAE4600462944 /* SummaryWindow.nib */,
-				D490A52C2E4F8E48005BAD01 /* TrackBrowserDocument.xib */,
 				D4F13B3F2E4EAE4600462944 /* TrackDataEntry.nib */,
 				D4F13B412E4EAE4600462944 /* TransparentMapWindow.nib */,
 				D4F13B432E4EAE4600462944 /* TransportPanel.nib */,
@@ -2141,7 +2136,6 @@
 				D4F13C792E4EAE4600462944 /* ZoomInButton.png in Resources */,
 				D4F13C7A2E4EAE4600462944 /* Calendar_Trans.png in Resources */,
 				D45F6B612E8C2336001531C3 /* InfoController.xib in Resources */,
-				D4F13C7C2E4EAE4600462944 /* Reg.nib in Resources */,
 				D4F13C7E2E4EAE4600462944 /* stop_off.png in Resources */,
 				D4F13C7F2E4EAE4600462944 /* InfoPlist.strings in Resources */,
 				D4F13C812E4EAE4600462944 /* line_dashed_2_1.png in Resources */,
@@ -2397,14 +2391,6 @@
 			name = SplashPanel.xib;
 			sourceTree = "<group>";
 		};
-		D490A52C2E4F8E48005BAD01 /* TrackBrowserDocument.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				D4CCE91B2E5048D300B46DB2 /* en */,
-			);
-			name = TrackBrowserDocument.xib;
-			sourceTree = "<group>";
-		};
 		D4CCE9282E5049B900B46DB2 /* MainMenu.nib */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -2587,14 +2573,6 @@
 				D4CCE9142E5048D300B46DB2 /* en */,
 			);
 			name = PrefsGeneral.nib;
-			sourceTree = "<group>";
-		};
-		D4F13B332E4EAE4600462944 /* Reg.nib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				D4CCE9072E5048D300B46DB2 /* en */,
-			);
-			name = Reg.nib;
 			sourceTree = "<group>";
 		};
 		D4F13B352E4EAE4600462944 /* SelectAndApplyAction.nib */ = {

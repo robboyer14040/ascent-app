@@ -8,7 +8,6 @@
 
 #import "SplashPanelView.h"
 #import "Defs.h"
-#import "RegController.h"
 
 @implementation SplashPanelView
 
@@ -20,19 +19,6 @@
         // Initialization code here.
        NSString* path = [[NSBundle mainBundle] pathForResource:@"Splash" ofType:@"png"];
        backgroundImage = [[NSImage alloc] initWithContentsOfFile:path];
-//       if ([RegController CHECK_REGISTRATION])
-//       {
-//          userName = [[NSMutableString stringWithString:@""] retain];
-//          regCode = [[NSMutableString stringWithString:@""] retain];
-//          email = [[NSMutableString stringWithString:@""] retain];
-//          [RegController gi:userName a2:email a3:regCode];
-//          NSRange r; 
-//          r.location = 0; r.length = 12;
-//          [regCode deleteCharactersInRange:r];
-//          r.location = 35; r.length = 4;
-//          [regCode deleteCharactersInRange:r];
-//       }
-//       else
        {
 		   userName = [[NSMutableString stringWithString:@"** UNREGISTERED **"] retain];
 		   regCode =  [[NSMutableString stringWithString:@""] retain];

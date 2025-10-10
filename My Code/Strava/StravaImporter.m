@@ -645,6 +645,7 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
 - (void)enrichTrack:(Track *)track
     withSummaryDict:(NSDictionary * _Nullable )summary
        rootMediaURL:(NSURL*)mediaURL
+         pointsOnly:(BOOL)pointsOnly
         completion:(void (^)(NSError * _Nullable error))completion
 {
     // Pull the Strava activity id from the Track (already present per your note)
@@ -674,80 +675,60 @@ static NSArray<NSURL *> *ExtractPhotoURLs(NSArray<NSDictionary *> *photos) {
             // Detail + Photos (async, in parallel)
             dispatch_group_t g = dispatch_group_create();
             
-            if (activityID) {
-                dispatch_group_enter(g);
-                [[StravaAPI shared] fetchActivityDetail:activityID completion:^(NSDictionary *a, NSError *e) {
-                    if (a)
-                        detail = [a retain];
-                    if (e && !firstError)
-                        firstError = [e retain];
-                    dispatch_group_leave(g);
-                }];
-                
-                dispatch_group_enter(g);
-                [[StravaAPI shared] fetchPhotosForActivity:activityID
-                                              rootMediaURL:mediaURL
-                                                completion:^(NSArray<NSString *> * photoFilenames, NSError * error) {
-                    track.localMediaItems = photoFilenames;
-                    track.dirtyMask |= kDirtyMeta;
-                    dispatch_group_leave(g);
-                }];
+            if (!pointsOnly) {
+                if (activityID) {
+                    dispatch_group_enter(g);
+                    [[StravaAPI shared] fetchActivityDetail:activityID completion:^(NSDictionary *a, NSError *e) {
+                        if (a)
+                            detail = [a retain];
+                        if (e && !firstError)
+                            firstError = [e retain];
+                        dispatch_group_leave(g);
+                    }];
+                    
+                    dispatch_group_enter(g);
+                    [[StravaAPI shared] fetchPhotosForActivity:activityID
+                                                  rootMediaURL:mediaURL
+                                                    completion:^(NSArray<NSString *> * photoFilenames, NSError * error) {
+                        track.localMediaItems = photoFilenames;
+                        track.dirtyMask |= kDirtyMeta;
+                        dispatch_group_leave(g);
+                    }];
+                }
             }
             
             dispatch_group_notify(g, dispatch_get_main_queue(), ^{
-                // Description: prefer summary, else detail
-                NSString *desc = SafeStr(summary[@"description"]);
-                if (!desc.length && detail) desc = SafeStr(detail[@"description"]);
-                if (desc.length) {
-                    if ([track respondsToSelector:@selector(setAttribute:usingString:)]) {
-                        [track setAttribute:kNotes usingString:desc];
-                        track.dirtyMask |= kDirtyMeta;
-                    } else {
-                        @try {
-                            [track setValue:desc forKey:@"notes"];
-                        } @catch (__unused id e) {}
-                    }
-                }
- 
-                NSString* dev = SafeStr(detail[@"device_name"]);
-                if (dev.length) {
-                    if ([track respondsToSelector:@selector(setAttribute:usingString:)]) {
-                        [track setAttribute:kComputer usingString:dev];
-                        track.dirtyMask |= kDirtyMeta;
-                   }
-                }
-                
-                NSNumber* suffer = SafeNum(detail[@"suffer_score"]);
-                if (suffer) {
-                    if ([track respondsToSelector:@selector(setAttribute:usingString:)]) {
-                        [track setAttribute:kSufferScore usingString:[suffer description]];
-                        track.dirtyMask |= kDirtyMeta;
-                    }
-                }
-
-                
-#if 0
-                // stored in localMediaItems
-                // Photos → Track.photoURLs
-                if (photosPayload) {
-                    NSArray<NSURL *> *urls = ExtractPhotoURLs(photosPayload);
-                    if (urls.count) {
-                        track.dirtyMask |= kDirtyMeta;
-                        if ([track respondsToSelector:@selector(setPhotoURLs:)]) {
-                            [track setPhotoURLs:urls];
+                if (!pointsOnly) {
+                    // Description: prefer summary, else detail
+                    NSString *desc = SafeStr(summary[@"description"]);
+                    if (!desc.length && detail) desc = SafeStr(detail[@"description"]);
+                    if (desc.length) {
+                        if ([track respondsToSelector:@selector(setAttribute:usingString:)]) {
+                            [track setAttribute:kNotes usingString:desc];
+                            track.dirtyMask |= kDirtyMeta;
                         } else {
                             @try {
-                                [track setValue:urls forKey:@"photoURLs"];
+                                [track setValue:desc forKey:@"notes"];
                             } @catch (__unused id e) {}
                         }
                     }
-                    [photosPayload release];
-                    photosPayload = nil;
+                    
+                    NSString* dev = SafeStr(detail[@"device_name"]);
+                    if (dev.length) {
+                        if ([track respondsToSelector:@selector(setAttribute:usingString:)]) {
+                            [track setAttribute:kComputer usingString:dev];
+                            track.dirtyMask |= kDirtyMeta;
+                        }
+                    }
+                    
+                    NSNumber* suffer = SafeNum(detail[@"suffer_score"]);
+                    if (suffer) {
+                        if ([track respondsToSelector:@selector(setAttribute:usingString:)]) {
+                            [track setAttribute:kSufferScore usingString:[suffer description]];
+                            track.dirtyMask |= kDirtyMeta;
+                        }
+                    }
                 }
-#endif
-                
-                
-                
                 // Streams → PointsFromStreams → Track.points
                 if (streamsByType) {
                     // No wrapping needed; your fetch returns {type:{data:[…]}} (or we already normalized it).

@@ -43,108 +43,26 @@ enum
    kMinimumPlotTag = 100
 };
 
-static int typeComponentToTag(tPlotType type, int component)
-{
-   return (type*100) + component;
-}
-
-static int tagToComponent(int tag)
-{
-   return tag % 100;
-}
-
-static tPlotType tagToPlotType(int tag)
-{
-   return (tPlotType)(tag/100);
-}
-
+@protocol ActivityDetailViewDelegate <NSObject>
+- (void)selectionComplete:(NSUInteger)startPointIndex
+            endPointIndex:(NSUInteger)endPointIndex;
+@end
 
 @interface ActivityDetailView : NSView
-{
-	Track*								track;
-	Lap*								lap;
-	Track*								lastTrack;
-	NSView<ProfileTransparentView>*		transparentView;
-	NSMutableDictionary *				tickFontAttrs; 
-	NSMutableDictionary *				animFontAttrs; 
-	NSMutableDictionary *				headerFontAttrs; 
-	NSMutableDictionary *				textFontAttrs; 
-	NSMutableArray*						plotAttributesArray;
-	float                   			minalt, maxalt, mindist, maxdist, lastdist, altdif;
-	float                   			maxhr, maxsp, mingr, maxgr, maxcd, maxpwr;
-	float                   			maxhrGR, maxspGR, mingrGR, maxgrGR, maxcdGR, maxpwrGR, mintempGR, maxtempGR;
-	float                   			minhrGR, minspGR,  mincdGR, minpwrGR;
-	NSTimeInterval          			plotDuration;
-	float                   			maxDurationForPlotting;
-	NSColor*                			animRectColor;
-	NSImage*                			altSignImage;
-	NSImage*                			lapMarkerImage;
-	NSImage*                			startMarkerImage;
-	NSImage*                			finishMarkerImage;
-	NSImage*                			peakImage;
-	NSBezierPath*           			altPath;
-	NSBezierPath*           			hpath;
-	NSBezierPath*           			dpath;
-	NSBezierPath*           			spath;   
-	NSInvocation*           			mContextualMenuInvocation;
-	NSInvocation*           			mSelectionUpdateInvocation;
-	NSInvocation*           			dataHudUpdateInvocation;
-	NSNumberFormatter*					numberFormatter;
-	NSPoint                 			prevPt;
-	NSRect                  			lastBounds; 
-	NSRect                  			vertTickBounds;
-	NSRect                  			horizTickBounds;
-	int                     			currentTrackPos, numPos;
-	int                     			peakType;
-	int                     			dataRectType;
-	int                     			numAltitudeVertTickPoints; 
-	int                     			maxHorizTicks;
-	int                     			maxVertTicks;
-	int									posOffsetIndex;
-	NSRect                  			dataRect;
-	BOOL                    			firstAnim;
-	BOOL                    			bypassAnim;
-	BOOL                    			showHRZones;
-	BOOL                    			showLaps;
-	BOOL                    			showMarkers;
-	BOOL                    			showPowerPeakIntervals;
-	BOOL                    			showPeaks;
-	BOOL                    			showCrossHairs;
-	BOOL                    			showHud;
-	BOOL                    			animating;
-	BOOL                    			xAxisIsTime;
-	BOOL                    			lastXAxisIsTime;
-	BOOL                    			showPace;
-	BOOL                    			isStatute;
-	BOOL								selectRegionInProgress;
-	BOOL								trackHasPoints;
-	BOOL								drawHeader;
-	BOOL								showVerticalTicks;
-	BOOL								showHorizontalTicks;
-	BOOL								overrideDistance;
-	BOOL								dragStart;
-	int                     			numPeaks;
-	int                     			peakThreshold;
-	int                     			numAvgPoints;
-	int									selectionStartIdx;
-	int									selectionEndIdx;
-	float                   			zonesOpacity;
-	float                   			markerRightPadding;
-	float								topAreaHeight;
-	float								vertPlotYOffset;
-}
 
-@property(nonatomic) BOOL drawHeader;
-@property(nonatomic) BOOL dragStart;
-@property(nonatomic) BOOL showVerticalTicks;
-@property(nonatomic) BOOL showHorizontalTicks;
-@property(nonatomic) NSTimeInterval plotDuration;
-@property(nonatomic) float topAreaHeight;
-@property(nonatomic, readonly) float maxdist;
-@property(nonatomic, readonly) float mindist;
-@property(nonatomic) BOOL overrideDistance;
-@property(nonatomic) float vertPlotYOffset;
-@property(nonatomic, retain) NSView<ProfileTransparentView>*	 transparentView;
+@property(nonatomic, assign) NSView<ProfileTransparentView>     *transparentView;
+@property(nonatomic, assign) id<ActivityDetailViewDelegate>     delegate; // Note: assign/weak for no retain cycle
+
+@property(nonatomic) BOOL               drawHeader;
+@property(nonatomic) BOOL               dragStart;
+@property(nonatomic) BOOL               showVerticalTicks;
+@property(nonatomic) BOOL               showHorizontalTicks;
+@property(nonatomic) NSTimeInterval     plotDuration;
+@property(nonatomic) float              topAreaHeight;
+@property(nonatomic, readonly) float    maxdist;
+@property(nonatomic, readonly) float    mindist;
+@property(nonatomic) BOOL               overrideDistance;
+@property(nonatomic) float              vertPlotYOffset;
 
 - (void)setTrack:(Track*)t forceUpdate:(BOOL)force;
 - (Lap *)lap;

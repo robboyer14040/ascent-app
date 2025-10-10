@@ -24,8 +24,10 @@
 #import "StatDefs.h"
 #import "TrackPoint.h"
 #import "Lap.h"
+#import "AscentPathFinder.h"
+#import "StravaImporter.h"
 
-// contextual menu ("CM") menu item identifiers - these must not conflict with 
+// contextual menu ("CM") menu item identifiers - these must not conflict with
 // tPlotType enums, because they are also used to tag contextual menu items
 enum
 {
@@ -40,7 +42,26 @@ enum
 	kCM_InsertLapMarker,
 	kCM_RemoveLapMarker,
 	kCM_SplitActivity,
+    kCM_CompareSelection,
 };
+
+
+static int typeComponentToTag(tPlotType type, int component)
+{
+   return (type*100) + component;
+}
+
+static int tagToComponent(int tag)
+{
+   return tag % 100;
+}
+
+static tPlotType tagToPlotType(int tag)
+{
+   return (tPlotType)(tag/100);
+}
+
+
 
 @interface ActivityWindowController ()
 {
@@ -69,6 +90,9 @@ enum
     //HUDWindow*              dataHUDWindow;
 }
 @property(nonatomic, retain) NSTimer* fadeTimer;
+@property(nonatomic, assign) NSUInteger selectionStartIndex;
+@property(nonatomic, assign) NSUInteger selectionEndIndex;
+
 -(void) rebuildActivitySelectorPopup;
 -(void) trackChanged:(NSNotification *)notification;
 -(void) trackEdited:(NSNotification *)notification;
@@ -115,6 +139,8 @@ enum
 	[numberFormatter setLocale:[NSLocale currentLocale]];
 #endif
     [doc addWindowController:self];
+    _selectionStartIndex = 0;
+    _selectionEndIndex = 0;
 	return self;
 }
 
@@ -247,6 +273,10 @@ enum
 		   [self removeLapMarker:sender];
 		   break;
 		   
+       case kCM_CompareSelection:
+           [self _compareSelection];
+           break;
+           
 	   case kCM_AddMarker:
 		   [self addMarker:sender];
 		   break;
@@ -321,9 +351,13 @@ enum
 				   action:@selector(contextualMenuAction:)
 			keyEquivalent:@"I"] setTag:kCM_InsertLapMarker];
 
-	[[cm addItemWithTitle:@"Remove Next Lap Marker"
-				   action:@selector(contextualMenuAction:)
-			keyEquivalent:@"R"] setTag:kCM_RemoveLapMarker];
+//	[[cm addItemWithTitle:@"Remove Next Lap Marker"
+//				   action:@selector(contextualMenuAction:)
+//			keyEquivalent:@"R"] setTag:kCM_RemoveLapMarker];
+    [[cm addItemWithTitle:@"Compare selected..."
+                   action:@selector(contextualMenuAction:)
+            keyEquivalent:@"R"] setTag:kCM_CompareSelection];
+
 
 	//----
 	[cm addItem:[NSMenuItem separatorItem]];
@@ -1669,6 +1703,9 @@ static tHUDStringInfo sHUDStringInfo[] =
 
 - (void)windowDidLoad
 {
+    // Set the controller as the view's delegate
+    graphView.delegate = self;
+
     BOOL show = [Utils boolFromDefaults:RCBDefaultShowADHUD];
     if (show)
     {
@@ -2253,6 +2290,77 @@ static tHUDStringInfo sHUDStringInfo[] =
 	[self updateStatsHUD];
 }
 
+
+- (void)selectionComplete:(NSUInteger)startPointIndex
+            endPointIndex:(NSUInteger)endPointIndex
+{
+    _selectionStartIndex = startPointIndex;
+    _selectionEndIndex = endPointIndex;
+}
+
+
+-(void)_compareSelection
+{
+    NSArray<Track*>* tracks = [tbDocument trackArray];
+    BOOL anyQueued = NO;
+    for (Track* t in tracks) {
+        NSArray<TrackPoint*>* pts = [t goodPoints];
+        if (pts.count == 0) {
+            [t loadPoints:tbDocument.fileURL];
+            if (pts.count > 0) {
+                NSLog(@"....Loaded points for %s", [t.name UTF8String]);
+            }
+        }
+#if 0
+        if (pts.count == 0) {
+            anyQueued = YES;
+            [[StravaImporter shared] enrichTrack:t
+                                 withSummaryDict:nil
+                                    rootMediaURL:[NSURL URLWithString:@""]
+                                      pointsOnly:YES
+                                      completion:^(NSError * _Nullable error) {
+            }];
+        }
+#endif
+    }
+    
+    if (!anyQueued) {
+        [self _doComparison];
+    }
+}
+
+-(void) _doComparison
+{
+    NSArray<Track*>* tracks = [tbDocument trackArray];
+    NSArray<TrackPoint*>* points = [track goodPoints];
+    if (points.count > _selectionStartIndex && points.count >= _selectionEndIndex) {
+        TrackPoint* startPoint = [points objectAtIndex:_selectionStartIndex];
+        TrackPoint* endPoint = [points objectAtIndex:_selectionEndIndex];
+        tLocation startLoc, endLoc;
+        startLoc.latitude = startPoint.latitude;
+        startLoc.longitude = startPoint.longitude;
+        endLoc.latitude = endPoint.latitude;
+        endLoc.longitude = endPoint.longitude;
+        
+        float len = endPoint.distance - startPoint.distance;
+        len = MilesToKilometers(len);
+        
+        NSArray<Track*>* foundTracks = [AscentPathFinder findTracks:tracks
+                                                 withPathStartingAt:startLoc
+                                                           lengthKM:len
+                                                   tolerancePercent:10.0];
+        
+        NSLog(@"FOUND %d TRACKS WITH SEGMENT WITH START:%0.1f END:%0.1f LENGTH %d KM",
+              (int)foundTracks.count,
+              MilesToKilometers(startPoint.distance),
+              MilesToKilometers(endPoint.distance),
+              (int)len);
+        for (Track* t in foundTracks) {
+            NSLog(@"   found \"%s\"", [t.name UTF8String]);
+        }
+    }
+
+}
 
 @end
 

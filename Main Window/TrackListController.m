@@ -1634,6 +1634,7 @@ int searchTagToMask(int searchTag)
         [[StravaImporter shared] enrichTrack:track
                              withSummaryDict:nil
                                 rootMediaURL:[self getRootMediaURL]
+                                  pointsOnly:YES
                                   completion:^(NSError * _Nullable error) {
             if (error)
             {

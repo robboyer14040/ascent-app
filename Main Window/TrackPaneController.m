@@ -1193,7 +1193,7 @@ enum
                 if (!lastSyncTime || ([lastSyncTime compare:[NSDate distantPast]] == NSOrderedSame)) {
                     NSDate *now = [NSDate date];
                     lastSyncTime = [cal dateByAddingUnit:NSCalendarUnitMonth
-                                                   value:-2
+                                                   value:-36
                                                   toDate:now options:0];
                 }
 

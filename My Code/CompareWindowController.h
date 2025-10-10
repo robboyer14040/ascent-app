@@ -10,11 +10,12 @@
 #import "AscentAnimationTargetProtocol.h"
 
 @class MapPathView;
-@class ProfilesContainerView;
-@class ProfilesTransparentView;
+@class ActivityDetailView;
+@class ProfilesContainerView;           // remove
+@class ProfilesTransparentView;         // remove
 @class CWTransparentView;
 @class CWTransparentMapView;
-@class CompareProfileViewController;
+@class CompareProfileViewController;        // remove
 @class CWSummaryPanelController;
 @class Track;
 
@@ -27,8 +28,13 @@ enum
 
 @interface CompareWindowController : NSWindowController <AscentAnimationTarget, NSWindowDelegate>
 {
-	IBOutlet MapPathView*				mapView;
-	IBOutlet MapPathView*				zoomMapView;
+	IBOutlet MapPathView                *mapView;
+	IBOutlet MapPathView                *zoomMapView;
+    IBOutlet ActivityDetailView         *adView;
+    CWTransparentMapView                *mapTransparentView;
+    CWTransparentMapView                *zoomMapTransparentView;
+    CWTransparentMapView                *adViewTransparentView;
+    
 	IBOutlet NSButton*					playButton;
 	IBOutlet NSButton*					stopButton;
 	IBOutlet NSButton*					reverseButton;
@@ -43,7 +49,7 @@ enum
 	IBOutlet NSView*					rightContentView;
 	IBOutlet NSSplitView*				leftSplitView;
 	IBOutlet NSSplitView*				mainSplitView;
-	IBOutlet ProfilesContainerView*		profilesContainerView;
+	IBOutlet ProfilesContainerView*		profilesContainerView;      // remove
 	IBOutlet NSPopUpButton*				plotTypePopup;
 	IBOutlet NSPopUpButton*				distanceTimePopup;
 	IBOutlet NSPopUpButton*				guideFollowsPopup;
@@ -51,14 +57,12 @@ enum
 	IBOutlet NSSegmentedControl*		selectorSegmentedControl;
 	IBOutlet NSSlider*					scaleSlider;
 	IBOutlet NSPopUpButton*				alignToPopUpButton;
-	ProfilesTransparentView*			profilesTransparentView;
-	CompareProfileViewController*		fastestPVC;		// only used during animation
-	CompareProfileViewController*		lastFocusedPVC;
-	NSMutableArray*						profileControllerArray;
+	ProfilesTransparentView*			profilesTransparentView;        // remove
+	CompareProfileViewController*		fastestPVC;		// only used during animation remove
+	CompareProfileViewController*		lastFocusedPVC;     // remove
+	NSMutableArray*						profileControllerArray; // remove
 	NSArray*							trackArray;
 	NSArray*							dotColorsArray;
-	CWTransparentMapView*				mapTransparentView;
-	CWTransparentMapView*				zoomMapTransparentView;
 	__unsafe_unretained id		        mainWindowController;
 	BOOL								xAxisIsTime;
 	float								startingDistance;

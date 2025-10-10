@@ -258,6 +258,7 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
 - (NSArray<TrackPoint *> *)loadPointsForTrackID:(int64_t)trackID error:(NSError **)error {
     __block NSArray *result = nil;
     __block NSError *err = nil;
+    __block NSUInteger numPointsFound = 0;
 
     [_dbm performRead:^(sqlite3 *db) {
         NSMutableArray *arr = [NSMutableArray array];
@@ -273,7 +274,7 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
             return;
         }
         sqlite3_bind_int64(st, 1, trackID);
-
+        
         while (1) {
             int s = sqlite3_step(st);
             if (s == SQLITE_ROW) {
@@ -294,6 +295,7 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
                 TrackPoint *tp = TPMakeTrackPointFromRow(&row);
                 [arr addObject:tp];
                 [tp release];
+                ++numPointsFound;
             } else if (s == SQLITE_DONE) {
                 break;
             } else {
@@ -305,7 +307,9 @@ static inline TrackPoint *TPMakeTrackPointFromRow(const TPRow *r) {
         if (!err) result = [[arr copy] autorelease];
     } completion:^{}];
 
-    if (error && err) *error = err;
+    if (error && err)
+        *error = err;
+    
     return result;
 }
 

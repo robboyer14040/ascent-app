@@ -47,9 +47,31 @@
                                 <subviews>
                                     <customView horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="Rdr-wC-njs" userLabel="Overall Map" customClass="MapPathView">
                                         <rect key="frame" x="0.0" y="0.0" width="407" height="445"/>
+                                        <subviews>
+                                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="cMd-ck-Jqu" customClass="TransparentMapView">
+                                                <rect key="frame" x="0.0" y="0.0" width="407" height="445"/>
+                                            </customView>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstItem="cMd-ck-Jqu" firstAttribute="top" secondItem="Rdr-wC-njs" secondAttribute="top" id="Dp2-VT-2dc"/>
+                                            <constraint firstAttribute="bottom" secondItem="cMd-ck-Jqu" secondAttribute="bottom" id="GyD-vV-532"/>
+                                            <constraint firstAttribute="trailing" secondItem="cMd-ck-Jqu" secondAttribute="trailing" id="WTU-t3-63Y"/>
+                                            <constraint firstItem="cMd-ck-Jqu" firstAttribute="leading" secondItem="Rdr-wC-njs" secondAttribute="leading" id="vmz-eG-QYd"/>
+                                        </constraints>
                                     </customView>
                                     <customView horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="n6q-WT-Xtl" userLabel="Zoomed Map" customClass="MapPathView">
                                         <rect key="frame" x="415" y="0.0" width="407" height="445"/>
+                                        <subviews>
+                                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="hjj-TU-j34" customClass="TransparentMapView">
+                                                <rect key="frame" x="0.0" y="0.0" width="407" height="445"/>
+                                            </customView>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstItem="hjj-TU-j34" firstAttribute="top" secondItem="n6q-WT-Xtl" secondAttribute="top" id="WrU-gX-p4e"/>
+                                            <constraint firstAttribute="trailing" secondItem="hjj-TU-j34" secondAttribute="trailing" id="ndZ-cn-xx4"/>
+                                            <constraint firstAttribute="bottom" secondItem="hjj-TU-j34" secondAttribute="bottom" id="qgh-Gz-UOo"/>
+                                            <constraint firstItem="hjj-TU-j34" firstAttribute="leading" secondItem="n6q-WT-Xtl" secondAttribute="leading" id="sIf-fg-7NK"/>
+                                        </constraints>
                                     </customView>
                                 </subviews>
                                 <constraints>
@@ -69,8 +91,19 @@
                                     <real value="3.4028234663852886e+38"/>
                                 </customSpacing>
                             </stackView>
-                            <customView horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="9xp-Ba-bqV" userLabel="Profile" customClass="MiniProfileView">
+                            <customView horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="9xp-Ba-bqV" userLabel="Profile" customClass="ActivityDetailView">
                                 <rect key="frame" x="0.0" y="0.0" width="822" height="192"/>
+                                <subviews>
+                                    <customView translatesAutoresizingMaskIntoConstraints="NO" id="bvB-7K-AFc" customClass="TransparentMapView">
+                                        <rect key="frame" x="0.0" y="0.0" width="822" height="192"/>
+                                    </customView>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="bvB-7K-AFc" secondAttribute="trailing" id="WtH-Er-8xi"/>
+                                    <constraint firstItem="bvB-7K-AFc" firstAttribute="top" secondItem="9xp-Ba-bqV" secondAttribute="top" id="Yij-Ax-4rb"/>
+                                    <constraint firstAttribute="bottom" secondItem="bvB-7K-AFc" secondAttribute="bottom" id="oJq-9J-oSR"/>
+                                    <constraint firstItem="bvB-7K-AFc" firstAttribute="leading" secondItem="9xp-Ba-bqV" secondAttribute="leading" id="zNW-vT-Aik"/>
+                                </constraints>
                             </customView>
                         </subviews>
                         <constraints>

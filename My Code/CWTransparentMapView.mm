@@ -41,6 +41,7 @@
 {
 	self.layer = nil;
 	CFRelease(cgimage);
+    [super dealloc];
 }
 
 @end
@@ -121,6 +122,7 @@
 	CGColorRelease(whiteColor);
 	CGColorRelease(redColor);
 	self.zoomedRectLayer = nil;
+    [super dealloc];
 }
 
 	

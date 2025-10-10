@@ -161,7 +161,6 @@
 		D4F13C582E4EAE4600462944 /* AGButton_Trans.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BAA2E4EAE4600462944 /* AGButton_Trans.png */; };
 		D4F13C5A2E4EAE4600462944 /* FinishMarker.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BC22E4EAE4600462944 /* FinishMarker.png */; };
 		D4F13C5B2E4EAE4600462944 /* CompareWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B012E4EAE4600462944 /* CompareWindow.xib */; };
-		D4F13C5C2E4EAE4600462944 /* TransparentMapWindow.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B412E4EAE4600462944 /* TransparentMapWindow.nib */; };
 		D4F13C5D2E4EAE4600462944 /* TransportPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B432E4EAE4600462944 /* TransportPanel.nib */; };
 		D4F13C5F2E4EAE4600462944 /* MapDetailWindowController.nib in Resources */ = {isa = PBXBuildFile; fileRef = D4F13B0B2E4EAE4600462944 /* MapDetailWindowController.nib */; };
 		D4F13C602E4EAE4600462944 /* line_solid.png in Resources */ = {isa = PBXBuildFile; fileRef = D4F13BCD2E4EAE4600462944 /* line_solid.png */; };
@@ -440,6 +439,7 @@
 		D4364F202E90571400C9A330 /* IndexTagMap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = IndexTagMap.h; path = "My Code/IndexTagMap.h"; sourceTree = "<group>"; };
 		D4364F212E90571400C9A330 /* IndexTagMap.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = IndexTagMap.m; path = "My Code/IndexTagMap.m"; sourceTree = "<group>"; };
 		D437641C2E5FA01A008AE5E4 /* Ascent.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Ascent.icns; path = graphics/Ascent.icns; sourceTree = "<group>"; };
+		D4382FE62E97F22D00AF0907 /* PlotInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PlotInfo.h; path = "My Code/PlotInfo.h"; sourceTree = "<group>"; };
 		D43C3EFC2E86CAD200D40D19 /* TrackCalendarController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TrackCalendarController.xib; sourceTree = "<group>"; };
 		D4450B382E5BCF1700AB39C3 /* HUDWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HUDWindow.h; path = OtherCode/HUDWindow.h; sourceTree = SOURCE_ROOT; };
 		D4450B392E5BCF1700AB39C3 /* HUDWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = HUDWindow.m; path = OtherCode/HUDWindow.m; sourceTree = SOURCE_ROOT; };
@@ -531,7 +531,6 @@
 		D4CCE91C2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/EquipmentSelector.xib; sourceTree = SOURCE_ROOT; };
 		D4CCE91D2E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/PrefsAppearance.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9202E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/PrefsSync.nib; sourceTree = SOURCE_ROOT; };
-		D4CCE9212E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/TransparentMapWindow.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9222E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/GMTOffset.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9242E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/EditMarkers.nib; sourceTree = SOURCE_ROOT; };
 		D4CCE9252E5048D300B46DB2 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/EquipmentLogInitialValues.xib; sourceTree = SOURCE_ROOT; };
@@ -1502,6 +1501,7 @@
 				D4F13AC02E4EAE4600462944 /* PlotAttributes.h */,
 				D4F13AC12E4EAE4600462944 /* PlotAttributes.m */,
 				D4F13AC62E4EAE4600462944 /* ProfileTransparentView.h */,
+				D4382FE62E97F22D00AF0907 /* PlotInfo.h */,
 			);
 			name = Activity;
 			sourceTree = "<group>";
@@ -1580,6 +1580,7 @@
 				D4F13AF32E4EAE4600462944 /* Compare */,
 				D4F13AC72E4EAE4600462944 /* Activity */,
 				D4F13A762E4EAE4600462944 /* Map */,
+				D4F13A6A2E4EAE4600462944 /* Mini Profile View */,
 				D489E0EA2E6D10D60076E5DC /* Database */,
 				D457D2EC2E6488B400D1DF73 /* Strava */,
 				D4F139F42E4EAE4600462944 /* Utilities */,
@@ -1588,7 +1589,6 @@
 				D4F13A412E4EAE4600462944 /* Summary View */,
 				D4F13A482E4EAE4600462944 /* Splash Panel */,
 				D4F13A5E2E4EAE4600462944 /* Preferences */,
-				D4F13A6A2E4EAE4600462944 /* Mini Profile View */,
 				D4F13A7A2E4EAE4600462944 /* Garmin Sync */,
 				D4F13A8A2E4EAE4600462944 /* Equipment List */,
 				D4F13AA72E4EAE4600462944 /* Misc */,
@@ -1640,7 +1640,6 @@
 				D4F13B392E4EAE4600462944 /* SplitActivity.nib */,
 				D4F13B3B2E4EAE4600462944 /* SummaryWindow.nib */,
 				D4F13B3F2E4EAE4600462944 /* TrackDataEntry.nib */,
-				D4F13B412E4EAE4600462944 /* TransparentMapWindow.nib */,
 				D4F13B432E4EAE4600462944 /* TransportPanel.nib */,
 			);
 			name = nibs;
@@ -2113,7 +2112,6 @@
 				D4F13C582E4EAE4600462944 /* AGButton_Trans.png in Resources */,
 				D4F13C5A2E4EAE4600462944 /* FinishMarker.png in Resources */,
 				D4F13C5B2E4EAE4600462944 /* CompareWindow.xib in Resources */,
-				D4F13C5C2E4EAE4600462944 /* TransparentMapWindow.nib in Resources */,
 				D4F13C5D2E4EAE4600462944 /* TransportPanel.nib in Resources */,
 				D4CCE92A2E5049B900B46DB2 /* MainMenu.nib in Resources */,
 				D4F13C5F2E4EAE4600462944 /* MapDetailWindowController.nib in Resources */,
@@ -2605,14 +2603,6 @@
 				D4CCE9122E5048D300B46DB2 /* en */,
 			);
 			name = TrackDataEntry.nib;
-			sourceTree = "<group>";
-		};
-		D4F13B412E4EAE4600462944 /* TransparentMapWindow.nib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				D4CCE9212E5048D300B46DB2 /* en */,
-			);
-			name = TransparentMapWindow.nib;
 			sourceTree = "<group>";
 		};
 		D4F13B432E4EAE4600462944 /* TransportPanel.nib */ = {

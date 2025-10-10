@@ -325,7 +325,7 @@ static void DBUpdateHook(void *ud, int op, const char *db, const char *tbl, sqli
 
     void (^doClose)(void) = ^{
         if (!_isOpen) {
-            NSLog(@"[DBM] close: already closed");
+            ///NSLog(@"[DBM] close: already closed");
             return;
         }
 

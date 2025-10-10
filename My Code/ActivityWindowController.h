@@ -9,7 +9,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
-
+#import "ActivityDetailView.h"
 
 
 @class Track;
@@ -25,7 +25,7 @@
 @class EditMarkersController;
 @class DataHUDWindowController;
 @class ActivityWindowController;
-
+@class ActivityDetailViewDelegate;
 
 @protocol ActivityWindowControllerDelegate <NSObject>
 @required
@@ -33,7 +33,7 @@
 @end
 
 
-@interface ActivityWindowController : NSWindowController <NSWindowDelegate, NSDrawerDelegate>
+@interface ActivityWindowController : NSWindowController <NSWindowDelegate, NSDrawerDelegate, ActivityDetailViewDelegate>
 {
 	IBOutlet NSDrawer*      settingsDrawer;
 	IBOutlet NSWindow*      activityWindow;

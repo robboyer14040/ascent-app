@@ -8,11 +8,94 @@
 #import "Defs.h"
 #import "PathMarker.h"
 #import "AnimTimer.h"
-//#import "ActivityDetailTransparentView.h"
+#import "PlotInfo.h"
+
+
+#define HEADER_HEIGHT         50
+
+#define DATE_METHOD           activeTimeDelta
+#define DURATION_METHOD       movingDurationForGraphs
+#define SLOWEST_PACE          1800.0
+
+
 
 typedef float (*tAccessor)(id, SEL);
 
+
+
 @interface ActivityDetailView ()
+{
+    Track                               *track;
+    Lap                                 *lap;
+    Track                               *lastTrack;
+    NSMutableDictionary                 *tickFontAttrs;
+    NSMutableDictionary                 *animFontAttrs;
+    NSMutableDictionary                 *headerFontAttrs;
+    NSMutableDictionary                 *textFontAttrs;
+    NSMutableArray                      *plotAttributesArray;
+    NSColor                             *animRectColor;
+    NSImage                             *altSignImage;
+    NSImage                             *lapMarkerImage;
+    NSImage                             *startMarkerImage;
+    NSImage                             *finishMarkerImage;
+    NSImage                             *peakImage;
+    NSBezierPath                        *altPath;
+    NSBezierPath                        *hpath;
+    NSBezierPath                        *dpath;
+    NSBezierPath                        *spath;
+    NSInvocation                        *mContextualMenuInvocation;
+    NSInvocation                        *mSelectionUpdateInvocation;
+    NSInvocation                        *dataHudUpdateInvocation;
+    NSNumberFormatter                   *numberFormatter;
+    NSPoint                             prevPt;
+    NSRect                              lastBounds;
+    NSRect                              vertTickBounds;
+    NSRect                              horizTickBounds;
+    float                               minalt, maxalt, mindist, maxdist, lastdist, altdif;
+    float                               maxhr, maxsp, mingr, maxgr, maxcd, maxpwr;
+    float                               maxhrGR, maxspGR, mingrGR, maxgrGR, maxcdGR, maxpwrGR, mintempGR, maxtempGR;
+    float                               minhrGR, minspGR,  mincdGR, minpwrGR;
+    NSTimeInterval                      plotDuration;
+    float                               maxDurationForPlotting;
+    int                                 currentTrackPos, numPos;
+    int                                 peakType;
+    int                                 dataRectType;
+    int                                 numAltitudeVertTickPoints;
+    int                                 maxHorizTicks;
+    int                                 maxVertTicks;
+    int                                    posOffsetIndex;
+    NSRect                              dataRect;
+    BOOL                                firstAnim;
+    BOOL                                bypassAnim;
+    BOOL                                showHRZones;
+    BOOL                                showLaps;
+    BOOL                                showMarkers;
+    BOOL                                showPowerPeakIntervals;
+    BOOL                                showPeaks;
+    BOOL                                showCrossHairs;
+    BOOL                                showHud;
+    BOOL                                animating;
+    BOOL                                xAxisIsTime;
+    BOOL                                lastXAxisIsTime;
+    BOOL                                showPace;
+    BOOL                                isStatute;
+    BOOL                                selectRegionInProgress;
+    BOOL                                trackHasPoints;
+    BOOL                                drawHeader;
+    BOOL                                showVerticalTicks;
+    BOOL                                showHorizontalTicks;
+    BOOL                                overrideDistance;
+    BOOL                                dragStart;
+    int                                 numPeaks;
+    int                                 peakThreshold;
+    int                                 numAvgPoints;
+    int                                    selectionStartIdx;
+    int                                    selectionEndIdx;
+    float                               zonesOpacity;
+    float                               markerRightPadding;
+    float                                topAreaHeight;
+    float                                vertPlotYOffset;
+}
 -(void) resetPaths;
 -(void)doDragMove:(float)dx;
 @property(nonatomic) float maxdist;
@@ -35,379 +118,17 @@ typedef float (*tAccessor)(id, SEL);
 @synthesize vertPlotYOffset;
 
 
-#define HEADER_HEIGHT         50
-
-#define DATE_METHOD           activeTimeDelta
-#define DURATION_METHOD       movingDurationForGraphs
-#define SLOWEST_PACE          1800.0
-
-static const int kBadSpeed = -9999.99;
-
-typedef struct _tPlotInfo
-{
-   int         type;
-   const char* name;
-   NSString*   defaultsKey;
-   int         colorTag;
-   NSPoint     pos;
-   float       opacityDefault;
-   int         lineStyleDefault;
-   int         numPeaksDefault;
-   int         peakThresholdDefault;
-   BOOL        enabledDefault;
-   BOOL        fillEnabledDefault;
-   BOOL        showLapsDefault;
-   BOOL        showPeaksDefault;
-   BOOL        showMarkersDefault;
-   int         averageType;
-   BOOL        isAverage;
-   
-} tPlotInfo;
-
-#define     Col1X    228
-#define     Col2X    503
-#define		Col3X	 776
-#define     AltLineY 131
-#define     Line1Y   131
-#define     Line2Y   108
-#define     Line3Y   85
-#define     Line4Y   62
-#define     Line5Y   39
-#define     Line6Y   16
-
-tPlotInfo plotInfoArray[] = 
-{
-   {  
-		kAltitude,
-		"Altitude", 
-		@"RCBDefaultsPlotAlt",
-		kAltitude,
-		{ Col3X, AltLineY},
-		0.25,
-		0,
-		3, 
-		25,
-		YES,
-		YES,
-		YES,
-		NO,
-		YES,
-		kReserved,
-		NO
-	},
-	{  
-		kHeartrate,
-		"Heart rate", 
-		@"RCBDefaultsPlotHR",
-		kHeartrate,
-		{ Col1X, Line1Y},
-		1.0,
-		0,
-		3, 
-		25,
-		YES,
-		NO,
-		NO,
-		NO,
-		NO,
-		kAvgHeartrate,
-		NO
-	},
-	{  
-		kSpeed,
-		"Speed", 
-		@"RCBDefaultsPlotSpd",
-		kSpeed,
-		{ Col1X, Line2Y},
-		1.0,
-		0,
-		3, 
-		25,
-		YES,
-		NO,
-		NO,
-		NO,
-		NO,
-		kAvgSpeed,
-		NO
-	},
-	{  
-		kCadence,
-		"Cadence", 
-		@"RCBDefaultsPlotCad",
-		kCadence,
-		{ Col1X, Line3Y},
-		1.0,
-		0,
-		3, 
-		25,
-		NO,
-		NO,
-		NO,
-		NO,
-		NO,
-		kAvgCadence,
-		NO
-	},
-	{  
-		kPower,
-		"Power", 
-		@"RCBDefaultsPlotPwr",
-		kPower,
-		{ Col1X, Line4Y},
-		1.0,
-		0,
-		3, 
-		25,
-		NO,
-		NO,
-		NO,
-		NO,
-		NO,
-		kAvgPower,
-		NO
-	},
-	{  
-		kTemperature,
-		"Temperature", 
-		@"RCBDefaultsPlotTmp",
-		kTemperature,
-		{ Col1X, Line6Y},
-		1.0,
-		0,
-		3, 
-		25,
-		NO,
-		NO,
-		NO,
-		NO,
-		NO,
-		kAvgTemperature,
-		NO
-	},
-	{  
-		kGradient,
-		"Gradient", 
-		@"RCBDefaultsPlotGrd",
-		kGradient,
-		{ Col1X, Line5Y},
-		1.0,
-		0,
-		3, 
-		25,
-		NO,
-		NO,
-		NO,
-		NO,
-		NO,
-		kAvgGradient
-	},
-	{  
-		kAvgHeartrate,
-		"Heartrate", 
-		@"RCBDefaultsPlotAvgHR",
-		kHeartrate,
-		{ Col2X, Line1Y},
-		1.0,
-		1,
-		3, 
-		25,
-		NO,
-		NO,
-		NO,
-		NO,
-		NO,
-		kReserved,
-		YES
-	},
-	{  
-		kAvgSpeed,
-		"Speed", 
-		@"RCBDefaultsPlotAvgSpd",
-		kSpeed,
-		{ Col2X, Line2Y},
-		1.0,
-		1,
-		3, 
-		25,
-		NO,
-		NO,
-		NO,
-		NO,
-		NO,
-		kReserved,
-		YES
-	},
-	{  
-		kAvgCadence,
-		"Cadence", 
-		@"RCBDefaultsPlotAvgCad",
-		kCadence,
-		{ Col2X, Line3Y},
-		1.0,
-		1,
-		3, 
-		25,
-		NO,
-		NO,
-		NO,
-		NO,
-		NO,
-		kReserved,
-		YES
-	},
-	{  
-		kAvgPower,
-		"Power", 
-		@"RCBDefaultsPlotAvgPwr",
-		kPower,
-		{ Col2X, Line4Y},
-		1.0,
-		1,
-		3, 
-		25,
-		NO,
-		NO,
-		NO,
-		NO,
-		NO,
-		kReserved,
-		YES
-	},
-	{  
-		kAvgTemperature,
-		"Temperature", 
-		@"RCBDefaultsPlotAvgTmp",
-		kTemperature,
-		{ Col2X, Line6Y},
-		1.0,
-		1,
-		3, 
-		25,
-		NO,
-		NO,
-		NO,
-		NO,
-		NO,
-		kReserved,
-		YES
-	},
-	{  
-		kAvgGradient,
-		"Gradient", 
-		@"RCBDefaultsPlotAvgGrd",
-		kGradient,
-		{ Col2X, Line5Y},
-		1.0,
-		1,
-		3, 
-		25,
-		NO,
-		NO,
-		NO,
-		NO,
-		NO,
-		kReserved,
-		YES
-   },
-#if 1
-   {  
-		kReserved,
-		"Background", 
-		@"RCBDefaultsPlotBck",
-		kBackground,
-		{ 844, Line1Y},
-		1.0,
-		0,
-		3, 
-		25,
-		NO,
-		NO,
-		NO,
-		NO,
-		NO,
-		kReserved,
-		NO
-	},
-#endif
-	{  
-		kReserved,
-		"kReserved", 
-		@"RCBDefaultsPlotRsvd",
-		kBackground,
-		{ 0, 0},
-		1.0,
-		0,
-		3, 
-		25,
-		NO,
-		NO,
-		NO,
-		NO,
-		NO,
-		kReserved,
-		NO
-   }
-};
-
-
-
-- (NSMenu *)menuForEvent:(NSEvent *)theEvent
-{
-   [mContextualMenuInvocation invoke];
-   NSMenu* menu;
-   [mContextualMenuInvocation getReturnValue:&menu];
-   return menu;
-}
-
-
-
--(void) setContextualMenuInvocation:(NSInvocation*)inv
-{
-   if (inv != mContextualMenuInvocation)
-   {
-      [mContextualMenuInvocation release];
-      mContextualMenuInvocation = inv;
-      [mContextualMenuInvocation retain];
-   }
-}
-
--(void) setSelectionUpdateInvocation:(NSInvocation*)inv
-{
-   if (inv != mSelectionUpdateInvocation)
-   {
-      [mSelectionUpdateInvocation release];
-      mSelectionUpdateInvocation = inv;
-      [mSelectionUpdateInvocation retain];
-   }
-}
-
--(void) setDataHudUpdateInvocation:(NSInvocation*)inv
-{
-   if (inv != dataHudUpdateInvocation)
-   {
-      [dataHudUpdateInvocation release];
-      dataHudUpdateInvocation = inv;
-      [dataHudUpdateInvocation retain];
-   }
-}
-
-
-- (NSRect) drawBounds
-{
-   return NSInsetRect([self bounds], 4.0, 4.0);
-}
-      
-
 - (instancetype)initWithFrame:(NSRect)r {
     if ((self = [super initWithFrame:r])) [self commonInit];
     return self;
 }
 
+
 - (instancetype)initWithCoder:(NSCoder *)c {
     if ((self = [super initWithCoder:c])) [self commonInit];
     return self;
 }
+
 
 - (void)commonInit
 {
@@ -511,6 +232,54 @@ tPlotInfo plotInfoArray[] =
 	[super dealloc];
 }
 
+
+
+- (NSMenu *)menuForEvent:(NSEvent *)theEvent
+{
+   [mContextualMenuInvocation invoke];
+   NSMenu* menu;
+   [mContextualMenuInvocation getReturnValue:&menu];
+   return menu;
+}
+
+
+
+-(void) setContextualMenuInvocation:(NSInvocation*)inv
+{
+   if (inv != mContextualMenuInvocation)
+   {
+      [mContextualMenuInvocation release];
+      mContextualMenuInvocation = inv;
+      [mContextualMenuInvocation retain];
+   }
+}
+
+-(void) setSelectionUpdateInvocation:(NSInvocation*)inv
+{
+   if (inv != mSelectionUpdateInvocation)
+   {
+      [mSelectionUpdateInvocation release];
+      mSelectionUpdateInvocation = inv;
+      [mSelectionUpdateInvocation retain];
+   }
+}
+
+-(void) setDataHudUpdateInvocation:(NSInvocation*)inv
+{
+   if (inv != dataHudUpdateInvocation)
+   {
+      [dataHudUpdateInvocation release];
+      dataHudUpdateInvocation = inv;
+      [dataHudUpdateInvocation retain];
+   }
+}
+
+
+- (NSRect) drawBounds
+{
+   return NSInsetRect([self bounds], 4.0, 4.0);
+}
+      
 
 -(void) _updatePlotAttributes
 {
@@ -3939,7 +3708,8 @@ static BOOL dragging = NO;
 						[transparentView setStartSelection:[self calcTransparentViewPos:i]];
 					}
 					// if dragging to the right, update the ending index
-					if (i > selectionStartIdx) selectionEndIdx = i;
+					if (i > selectionStartIdx)
+                        selectionEndIdx = i;
 					[transparentView   setEndSelection:[self calcTransparentViewPos:i]];
 					// invoke the controller method with the new track position (index in goodPoints)
 					[mSelectionUpdateInvocation setArgument:&currentTrackPos 
@@ -4015,8 +3785,12 @@ static ActivityDetailView* lastDown = nil;
 
 - (void)mouseUp:(NSEvent*) ev
 {
-   dragging = NO;
-   bypassAnim = NO;
+    dragging = NO;
+    bypassAnim = NO;
+    if ([self.delegate respondsToSelector:@selector(selectionComplete:endPointIndex:)]) {
+        [self.delegate selectionComplete:selectionStartIdx
+                           endPointIndex:selectionEndIdx];
+    }
 }
 
 

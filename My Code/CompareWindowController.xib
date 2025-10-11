@@ -5,14 +5,30 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
-        <customObject id="-2" userLabel="File's Owner" customClass="CompareWindowController"/>
+        <customObject id="-2" userLabel="File's Owner" customClass="CompareWindowController">
+            <connections>
+                <outlet property="adView" destination="9xp-Ba-bqV" id="q4V-Pw-Jg0"/>
+                <outlet property="analysisButton" destination="fjz-qr-yGZ" id="gM8-Za-2Jc"/>
+                <outlet property="dot1Image" destination="rfo-6z-1d1" id="NSj-cg-wQC"/>
+                <outlet property="dot1Label" destination="tSP-bC-4f5" id="Abf-PT-H0L"/>
+                <outlet property="dot2Image" destination="U9B-CD-7Tt" id="WhX-NC-f14"/>
+                <outlet property="dot2Label" destination="ZRR-9h-c3x" id="Px3-Z0-6eo"/>
+                <outlet property="dot3Image" destination="qUV-Dw-dJI" id="7G3-cC-d9Q"/>
+                <outlet property="dot3Label" destination="lby-ea-mHW" id="2IF-xC-3MZ"/>
+                <outlet property="dot4Image" destination="tvx-fQ-Yr9" id="1uQ-8X-jNv"/>
+                <outlet property="dot4Label" destination="uee-lG-Rd1" id="K6g-1d-e0O"/>
+                <outlet property="mapView" destination="Rdr-wC-njs" id="D7d-Dy-99a"/>
+                <outlet property="window" destination="zkR-6q-kP5" id="uIj-l4-rqb"/>
+                <outlet property="zoomMapView" destination="n6q-WT-Xtl" id="ZL2-ND-SBg"/>
+            </connections>
+        </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="" animationBehavior="default" id="zkR-6q-kP5" userLabel="Compare Window">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="240" y="256" width="824" height="793"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2240" height="1235"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1512" height="944"/>
             <view key="contentView" identifier="CompareWindow" id="lgN-eQ-QRc" userLabel="Main View">
                 <rect key="frame" x="0.0" y="0.0" width="824" height="793"/>
                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

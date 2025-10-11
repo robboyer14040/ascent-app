@@ -166,10 +166,10 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	if (focusPVC)
 	{
 		Track* t = focusPVC.track;
-		int sc = [zoomMapView scale];
-		[mapView setCurrentTrack:t];
-		[zoomMapView setCurrentTrack:t];
-		[zoomMapView setScale:sc];
+		int sc = [_zoomMapView scale];
+		[_mapView setCurrentTrack:t];
+		[_zoomMapView setCurrentTrack:t];
+		[_zoomMapView setScale:sc];
 		lastFocusedPVC = focusPVC;
 	}
 	[[AnimTimer defaultInstance] forceUpdate];
@@ -185,18 +185,18 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 		if (st.intValue == kStop)
 		{
 			[profilesTransparentView setHidePosition:NO];
-			[stopButton setState:NSControlStateValueOn];
+			///[stopButton setState:NSControlStateValueOn];
 		}
 		else if (st.intValue == kPlay)
 		{
 			[profilesTransparentView setHidePosition:YES];
 			if ([[AnimTimer defaultInstance] playingInReverse])
 			{
-				[stopButton setState:NSControlStateValueOff];
+				///[stopButton setState:NSControlStateValueOff];
 			}
 			else
 			{
-				[stopButton setState:NSControlStateValueOff];
+				///[stopButton setState:NSControlStateValueOff];
 			}
 		}
 	}					
@@ -210,8 +210,8 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	{
 		[[self window] center];
 	}
-	[mainSplitView setAutosaveName:@"CWmainSplitView"];
-	[leftSplitView setAutosaveName:@"CWLeftSplitView"];
+	///[mainSplitView setAutosaveName:@"CWmainSplitView"];
+	///[leftSplitView setAutosaveName:@"CWLeftSplitView"];
 	
 	
 	NSRect dummy;
@@ -230,10 +230,10 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 //	[[self window]  addChildWindow:(NSWindow*)self.mapTransparentWindow 
 //						   ordered:NSWindowAbove];
 	///[mapView setTransparentView:self.mapTransparentView];
-	[mapView setIsDetailedMap:YES];
-	[mapView setMoveMapDuringAnimation:NO];
-	[mapView setShowIntervalMarkers:NO];
-	[mapView setEnableMapInteraction:NO];
+	[_mapView setIsDetailedMap:YES];
+	[_mapView setMoveMapDuringAnimation:NO];
+	[_mapView setShowIntervalMarkers:NO];
+	[_mapView setEnableMapInteraction:NO];
 	
 	self.zoomMapTransparentView = [[CWTransparentMapView alloc] initWithFrame:dummy
 																	 dotColors:dotColorsArray];
@@ -244,16 +244,16 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 //	[[self window]  addChildWindow:(NSWindow*)self.zoomMapTransparentWindow 
 //						   ordered:NSWindowAbove];
 	///[zoomMapView setTransparentView:self.zoomMapTransparentView];
-	[zoomMapView setIsDetailedMap:YES];
-	[zoomMapView setMoveMapDuringAnimation:YES];
-	[zoomMapView setShowIntervalMarkers:NO];
-	[zoomMapView setEnableMapInteraction:NO];
+	[_zoomMapView setIsDetailedMap:YES];
+	[_zoomMapView setMoveMapDuringAnimation:YES];
+	[_zoomMapView setShowIntervalMarkers:NO];
+	[_zoomMapView setEnableMapInteraction:NO];
 	
 	
 	// setup up profile views
 	int trackCount = (int)[trackArray count];
 	
-	self.profilesTransparentView = [[ProfilesTransparentView alloc] initWithFrame:profilesContainerView.frame];
+	///self.profilesTransparentView = [[ProfilesTransparentView alloc] initWithFrame:profilesContainerView.frame];
 	
 	self.numViews = trackCount > kMaxViews ? kMaxViews : trackCount; 
 	for (int i=0; i<kMaxViews; i++)
@@ -304,47 +304,47 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 		[pvc.transparentView setShowingPace:isPace];
 		[adv setShowPace:isPace];
 		[adv setAutoresizingMask:0];
-		[profilesContainerView addSubview:adv];
-		[profileControllerArray addObject:pvc];
+		//[profilesContainerView addSubview:adv];
+		//[profileControllerArray addObject:pvc];
 	}
-	[profilesContainerView addSubview:self.profilesTransparentView
-						   positioned:NSWindowAbove
-						   relativeTo:nil];
+	//[profilesContainerView addSubview:self.profilesTransparentView
+	//					   positioned:NSWindowAbove
+	//					   relativeTo:nil];
 
 	[self updateTracks];
 
 	NSString* path;
 	NSImage*  image;
 	
-	path = [[NSBundle mainBundle] pathForResource:@"RoundPlay" ofType:@"png"];
-	image = [[NSImage alloc] initWithContentsOfFile:path];
-	[stopButton setAlternateImage:image];
-	path = [[NSBundle mainBundle] pathForResource:@"RoundStop" ofType:@"png"];
-	image = [[NSImage alloc] initWithContentsOfFile:path];
-	[stopButton setImage:image];
-	
-	path = [[NSBundle mainBundle] pathForResource:@"RoundRTZ" ofType:@"png"];
-	image = [[NSImage alloc] initWithContentsOfFile:path] ;
-	[rtzButton setImage:image];
-	
-	path = [[NSBundle mainBundle] pathForResource:@"RoundFF" ofType:@"png"];
-	image = [[NSImage alloc] initWithContentsOfFile:path];
-	[rteButton setImage:image];
-	
-	NSFont* font = [NSFont fontWithName:@"LCDMono Ultra" size:28.0];
-	[timecodeText setFont:font];
-	[timecodeText setTextColor:[NSColor blackColor]];
-	[timecodeText setStringValue:@"00:00:00"];
+//	path = [[NSBundle mainBundle] pathForResource:@"RoundPlay" ofType:@"png"];
+//	image = [[NSImage alloc] initWithContentsOfFile:path];
+//	//[stopButton setAlternateImage:image];
+//	path = [[NSBundle mainBundle] pathForResource:@"RoundStop" ofType:@"png"];
+//	image = [[NSImage alloc] initWithContentsOfFile:path];
+//	///[stopButton setImage:image];
+//	
+//	path = [[NSBundle mainBundle] pathForResource:@"RoundRTZ" ofType:@"png"];
+//	image = [[NSImage alloc] initWithContentsOfFile:path] ;
+//	[rtzButton setImage:image];
+//	
+//	path = [[NSBundle mainBundle] pathForResource:@"RoundFF" ofType:@"png"];
+//	image = [[NSImage alloc] initWithContentsOfFile:path];
+//	[rteButton setImage:image];
+//	
+//	NSFont* font = [NSFont fontWithName:@"LCDMono Ultra" size:28.0];
+//	[timecodeText setFont:font];
+//	[timecodeText setTextColor:[NSColor blackColor]];
+//	[timecodeText setStringValue:@"00:00:00"];
 	
 	AnimTimer * at = [AnimTimer defaultInstance];
-	[speedFactorSlider setFloatValue:[at speedFactor]];
-	[self updateSpeedFactorText];
+//	[speedFactorSlider setFloatValue:[at speedFactor]];
+//	[self updateSpeedFactorText];
 	
 	float endTime = [at endingTime];
-	if (endTime > 0.0)
-	{
-		[locationSlider setFloatValue:[at animTime]*100.0/endTime];
-	}
+//	if (endTime > 0.0)
+//	{
+//		[locationSlider setFloatValue:[at animTime]*100.0/endTime];
+//	}
 	[[AnimTimer defaultInstance] registerForTimerUpdates:self];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(stateChanged:)
@@ -359,16 +359,16 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 												 name:PreferencesChanged
 											   object:nil];
 	
-	int plotType = [Utils intFromDefaults:RCBDefaultCompareWindowPlotType];
-	if (plotType == 0) plotType = kHeartrate;
-	[plotTypePopup selectItemWithTag:plotType];
+//	int plotType = [Utils intFromDefaults:RCBDefaultCompareWindowPlotType];
+//	if (plotType == 0) plotType = kHeartrate;
+//	[plotTypePopup selectItemWithTag:plotType];
+//	
+//	bool isTimePlot = [Utils boolFromDefaults:RCBDefaultCompareWindowXAxisType];
+//	[distanceTimePopup selectItemAtIndex:(isTimePlot ? 1 : 0)];
 	
-	bool isTimePlot = [Utils boolFromDefaults:RCBDefaultCompareWindowXAxisType];
-	[distanceTimePopup selectItemAtIndex:(isTimePlot ? 1 : 0)];
-	
-	guideFollows = [Utils intFromDefaults:RCBDefaultCompareWindowGuideFollows];
-	[guideFollowsPopup selectItemAtIndex:-1];
-	[guideFollowsPopup selectItemAtIndex:guideFollows];
+//	guideFollows = [Utils intFromDefaults:RCBDefaultCompareWindowGuideFollows];
+//	[guideFollowsPopup selectItemAtIndex:-1];
+//	[guideFollowsPopup selectItemAtIndex:guideFollows];
 }
 
 
@@ -536,7 +536,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 			{
 				float v = origMaxDistance/dx;
 				///printf("ZOOM TO: %0.1f\n", v);
-				[scaleSlider setFloatValue:v];
+				///[scaleSlider setFloatValue:v];
 			}
 			[self rtz:self];
 		}	
@@ -604,12 +604,12 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 			if (!zoomIn) pvc.lapOffset = 0;
 		}
 	}
-	float dx = profilesTransparentView.maxDist - profilesTransparentView.minDist;
-	if (dx > 0.0)
-	{
-		float v = origMaxDistance/dx;
-		[scaleSlider setFloatValue:v];
-	}
+//	float dx = profilesTransparentView.maxDist - profilesTransparentView.minDist;
+//	if (dx > 0.0)
+//	{
+//		float v = origMaxDistance/dx;
+//		[scaleSlider setFloatValue:v];
+//	}
 	[self rtz:self];
     [[AnimTimer defaultInstance] updateTimerDuration];
 }
@@ -633,87 +633,87 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 {
 	///float d = [mainSplitView dividerThickness];
 	// NOTE: NSSplitView has 'flipped' coordinate system (y=0 at the top)
-	[leftSplitView adjustSubviews];
+	///[leftSplitView adjustSubviews];
 	// bugfix -- remove divider thickness from frame width to get proper map frames
-	NSRect fr = [mapView frame];
+	NSRect fr = [_mapView frame];
 	///fr.size.width -= d;
-	[mapView setFrame:fr];
-	NSRect zfr = [zoomMapView frame];
+	[_mapView setFrame:fr];
+	NSRect zfr = [_zoomMapView frame];
 	///zfr.size.width -= d;
-	[zoomMapView setFrame:zfr];
+	[_zoomMapView setFrame:zfr];
 	///printf("n: [%0.1f, %0.1f] %0.1fx%0.1f\n", fr.origin.x, fr.origin.y, fr.size.width, fr.size.height);
 	///printf("z: [%0.1f, %0.1f] %0.1fx%0.1f\n", zfr.origin.x, zfr.origin.y, zfr.size.width, zfr.size.height);
-	NSRect rsfr = [mainSplitView frame];
-	zfr.origin.x += rsfr.origin.x;
-	zfr.origin.y = rsfr.origin.y;		// zoom map is always starting at y=0 within content rect
-	zfr.origin = [[self window] convertPointToScreen:zfr.origin];
-	//zfr = NSInsetRect(zfr, 10.0, 10.0);
-	NSRect vfr = zfr;
-	vfr.origin = NSZeroPoint;
-	///printf("vz: [%0.1f, %0.1f] %0.1fx%0.1f\n", zfr.origin.x, zfr.origin.y, zfr.size.width, zfr.size.height);
-	[zoomMapTransparentView setFrame:vfr];
-	[zoomMapTransparentView setBounds:vfr];
-	[zoomMapTransparentView setNeedsDisplay:YES];
+//	NSRect rsfr = [mainSplitView frame];
+//	zfr.origin.x += rsfr.origin.x;
+//	zfr.origin.y = rsfr.origin.y;		// zoom map is always starting at y=0 within content rect
+//	zfr.origin = [[self window] convertPointToScreen:zfr.origin];
+//	//zfr = NSInsetRect(zfr, 10.0, 10.0);
+//	NSRect vfr = zfr;
+//	vfr.origin = NSZeroPoint;
+//	///printf("vz: [%0.1f, %0.1f] %0.1fx%0.1f\n", zfr.origin.x, zfr.origin.y, zfr.size.width, zfr.size.height);
+//	[zoomMapTransparentView setFrame:vfr];
+//	[zoomMapTransparentView setBounds:vfr];
+//	[zoomMapTransparentView setNeedsDisplay:YES];
+//	
 	
-	
-	fr.origin.x += rsfr.origin.x;
-	fr.origin.y += rsfr.origin.y;
-	fr.origin.y += zfr.size.height + [leftSplitView dividerThickness];
-	fr.origin = [[self window] convertPointToScreen:fr.origin];
-	//fr = NSInsetRect(fr, 10.0, 10.0);
-	vfr = fr;
-	vfr.origin = NSZeroPoint;
-	[mapTransparentView setFrame:vfr];
-	[mapTransparentView setBounds:vfr];
-	[mapTransparentView setNeedsDisplay:YES];
+//	fr.origin.x += rsfr.origin.x;
+//	fr.origin.y += rsfr.origin.y;
+//	fr.origin.y += zfr.size.height + [leftSplitView dividerThickness];
+//	fr.origin = [[self window] convertPointToScreen:fr.origin];
+//	//fr = NSInsetRect(fr, 10.0, 10.0);
+//	vfr = fr;
+//	vfr.origin = NSZeroPoint;
+//	[mapTransparentView setFrame:vfr];
+//	[mapTransparentView setBounds:vfr];
+//	[mapTransparentView setNeedsDisplay:YES];
 }
 	
 	
 -(void)updateProfileViewsSizes
 {
-	NSRect fr = [profilesContainerView frame];
-	self.profilesTransparentView.frame = profilesContainerView.bounds;
-	self.profilesTransparentView.bounds = profilesContainerView.bounds;
-	[self.profilesTransparentView layoutViewSublayers];
-	[self.profilesTransparentView.layer setNeedsDisplay];
-	NSRect sfr = [mainSplitView frame];
-	NSRect cfr = [rightContentView frame];
-	int numTracks = (int)[trackArray count];
-	float containerH = fr.size.height - RULER_HEIGHT;
-	int minViewAreas = 2;
-	int nv = self.numViews >= minViewAreas ? self.numViews : minViewAreas;
-	if (numTracks > 0)
-	{
-		float areaH = containerH/nv;
-		float h = areaH;
-		NSRect afr = fr;
-		afr.origin.x = 0.0;
-		afr.origin.y = containerH - (areaH);
-		afr.size.height = h;
-		fr.origin.y = fr.origin.y + containerH - (areaH );
-		fr.size.height = h;
-		NSRect twfr = NSInsetRect(fr, 10.0, 10.0);
-		twfr.size.height += 10.0;
-		twfr.origin.x += sfr.origin.x + cfr.origin.x;
-		twfr.origin.y += sfr.origin.y;
-		twfr.origin = [[self window] convertPointToScreen:twfr.origin];
-		NSRect tvfr = twfr;
-		tvfr.origin = NSZeroPoint;
-		for (CompareProfileViewController* pvc in profileControllerArray)
-		{
-			if (pvc.track != nil)
-			{
-				[pvc.adView setFrame:afr];
-				[pvc.transparentView setFrame:tvfr];
-				[pvc.transparentView setBounds:tvfr];
-				[pvc.transparentView.layer setNeedsDisplay];
-				[pvc.adView setNeedsDisplay:YES];
-				[pvc.transparentView setNeedsDisplay:YES];
-				afr.origin.y -= areaH;
-				twfr.origin.y -= areaH;
-			}
-		}
-	}
+//	NSRect fr = [profilesContainerView frame];
+//	self.profilesTransparentView.frame = profilesContainerView.bounds;
+//	self.profilesTransparentView.bounds = profilesContainerView.bounds;
+//	[self.profilesTransparentView layoutViewSublayers];
+//	[self.profilesTransparentView.layer setNeedsDisplay];
+//	NSRect sfr = [mainSplitView frame];
+//	NSRect cfr = [rightContentView frame];
+//	int numTracks = (int)[trackArray count];
+//	float containerH = fr.size.height - RULER_HEIGHT;
+//	int minViewAreas = 2;
+//	int nv = self.numViews >= minViewAreas ? self.numViews : minViewAreas;
+//	if (numTracks > 0)
+//	{
+//		float areaH = containerH/nv;
+//		float h = areaH;
+//		NSRect afr = fr;
+//		afr.origin.x = 0.0;
+//		afr.origin.y = containerH - (areaH);
+//		afr.size.height = h;
+//		fr.origin.y = fr.origin.y + containerH - (areaH );
+//		fr.size.height = h;
+//		NSRect twfr = NSInsetRect(fr, 10.0, 10.0);
+//		twfr.size.height += 10.0;
+//		twfr.origin.x += sfr.origin.x + cfr.origin.x;
+//		twfr.origin.y += sfr.origin.y;
+//		twfr.origin = [[self window] convertPointToScreen:twfr.origin];
+//		NSRect tvfr = twfr;
+//		tvfr.origin = NSZeroPoint;
+//		for (CompareProfileViewController* pvc in profileControllerArray)
+//		{
+//			if (pvc.track != nil)
+//			{
+//				[pvc.adView setFrame:afr];
+//				[pvc.transparentView setFrame:tvfr];
+//				[pvc.transparentView setBounds:tvfr];
+//				[pvc.transparentView.layer setNeedsDisplay];
+//				[pvc.adView setNeedsDisplay:YES];
+//				[pvc.transparentView setNeedsDisplay:YES];
+//				afr.origin.y -= areaH;
+//				twfr.origin.y -= areaH;
+//			}
+//		}
+//	}
 }
 
 
@@ -722,10 +722,10 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	[self updatePosition:0.0
 				 reverse:NO
 			   animating:NO];
-	int scale = [mapView scale];
+	int scale = [_mapView scale];
 	scale -= 3;
 	if (scale < 1) scale = 1;
-	[zoomMapView setScale:scale];
+	[_zoomMapView setScale:scale];
 }
 
 -(void)updateTracks
@@ -735,13 +735,13 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
     NSUInteger numTracks = [trackArray count];
 	if (numTracks > 0)
 	{
-		[profilesContainerView enablePlaceholderText:NO];
-		[mapView setCurrentTrack:[trackArray objectAtIndex:0]];
-		[zoomMapView setCurrentTrack:[trackArray objectAtIndex:0]];
+//		[profilesContainerView enablePlaceholderText:NO];
+		[_mapView setCurrentTrack:[trackArray objectAtIndex:0]];
+		[_zoomMapView setCurrentTrack:[trackArray objectAtIndex:0]];
 	}
 	else
 	{
-		[profilesContainerView enablePlaceholderText:YES];
+		///[profilesContainerView enablePlaceholderText:YES];
 	}
 
 	[mapTransparentView setAllDotsHidden];
@@ -786,7 +786,7 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	self.profilesTransparentView.minDist = 0.0;
 	self.profilesTransparentView.maxDist = maxdis;
 	origMaxDistance = maxdis;
-	[self.profilesTransparentView setNextResponder:profilesContainerView];
+	///[self.profilesTransparentView setNextResponder:profilesContainerView];
 	
 	for (CompareProfileViewController* pvc in profileControllerArray)
 	{
@@ -837,22 +837,22 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 
 -(void)updateLapMenu
 {
-	while( [alignToPopUpButton numberOfItems] > 1)
-	{
-		[alignToPopUpButton removeItemAtIndex:([alignToPopUpButton numberOfItems]-1)];
-	}
-	CompareProfileViewController* pvc = [self pvcWithMostLaps];
-	Track* maxLapTrack = pvc ? pvc.track : nil;
-	if (maxLapTrack)
-	{
-        NSUInteger maxLaps = maxLapTrack.laps.count;
-		[alignToPopUpButton addItemWithTitle:@"Current ruler position"];
-		[alignToPopUpButton addItemWithTitle:@"Activity start"];
-		for (int i=0; i<(maxLaps-1); i++)
-		{
-			[alignToPopUpButton addItemWithTitle:[NSString stringWithFormat:@"Lap %d", i+1]];
-		}
-	}
+//	while( [alignToPopUpButton numberOfItems] > 1)
+//	{
+//		[alignToPopUpButton removeItemAtIndex:([alignToPopUpButton numberOfItems]-1)];
+//	}
+//	CompareProfileViewController* pvc = [self pvcWithMostLaps];
+//	Track* maxLapTrack = pvc ? pvc.track : nil;
+//	if (maxLapTrack)
+//	{
+//        NSUInteger maxLaps = maxLapTrack.laps.count;
+//		[alignToPopUpButton addItemWithTitle:@"Current ruler position"];
+//		[alignToPopUpButton addItemWithTitle:@"Activity start"];
+//		for (int i=0; i<(maxLaps-1); i++)
+//		{
+//			[alignToPopUpButton addItemWithTitle:[NSString stringWithFormat:@"Lap %d", i+1]];
+//		}
+//	}
 }
 
 
@@ -910,17 +910,17 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 
 - (IBAction) displayHelp:(id)sender
 {
-	NSRect fr = [[self window] frame];
-	NSRect panelRect = [[summaryPanelController window] frame];
-	NSPoint origin = fr.origin;
-	origin.x += (fr.size.width/2.0) - (panelRect.size.width/2.0);
-	origin.y += (fr.size.height/2.0)  - (panelRect.size.height/2.0);
-	
-	[[summaryPanelController window] setFrameOrigin:origin];
-	[summaryPanelController showWindow:self];
-	[NSApp runModalForWindow:[summaryPanelController window]];
-	[[summaryPanelController window] orderOut:[self window]];
-	[[self window] makeKeyAndOrderFront:self];
+//	NSRect fr = [[self window] frame];
+//	NSRect panelRect = [[summaryPanelController window] frame];
+//	NSPoint origin = fr.origin;
+//	origin.x += (fr.size.width/2.0) - (panelRect.size.width/2.0);
+//	origin.y += (fr.size.height/2.0)  - (panelRect.size.height/2.0);
+//	
+//	[[summaryPanelController window] setFrameOrigin:origin];
+//	[summaryPanelController showWindow:self];
+//	[NSApp runModalForWindow:[summaryPanelController window]];
+//	[[summaryPanelController window] orderOut:[self window]];
+//	[[self window] makeKeyAndOrderFront:self];
 }
 
 
@@ -962,87 +962,58 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 #define MIN_PROFILE_VIEW_WIDTH			543
 - (void)splitView:(NSSplitView *)splitView resizeSubviewsWithOldSize:(NSSize)oldSize
 {
-	if (splitView == mainSplitView)
-	{
-		NSRect newFrame = [splitView frame];
-		NSRect leftFrame = [leftContentView frame];
-		NSRect rightFrame = [rightContentView frame];
-		float dw = [splitView dividerThickness];
-		if (rightFrame.size.width < MIN_PROFILE_VIEW_WIDTH)
-		{
-			float diff = MIN_PROFILE_VIEW_WIDTH - rightFrame.size.width;
-			leftFrame.size.width -= diff;
-		}
-		leftFrame.size.height = newFrame.size.height;
-		leftFrame.origin = NSMakePoint(0,0);
-		rightFrame.size.width = newFrame.size.width - leftFrame.size.width - dw;
-		rightFrame.size.height = newFrame.size.height;
-		rightFrame.origin.x = leftFrame.size.width + dw;
-		rightContentView.frame = rightFrame;
-		leftContentView.frame = leftFrame;
-	}
-	[splitView adjustSubviews];
+//	if (splitView == mainSplitView)
+//	{
+//		NSRect newFrame = [splitView frame];
+//		NSRect leftFrame = [leftContentView frame];
+//		NSRect rightFrame = [rightContentView frame];
+//		float dw = [splitView dividerThickness];
+//		if (rightFrame.size.width < MIN_PROFILE_VIEW_WIDTH)
+//		{
+//			float diff = MIN_PROFILE_VIEW_WIDTH - rightFrame.size.width;
+//			leftFrame.size.width -= diff;
+//		}
+//		leftFrame.size.height = newFrame.size.height;
+//		leftFrame.origin = NSMakePoint(0,0);
+//		rightFrame.size.width = newFrame.size.width - leftFrame.size.width - dw;
+//		rightFrame.size.height = newFrame.size.height;
+//		rightFrame.origin.x = leftFrame.size.width + dw;
+//		rightContentView.frame = rightFrame;
+//		leftContentView.frame = leftFrame;
+//	}
+//	[splitView adjustSubviews];
 }
 
 
 - (void)splitViewDidResizeSubviews:(NSNotification *)aNotification
 {
-	id obj = [aNotification object];
-	if (obj == mainSplitView) [self updateProfileViewsSizes];
-	[self updateMapViewSizes];
-	[self updatePos:nil];
-	[mapView setDefaults];
-	[[AnimTimer defaultInstance] forceUpdate];
+//	id obj = [aNotification object];
+//	if (obj == mainSplitView) [self updateProfileViewsSizes];
+//	[self updateMapViewSizes];
+//	[self updatePos:nil];
+//	[mapView setDefaults];
+//	[[AnimTimer defaultInstance] forceUpdate];
 }
 
 
-
-#if 0
-- (CGFloat)splitView:(NSSplitView *)splitView constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)dividerIndex
-{
-	float newMin = proposedMin;
-	if (splitView == mainSplitView)
-	{
-		printf("min MAIN proposed:%0.1f\n", proposedMin);
-	}
-	else if (splitView == leftSplitView)
-	{
-		printf("min LEFT proposed:%0.1f\n", proposedMin);
-	}
-	return newMin;
-}
-
-
-- (CGFloat)splitView:(NSSplitView *)splitView constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)dividerIndex
-{
-	if (splitView == mainSplitView)
-	{
-		printf("max MAIN proposed:%0.1f\n", proposedMax);
-	}
-	else if (splitView == leftSplitView)
-	{
-		printf("max LEFT proposed:%0.1f\n", proposedMax);
-	}
-	return proposedMax;
-}
-#endif
 
 
 - (CGFloat)splitView:(NSSplitView *)splitView constrainSplitPosition:(CGFloat)proposedPosition ofSubviewAt:(NSInteger)dividerIndex
 {
-	if (splitView == mainSplitView)
-	{
-		NSRect bounds = [splitView bounds];
-		///printf("pos MAIN proposed:%0.1f\n", proposedPosition);
-		if (proposedPosition < 343.0) proposedPosition = 343;
-		
-		if ((bounds.size.width - proposedPosition) < (MIN_PROFILE_VIEW_WIDTH+8)) proposedPosition = bounds.size.width -  (MIN_PROFILE_VIEW_WIDTH+8);
-	}
-	else if (splitView == leftSplitView)
-	{
-		///printf("pos LEFT proposed:%0.1f\n", proposedPosition);
-	}
-	return proposedPosition;
+//	if (splitView == mainSplitView)
+//	{
+//		NSRect bounds = [splitView bounds];
+//		///printf("pos MAIN proposed:%0.1f\n", proposedPosition);
+//		if (proposedPosition < 343.0) proposedPosition = 343;
+//		
+//		if ((bounds.size.width - proposedPosition) < (MIN_PROFILE_VIEW_WIDTH+8)) proposedPosition = bounds.size.width -  (MIN_PROFILE_VIEW_WIDTH+8);
+//	}
+//	else if (splitView == leftSplitView)
+//	{
+//		///printf("pos LEFT proposed:%0.1f\n", proposedPosition);
+//	}
+//	return proposedPosition;
+    return 0.0;
 }
 
 
@@ -1118,21 +1089,21 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 	///[reverseButton setIntValue:0];
 }
 
-- (NSButton*) playButton
-{
-	return playButton;
-}
-
-
-- (NSButton*) reverseButton
-{
-	return reverseButton;
-}
-
+//- (NSButton*) playButton
+//{
+//	return playButton;
+//}
+//
+//
+//- (NSButton*) reverseButton
+//{
+//	return reverseButton;
+//}
+//
 
 - (void) updateSpeedFactorText
 {
-	[speedFactorText setStringValue:[NSString stringWithFormat:@"%2.0fx",[[AnimTimer defaultInstance] speedFactor]]];
+///	[speedFactorText setStringValue:[NSString stringWithFormat:@"%2.0fx",[[AnimTimer defaultInstance] speedFactor]]];
 }
 
 
@@ -1156,8 +1127,8 @@ NSString* RCBDefaultCompareWindowGuideFollows	= @"DefaultCompareWindowGuideFollo
 
 -(void)zoomDetailMapOneLevel:(BOOL)zoomIn
 {
-	[zoomMapView zoomOneLevel:zoomIn];
-	[mapTransparentView setZoomedInMapRect:[mapView calcRectInMap:[zoomMapView utmMapArea]]];
+	[_zoomMapView zoomOneLevel:zoomIn];
+///	[mapTransparentView setZoomedInMapRect:[mapView calcRectInMap:[zoomMapView utmMapArea]]];
 }
 
 
@@ -1381,13 +1352,13 @@ enum
 
 -(void) updatePosition:(NSTimeInterval)trackTime reverse:(BOOL)rev  animating:(BOOL)anim
 {
-	NSString* s = [[NSString alloc] initWithFormat:@"%02.2d:%02.2d:%02.2d", (int)(trackTime/(60*60)), (int)((trackTime/60))%60, ((int)trackTime)%60];
-	[timecodeText setStringValue:s];
+	///NSString* s = [[NSString alloc] initWithFormat:@"%02.2d:%02.2d:%02.2d", (int)(trackTime/(60*60)), (int)((trackTime/60))%60, ((int)trackTime)%60];
+	///[timecodeText setStringValue:s];
 	AnimTimer * at = [AnimTimer defaultInstance];
 	float endTime = [at endingTime];
 	if (endTime > 0.0)
 	{
-		[locationSlider setFloatValue:[at animTime]*100.0/endTime];
+	///	[locationSlider setFloatValue:[at animTime]*100.0/endTime];
 	}
 	CompareProfileViewController* fastPVC = nil;
 	float maxDist = -1.0;
@@ -1402,9 +1373,9 @@ enum
 			if (t != nil)
 			{
 				focusAID = i;
-				[zoomMapView updateDetailedPosition:trackTime + t.animTimeBegin
-											reverse:[[AnimTimer defaultInstance] playingInReverse]
-										  animating:YES];
+				[_zoomMapView updateDetailedPosition:trackTime + t.animTimeBegin
+                                             reverse:[[AnimTimer defaultInstance] playingInReverse]
+                                           animating:YES];
 			}
 			break;
 		}
@@ -1450,7 +1421,7 @@ enum
 				maxDist = dist;
 				fastestAID = aid;
 			}
-			[mapView updateAnimUsingPoint:pt
+			[_mapView updateAnimUsingPoint:pt
 								nextPoint:nextPt
 									ratio:ratio
 								   animID:aid];
@@ -1462,7 +1433,7 @@ enum
 				//						  animating:YES];
 			}
 			else
-				[zoomMapView updateAnimUsingPoint:pt
+				[_zoomMapView updateAnimUsingPoint:pt
 										nextPoint:nextPt
 											ratio:ratio
 										   animID:aid];
@@ -1471,7 +1442,7 @@ enum
 		++aid;
 	}
 	
-	[mapTransparentView setZoomedInMapRect:[mapView calcRectInMap:[zoomMapView utmMapArea]]];
+	[mapTransparentView setZoomedInMapRect:[_mapView calcRectInMap:[_zoomMapView utmMapArea]]];
 	
 	{
 		fastestPVC = fastPVC;

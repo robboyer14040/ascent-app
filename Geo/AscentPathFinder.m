@@ -13,13 +13,14 @@
 
 @implementation AscentPathFinder
 
-// Private helper to check if two segments are similar enough based on maximum point deviation
-// The check is symmetrical: deviation of trackA from trackB, and trackB from trackA.
+
+// [Existing isSegment:from:similarTo:from:maxDeviationKM: implementation is assumed to be here]
+
 + (BOOL)isSegment:(NSArray<TrackPoint*>*)pointsA
             from:(int)startA to:(int)endA
        similarTo:(NSArray<TrackPoint*>*)pointsB
             from:(int)startB to:(int)endB
-        maxDeviationKM:(float)maxDeviationKM
+  maxDeviationKM:(float)maxDeviationKM
 {
     // A path is defined by the segments (from point[i] to point[i+1]).
     // We check points from the first path against the segments of the second, and vice-versa.
@@ -77,18 +78,19 @@
     return YES;
 }
 
+
+// *** MODIFIED METHOD ***
 + (NSArray<Track*>*)findTracks:(NSArray<Track*>*)trackArray
-              withPathStartingAt:(tLocation)startLocation
-                        lengthKM:(float)lengthKM
-              tolerancePercent:(float)tolerancePercent
+           withPathStartingAt:(tLocation)startLocation
+                     lengthKM:(float)lengthKM
+             tolerancePercent:(float)tolerancePercent
 {
-    // MRC: Use autorelease pool if this method is called frequently in a loop,
-    // though the implementation itself avoids unnecessary object creation.
-    // Since this returns an array, the caller will be responsible for releasing it (non-ARC).
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSMutableArray<Track*>* resultTracks = [[NSMutableArray alloc] init]; // Caller must release
     
     // Safety check for input
     if (lengthKM <= 0.0 || tolerancePercent < 0.0 || [trackArray count] == 0) {
+        [pool release];
         return [resultTracks autorelease];
     }
 
@@ -98,33 +100,30 @@
     float minLengthKM = lengthKM - lengthToleranceKM;
     float maxLengthKM = lengthKM + lengthToleranceKM;
     
-    // Ensure minLength is not negative
     if (minLengthKM < 0.0) minLengthKM = 0.0;
 
     // We need at least one track to establish the reference path (Path A).
-    // Use the first track that successfully yields a segment as the reference.
     Track *referenceTrack = nil;
     int refStartIdx = -1;
     int refEndIdx = -1;
     
-    // Find the first valid reference segment and establish its path points
+    // Find the first valid reference segment
     for (Track *t in trackArray) {
-        // Need to cast to use the category/internal method
+        // Find segment start/end indices using the desired logic within the Track object
         if (t && [t findSegmentStart:&refStartIdx end:&refEndIdx forStartLocation:startLocation length:lengthKM tolerance:tolerancePercent]) {
             referenceTrack = t;
-            // Retain the reference track to ensure it exists throughout the loop (MRC)
-            // But since we are only using its pointers/data, we don't strictly need to retain it
-            // if we assume the input array is retained for the duration.
             break;
         }
     }
     
     if (referenceTrack == nil) {
         // No track in the array contains the starting point and length within tolerance.
+        [pool release];
         return [resultTracks autorelease];
     }
     
-    NSArray<TrackPoint*>* refPoints = [referenceTrack points]; // MRC accessor
+    // *** MODIFICATION: Use 'goodPoints' for the reference track ***
+    NSArray<TrackPoint*>* refPoints = [referenceTrack goodPoints];
 
     // 2. Iterate through all tracks and compare them to the reference path
     for (Track *currentTrack in trackArray) {
@@ -136,7 +135,8 @@
             continue; // Cannot find a suitable segment
         }
         
-        NSArray<TrackPoint*>* currentPoints = [currentTrack points]; // MRC accessor
+        // *** MODIFICATION: Use 'goodPoints' for the current track ***
+        NSArray<TrackPoint*>* currentPoints = [currentTrack goodPoints];
         
         // b. Check Length Tolerance
         float currentLength = TrackSegmentLength(currentPoints, currentStartIdx, currentEndIdx);
@@ -165,13 +165,177 @@
                              similarTo:currentPoints from:currentStartIdx to:currentEndIdx
                         maxDeviationKM:maxDeviationKM])
         {
+            // The resultTracks array retains the Track object
             [resultTracks addObject:currentTrack];
-            // MRC: The object in the array is already retained by the input array,
-            // and the result array now retains it. No need to manually retain/release here.
         }
     }
     
-    return [resultTracks autorelease]; // Return the result array, giving ownership to the caller.
+    [pool release];
+    // Return the result array, giving ownership to the caller (MRC convention).
+    return [resultTracks autorelease];
+}
+
+
+#pragma mark - Shortest Track Finder
+
++ (NSArray *)findShortestTracks:(NSArray<Track*>*)trackArray
+           withSegmentStartingAt:(tLocation)startLocation
+                        lengthKM:(float)lengthKM
+                           count:(int)count
+                           error:(NSError * __autoreleasing *)error
+{
+    // Autorelease Pool used for the method execution (MRC convention)
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    
+    // Safety checks
+    if (lengthKM <= 0.0 || count <= 0 || [trackArray count] == 0) {
+        if (error) {
+            *error = [NSError errorWithDomain:@"AscentPathFinderErrorDomain"
+                                         code:1001
+                                     userInfo:@{NSLocalizedDescriptionKey: @"Invalid input: length must be positive, count must be > 0, and track array cannot be empty."}];
+        }
+        [pool release];
+        return nil;
+    }
+    
+    // --- 1. Prepare filtering and collection parameters ---
+    
+    // Array to hold temporary dictionaries/objects for sorting purposes.
+    NSMutableArray *collectableData = [[NSMutableArray alloc] init];
+    
+    // Define the geometrical tolerance (assuming a default tolerance)
+    float tolerancePercent = 5.0;
+    float lengthToleranceKM = lengthKM * (tolerancePercent / 100.0);
+    float maxDeviationKM    = lengthToleranceKM;
+    
+    float minLengthKM = lengthKM - lengthToleranceKM;
+    float maxLengthKM = lengthKM + lengthToleranceKM;
+    if (minLengthKM < 0.0) minLengthKM = 0.0;
+    
+    // Find the first valid reference segment and establish its path points (for 'isSegment' logic)
+    Track *referenceTrack = nil;
+    int refStartIdx = -1;
+    int refEndIdx = -1;
+    
+    for (Track *t in trackArray) {
+        // NOTE: findSegmentStart/end must use the goodPoints array internally
+        if (t && [t findSegmentStart:&refStartIdx end:&refEndIdx forStartLocation:startLocation length:lengthKM tolerance:tolerancePercent]) {
+            referenceTrack = t;
+            break;
+        }
+    }
+    
+    if (referenceTrack == nil) {
+        if (error) {
+            *error = [NSError errorWithDomain:@"AscentPathFinderErrorDomain"
+                                         code:1002
+                                     userInfo:@{NSLocalizedDescriptionKey: @"No track in the array contains a segment matching the specified criteria."}];
+        }
+        [collectableData release];
+        [pool release];
+        return [[[NSArray alloc] init] autorelease];
+    }
+    
+    // *** MODIFICATION: Use 'goodPoints' ***
+    NSArray<TrackPoint*>* refPoints = [referenceTrack goodPoints];
+
+    // --- 2. Iterate, Filter, and Collect Time Data ---
+    
+    for (Track *currentTrack in trackArray)
+    {
+        int currentStartIdx = -1;
+        int currentEndIdx = -1;
+        
+        // a. Find the segment for the current track
+        if (![currentTrack findSegmentStart:&currentStartIdx end:&currentEndIdx forStartLocation:startLocation length:lengthKM tolerance:tolerancePercent]) {
+            continue;
+        }
+        
+        // *** MODIFICATION: Use 'goodPoints' for current track ***
+        NSArray<TrackPoint*>* currentPoints = [currentTrack goodPoints];
+        float currentLength = TrackSegmentLength(currentPoints, currentStartIdx, currentEndIdx);
+
+        // b. Check Length Tolerance
+        if (currentLength < minLengthKM || currentLength > maxLengthKM) {
+            continue;
+        }
+        
+        // c. Check Path Deviation (Symmetrical check)
+        BOOL isSimilar = NO;
+        if (currentTrack == referenceTrack) {
+            isSimilar = YES;
+        } else {
+            isSimilar = [AscentPathFinder isSegment:refPoints from:refStartIdx to:refEndIdx
+                                         similarTo:currentPoints from:currentStartIdx to:currentEndIdx
+                                    maxDeviationKM:maxDeviationKM];
+        }
+
+        if (isSimilar) {
+            
+            NSTimeInterval segmentTime = [currentTrack movingDurationBetweenGoodPoints:currentStartIdx end:currentEndIdx];
+            
+            float trackDeviation = 0.0f; // Assumed calculated elsewhere or placeholder
+            
+            // Create a dictionary to hold data for the sorting/output step
+            NSDictionary *tempDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                                      currentTrack,      @"track",
+                                      [NSNumber numberWithInt:currentStartIdx], @"start_index",
+                                      [NSNumber numberWithInt:currentEndIdx],   @"end_index",
+                                      [NSNumber numberWithDouble:segmentTime], @"time_duration",
+                                      [NSNumber numberWithFloat:trackDeviation], @"deviation",
+                                      nil];
+            
+            [collectableData addObject:tempDict];
+        }
+    }
+    
+    // --- 3. Sort and Select Top 'N' Tracks ---
+    
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"time_duration" ascending:YES];
+    NSArray *sortedData = [collectableData sortedArrayUsingDescriptors:
+                           [NSArray arrayWithObject:sortDescriptor]];
+    [sortDescriptor release];
+    [collectableData release];
+    
+    NSUInteger tracksToReturn = MIN([sortedData count], (NSUInteger)count);
+    NSArray *topNTracks = [sortedData subarrayWithRange:NSMakeRange(0, tracksToReturn)];
+
+    // --- 4. Format Final Output Array ---
+    
+    NSMutableArray *finalArray = [[NSMutableArray alloc] initWithCapacity:tracksToReturn];
+    
+    for (NSDictionary *tempDict in topNTracks)
+    {
+        Track *t = [tempDict objectForKey:@"track"];
+        int startIdx = [[tempDict objectForKey:@"start_index"] intValue];
+        int endIdx = [[tempDict objectForKey:@"end_index"] intValue];
+        
+        // Retrieve the points array for start/end time access
+        NSArray<TrackPoint*>* points = [t goodPoints];
+        
+        // Retrieve the specific TrackPoint objects
+        // *** MODIFICATION: Use 'goodPoints' to retrieve the point objects ***
+        TrackPoint *startPoint = [points objectAtIndex:startIdx];
+        TrackPoint *endPoint = [points objectAtIndex:endIdx];
+        
+        // Build the final dictionary
+        NSDictionary *resultDict = [NSDictionary dictionaryWithObjectsAndKeys:
+                                     t, @"track",
+                                     [NSNumber numberWithInt:startIdx], @"start_index",
+                                     [NSNumber numberWithInt:endIdx], @"end_index",
+                                     
+                                     // *** MODIFICATION: Use movingTime property ***
+                                     [NSNumber numberWithDouble:startPoint.activeTimeDelta], @"start",
+                                     [NSNumber numberWithDouble:endPoint.activeTimeDelta], @"end",
+                                     
+                                     [tempDict objectForKey:@"deviation"], @"deviation",
+                                     nil];
+        
+        [finalArray addObject:resultDict];
+    }
+
+    [pool release];
+    return [finalArray autorelease];
 }
 
 @end

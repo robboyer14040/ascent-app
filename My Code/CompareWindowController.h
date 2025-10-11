@@ -28,35 +28,10 @@ enum
 
 @interface CompareWindowController : NSWindowController <AscentAnimationTarget, NSWindowDelegate>
 {
-	IBOutlet MapPathView                *mapView;
-	IBOutlet MapPathView                *zoomMapView;
-    IBOutlet ActivityDetailView         *adView;
     CWTransparentMapView                *mapTransparentView;
     CWTransparentMapView                *zoomMapTransparentView;
     CWTransparentMapView                *adViewTransparentView;
     
-	IBOutlet NSButton*					playButton;
-	IBOutlet NSButton*					stopButton;
-	IBOutlet NSButton*					reverseButton;
-	IBOutlet NSButton*					rtzButton;
-	IBOutlet NSButton*					rteButton;
-	IBOutlet NSTextField*				speedFactorText;
-	IBOutlet NSSlider*					speedFactorSlider;
-	IBOutlet NSSlider*					locationSlider;
-	IBOutlet NSTextField*				timecodeText;
-	IBOutlet NSView*					transportAreaView;
-	IBOutlet NSView*					leftContentView;
-	IBOutlet NSView*					rightContentView;
-	IBOutlet NSSplitView*				leftSplitView;
-	IBOutlet NSSplitView*				mainSplitView;
-	IBOutlet ProfilesContainerView*		profilesContainerView;      // remove
-	IBOutlet NSPopUpButton*				plotTypePopup;
-	IBOutlet NSPopUpButton*				distanceTimePopup;
-	IBOutlet NSPopUpButton*				guideFollowsPopup;
-	IBOutlet CWSummaryPanelController*	summaryPanelController;
-	IBOutlet NSSegmentedControl*		selectorSegmentedControl;
-	IBOutlet NSSlider*					scaleSlider;
-	IBOutlet NSPopUpButton*				alignToPopUpButton;
 	ProfilesTransparentView*			profilesTransparentView;        // remove
 	CompareProfileViewController*		fastestPVC;		// only used during animation remove
 	CompareProfileViewController*		lastFocusedPVC;     // remove
@@ -70,6 +45,45 @@ enum
 	int									numViews;
 	int									guideFollows;
 }
+
+@property(nonatomic, assign) IBOutlet MapPathView           *mapView;
+@property(nonatomic, assign) IBOutlet MapPathView           *zoomMapView;
+@property(nonatomic, assign) IBOutlet ActivityDetailView    *adView;
+@property(nonatomic, assign) IBOutlet NSButton              *analysisButton;
+@property(nonatomic, assign) IBOutlet NSTextField           *dot1Label;
+@property(nonatomic, assign) IBOutlet NSTextField           *dot2Label;
+@property(nonatomic, assign) IBOutlet NSTextField           *dot3Label;
+@property(nonatomic, assign) IBOutlet NSTextField           *dot4Label;
+@property(nonatomic, assign) IBOutlet NSImageView           *dot1Image;
+@property(nonatomic, assign) IBOutlet NSImageView           *dot2Image;
+@property(nonatomic, assign) IBOutlet NSImageView           *dot3Image;
+@property(nonatomic, assign) IBOutlet NSImageView           *dot4Image;
+
+//@property(nonatomic, assign) IBOutlet NSButton*                    playButton;
+//@property(nonatomic, assign) IBOutlet NSButton*                    stopButton;
+//@property(nonatomic, assign) IBOutlet NSButton*                    reverseButton;
+//@property(nonatomic, assign) IBOutlet NSButton*                    rtzButton;
+//@property(nonatomic, assign) IBOutlet NSButton*                    rteButton;
+//@property(nonatomic, assign) IBOutlet NSTextField*                speedFactorText;
+//@property(nonatomic, assign) IBOutlet NSSlider*                    speedFactorSlider;
+//@property(nonatomic, assign) IBOutlet NSSlider*                    locationSlider;
+//@property(nonatomic, assign) IBOutlet NSTextField*                timecodeText;
+//@property(nonatomic, assign) IBOutlet NSView*                    transportAreaView;
+//@property(nonatomic, assign) IBOutlet NSView*                    leftContentView;
+//@property(nonatomic, assign) IBOutlet NSView*                    rightContentView;
+//@property(nonatomic, assign) IBOutlet NSSplitView*                leftSplitView;
+//@property(nonatomic, assign) IBOutlet NSSplitView*                mainSplitView;
+//@property(nonatomic, assign) IBOutlet ProfilesContainerView*        profilesContainerView;      // remove
+//@property(nonatomic, assign) IBOutlet NSPopUpButton*                plotTypePopup;
+//@property(nonatomic, assign) IBOutlet NSPopUpButton*                distanceTimePopup;
+//@property(nonatomic, assign) IBOutlet NSPopUpButton*                guideFollowsPopup;
+//@property(nonatomic, assign) IBOutlet CWSummaryPanelController*    summaryPanelController;
+//@property(nonatomic, assign) IBOutlet NSSegmentedControl*        selectorSegmentedControl;
+//@property(nonatomic, assign) IBOutlet NSSlider*                    scaleSlider;
+//@property(nonatomic, assign) IBOutlet NSPopUpButton*                alignToPopUpButton;
+
+
+
 @property(retain, nonatomic) NSMutableArray* profileControllerArray;
 @property(retain, nonatomic) NSArray* trackArray;
 @property(retain, nonatomic) NSArray* dotColorsArray;
